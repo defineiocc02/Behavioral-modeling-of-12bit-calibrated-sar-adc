@@ -1,0 +1,608 @@
+`include "constants.vams"
+`include "disciplines.vams"
+
+// ============================================================================
+// Differential split-CDAC MC model following the capacitor-mismatch scheme in:
+//
+//   Zheng Yu, "Research of High-Precision SAR ADC with Small Size
+//   Capacitor Array", 2024, Section 3.2.2.
+//
+// Paper-aligned statistical definition:
+//
+//   Cu,k = Cu_nom + delta_k
+//   E[delta_k] = 0
+//   sigma(delta_k / Cu_nom) = SIGMA_C_REL
+//
+// Every weighted branch is physically composed of repeated custom unit cells:
+//
+//   Cm = sum(k=1..m) Cu,k
+//
+// Hence 16C is 16 independently mismatched Cu cells in parallel, not one
+// monolithic 16*Cu capacitor receiving one random number.
+//
+// Exact case-sensitive symbol ports:
+//   BITU<1:13>
+//   BITD<1:13>
+//   N
+//   P
+//
+// Existing split/non-binary topology retained from the supplied schematic:
+//   LSB counts : 1, 2, 4, 6, 10, 16, 24
+//   Bridge     : 1
+//   MSB counts : 1, 2, 2, 4, 8, 16
+//
+// Main mismatch parameter:
+//   SIGMA_C_REL = 0.01  -> each physical Cu cell has 1-sigma = 1%
+//
+// The random values are generated once at initial_step and remain constant
+// throughout one transient run.
+// ============================================================================
+
+module cdac_split_mc (
+    BITU,
+    BITD,
+    N,
+    P
+);
+
+    inout [1:13] BITU;
+    inout [1:13] BITD;
+    inout N, P;
+
+    electrical [1:13] BITU;
+    electrical [1:13] BITD;
+    electrical N, P;
+
+    electrical p_lsb;
+    electrical n_lsb;
+
+    // ------------------------------------------------------------------------
+    // Capacitor and mismatch parameters
+    // ------------------------------------------------------------------------
+
+    // Nominal custom physical unit capacitance.
+    parameter real Cu = 4f from (0:inf);
+
+    // 0: all physical unit capacitors ideal
+    // 1: enable independent Gaussian local mismatch
+    parameter integer MC_ENABLE = 1 from [0:1];
+
+    // DIRECT mismatch parameter from the paper's deltaC/C definition.
+    //
+    // It is the normalized standard deviation of ONE physical custom unit cap:
+    //
+    //   SIGMA_C_REL = sigma(deltaCu / Cu)
+    //
+    // Examples:
+    //   0.001 -> 0.1% 1-sigma
+    //   0.005 -> 0.5% 1-sigma
+    //   0.010 -> 1.0% 1-sigma
+    parameter real SIGMA_C_REL = 0.01 from [0:1);
+
+    // Clip the Gaussian sample to +/- CLIP_SIGMA.
+    parameter real CLIP_SIGMA = 3.0 from (0:inf);
+
+    // Optional common process variation shared by all physical unit cells.
+    // This changes total capacitance but mostly preserves ratios.
+    parameter real SIGMA_GLOBAL_REL = 0.0 from [0:1);
+
+    // Optional parasitics motivated by the paper's extracted custom capacitor:
+    // top/bottom parasitic scales approximately with capacitor size.
+    //
+    // Set both to 0 for pure mismatch-only simulation.
+    // The paper's 12-bit 2fF array reports about 166fF top parasitic over
+    // 4.096pF array capacitance, i.e. about 0.0405 as a rough reference.
+    parameter real CTOP_RATIO = 0.0 from [0:1);
+    parameter real CBOT_RATIO = 0.0 from [0:1);
+
+    // Random-seed controls.
+    parameter integer BASE_SEED   = 13579;
+    parameter integer RUN_ID      = 0;
+    parameter integer INSTANCE_ID = 0;
+
+    parameter integer PRINT_CAPS = 1 from [0:1];
+    parameter real CMIN_RATIO = 1.0e-6 from (0:1);
+
+    // ------------------------------------------------------------------------
+    // Realized branch capacitances
+    // ------------------------------------------------------------------------
+
+    real cp1, cp2, cp3, cp4, cp5, cp6, cp7;
+    real cp8, cp9, cp10, cp11, cp12, cp13;
+    real cn1, cn2, cn3, cn4, cn5, cn6, cn7;
+    real cn8, cn9, cn10, cn11, cn12, cn13;
+    real cbp, cbn;
+
+    integer seed;
+    integer trial;
+    integer k;
+    real z;
+    real global_err;
+
+    analog function real clip_value;
+        input x, lo, hi;
+        real x, lo, hi;
+        begin
+            if (x > hi)
+                clip_value = hi;
+            else if (x < lo)
+                clip_value = lo;
+            else
+                clip_value = x;
+        end
+    endfunction
+
+    // Generate ONE physical custom unit capacitor.
+    analog function real make_unit_cap;
+        input z_local, common_err;
+        real z_local, common_err;
+        real local_err;
+        real c_real;
+        begin
+            if (MC_ENABLE == 0)
+                local_err = 0.0;
+            else
+                local_err =
+                    SIGMA_C_REL *
+                    clip_value(z_local, -CLIP_SIGMA, CLIP_SIGMA);
+
+            c_real = Cu * (1.0 + common_err + local_err);
+
+            if (c_real < Cu*CMIN_RATIO)
+                make_unit_cap = Cu*CMIN_RATIO;
+            else
+                make_unit_cap = c_real;
+        end
+    endfunction
+
+    analog begin
+
+        @(initial_step) begin
+            trial = $cds_get_mc_trial_number();
+            if (trial < 0)
+                trial = 0;
+
+            seed =
+                BASE_SEED
+                + 104729*(trial + 1)
+                + 1009*RUN_ID
+                + 7919*INSTANCE_ID;
+
+            if ((MC_ENABLE != 0) && (SIGMA_GLOBAL_REL > 0.0)) begin
+                z = $rdist_normal(seed, 0.0, 1.0, "instance");
+                global_err =
+                    SIGMA_GLOBAL_REL *
+                    clip_value(z, -CLIP_SIGMA, CLIP_SIGMA);
+            end
+            else begin
+                global_err = 0.0;
+            end
+
+            // ------------------------ P/lower side ------------------------
+            // cp1: 1 identical physical custom unit capacitors in parallel
+            cp1 = 0.0;
+            for (k = 0; k < 1; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp1 = cp1 + make_unit_cap(z, global_err);
+            end
+
+            // cp2: 2 identical physical custom unit capacitors in parallel
+            cp2 = 0.0;
+            for (k = 0; k < 2; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp2 = cp2 + make_unit_cap(z, global_err);
+            end
+
+            // cp3: 4 identical physical custom unit capacitors in parallel
+            cp3 = 0.0;
+            for (k = 0; k < 4; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp3 = cp3 + make_unit_cap(z, global_err);
+            end
+
+            // cp4: 6 identical physical custom unit capacitors in parallel
+            cp4 = 0.0;
+            for (k = 0; k < 6; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp4 = cp4 + make_unit_cap(z, global_err);
+            end
+
+            // cp5: 10 identical physical custom unit capacitors in parallel
+            cp5 = 0.0;
+            for (k = 0; k < 10; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp5 = cp5 + make_unit_cap(z, global_err);
+            end
+
+            // cp6: 16 identical physical custom unit capacitors in parallel
+            cp6 = 0.0;
+            for (k = 0; k < 16; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp6 = cp6 + make_unit_cap(z, global_err);
+            end
+
+            // cp7: 24 identical physical custom unit capacitors in parallel
+            cp7 = 0.0;
+            for (k = 0; k < 24; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp7 = cp7 + make_unit_cap(z, global_err);
+            end
+
+            // cbp: 1 identical physical custom unit capacitors in parallel
+            cbp = 0.0;
+            for (k = 0; k < 1; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cbp = cbp + make_unit_cap(z, global_err);
+            end
+
+            // cp8: 1 identical physical custom unit capacitors in parallel
+            cp8 = 0.0;
+            for (k = 0; k < 1; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp8 = cp8 + make_unit_cap(z, global_err);
+            end
+
+            // cp9: 2 identical physical custom unit capacitors in parallel
+            cp9 = 0.0;
+            for (k = 0; k < 2; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp9 = cp9 + make_unit_cap(z, global_err);
+            end
+
+            // cp10: 2 identical physical custom unit capacitors in parallel
+            cp10 = 0.0;
+            for (k = 0; k < 2; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp10 = cp10 + make_unit_cap(z, global_err);
+            end
+
+            // cp11: 4 identical physical custom unit capacitors in parallel
+            cp11 = 0.0;
+            for (k = 0; k < 4; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp11 = cp11 + make_unit_cap(z, global_err);
+            end
+
+            // cp12: 8 identical physical custom unit capacitors in parallel
+            cp12 = 0.0;
+            for (k = 0; k < 8; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp12 = cp12 + make_unit_cap(z, global_err);
+            end
+
+            // cp13: 16 identical physical custom unit capacitors in parallel
+            cp13 = 0.0;
+            for (k = 0; k < 16; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cp13 = cp13 + make_unit_cap(z, global_err);
+            end
+
+
+            // ------------------------ N/upper side ------------------------
+            // cn1: 1 identical physical custom unit capacitors in parallel
+            cn1 = 0.0;
+            for (k = 0; k < 1; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn1 = cn1 + make_unit_cap(z, global_err);
+            end
+
+            // cn2: 2 identical physical custom unit capacitors in parallel
+            cn2 = 0.0;
+            for (k = 0; k < 2; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn2 = cn2 + make_unit_cap(z, global_err);
+            end
+
+            // cn3: 4 identical physical custom unit capacitors in parallel
+            cn3 = 0.0;
+            for (k = 0; k < 4; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn3 = cn3 + make_unit_cap(z, global_err);
+            end
+
+            // cn4: 6 identical physical custom unit capacitors in parallel
+            cn4 = 0.0;
+            for (k = 0; k < 6; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn4 = cn4 + make_unit_cap(z, global_err);
+            end
+
+            // cn5: 10 identical physical custom unit capacitors in parallel
+            cn5 = 0.0;
+            for (k = 0; k < 10; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn5 = cn5 + make_unit_cap(z, global_err);
+            end
+
+            // cn6: 16 identical physical custom unit capacitors in parallel
+            cn6 = 0.0;
+            for (k = 0; k < 16; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn6 = cn6 + make_unit_cap(z, global_err);
+            end
+
+            // cn7: 24 identical physical custom unit capacitors in parallel
+            cn7 = 0.0;
+            for (k = 0; k < 24; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn7 = cn7 + make_unit_cap(z, global_err);
+            end
+
+            // cbn: 1 identical physical custom unit capacitors in parallel
+            cbn = 0.0;
+            for (k = 0; k < 1; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cbn = cbn + make_unit_cap(z, global_err);
+            end
+
+            // cn8: 1 identical physical custom unit capacitors in parallel
+            cn8 = 0.0;
+            for (k = 0; k < 1; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn8 = cn8 + make_unit_cap(z, global_err);
+            end
+
+            // cn9: 2 identical physical custom unit capacitors in parallel
+            cn9 = 0.0;
+            for (k = 0; k < 2; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn9 = cn9 + make_unit_cap(z, global_err);
+            end
+
+            // cn10: 2 identical physical custom unit capacitors in parallel
+            cn10 = 0.0;
+            for (k = 0; k < 2; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn10 = cn10 + make_unit_cap(z, global_err);
+            end
+
+            // cn11: 4 identical physical custom unit capacitors in parallel
+            cn11 = 0.0;
+            for (k = 0; k < 4; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn11 = cn11 + make_unit_cap(z, global_err);
+            end
+
+            // cn12: 8 identical physical custom unit capacitors in parallel
+            cn12 = 0.0;
+            for (k = 0; k < 8; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn12 = cn12 + make_unit_cap(z, global_err);
+            end
+
+            // cn13: 16 identical physical custom unit capacitors in parallel
+            cn13 = 0.0;
+            for (k = 0; k < 16; k = k + 1) begin
+                if (MC_ENABLE == 0)
+                    z = 0.0;
+                else
+                    z = $rdist_normal(seed, 0.0, 1.0, "instance");
+
+                cn13 = cn13 + make_unit_cap(z, global_err);
+            end
+
+
+            if (PRINT_CAPS != 0) begin
+                $strobe(
+                    "%M trial=%0d run=%0d Cu=%g SIGMA_C_REL=%g (%g%%) global=%g",
+                    trial, RUN_ID, Cu, SIGMA_C_REL,
+                    100.0*SIGMA_C_REL, global_err
+                );
+
+                $strobe(
+                    "%M P totals[fF]: C1=%g C2=%g C3=%g C4=%g C5=%g C6=%g C7=%g CB=%g C8=%g C9=%g C10=%g C11=%g C12=%g C13=%g",
+                    cp1/1f, cp2/1f, cp3/1f, cp4/1f,
+                    cp5/1f, cp6/1f, cp7/1f, cbp/1f,
+                    cp8/1f, cp9/1f, cp10/1f, cp11/1f,
+                    cp12/1f, cp13/1f
+                );
+
+                $strobe(
+                    "%M N totals[fF]: C1=%g C2=%g C3=%g C4=%g C5=%g C6=%g C7=%g CB=%g C8=%g C9=%g C10=%g C11=%g C12=%g C13=%g",
+                    cn1/1f, cn2/1f, cn3/1f, cn4/1f,
+                    cn5/1f, cn6/1f, cn7/1f, cbn/1f,
+                    cn8/1f, cn9/1f, cn10/1f, cn11/1f,
+                    cn12/1f, cn13/1f
+                );
+            end
+        end
+
+        // --------------------------------------------------------------------
+        // P/lower CDAC: BITD -> P
+        // --------------------------------------------------------------------
+
+        I(p_lsb, BITD[1]) <+ cp1  * ddt(V(p_lsb, BITD[1]));
+        I(p_lsb, BITD[2]) <+ cp2  * ddt(V(p_lsb, BITD[2]));
+        I(p_lsb, BITD[3]) <+ cp3  * ddt(V(p_lsb, BITD[3]));
+        I(p_lsb, BITD[4]) <+ cp4  * ddt(V(p_lsb, BITD[4]));
+        I(p_lsb, BITD[5]) <+ cp5  * ddt(V(p_lsb, BITD[5]));
+        I(p_lsb, BITD[6]) <+ cp6  * ddt(V(p_lsb, BITD[6]));
+        I(p_lsb, BITD[7]) <+ cp7  * ddt(V(p_lsb, BITD[7]));
+
+        I(P, p_lsb)       <+ cbp  * ddt(V(P, p_lsb));
+
+        I(P, BITD[8])     <+ cp8  * ddt(V(P, BITD[8]));
+        I(P, BITD[9])     <+ cp9  * ddt(V(P, BITD[9]));
+        I(P, BITD[10])    <+ cp10 * ddt(V(P, BITD[10]));
+        I(P, BITD[11])    <+ cp11 * ddt(V(P, BITD[11]));
+        I(P, BITD[12])    <+ cp12 * ddt(V(P, BITD[12]));
+        I(P, BITD[13])    <+ cp13 * ddt(V(P, BITD[13]));
+
+        // --------------------------------------------------------------------
+        // N/upper CDAC: BITU -> N
+        // --------------------------------------------------------------------
+
+        I(n_lsb, BITU[1]) <+ cn1  * ddt(V(n_lsb, BITU[1]));
+        I(n_lsb, BITU[2]) <+ cn2  * ddt(V(n_lsb, BITU[2]));
+        I(n_lsb, BITU[3]) <+ cn3  * ddt(V(n_lsb, BITU[3]));
+        I(n_lsb, BITU[4]) <+ cn4  * ddt(V(n_lsb, BITU[4]));
+        I(n_lsb, BITU[5]) <+ cn5  * ddt(V(n_lsb, BITU[5]));
+        I(n_lsb, BITU[6]) <+ cn6  * ddt(V(n_lsb, BITU[6]));
+        I(n_lsb, BITU[7]) <+ cn7  * ddt(V(n_lsb, BITU[7]));
+
+        I(N, n_lsb)       <+ cbn  * ddt(V(N, n_lsb));
+
+        I(N, BITU[8])     <+ cn8  * ddt(V(N, BITU[8]));
+        I(N, BITU[9])     <+ cn9  * ddt(V(N, BITU[9]));
+        I(N, BITU[10])    <+ cn10 * ddt(V(N, BITU[10]));
+        I(N, BITU[11])    <+ cn11 * ddt(V(N, BITU[11]));
+        I(N, BITU[12])    <+ cn12 * ddt(V(N, BITU[12]));
+        I(N, BITU[13])    <+ cn13 * ddt(V(N, BITU[13]));
+
+        // --------------------------------------------------------------------
+        // Optional paper-inspired parasitic capacitances.
+        //
+        // Top-plate parasitic is aggregated by the physical unit count.
+        // Bottom-plate parasitic is attached to each BITU/BITD branch.
+        // --------------------------------------------------------------------
+
+        if (CTOP_RATIO > 0.0) begin
+            // P-side: MSB units at P, LSB units at p_lsb.
+            I(P)     <+ CTOP_RATIO * Cu * 33.0 * ddt(V(P));
+            I(p_lsb) <+ CTOP_RATIO * Cu * 63.0 * ddt(V(p_lsb));
+
+            // N-side.
+            I(N)     <+ CTOP_RATIO * Cu * 33.0 * ddt(V(N));
+            I(n_lsb) <+ CTOP_RATIO * Cu * 63.0 * ddt(V(n_lsb));
+        end
+
+        if (CBOT_RATIO > 0.0) begin
+            I(BITD[1])  <+ CBOT_RATIO * Cu * 1.0  * ddt(V(BITD[1]));
+            I(BITD[2])  <+ CBOT_RATIO * Cu * 2.0  * ddt(V(BITD[2]));
+            I(BITD[3])  <+ CBOT_RATIO * Cu * 4.0  * ddt(V(BITD[3]));
+            I(BITD[4])  <+ CBOT_RATIO * Cu * 6.0  * ddt(V(BITD[4]));
+            I(BITD[5])  <+ CBOT_RATIO * Cu * 10.0 * ddt(V(BITD[5]));
+            I(BITD[6])  <+ CBOT_RATIO * Cu * 16.0 * ddt(V(BITD[6]));
+            I(BITD[7])  <+ CBOT_RATIO * Cu * 24.0 * ddt(V(BITD[7]));
+            I(BITD[8])  <+ CBOT_RATIO * Cu * 1.0  * ddt(V(BITD[8]));
+            I(BITD[9])  <+ CBOT_RATIO * Cu * 2.0  * ddt(V(BITD[9]));
+            I(BITD[10]) <+ CBOT_RATIO * Cu * 2.0  * ddt(V(BITD[10]));
+            I(BITD[11]) <+ CBOT_RATIO * Cu * 4.0  * ddt(V(BITD[11]));
+            I(BITD[12]) <+ CBOT_RATIO * Cu * 8.0  * ddt(V(BITD[12]));
+            I(BITD[13]) <+ CBOT_RATIO * Cu * 16.0 * ddt(V(BITD[13]));
+
+            I(BITU[1])  <+ CBOT_RATIO * Cu * 1.0  * ddt(V(BITU[1]));
+            I(BITU[2])  <+ CBOT_RATIO * Cu * 2.0  * ddt(V(BITU[2]));
+            I(BITU[3])  <+ CBOT_RATIO * Cu * 4.0  * ddt(V(BITU[3]));
+            I(BITU[4])  <+ CBOT_RATIO * Cu * 6.0  * ddt(V(BITU[4]));
+            I(BITU[5])  <+ CBOT_RATIO * Cu * 10.0 * ddt(V(BITU[5]));
+            I(BITU[6])  <+ CBOT_RATIO * Cu * 16.0 * ddt(V(BITU[6]));
+            I(BITU[7])  <+ CBOT_RATIO * Cu * 24.0 * ddt(V(BITU[7]));
+            I(BITU[8])  <+ CBOT_RATIO * Cu * 1.0  * ddt(V(BITU[8]));
+            I(BITU[9])  <+ CBOT_RATIO * Cu * 2.0  * ddt(V(BITU[9]));
+            I(BITU[10]) <+ CBOT_RATIO * Cu * 2.0  * ddt(V(BITU[10]));
+            I(BITU[11]) <+ CBOT_RATIO * Cu * 4.0  * ddt(V(BITU[11]));
+            I(BITU[12]) <+ CBOT_RATIO * Cu * 8.0  * ddt(V(BITU[12]));
+            I(BITU[13]) <+ CBOT_RATIO * Cu * 16.0 * ddt(V(BITU[13]));
+        end
+    end
+
+endmodule

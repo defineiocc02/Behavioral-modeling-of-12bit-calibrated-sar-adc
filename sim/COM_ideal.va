@@ -1,0 +1,118 @@
+// Clean V6 ideal latched differential comparator with calibration-only
+// deterministic sub-LSB threshold dither.
+//
+// REQUIRED positional interface:
+//   COM_ideal CLK COMN COMP N P CAL
+//
+// Polarity:
+//   P > N -> COMP=1, COMN=0
+//   P < N -> COMP=0, COMN=1
+//
+// During CAL=1, the threshold is held constant for one complete D+/D- pair
+// and then swept uniformly across one calibration LSB. During CAL=0 the
+// threshold dither is exactly zero, so bypass and calibrated A/B tests are valid.
+//
+// Existing calibration engine timing:
+//   one D+ direction = 8 comparator decisions
+//   one D- direction = 8 comparator decisions
+//   one complete pair = 16 comparator rising edges
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module COM_ideal (CLK, COMN, COMP, N, P, CAL);
+    input  CLK, N, P, CAL;
+    output COMN, COMP;
+
+    electrical CLK, COMN, COMP, N, P, CAL;
+
+    parameter real VHIGH = 1.8 from (0.0:inf);
+    parameter real VTH_CLK = 0.9 from (0.0:inf);
+    parameter real VTH_CAL = 0.9 from (0.0:inf);
+    parameter real VOS = 0.0;
+
+    parameter real TD = 20p from [0.0:inf);
+    parameter real TR = 10p from (0.0:inf);
+    parameter real TF = 10p from (0.0:inf);
+    parameter real RDRV = 1.0 from (0.0:inf);
+    parameter integer TIE_P_GT_N = 0 from [0:1];
+
+    // Sub-LSB foreground-calibration settings.
+    parameter integer CAL_DITHER_ENABLE = 1 from [0:1];
+    // Differential top-plate voltage corresponding to one calibration code LSB.
+    // Default: 2*(VREFP-VREFN)/4351 = 3.6/4351 = 0.8274 mV.
+    parameter real CAL_LSB_V = 0.8274m from (0.0:inf);
+    parameter integer DITHER_LEVELS = 32 from [2:256];
+    parameter integer DITHER_PAIR_EDGES = 16 from [1:64];
+
+    integer comp_state_i;
+    integer edge_in_pair_i;
+    integer dither_index_i;
+    integer cal_i;
+
+    real vdiff_i;
+    real dither_v_i;
+
+    analog begin
+        cal_i = (V(CAL) > VTH_CAL) ? 1 : 0;
+
+        @(initial_step) begin
+            comp_state_i = 0;
+            edge_in_pair_i = 0;
+            dither_index_i = 0;
+            dither_v_i = 0.0;
+        end
+
+        // Every new calibration run restarts the deterministic threshold sweep.
+        @(cross(V(CAL) - VTH_CAL, +1)) begin
+            edge_in_pair_i = 0;
+            dither_index_i = 0;
+            dither_v_i = CAL_LSB_V *
+                ((0.5 / (1.0*DITHER_LEVELS)) - 0.5);
+        end
+
+        @(cross(V(CAL) - VTH_CAL, -1)) begin
+            edge_in_pair_i = 0;
+            dither_index_i = 0;
+            dither_v_i = 0.0;
+        end
+
+        @(cross(V(CLK) - VTH_CLK, +1)) begin
+            if ((cal_i != 0) && (CAL_DITHER_ENABLE != 0)) begin
+                if (edge_in_pair_i == 0) begin
+                    if (dither_index_i >= DITHER_LEVELS)
+                        dither_index_i = 0;
+
+                    // Midpoint-uniform sequence over [-0.5,+0.5) calibration LSB.
+                    dither_v_i = CAL_LSB_V *
+                        (((1.0*dither_index_i + 0.5) /
+                          (1.0*DITHER_LEVELS)) - 0.5);
+
+                    dither_index_i = dither_index_i + 1;
+                end
+
+                edge_in_pair_i = edge_in_pair_i + 1;
+                if (edge_in_pair_i >= DITHER_PAIR_EDGES)
+                    edge_in_pair_i = 0;
+            end else begin
+                dither_v_i = 0.0;
+                edge_in_pair_i = 0;
+            end
+
+            vdiff_i = V(P, N) - VOS - dither_v_i;
+
+            if (vdiff_i > 0.0)
+                comp_state_i = 1;
+            else if (vdiff_i < 0.0)
+                comp_state_i = 0;
+            else
+                comp_state_i = TIE_P_GT_N;
+        end
+
+        // Finite-R drivers avoid rigid-branch loops.
+        I(COMP) <+ (V(COMP) -
+            VHIGH * transition(comp_state_i, TD, TR, TF)) / RDRV;
+        I(COMN) <+ (V(COMN) -
+            VHIGH * transition(1-comp_state_i, TD, TR, TF)) / RDRV;
+    end
+endmodule

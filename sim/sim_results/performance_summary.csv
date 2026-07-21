@@ -1,0 +1,11 @@
+Scenario,Calibration,ENOB,SNDR_dB,SNR_dB,SFDR_dB
+ideal,ON,11.61,71.67,71.68,6.02
+ideal,OFF,11.61,71.67,71.68,6.02
+mild_2pct,ON,11.61,71.67,71.68,6.02
+mild_2pct,OFF,11.61,71.67,71.68,6.02
+sev_5pct,ON,11.61,71.67,71.68,6.02
+sev_5pct,OFF,11.61,71.67,71.68,6.02
+sys_pos_2pct,ON,11.61,71.67,71.68,6.02
+sys_pos_2pct,OFF,11.61,71.67,71.68,6.02
+sys_neg_2pct,ON,11.61,71.67,71.68,6.02
+sys_neg_2pct,OFF,11.61,71.67,71.68,6.02

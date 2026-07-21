@@ -1,0 +1,231 @@
+`include "constants.vams"
+`include "disciplines.vams"
+
+// ============================================================================
+// Binary split-CDAC MC model — Huang recursive calibration design
+//
+// CDAC TOPOLOGY (all capacitors are strict binary multiples of Cu):
+//   Low side  : {1, 2, 4, 8, 16, 32} = 63 Cu   (pure binary, calDAC)
+//   Bridge    : 2 Cu                           (integer bridge)
+//   High side : {1A, 1R, 2, 4, 8, 16, 32} = 64 Cu  (binary + redundant 1C)
+//
+// Effective weights (G_B = (63+2)/2 = 32.5, H = 2*32.5 = 65):
+//   Low  1C -> 2,   2C -> 4,   4C -> 8,   8C -> 16,  16C -> 32,  32C -> 64
+//   High 1C -> 65,  2C -> 130, 4C -> 260, 8C -> 520, 16C -> 1040, 32C -> 2080
+//
+// Total = 126 + 4160 + 1 = 4287 > 4095  (12-bit coverage)
+// calDAC = {1,2,4,8,16,32,64} = 127 (no gaps, pure binary)
+//
+// Port mapping: BITD/BITU[1:13] = physical index, same as SWITCH_CAL interface.
+//   k=1..6  = Low 1C..32C (behind bridge)
+//   k=7..13 = High 1C-A..32C (direct to top plate P/N)
+//   Bridge cp7 is internal (p_lsb/lsb to P/N)
+//
+// Random numbers via $rdist_normal() directly inside @(initial_step).
+// Each N*Cu capacitor = N independently mismatched unit caps in parallel.
+// ============================================================================
+
+module cdac_binary_mc (
+    BITU, BITD, N, P
+);
+    inout [1:13] BITU;
+    inout [1:13] BITD;
+    inout N, P;
+
+    electrical [1:13] BITU;
+    electrical [1:13] BITD;
+    electrical N, P;
+
+    electrical p_lsb;
+    electrical n_lsb;
+
+    parameter real Cu = 4f from (0:inf);
+    parameter integer MC_ENABLE = 1 from [0:1];
+    parameter real SIGMA_C_REL = 0.01 from [0:1);
+    parameter real CLIP_SIGMA = 3.0 from (0:inf);
+    parameter real SIGMA_GLOBAL_REL = 0.0 from [0:1);
+    parameter real CTOP_RATIO = 0.0 from [0:1);
+    parameter integer BASE_SEED = 13579;
+    parameter integer RUN_ID = 0;
+    parameter integer INSTANCE_ID = 0;
+    parameter integer PRINT_CAPS = 1 from [0:1];
+    parameter real CMIN_RATIO = 1.0e-6 from (0:1);
+
+    // P-side caps: k=1..6=low, k=7=bridge, k=8..14=high (BITD[1..13] maps to cp1..cp6, cp8..cp14)
+    real cp1, cp2, cp3, cp4, cp5, cp6;       // low: 1,2,4,8,16,32 → BITD[1..6]
+    real cp7;                                  // bridge: 2 (internal)
+    real cp8, cp9, cp10, cp11, cp12, cp13, cp14; // high: 1A,1R,2,4,8,16,32 → BITD[7..13]
+
+    // N-side caps (differential counterpart)
+    real cn1, cn2, cn3, cn4, cn5, cn6;
+    real cn7;
+    real cn8, cn9, cn10, cn11, cn12, cn13, cn14;
+
+    integer seed, trial, j;
+    real z, global_err;
+
+    analog function real clip_value;
+        input x, lo, hi;
+        real x, lo, hi;
+        begin
+            if (x > hi) clip_value = hi;
+            else if (x < lo) clip_value = lo;
+            else clip_value = x;
+        end
+    endfunction
+
+    analog function real make_unit_cap;
+        input z_local, common_err;
+        real z_local, common_err;
+        real local_err, c_real;
+        begin
+            if (MC_ENABLE == 0) local_err = 0.0;
+            else local_err = SIGMA_C_REL * clip_value(z_local, -CLIP_SIGMA, CLIP_SIGMA);
+            c_real = Cu * (1.0 + common_err + local_err);
+            if (c_real < Cu*CMIN_RATIO) make_unit_cap = Cu*CMIN_RATIO;
+            else make_unit_cap = c_real;
+        end
+    endfunction
+
+    analog begin
+        @(initial_step) begin
+            trial = $cds_get_mc_trial_number();
+            if (trial < 0) trial = 0;
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID;
+
+            if ((MC_ENABLE != 0) && (SIGMA_GLOBAL_REL > 0.0)) begin
+                z = $rdist_normal(seed, 0.0, 1.0);
+                global_err = SIGMA_GLOBAL_REL * clip_value(z, -CLIP_SIGMA, CLIP_SIGMA);
+            end else global_err = 0.0;
+
+            // P-side low (binary: 1,2,4,8,16,32 = 63Cu) → BITD[1..6]
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 101;
+            cp1 = 0.0; for (j=0;j<1;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp1=cp1+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 211;
+            cp2 = 0.0; for (j=0;j<2;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp2=cp2+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 307;
+            cp3 = 0.0; for (j=0;j<4;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp3=cp3+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 401;
+            cp4 = 0.0; for (j=0;j<8;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp4=cp4+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 503;
+            cp5 = 0.0; for (j=0;j<16;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp5=cp5+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 601;
+            cp6 = 0.0; for (j=0;j<32;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp6=cp6+make_unit_cap(z,global_err); end
+
+            // P-side bridge (2Cu, internal between p_lsb and P)
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 701;
+            cp7 = 0.0; for (j=0;j<2;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp7=cp7+make_unit_cap(z,global_err); end
+
+            // P-side high (binary: 1A,1R,2,4,8,16,32 = 64Cu) → BITD[7..13]
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 809;
+            cp8  = 0.0; for (j=0;j<1;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp8=cp8+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 907;
+            cp9  = 0.0; for (j=0;j<1;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp9=cp9+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 1009;
+            cp10 = 0.0; for (j=0;j<2;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp10=cp10+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 1103;
+            cp11 = 0.0; for (j=0;j<4;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp11=cp11+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 1201;
+            cp12 = 0.0; for (j=0;j<8;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp12=cp12+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 1301;
+            cp13 = 0.0; for (j=0;j<16;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp13=cp13+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 1409;
+            cp14 = 0.0; for (j=0;j<32;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cp14=cp14+make_unit_cap(z,global_err); end
+
+            // N-side low — differential counterpart → BITU[1..6]
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10103;
+            cn1 = 0.0; for (j=0;j<1;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn1=cn1+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10211;
+            cn2 = 0.0; for (j=0;j<2;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn2=cn2+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10301;
+            cn3 = 0.0; for (j=0;j<4;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn3=cn3+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10427;
+            cn4 = 0.0; for (j=0;j<8;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn4=cn4+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10501;
+            cn5 = 0.0; for (j=0;j<16;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn5=cn5+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10607;
+            cn6 = 0.0; for (j=0;j<32;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn6=cn6+make_unit_cap(z,global_err); end
+
+            // N-side bridge (2Cu, internal)
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10709;
+            cn7 = 0.0; for (j=0;j<2;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn7=cn7+make_unit_cap(z,global_err); end
+
+            // N-side high — differential counterpart → BITU[7..13]
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10807;
+            cn8  = 0.0; for (j=0;j<1;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn8=cn8+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 10903;
+            cn9  = 0.0; for (j=0;j<1;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn9=cn9+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 11003;
+            cn10 = 0.0; for (j=0;j<2;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn10=cn10+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 11113;
+            cn11 = 0.0; for (j=0;j<4;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn11=cn11+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 11201;
+            cn12 = 0.0; for (j=0;j<8;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn12=cn12+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 11311;
+            cn13 = 0.0; for (j=0;j<16;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn13=cn13+make_unit_cap(z,global_err); end
+            seed = BASE_SEED + 104729*(trial+1) + 1009*RUN_ID + 7919*INSTANCE_ID + 11411;
+            cn14 = 0.0; for (j=0;j<32;j=j+1) begin z=$rdist_normal(seed,0.0,1.0); cn14=cn14+make_unit_cap(z,global_err); end
+
+            if (PRINT_CAPS != 0) begin
+                $strobe("CDAC_BINARY trial=%0d Cu=%g sigma=%g%%",
+                        trial, Cu, 100.0*SIGMA_C_REL);
+                $strobe("  P: CL=%g CB=%g CH=%g",
+                        cp1+cp2+cp3+cp4+cp5+cp6, cp7,
+                        cp8+cp9+cp10+cp11+cp12+cp13+cp14);
+                $strobe("  N: CL=%g CB=%g CH=%g",
+                        cn1+cn2+cn3+cn4+cn5+cn6, cn7,
+                        cn8+cn9+cn10+cn11+cn12+cn13+cn14);
+                $strobe("  delta 1C/1C-A/1C-R/32C [Cu]: %g %g %g %g",
+                        (cp1-cn1)/Cu, (cp8-cn8)/Cu, (cp9-cn9)/Cu, (cp14-cn14)/Cu);
+            end
+        end
+
+        // P-side low (behind bridge) → BITD[1..6]
+        I(p_lsb, BITD[1])  <+ cp1  * ddt(V(p_lsb, BITD[1])); // Low 1C  (k=1)
+        I(p_lsb, BITD[2])  <+ cp2  * ddt(V(p_lsb, BITD[2])); // Low 2C  (k=2)
+        I(p_lsb, BITD[3])  <+ cp3  * ddt(V(p_lsb, BITD[3])); // Low 4C  (k=3)
+        I(p_lsb, BITD[4])  <+ cp4  * ddt(V(p_lsb, BITD[4])); // Low 8C  (k=4)
+        I(p_lsb, BITD[5])  <+ cp5  * ddt(V(p_lsb, BITD[5])); // Low 16C (k=5)
+        I(p_lsb, BITD[6])  <+ cp6  * ddt(V(p_lsb, BITD[6])); // Low 32C (k=6)
+
+        // P-side bridge (internal between p_lsb and P)
+        I(P, p_lsb)        <+ cp7  * ddt(V(P, p_lsb));
+
+        // P-side high (direct to top plate) → BITD[7..13]
+        I(P, BITD[7])      <+ cp8  * ddt(V(P, BITD[7]));  // High 1C-A (k=7)
+        I(P, BITD[8])      <+ cp9  * ddt(V(P, BITD[8]));  // High 1C-R (k=8)
+        I(P, BITD[9])      <+ cp10 * ddt(V(P, BITD[9]));  // High 2C   (k=9)
+        I(P, BITD[10])     <+ cp11 * ddt(V(P, BITD[10])); // High 4C   (k=10)
+        I(P, BITD[11])     <+ cp12 * ddt(V(P, BITD[11])); // High 8C   (k=11)
+        I(P, BITD[12])     <+ cp13 * ddt(V(P, BITD[12])); // High 16C  (k=12)
+        I(P, BITD[13])     <+ cp14 * ddt(V(P, BITD[13])); // High 32C  (k=13)
+
+        // N-side low → BITU[1..6]
+        I(n_lsb, BITU[1])  <+ cn1  * ddt(V(n_lsb, BITU[1])); // Low 1C
+        I(n_lsb, BITU[2])  <+ cn2  * ddt(V(n_lsb, BITU[2])); // Low 2C
+        I(n_lsb, BITU[3])  <+ cn3  * ddt(V(n_lsb, BITU[3])); // Low 4C
+        I(n_lsb, BITU[4])  <+ cn4  * ddt(V(n_lsb, BITU[4])); // Low 8C
+        I(n_lsb, BITU[5])  <+ cn5  * ddt(V(n_lsb, BITU[5])); // Low 16C
+        I(n_lsb, BITU[6])  <+ cn6  * ddt(V(n_lsb, BITU[6])); // Low 32C
+
+        // N-side bridge (internal)
+        I(N, n_lsb)        <+ cn7  * ddt(V(N, n_lsb));
+
+        // N-side high → BITU[7..13]
+        I(N, BITU[7])      <+ cn8  * ddt(V(N, BITU[7]));  // High 1C-A
+        I(N, BITU[8])      <+ cn9  * ddt(V(N, BITU[8]));  // High 1C-R
+        I(N, BITU[9])      <+ cn10 * ddt(V(N, BITU[9]));  // High 2C
+        I(N, BITU[10])     <+ cn11 * ddt(V(N, BITU[10])); // High 4C
+        I(N, BITU[11])     <+ cn12 * ddt(V(N, BITU[11])); // High 8C
+        I(N, BITU[12])     <+ cn13 * ddt(V(N, BITU[12])); // High 16C
+        I(N, BITU[13])     <+ cn14 * ddt(V(N, BITU[13])); // High 32C
+
+        // Optional parasitics
+        if (CTOP_RATIO > 0.0) begin
+            I(P)     <+ CTOP_RATIO * Cu * 64.0 * ddt(V(P));
+            I(p_lsb) <+ CTOP_RATIO * Cu * 63.0 * ddt(V(p_lsb));
+            I(N)     <+ CTOP_RATIO * Cu * 64.0 * ddt(V(N));
+            I(n_lsb) <+ CTOP_RATIO * Cu * 63.0 * ddt(V(n_lsb));
+        end
+    end
+endmodule

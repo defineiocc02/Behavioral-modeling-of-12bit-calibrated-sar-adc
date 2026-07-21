@@ -1,0 +1,1025 @@
+// DEC_CAL_PHY_HUANG_RECURSIVE_V4
+//
+// Huang-derived foreground recursive bit-weight calibration and calibrated
+// decoder for the user's 12-bit redundant segmented CDAC:
+//
+//   low segment : 1, 2, 4, 6, 10, 16, 24
+//   bridge      : PEX-tuned attenuation
+//   high segment: 1, 2A, 2B(redundant), 4, 8, 16
+//
+// Physical/calibration stage order (BITD_CAL/BITU_CAL):
+//   stage 0  high 16C   nominal 16*H
+//   stage 1  high  8C   nominal  8*H
+//   stage 2  high  4C   nominal  4*H
+//   stage 3  high  2C-A nominal  2*H  (main recursive chain)
+//   stage 4  high  2C-B nominal  2*H  (independent redundancy)
+//   stage 5  high  1C   nominal    H
+//   stage 6  low  24C   nominal   48
+//   stage 7  low  16C   nominal   32
+//   stage 8  low  10C   nominal   20
+//   stage 9  low   6C   nominal   12  (fixed seed)
+//   stage 10 low   4C   nominal    8  (fixed seed)
+//   stage 11 low   2C   nominal    4  (fixed seed)
+//   stage 12 low   1C   nominal    2  (fixed seed)
+//   terminal comparator decision             1
+//
+// BP mapping remains drop-in compatible with the original file:
+//   BP[13] -> stage 0, ... BP[1] -> stage 12, BP[0] -> terminal.
+//
+// CALIBRATION ORDER:
+//   low10 -> low16 -> low24 -> high1 -> high2A -> high2B
+//         -> high4 -> high8 -> high16
+//
+// Each target is measured directly, not as Wtarget-Wwall:
+//   D+mag ~= Wtarget + Vos
+//   D-mag ~= Wtarget - Vos
+//   Wmeas  = (D+mag + D-mag)/2
+//
+// The calibrated target is inserted into the next target's physical SAR
+// search set.  high2B is calibrated independently and, after both 2C elements are known,
+// is inserted together with high2A into the high4/high8/high16 search sets.
+// This uses the physical redundancy to give the upper targets substantial
+// search headroom.  The maximum frame is therefore 13 CAL_CLK pulses.
+//
+// SWITCH_CAL encoding contract:
+//   BITD=1, BITU=0 : positive contribution
+//   BITD=0, BITU=1 : negative contribution
+//   BITD=0, BITU=0 : VCM
+//
+// HARD ARCHITECTURAL REQUIREMENT:
+// With the original ideal H=128, all lower calibrated weights plus terminal
+// total only 127.  A direct Huang measurement of high1 therefore has zero
+// offset/noise/settling margin and cannot be made robust by DEC logic.
+// The default H=122 gives the following nominal search headroom:
+//   20<27, 32<47, 48<79,
+//   122<127, 244<249, 488<493, 976<981, 1952<1957.
+// It also preserves 12-bit coverage: 33*122+127=4153>4095.
+// The bridge must be PEX-tuned so the actual high-unit weight is near the
+// NOM_H1_WEIGHT setting.  If H remains near 128, this model deliberately
+// raises ERR at the high1 boundary instead of returning a false calibration.
+//
+// PRESAMPLING / AZ REQUIREMENT:
+// Every D+ and D- direction must run a fresh and identical
+// presample -> hold -> noise-cancel/AZ -> settle sequence before RST1 falls.
+// CAL_CLK may begin only after the analog state has settled.  The DEC cannot
+// compensate a calibration-mode/normal-mode transfer-function mismatch.
+//
+// FRAME CONTRACT:
+// One RST1-low frame performs one D+ or D- conversion.  The number of useful
+// CAL_CLK pulses is search_count+1 terminal:
+//   5,6,7,8,9,9,11,12,13 pulses per direction.
+// A controller may always provide 13 pulses; extra pulses are ignored after
+// CAL_WAIT_END and the comparator clock is gated off.
+//
+// This implementation removes the original fixed wall-residual equation,
+// fixed 48/32/20/12/8/4/2 offset-binary code, and silent REJECT behavior.
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module DEC_CAL_PHY (
+    Bit, BP, DGND, DVDD, SOUT,
+    COMP, COMN, RST1, CAL_RST,
+    CLK_SAR, CLK00, CLK,
+    BITD_CAL, BITU_CAL,
+    CAL, DONE, ERR, CAL_CLK
+);
+
+    output [11:0] Bit;
+    input  [0:13] BP;
+    inout  DGND, DVDD;
+    input  SOUT;
+    input  COMP, COMN;
+    input  RST1, CAL_RST;
+    input  CLK_SAR, CLK00;
+    input  CAL_CLK;
+    output CLK;
+    output [0:12] BITD_CAL, BITU_CAL;
+    output CAL, DONE, ERR;
+
+    electrical [11:0] Bit;
+    electrical [0:13] BP;
+    electrical DGND, DVDD;
+    electrical SOUT;
+    electrical COMP, COMN;
+    electrical RST1, CAL_RST, CAL_CLK;
+    electrical CLK_SAR, CLK00, CLK;
+    electrical [0:12] BITD_CAL, BITU_CAL;
+    electrical CAL, DONE, ERR;
+
+    // Interface/timing parameters retained for CDF compatibility.
+    parameter real VTH_FRACTION = 0.5 from (0.0:1.0);
+    parameter real TD = 0.0 from [0.0:inf);
+    parameter real TR = 20p from (0.0:inf);
+    parameter real TF = 20p from (0.0:inf);
+    parameter real TD_CAL = 200p from [0.0:inf);
+    parameter real TD_CMP_CAL = 2n from [0.0:inf);
+    parameter real RDRV_CLK = 1.0 from (0.0:inf);
+
+    parameter integer CMP_SWAP = 1 from [0:1];
+    parameter real CMP_VALID_FRACTION = 0.20 from (0.0:1.0);
+    parameter integer MAX_INVALID = 2 from [0:inf);
+    parameter integer ZERO_ON_INVALID_PHASE0 = 0 from [0:1];
+    parameter integer ZERO_ON_INVALID_PHASE1 = 0 from [0:1];
+
+    parameter integer FIRST_INVERT = 0 from [0:1];
+    parameter integer RAW_INVERT = 0 from [0:1];
+    parameter integer DEBUG = 1 from [0:2];
+
+    parameter integer FRAC_BITS = 6 from [0:10];
+    parameter integer AVG_PAIRS_LOG2 = 5 from [0:8];
+    parameter integer MIN_AVG_PAIRS_LOG2 = 5 from [0:8];
+
+    // Effective differential weight of high-segment 1C after bridge attenuation.
+    parameter integer NOM_H1_WEIGHT = 122 from [120:128];
+    parameter real WEIGHT_TOL = 0.20 from (0.0:1.0);
+    parameter real MIN_CAL_HEADROOM_LSB = 2.0 from [0.0:inf);
+    parameter integer FAIL_ON_ENDPOINT = 1 from [0:1];
+
+    parameter integer CAL_BYPASS = 0 from [0:1];
+    parameter integer APPLY_CAL_WEIGHT = 1 from [0:1];
+    parameter integer REVERT_ON_ERROR = 1 from [0:1];
+    parameter integer REMOVE_REDUNDANCY_OFFSET = 1 from [0:1];
+    parameter integer NORMALIZE_REDUNDANT_RANGE = 0 from [0:1];
+    parameter integer WARN_ON_OUTPUT_CLIP = 1 from [0:1];
+
+    // Legacy parameters retained so old CDF/netlists do not fail.
+    // APPLY_BIN_MIDPOINT is functional; the others remain compatibility-only.
+    parameter real UPDATE_DEADBAND_LSB = 0.0 from [0.0:inf);
+    parameter real HIGH_WEIGHT_UPDATE_DEADBAND_LSB = 0.0 from [0.0:inf);
+    parameter integer APPLY_BIN_MIDPOINT = 0 from [0:1];
+    parameter integer AUTO_BIN_MIDPOINT = 0 from [0:1];
+    parameter integer SINGLE_PAIR_NOMINAL_GUARD = 0 from [0:1];
+    parameter real SINGLE_PAIR_AMBIGUITY_LSB = 0.0 from [0.0:inf);
+    parameter integer AVG_LOG2 = 3 from [0:8];
+    parameter integer CAL_C7 = 0 from [0:1];
+
+    integer q_scale;
+    integer weight_frac_bits;
+    integer avg_pairs;
+
+    // Calibrated physical stage weights and terminal weight.
+    integer w0, w1, w2, w3, w4, w5, w6;
+    integer w7, w8, w9, w10, w11, w12, w13;
+
+    // Nominal decoder view, used for bypass or APPLY_CAL_WEIGHT=0.
+    integer nw0, nw1, nw2, nw3, nw4, nw5, nw6;
+    integer nw7, nw8, nw9, nw10, nw11, nw12, nw13;
+
+    localparam CAL_IDLE      = 0;
+    localparam CAL_TRIAL     = 1;
+    localparam CAL_TERMINAL  = 2;
+    localparam CAL_WAIT_END  = 3;
+
+    integer cal_state;
+    integer cal_mode_i;
+    integer cal_done_i;
+    integer cal_error_i;
+    integer frame_active_i;
+
+    integer target_id;       // 0..8, low to high
+    integer target_stage;
+    integer target_mask;
+    integer search_count;
+    integer search_total_q;
+
+    integer direction;       // 0 = positive target, 1 = negative target
+    integer sar_step;
+    integer trial_stage;
+    integer trial_mask;
+    integer trial_weight_q;
+    integer accepted_mask;
+    integer accepted_sum_q;
+
+    integer d_mask;
+    integer u_mask;
+
+    integer code_plus_q;
+    integer code_minus_mag_q;
+    integer code_mag_q;
+    integer terminal_one;
+
+    integer repeat_idx;
+    integer accum_plus_q;
+    integer accum_minus_mag_q;
+    integer measured_weight_q;
+    integer nominal_target_q;
+    integer update_ok_i;
+    integer margin_q;
+    integer current_pair_headroom_q;
+    integer min_pair_headroom_q;
+    integer measurement_numer_q;
+    integer measurement_denom;
+    integer measurement_round_q;
+
+    integer invalid_count;
+    integer cmp_valid;
+    integer residue_positive_i;
+    integer zero_hit_i;
+
+    integer clk_sar_i;
+    integer clk_cal_i;
+    integer cmp_clk_enable_i;
+
+    integer r0, r1, r2, r3, r4, r5, r6;
+    integer r7, r8, r9, r10, r11, r12, r13;
+    integer dw0, dw1, dw2, dw3, dw4, dw5, dw6;
+    integer dw7, dw8, dw9, dw10, dw11, dw12, dw13;
+    integer raw_sum;
+    integer total_weight_q;
+    integer redundancy_offset_q;
+    integer centered_sum;
+    integer adc_code;
+    integer clip_low_i;
+    integer clip_high_i;
+
+    integer b0, b1, b2, b3, b4, b5;
+    integer b6, b7, b8, b9, b10, b11;
+
+    real vlogic;
+    real vth;
+    real cmp_delta;
+    real cmp_valid_min;
+    real scaled_code;
+
+    genvar g;
+
+    analog begin
+        vlogic = V(DVDD, DGND);
+        vth = VTH_FRACTION * vlogic;
+        cmp_valid_min = CMP_VALID_FRACTION * vlogic;
+
+        @(initial_step) begin
+            weight_frac_bits = (FRAC_BITS < 6) ? 6 : FRAC_BITS;
+            q_scale = 1 << weight_frac_bits;
+            avg_pairs = 1 << ((AVG_PAIRS_LOG2 < MIN_AVG_PAIRS_LOG2) ?
+                              MIN_AVG_PAIRS_LOG2 : AVG_PAIRS_LOG2);
+
+            // Nominal physical weights.
+            nw5  = NOM_H1_WEIGHT*q_scale;
+            nw4  = 2*NOM_H1_WEIGHT*q_scale;
+            nw3  = 2*NOM_H1_WEIGHT*q_scale;
+            nw2  = 4*NOM_H1_WEIGHT*q_scale;
+            nw1  = 8*NOM_H1_WEIGHT*q_scale;
+            nw0  = 16*NOM_H1_WEIGHT*q_scale;
+            nw6  = 48*q_scale;
+            nw7  = 32*q_scale;
+            nw8  = 20*q_scale;
+            nw9  = 12*q_scale;
+            nw10 = 8*q_scale;
+            nw11 = 4*q_scale;
+            nw12 = 2*q_scale;
+            nw13 = q_scale;
+
+            w0=nw0; w1=nw1; w2=nw2; w3=nw3; w4=nw4; w5=nw5;
+            w6=nw6; w7=nw7; w8=nw8; w9=nw9; w10=nw10;
+            w11=nw11; w12=nw12; w13=nw13;
+
+            cal_state = CAL_IDLE;
+            cal_mode_i = 0;
+            cal_done_i = (CAL_BYPASS != 0) ? 1 : 0;
+            cal_error_i = 0;
+            frame_active_i = 0;
+
+            target_id = 0;
+            target_stage = 8;
+            target_mask = 1 << 8;
+            search_count = 4;
+            search_total_q = 0;
+
+            direction = 0;
+            sar_step = 0;
+            trial_stage = -1;
+            trial_mask = 0;
+            trial_weight_q = 0;
+            accepted_mask = 0;
+            accepted_sum_q = 0;
+            d_mask = 0;
+            u_mask = 0;
+
+            code_plus_q = 0;
+            code_minus_mag_q = 0;
+            code_mag_q = 0;
+            terminal_one = 0;
+
+            repeat_idx = 0;
+            accum_plus_q = 0;
+            accum_minus_mag_q = 0;
+            measured_weight_q = 0;
+            nominal_target_q = nw8;
+            update_ok_i = 0;
+            margin_q = $rtoi(MIN_CAL_HEADROOM_LSB*q_scale);
+            current_pair_headroom_q = 0;
+            min_pair_headroom_q = 1 << 30;
+            measurement_numer_q = 0;
+            measurement_denom = 1;
+            measurement_round_q = 0;
+
+            invalid_count = 0;
+            cmp_valid = 0;
+            residue_positive_i = 0;
+            zero_hit_i = 0;
+            adc_code = 0;
+
+            if ((CAL_BYPASS == 0) && (V(CAL_RST, DGND) < vth)) begin
+                cal_mode_i = 1;
+                cal_done_i = 0;
+            end
+        end
+
+        // CAL_RST high: hard reset/abort and restore nominal weights.
+        @(cross(V(CAL_RST, DGND) - vth, +1)) begin
+            weight_frac_bits = (FRAC_BITS < 6) ? 6 : FRAC_BITS;
+            q_scale = 1 << weight_frac_bits;
+            avg_pairs = 1 << ((AVG_PAIRS_LOG2 < MIN_AVG_PAIRS_LOG2) ?
+                              MIN_AVG_PAIRS_LOG2 : AVG_PAIRS_LOG2);
+
+            nw5  = NOM_H1_WEIGHT*q_scale;
+            nw4  = 2*NOM_H1_WEIGHT*q_scale;
+            nw3  = 2*NOM_H1_WEIGHT*q_scale;
+            nw2  = 4*NOM_H1_WEIGHT*q_scale;
+            nw1  = 8*NOM_H1_WEIGHT*q_scale;
+            nw0  = 16*NOM_H1_WEIGHT*q_scale;
+            nw6  = 48*q_scale; nw7 = 32*q_scale; nw8 = 20*q_scale;
+            nw9  = 12*q_scale; nw10 = 8*q_scale; nw11 = 4*q_scale;
+            nw12 = 2*q_scale; nw13 = q_scale;
+
+            w0=nw0; w1=nw1; w2=nw2; w3=nw3; w4=nw4; w5=nw5;
+            w6=nw6; w7=nw7; w8=nw8; w9=nw9; w10=nw10;
+            w11=nw11; w12=nw12; w13=nw13;
+
+            cal_state = CAL_IDLE;
+            cal_mode_i = 0;
+            cal_done_i = (CAL_BYPASS != 0) ? 1 : 0;
+            cal_error_i = 0;
+            frame_active_i = 0;
+
+            target_id = 0;
+            direction = 0;
+            repeat_idx = 0;
+            accum_plus_q = 0;
+            accum_minus_mag_q = 0;
+            d_mask = 0;
+            u_mask = 0;
+            invalid_count = 0;
+            margin_q = $rtoi(MIN_CAL_HEADROOM_LSB*q_scale);
+            current_pair_headroom_q = 0;
+            min_pair_headroom_q = 1 << 30;
+            measurement_numer_q = 0;
+            measurement_denom = 1;
+            measurement_round_q = 0;
+            adc_code = 0;
+        end
+
+        // CAL_RST low: begin complete foreground calibration.
+        @(cross(V(CAL_RST, DGND) - vth, -1)) begin
+            if (CAL_BYPASS == 0) begin
+                w0=nw0; w1=nw1; w2=nw2; w3=nw3; w4=nw4; w5=nw5;
+                w6=nw6; w7=nw7; w8=nw8; w9=nw9; w10=nw10;
+                w11=nw11; w12=nw12; w13=nw13;
+
+                cal_state = CAL_IDLE;
+                cal_mode_i = 1;
+                cal_done_i = 0;
+                cal_error_i = 0;
+                frame_active_i = 0;
+
+                target_id = 0;
+                direction = 0;
+                repeat_idx = 0;
+                accum_plus_q = 0;
+                accum_minus_mag_q = 0;
+                code_plus_q = 0;
+                code_minus_mag_q = 0;
+                d_mask = 0;
+                u_mask = 0;
+                invalid_count = 0;
+                margin_q = $rtoi(MIN_CAL_HEADROOM_LSB*q_scale);
+                current_pair_headroom_q = 0;
+                min_pair_headroom_q = 1 << 30;
+                measurement_numer_q = 0;
+                measurement_denom = 1;
+                measurement_round_q = 0;
+
+                if ((33*NOM_H1_WEIGHT + 127) < 4095) begin
+                    cal_error_i = 1;
+                    cal_done_i = 1;
+                    cal_mode_i = 0;
+                    if (DEBUG != 0)
+                        $strobe("HUANGV4 ERROR nominal array does not cover 12-bit range H=%0d total=%0d t=%g",
+                                NOM_H1_WEIGHT, 33*NOM_H1_WEIGHT+127, $abstime);
+                end
+
+                if (DEBUG != 0)
+                    $strobe("HUANGV4 start t=%g H1nom=%0d avg_pairs=%0d Q=%0d",
+                            $abstime, NOM_H1_WEIGHT, avg_pairs, weight_frac_bits);
+            end
+        end
+
+        // RST1 falling starts one independently presampled/AZ-settled direction.
+        @(cross(V(RST1, DGND) - vth, -1)) begin
+            if ((cal_mode_i != 0) && (cal_error_i == 0)) begin
+                frame_active_i = 1;
+                cal_state = CAL_TRIAL;
+                sar_step = 0;
+                trial_stage = -1;
+                trial_mask = 0;
+                trial_weight_q = 0;
+                accepted_mask = 0;
+                accepted_sum_q = 0;
+                d_mask = 0;
+                u_mask = 0;
+                invalid_count = 0;
+                zero_hit_i = 0;
+
+                // Configure target, search length, and current calibrated range.
+                case (target_id)
+                    0: begin // low10, search low6/4/2/1
+                        target_stage = 8; search_count = 4;
+                        search_total_q = w9+w10+w11+w12+w13;
+                        nominal_target_q = nw8;
+                    end
+                    1: begin // low16
+                        target_stage = 7; search_count = 5;
+                        search_total_q = w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw7;
+                    end
+                    2: begin // low24
+                        target_stage = 6; search_count = 6;
+                        search_total_q = w7+w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw6;
+                    end
+                    3: begin // high1
+                        target_stage = 5; search_count = 7;
+                        search_total_q = w6+w7+w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw5;
+                    end
+                    4: begin // high2A
+                        target_stage = 3; search_count = 8;
+                        search_total_q = w5+w6+w7+w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw3;
+                    end
+                    5: begin // high2B, independently measured
+                        target_stage = 4; search_count = 8;
+                        search_total_q = w5+w6+w7+w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw4;
+                    end
+                    6: begin // high4, use both calibrated redundant 2C bits
+                        target_stage = 2; search_count = 10;
+                        search_total_q = w3+w4+w5+w6+w7+w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw2;
+                    end
+                    7: begin // high8
+                        target_stage = 1; search_count = 11;
+                        search_total_q = w2+w3+w4+w5+w6+w7+w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw1;
+                    end
+                    default: begin // high16
+                        target_stage = 0; search_count = 12;
+                        search_total_q = w1+w2+w3+w4+w5+w6+w7+w8+w9+w10+w11+w12+w13;
+                        nominal_target_q = nw0;
+                    end
+                endcase
+                target_mask = 1 << target_stage;
+                margin_q = $rtoi(MIN_CAL_HEADROOM_LSB*q_scale);
+
+                // A direct recursive conversion must have real analog range
+                // beyond the expected target.  Endpoint operation cannot cover
+                // comparator offset, presampling residue, or settling error.
+                if ((FAIL_ON_ENDPOINT != 0) &&
+                    ((search_total_q - nominal_target_q) < margin_q)) begin
+                    cal_error_i = 1;
+                    cal_done_i = 1;
+                    cal_mode_i = 0;
+                    frame_active_i = 0;
+                    d_mask = 0;
+                    u_mask = 0;
+                    if (REVERT_ON_ERROR != 0) begin
+                        w0=nw0; w1=nw1; w2=nw2; w3=nw3; w4=nw4; w5=nw5;
+                        w6=nw6; w7=nw7; w8=nw8; w9=nw9; w10=nw10;
+                        w11=nw11; w12=nw12; w13=nw13;
+                    end
+                    if (DEBUG != 0)
+                        $strobe("HUANGV4 ERROR insufficient nominal range target=%0d Wnom=%g range=%g margin=%g t=%g",
+                                target_id, 1.0*nominal_target_q/q_scale,
+                                1.0*search_total_q/q_scale,
+                                1.0*margin_q/q_scale, $abstime);
+                end
+
+                if ((DEBUG > 1) && (cal_error_i == 0))
+                    $strobe("HUANGV4 frame target=%0d stage=%0d dir=%0d pair=%0d nsearch=%0d range=%g t=%g",
+                            target_id, target_stage, direction, repeat_idx,
+                            search_count, 1.0*search_total_q/q_scale, $abstime);
+            end
+        end
+
+        // CAL_CLK rising applies one real lower-weight SAR trial.
+        @(cross(V(CAL_CLK, DGND) - vth, +1)) begin
+            if ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                (cal_error_i == 0)) begin
+
+                if (cal_state == CAL_TRIAL) begin
+                    trial_stage = -1;
+
+                    // Explicit physical search order, largest lower weight first.
+                    case (target_id)
+                        0: case (sar_step)
+                            0: trial_stage=9;  1: trial_stage=10;
+                            2: trial_stage=11; 3: trial_stage=12;
+                        endcase
+                        1: case (sar_step)
+                            0: trial_stage=8;  1: trial_stage=9;
+                            2: trial_stage=10; 3: trial_stage=11;
+                            4: trial_stage=12;
+                        endcase
+                        2: case (sar_step)
+                            0: trial_stage=7;  1: trial_stage=8;
+                            2: trial_stage=9;  3: trial_stage=10;
+                            4: trial_stage=11; 5: trial_stage=12;
+                        endcase
+                        3: case (sar_step)
+                            0: trial_stage=6;  1: trial_stage=7;
+                            2: trial_stage=8;  3: trial_stage=9;
+                            4: trial_stage=10; 5: trial_stage=11;
+                            6: trial_stage=12;
+                        endcase
+                        4,5: case (sar_step)
+                            0: trial_stage=5;  1: trial_stage=6;
+                            2: trial_stage=7;  3: trial_stage=8;
+                            4: trial_stage=9;  5: trial_stage=10;
+                            6: trial_stage=11; 7: trial_stage=12;
+                        endcase
+                        6: case (sar_step)
+                            0: trial_stage=3;  1: trial_stage=4;
+                            2: trial_stage=5;  3: trial_stage=6;
+                            4: trial_stage=7;  5: trial_stage=8;
+                            6: trial_stage=9;  7: trial_stage=10;
+                            8: trial_stage=11; 9: trial_stage=12;
+                        endcase
+                        7: case (sar_step)
+                            0: trial_stage=2;  1: trial_stage=3;
+                            2: trial_stage=4;  3: trial_stage=5;
+                            4: trial_stage=6;  5: trial_stage=7;
+                            6: trial_stage=8;  7: trial_stage=9;
+                            8: trial_stage=10; 9: trial_stage=11;
+                            10: trial_stage=12;
+                        endcase
+                        default: case (sar_step)
+                            0: trial_stage=1;  1: trial_stage=2;
+                            2: trial_stage=3;  3: trial_stage=4;
+                            4: trial_stage=5;  5: trial_stage=6;
+                            6: trial_stage=7;  7: trial_stage=8;
+                            8: trial_stage=9;  9: trial_stage=10;
+                            10: trial_stage=11; 11: trial_stage=12;
+                        endcase
+                    endcase
+
+                    if (trial_stage < 0) begin
+                        cal_error_i = 1;
+                        cal_done_i = 1;
+                        cal_mode_i = 0;
+                        frame_active_i = 0;
+                        d_mask = 0; u_mask = 0;
+                        if (DEBUG != 0)
+                            $strobe("HUANGV4 ERROR invalid search map target=%0d step=%0d t=%g",
+                                    target_id, sar_step, $abstime);
+                    end else begin
+                        trial_mask = 1 << trial_stage;
+                        case (trial_stage)
+                            0: trial_weight_q=w0;   1: trial_weight_q=w1;
+                            2: trial_weight_q=w2;   3: trial_weight_q=w3;
+                            4: trial_weight_q=w4;   5: trial_weight_q=w5;
+                            6: trial_weight_q=w6;   7: trial_weight_q=w7;
+                            8: trial_weight_q=w8;   9: trial_weight_q=w9;
+                            10: trial_weight_q=w10; 11: trial_weight_q=w11;
+                            default: trial_weight_q=w12;
+                        endcase
+
+                        if (direction == 0) begin
+                            // +Wtarget cancelled by negative lower-bit trials.
+                            d_mask = target_mask;
+                            u_mask = accepted_mask | trial_mask;
+                        end else begin
+                            // -Wtarget cancelled by positive lower-bit trials.
+                            u_mask = target_mask;
+                            d_mask = accepted_mask | trial_mask;
+                        end
+                    end
+                end else if (cal_state == CAL_TERMINAL) begin
+                    // No physical terminal capacitor; evaluate the remaining residue.
+                    trial_mask = 0;
+                    trial_weight_q = 0;
+                    if (direction == 0) begin
+                        d_mask = target_mask;
+                        u_mask = accepted_mask;
+                    end else begin
+                        u_mask = target_mask;
+                        d_mask = accepted_mask;
+                    end
+                end
+                // CAL_WAIT_END intentionally ignores extra CAL_CLK pulses.
+            end
+        end
+
+        // CAL_CLK falling latches comparator and performs the SAR decision.
+        @(cross(V(CAL_CLK, DGND) - vth, -1)) begin
+            if ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                (cal_error_i == 0) &&
+                ((cal_state == CAL_TRIAL) || (cal_state == CAL_TERMINAL))) begin
+
+                cmp_delta = V(COMP, DGND) - V(COMN, DGND);
+                if (cmp_delta < 0.0)
+                    cmp_valid = ((-cmp_delta) > cmp_valid_min) ? 1 : 0;
+                else
+                    cmp_valid = (cmp_delta > cmp_valid_min) ? 1 : 0;
+
+                zero_hit_i = 0;
+                if (cmp_valid == 0) begin
+                    invalid_count = invalid_count + 1;
+                    if (invalid_count > MAX_INVALID) begin
+                        if (((cal_state == CAL_TRIAL) &&
+                             (ZERO_ON_INVALID_PHASE0 != 0)) ||
+                            ((cal_state == CAL_TERMINAL) &&
+                             (ZERO_ON_INVALID_PHASE1 != 0))) begin
+                            // Explicit exact-hit convention, symmetric in D+ and D-.
+                            // Trial exact hit is kept; terminal exact hit adds zero.
+                            zero_hit_i = 1;
+                            cmp_valid = 1;
+                            invalid_count = 0;
+                            if (DEBUG > 1)
+                                $strobe("HUANGV4 exact-hit target=%0d dir=%0d state=%0d step=%0d t=%g",
+                                        target_id, direction, cal_state, sar_step, $abstime);
+                        end else begin
+                            cal_error_i = 1;
+                            cal_done_i = 1;
+                            cal_mode_i = 0;
+                            frame_active_i = 0;
+                            d_mask = 0; u_mask = 0;
+                            if (REVERT_ON_ERROR != 0) begin
+                                w0=nw0; w1=nw1; w2=nw2; w3=nw3; w4=nw4; w5=nw5;
+                                w6=nw6; w7=nw7; w8=nw8; w9=nw9; w10=nw10;
+                                w11=nw11; w12=nw12; w13=nw13;
+                            end
+                            if (DEBUG != 0)
+                                $strobe("HUANGV4 ERROR comparator invalid target=%0d dir=%0d state=%0d step=%0d t=%g",
+                                        target_id, direction, cal_state, sar_step, $abstime);
+                        end
+                    end
+                end
+
+                if ((cmp_valid != 0) && (cal_error_i == 0)) begin
+                    if (zero_hit_i == 0) begin
+                        // After CMP_SWAP, 1 means positive analog residue.
+                        residue_positive_i =
+                            (V(COMP, DGND) < V(COMN, DGND)) ? 1 : 0;
+                        if (CMP_SWAP != 0)
+                            residue_positive_i = 1 - residue_positive_i;
+                    end
+
+                    if (cal_state == CAL_TRIAL) begin
+                        // Positive direction keeps a negative trial when residue >=0.
+                        // Negative direction keeps a positive trial when residue <=0.
+                        if ((zero_hit_i != 0) ||
+                            ((direction == 0) && (residue_positive_i != 0)) ||
+                            ((direction != 0) && (residue_positive_i == 0))) begin
+                            accepted_mask = accepted_mask | trial_mask;
+                            accepted_sum_q = accepted_sum_q + trial_weight_q;
+                        end
+
+                        if (DEBUG > 1)
+                            $strobe("HUANGV4 trial target=%0d dir=%0d step=%0d stage=%0d W=%g keep=%0d sum=%g CMPd=%g t=%g",
+                                    target_id, direction, sar_step, trial_stage,
+                                    1.0*trial_weight_q/q_scale,
+                                    ((zero_hit_i != 0) ||
+                                     ((direction == 0) && (residue_positive_i != 0)) ||
+                                     ((direction != 0) && (residue_positive_i == 0))),
+                                    1.0*accepted_sum_q/q_scale, cmp_delta, $abstime);
+
+                        sar_step = sar_step + 1;
+                        trial_mask = 0;
+                        trial_weight_q = 0;
+                        if (sar_step >= search_count)
+                            cal_state = CAL_TERMINAL;
+                    end else begin
+                        if (zero_hit_i != 0)
+                            terminal_one = 0;
+                        else if (direction == 0)
+                            terminal_one = (residue_positive_i != 0) ? 1 : 0;
+                        else
+                            terminal_one = (residue_positive_i == 0) ? 1 : 0;
+
+                        code_mag_q = accepted_sum_q + terminal_one*q_scale;
+                        if (direction == 0)
+                            code_plus_q = code_mag_q;
+                        else
+                            code_minus_mag_q = code_mag_q;
+
+                        cal_state = CAL_WAIT_END;
+
+                        if (DEBUG > 1)
+                            $strobe("HUANGV4 code target=%0d dir=%0d mag=%g term=%0d range=%g t=%g",
+                                    target_id, direction, 1.0*code_mag_q/q_scale,
+                                    terminal_one, 1.0*search_total_q/q_scale, $abstime);
+                    end
+                    invalid_count = 0;
+                end
+            end
+        end
+
+        // Single RST1 rising handler: no same-event ordering dependency.
+        @(cross(V(RST1, DGND) - vth, +1)) begin
+            if ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                (cal_error_i == 0)) begin
+                frame_active_i = 0;
+                d_mask = 0;
+                u_mask = 0;
+
+                if (cal_state != CAL_WAIT_END) begin
+                    cal_error_i = 1;
+                    cal_done_i = 1;
+                    cal_mode_i = 0;
+                    if (REVERT_ON_ERROR != 0) begin
+                        w0=nw0; w1=nw1; w2=nw2; w3=nw3; w4=nw4; w5=nw5;
+                        w6=nw6; w7=nw7; w8=nw8; w9=nw9; w10=nw10;
+                        w11=nw11; w12=nw12; w13=nw13;
+                    end
+                    if (DEBUG != 0)
+                        $strobe("HUANGV4 ERROR frame ended early target=%0d dir=%0d state=%0d step=%0d/%0d t=%g",
+                                target_id, direction, cal_state, sar_step,
+                                search_count, $abstime);
+                end else if (direction == 0) begin
+                    // D+ complete.  The next independently presampled frame is D-.
+                    direction = 1;
+                    cal_state = CAL_IDLE;
+                end else begin
+                    // Complete one D+/D- pair.
+                    accum_plus_q = accum_plus_q + code_plus_q;
+                    accum_minus_mag_q = accum_minus_mag_q + code_minus_mag_q;
+                    repeat_idx = repeat_idx + 1;
+
+                    current_pair_headroom_q = search_total_q - code_plus_q;
+                    if ((search_total_q - code_minus_mag_q) <
+                        current_pair_headroom_q)
+                        current_pair_headroom_q =
+                            search_total_q - code_minus_mag_q;
+                    if (current_pair_headroom_q < min_pair_headroom_q)
+                        min_pair_headroom_q = current_pair_headroom_q;
+
+                    if (DEBUG > 1)
+                        $strobe("HUANGV4 pair target=%0d plus=%g minusMag=%g pair=%0d/%0d t=%g",
+                                target_id, 1.0*code_plus_q/q_scale,
+                                1.0*code_minus_mag_q/q_scale,
+                                repeat_idx, avg_pairs, $abstime);
+
+                    if (repeat_idx >= avg_pairs) begin
+                        // Huang: W=(D+ - D-)/2.  D- is negative signed;
+                        // code_minus_mag_q stores its positive magnitude.
+                        measurement_numer_q =
+                            accum_plus_q + accum_minus_mag_q;
+
+                        // This direct D+/D- implementation normally needs no
+                        // midpoint correction because the two complementary
+                        // terminal decisions cancel the common code-bin bias.
+                        // The option is retained for experiments with a switch
+                        // implementation whose terminal convention differs.
+                        if (APPLY_BIN_MIDPOINT != 0)
+                            measurement_numer_q =
+                                measurement_numer_q - avg_pairs*q_scale;
+
+                        measurement_denom = 2*avg_pairs;
+                        measurement_round_q = measurement_denom/2;
+                        measured_weight_q =
+                            (measurement_numer_q + measurement_round_q) /
+                            measurement_denom;
+
+                        update_ok_i = 1;
+                        if ((measured_weight_q <=
+                             nominal_target_q*(1.0-WEIGHT_TOL)) ||
+                            (measured_weight_q >=
+                             nominal_target_q*(1.0+WEIGHT_TOL)))
+                            update_ok_i = 0;
+
+                        // Headroom is checked across every D+/D- pair, not only
+                        // the last conversion.
+                        if (min_pair_headroom_q < margin_q)
+                            update_ok_i = 0;
+
+                        if (DEBUG != 0)
+                            $strobe("HUANGV4 measure target=%0d stage=%0d W=%g nominal=%g plusAvg=%g minusAvg=%g range=%g minHeadroom=%g ok=%0d t=%g",
+                                    target_id, target_stage,
+                                    1.0*measured_weight_q/q_scale,
+                                    1.0*nominal_target_q/q_scale,
+                                    1.0*accum_plus_q/(avg_pairs*q_scale),
+                                    1.0*accum_minus_mag_q/(avg_pairs*q_scale),
+                                    1.0*search_total_q/q_scale,
+                                    1.0*min_pair_headroom_q/q_scale,
+                                    update_ok_i, $abstime);
+
+                        if (update_ok_i == 0) begin
+                            cal_error_i = 1;
+                            cal_done_i = 1;
+                            cal_mode_i = 0;
+                            if (REVERT_ON_ERROR != 0) begin
+                                w0=nw0; w1=nw1; w2=nw2; w3=nw3; w4=nw4; w5=nw5;
+                                w6=nw6; w7=nw7; w8=nw8; w9=nw9; w10=nw10;
+                                w11=nw11; w12=nw12; w13=nw13;
+                            end
+                            if (DEBUG != 0)
+                                $strobe("HUANGV4 ERROR reject/saturation target=%0d measured=%g t=%g",
+                                        target_id,
+                                        1.0*measured_weight_q/q_scale,
+                                        $abstime);
+                        end else begin
+                            case (target_id)
+                                0: w8 = measured_weight_q;
+                                1: w7 = measured_weight_q;
+                                2: w6 = measured_weight_q;
+                                3: w5 = measured_weight_q;
+                                4: w3 = measured_weight_q;
+                                5: w4 = measured_weight_q;
+                                6: w2 = measured_weight_q;
+                                7: w1 = measured_weight_q;
+                                default: w0 = measured_weight_q;
+                            endcase
+
+                            repeat_idx = 0;
+                            accum_plus_q = 0;
+                            accum_minus_mag_q = 0;
+                            min_pair_headroom_q = 1 << 30;
+                            current_pair_headroom_q = 0;
+                            direction = 0;
+
+                            if (target_id >= 8) begin
+                                cal_mode_i = 0;
+                                cal_done_i = 1;
+                                cal_state = CAL_IDLE;
+                                if (DEBUG != 0)
+                                    $strobe("HUANGV4 DONE weights={%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g} t=%g",
+                                            1.0*w0/q_scale, 1.0*w1/q_scale,
+                                            1.0*w2/q_scale, 1.0*w3/q_scale,
+                                            1.0*w4/q_scale, 1.0*w5/q_scale,
+                                            1.0*w6/q_scale, 1.0*w7/q_scale,
+                                            1.0*w8/q_scale, 1.0*w9/q_scale,
+                                            1.0*w10/q_scale, 1.0*w11/q_scale,
+                                            1.0*w12/q_scale, 1.0*w13/q_scale,
+                                            $abstime);
+                            end else begin
+                                target_id = target_id + 1;
+                                cal_state = CAL_IDLE;
+                            end
+                        end
+                    end else begin
+                        direction = 0;
+                        cal_state = CAL_IDLE;
+                    end
+                end
+            end
+        end
+
+        // Normal decoder: update only after one complete RAW conversion.
+        @(cross(V(SOUT, DGND) - vth, +1)) begin
+            if ((CAL_BYPASS != 0) ||
+                ((cal_done_i != 0) && (cal_mode_i == 0))) begin
+                r0  = (V(BP[13], DGND) > vth) ? 1 : 0;
+                r1  = (V(BP[12], DGND) > vth) ? 1 : 0;
+                r2  = (V(BP[11], DGND) > vth) ? 1 : 0;
+                r3  = (V(BP[10], DGND) > vth) ? 1 : 0;
+                r4  = (V(BP[9],  DGND) > vth) ? 1 : 0;
+                r5  = (V(BP[8],  DGND) > vth) ? 1 : 0;
+                r6  = (V(BP[7],  DGND) > vth) ? 1 : 0;
+                r7  = (V(BP[6],  DGND) > vth) ? 1 : 0;
+                r8  = (V(BP[5],  DGND) > vth) ? 1 : 0;
+                r9  = (V(BP[4],  DGND) > vth) ? 1 : 0;
+                r10 = (V(BP[3],  DGND) > vth) ? 1 : 0;
+                r11 = (V(BP[2],  DGND) > vth) ? 1 : 0;
+                r12 = (V(BP[1],  DGND) > vth) ? 1 : 0;
+                r13 = (V(BP[0],  DGND) > vth) ? 1 : 0;
+
+                if (RAW_INVERT != 0) begin
+                    r1=1-r1; r2=1-r2; r3=1-r3; r4=1-r4;
+                    r5=1-r5; r6=1-r6; r7=1-r7; r8=1-r8;
+                    r9=1-r9; r10=1-r10; r11=1-r11;
+                    r12=1-r12; r13=1-r13;
+                end
+                if (FIRST_INVERT != 0)
+                    r0 = 1-r0;
+
+                if (APPLY_CAL_WEIGHT != 0) begin
+                    dw0=w0; dw1=w1; dw2=w2; dw3=w3; dw4=w4; dw5=w5;
+                    dw6=w6; dw7=w7; dw8=w8; dw9=w9; dw10=w10;
+                    dw11=w11; dw12=w12; dw13=w13;
+                end else begin
+                    dw0=nw0; dw1=nw1; dw2=nw2; dw3=nw3; dw4=nw4; dw5=nw5;
+                    dw6=nw6; dw7=nw7; dw8=nw8; dw9=nw9; dw10=nw10;
+                    dw11=nw11; dw12=nw12; dw13=nw13;
+                end
+
+                raw_sum = r0*dw0 + r1*dw1 + r2*dw2 + r3*dw3 +
+                          r4*dw4 + r5*dw5 + r6*dw6 + r7*dw7 +
+                          r8*dw8 + r9*dw9 + r10*dw10 + r11*dw11 +
+                          r12*dw12 + r13*dw13;
+
+                total_weight_q = dw0+dw1+dw2+dw3+dw4+dw5+dw6+
+                                 dw7+dw8+dw9+dw10+dw11+dw12+dw13;
+
+                if (NORMALIZE_REDUNDANT_RANGE != 0) begin
+                    if (total_weight_q > 0)
+                        scaled_code = 4095.0*raw_sum/total_weight_q;
+                    else
+                        scaled_code = 0.0;
+                    if (scaled_code >= 4095.0)
+                        adc_code = 4095;
+                    else if (scaled_code <= 0.0)
+                        adc_code = 0;
+                    else
+                        adc_code = $rtoi(scaled_code + 0.5);
+                end else begin
+                    if (REMOVE_REDUNDANCY_OFFSET != 0) begin
+                        redundancy_offset_q = total_weight_q - 4095*q_scale;
+                        if (redundancy_offset_q >= 0)
+                            redundancy_offset_q = (redundancy_offset_q + 1)/2;
+                        else
+                            redundancy_offset_q = (redundancy_offset_q - 1)/2;
+                        centered_sum = raw_sum - redundancy_offset_q;
+                    end else begin
+                        redundancy_offset_q = 0;
+                        centered_sum = raw_sum;
+                    end
+
+                    if (centered_sum >= 0)
+                        adc_code = (centered_sum + q_scale/2)/q_scale;
+                    else
+                        adc_code = (centered_sum - q_scale/2)/q_scale;
+                end
+
+                clip_low_i = 0;
+                clip_high_i = 0;
+                if (adc_code < 0) begin
+                    adc_code = 0;
+                    clip_low_i = 1;
+                end else if (adc_code > 4095) begin
+                    adc_code = 4095;
+                    clip_high_i = 1;
+                end
+
+                if ((DEBUG != 0) && (WARN_ON_OUTPUT_CLIP != 0) &&
+                    ((clip_low_i != 0) || (clip_high_i != 0)))
+                    $strobe("HUANGV4 decode clip raw=%g total=%g offset=%g code=%0d low=%0d high=%0d t=%g",
+                            1.0*raw_sum/q_scale, 1.0*total_weight_q/q_scale,
+                            1.0*redundancy_offset_q/q_scale, adc_code,
+                            clip_low_i, clip_high_i, $abstime);
+            end
+        end
+
+        // Piecewise-constant clock logic.
+        clk_sar_i = (V(CLK_SAR, DGND) > vth) ? 1 : 0;
+        clk_cal_i = (V(CAL_CLK, DGND) > vth) ? 1 : 0;
+        cmp_clk_enable_i = ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                            ((cal_state == CAL_TRIAL) ||
+                             (cal_state == CAL_TERMINAL))) ? 1 : 0;
+
+        b0  = (adc_code      ) & 1;
+        b1  = (adc_code >>  1) & 1;
+        b2  = (adc_code >>  2) & 1;
+        b3  = (adc_code >>  3) & 1;
+        b4  = (adc_code >>  4) & 1;
+        b5  = (adc_code >>  5) & 1;
+        b6  = (adc_code >>  6) & 1;
+        b7  = (adc_code >>  7) & 1;
+        b8  = (adc_code >>  8) & 1;
+        b9  = (adc_code >>  9) & 1;
+        b10 = (adc_code >> 10) & 1;
+        b11 = (adc_code >> 11) & 1;
+
+        // Unconditional analog contributions for Spectre compatibility.
+        V(CAL,  DGND) <+ vlogic*transition(cal_mode_i,  TD, TR, TF);
+        V(DONE, DGND) <+ vlogic*transition(cal_done_i,  TD, TR, TF);
+        V(ERR,  DGND) <+ vlogic*transition(cal_error_i, TD, TR, TF);
+
+        // Single finite-R driver for the final comparator clock.
+        I(CLK, DGND) <+ (V(CLK, DGND) - vlogic*(
+            (1-cal_mode_i)*transition(clk_sar_i, TD, TR, TF) +
+            cal_mode_i*transition(cmp_clk_enable_i*clk_cal_i,
+                                  TD_CMP_CAL, TR, TF))) / RDRV_CLK;
+
+        V(Bit[0],  DGND) <+ vlogic*transition(b0,  TD, TR, TF);
+        V(Bit[1],  DGND) <+ vlogic*transition(b1,  TD, TR, TF);
+        V(Bit[2],  DGND) <+ vlogic*transition(b2,  TD, TR, TF);
+        V(Bit[3],  DGND) <+ vlogic*transition(b3,  TD, TR, TF);
+        V(Bit[4],  DGND) <+ vlogic*transition(b4,  TD, TR, TF);
+        V(Bit[5],  DGND) <+ vlogic*transition(b5,  TD, TR, TF);
+        V(Bit[6],  DGND) <+ vlogic*transition(b6,  TD, TR, TF);
+        V(Bit[7],  DGND) <+ vlogic*transition(b7,  TD, TR, TF);
+        V(Bit[8],  DGND) <+ vlogic*transition(b8,  TD, TR, TF);
+        V(Bit[9],  DGND) <+ vlogic*transition(b9,  TD, TR, TF);
+        V(Bit[10], DGND) <+ vlogic*transition(b10, TD, TR, TF);
+        V(Bit[11], DGND) <+ vlogic*transition(b11, TD, TR, TF);
+
+        for (g=0; g<=12; g=g+1) begin
+            V(BITD_CAL[g], DGND) <+ vlogic*transition(
+                cal_mode_i*((d_mask >> g) & 1), TD_CAL, TR, TF);
+            V(BITU_CAL[g], DGND) <+ vlogic*transition(
+                cal_mode_i*((u_mask >> g) & 1), TD_CAL, TR, TF);
+        end
+    end
+endmodule

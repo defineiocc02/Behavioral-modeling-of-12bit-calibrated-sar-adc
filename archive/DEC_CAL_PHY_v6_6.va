@@ -1,0 +1,1064 @@
+// Offset-binary foreground capacitor-weight calibration and calibrated decoder
+// for test_12bit50MSAR_AMS_final_0716.
+//
+// V6.6: Combined fix for the two complementary root causes of direction/
+//       degree sensitivity.  Merges V6.5's W5 coarse auto-ranging (range
+//       saturation) with the §7 external-anchor contract (gauge-error
+//       elimination) and all V6.3 P0/P1 bug fixes.
+//
+// HISTORY:
+//   V6:   3-target (w2, w1, w0), 7-bit calDAC, ±126 range.
+//         Issue: E=e3+e4 propagates as -E into w2/w1/w0.
+//   V6.1: 4-target (+ w3+w4 joint). E propagation reduced to 1/1/1x.
+//   V6.2: + w2 re-correction + saturation flag.  DEFECT (user-identified):
+//         w2 re-correction is mathematically invalid (reciprocal measurement
+//         yields measured=512 identically).  See PROOF_V6_3_IDENTIFIABILITY.md
+//         §1 (Jacobian singular, det=0).
+//   V6.3: Identifiability-fixed 3-target with implicit gauge.  Removed the
+//         V6.2 no-op.  All P0/P1 bugs fixed (wall init, RST1 same-edge
+//         handoff, per-pair saturation exclusion, decoder fail policy).
+//         Residual: (-E, -2E, -4E) propagation remains (Theorem 4).
+//   V6.5: (ChatGPT draft, archived) Added W5 coarse auto-ranging to extend
+//         calDAC measurement range from ±122 to ±250 LSB.  Exposed
+//         ANCHOR_W3_LSB/ANCHOR_W4_LSB parameters for external reference.
+//   V6.6: This version.  Final combined solution:
+//         (a) W5 coarse auto-ranging  — fixes R-range saturation (V6.5).
+//         (b) External anchor channel — fixes E propagation (§7 Solution A).
+//         (c) All V6.3 P0/P1 fixes retained.
+//         (d) REMOVE_REDUNDANCY_OFFSET honored (gates offset removal).
+//         (e) MAX_SAT_PAIR_PCT=25% (stricter than V6.3's 50%, justified by
+//             autoranger handling gross range issues).
+//
+// ==========================================================================
+// RANGE CONTRACT (V6.5 inheritance — fixes R saturation)
+// ==========================================================================
+// The fine calDAC remains stages 6..12 (sum=126), preserving the existing
+// seven trial clocks plus one terminal decision per direction.  Ideal stage 5
+// (nominal 128) is used as a fixed coarse recentering capacitor, not as an
+// extra SAR trial.  A saturated zero-offset probe selects k = +1 or -1, then
+// the target is remeasured with:
+//
+//   R_fine = R - k*W5,      R = (D+ - D-) + k*W5
+//
+// This extends the practical symmetric residual coverage from about ±122
+// to about ±250 LSB without changing the required CAL_CLK edge count.
+//
+// Coverage vs. MSB mismatch (worst direction, all 3 MSBs same |p|):
+//   |R0_max| = |p|*(W0+W1+W2) = 3584*|p|
+//   ±3%: |R0| ≤ 107.5  — V6.3 already OK
+//   ±5%: |R0| ≤ 179.2  — V6.3 FAILS, V6.6 OK (≤250)
+//   ±7%: |R0| ≤ 250.9  — V6.6 near edge
+//   ±10%: |R0| ≤ 358.4 — V6.6 FAILS (would need ±359 LSB)
+//
+// ==========================================================================
+// IDENTIFIABILITY CONTRACT (§7 Solution A — fixes E propagation)
+// ==========================================================================
+// The available calibration observations are differential.  W2 and W3+W4
+// cannot be separated without one independent anchor (PROOF §1, det(J)=0).
+// This model exposes ANCHOR_W3_LSB and ANCHOR_W4_LSB as the *external
+// reference channel*:
+//
+//   A34 = ANCHOR_W3_LSB + ANCHOR_W4_LSB
+//
+// The recursive estimates are:
+//   w2 = A34             + (W2 - W3 - W4)
+//   w1 = w2 + A34        + (W1 - W2 - W3 - W4)
+//   w0 = w1 + w2 + A34   + (W0 - W1 - W2 - W3 - W4)
+//
+// Substituting W3+W4 = 512+E and A34 = 512+e_REF (anchor error from nominal):
+//   w2 = 512 + e2 - E + e_REF              [residual: e_REF - E]
+//   w1 = 1024 + e1 - 2E + 2*e_REF          [residual: 2*e_REF - 2E]
+//   w0 = 2048 + e0 - 4E + 4*e_REF          [residual: 4*e_REF - 4E]
+//
+// Two operating modes:
+//   * NOMINAL ANCHOR (A34=512, defaults): e_REF=0, residual propagates as
+//     (-E, -2E, -4E).  Same as V6.3 — relies on layout matching |E|<~1%.
+//   * EXTERNAL ANCHOR (A34 = W3+W4 physically characterized, e.g. from
+//     post-fab measurement, golden reference, or external C_REF capacitor):
+//     e_REF = E, residual = 0.  E propagation eliminated completely.
+//
+// The external-anchor mode is the engineering realization of §7 Solution A.
+// Hardware options to obtain A34 = W3+W4 physically:
+//   (1) Post-fab characterization of W3, W4 (trim or laser, fuse, etc.).
+//   (2) External reference capacitor C_REF with known V_REF, switched in
+//       place of W3+W4 during a one-shot measurement phase.
+//   (3) Split W3 (or W4) into two halves and use one half as independent
+//       reference for the other (Split-ADC, McNeill 2005).
+//
+// ==========================================================================
+// V6.6 IMPLEMENTATION FIXES (inherited from V6.3 + V6.5)
+// ==========================================================================
+//   * finish-direction processing occurs before handoff on the same RST1 edge
+//     (P0-2 fix, independent `if` not `else if`);
+//   * no extra RST1 frame is required to assert DONE;
+//   * endpoint saturation is counted per D+/D- pair, not per direction (P1-1);
+//   * the first saturated k=0 pair is used only to select the W5 coarse range;
+//   * saturated pairs after recentering are excluded from averaging (P1-2);
+//   * residual_q computed over valid_pair_count only;
+//   * a rejected target is fail-fast: ERR=1 and top weights revert to nominal;
+//   * the decoder never consumes partial/failed calibration coefficients (P1-4);
+//   * REMOVE_REDUNDANCY_OFFSET is honored (gates offset removal, default 1);
+//   * CAL_RST-low-at-t=0 initializes the first digital wall correctly (P0-1).
+//
+// ==========================================================================
+// CALIBRATED SCOPE
+// ==========================================================================
+// This interface calibrates stages 2, 1, and 0 (nominal weights 512, 1024,
+// and 2048).  Stages 3 and 4 are the independent anchor (external reference).
+// Stages 6..12 form the 7-bit ±126 calDAC and therefore cannot simultaneously
+// be unknown walls.  Stage 5 (128) is the coarse recentering capacitor and
+// is assumed ideal (W5 unmeasurable, PROOF §2).
+//
+// ==========================================================================
+// REQUIRED CLOCK TOPOLOGY
+// ==========================================================================
+//   SYNC_asnyc symbol terminal CLK -> net CLK_SAR
+//   DEC_CAL_PHY output CLK         -> final comparator net CLK
+//   COM_ideal CLK                  -> final comparator net CLK
+// No other module may drive final net CLK.
+//
+// ==========================================================================
+// OFFSET-BINARY SAR CONVENTION
+// ==========================================================================
+//   * residual R = W_target - W_wall
+//   * calDAC initial output = +126
+//   * switching one calDAC capacitor 10 -> 01 subtracts 2*weight
+//   * comparator positive residue keeps the trial switch
+//   * D+ and D- are complete codes 0..127
+//   * R = D+ - D-; comparator offset cancels
+//   * terminal bit is the real comparator decision
+//
+`include "constants.vams"
+`include "disciplines.vams"
+
+module DEC_CAL_PHY (
+    Bit, BP, DGND, DVDD, SOUT,
+    COMP, COMN, RST1, CAL_RST,
+    CLK_SAR, CLK00, CLK,
+    BITD_CAL, BITU_CAL,
+    CAL, DONE, ERR, CAL_CLK
+);
+
+    output [11:0] Bit;
+    input  [0:13] BP;
+    inout  DGND, DVDD;
+    input  SOUT;
+    input  COMP, COMN;
+    input  RST1, CAL_RST;
+    input  CLK_SAR, CLK00;
+    input  CAL_CLK;
+    output CLK;
+    output [0:12] BITD_CAL, BITU_CAL;
+    output CAL, DONE, ERR;
+
+    electrical [11:0] Bit;
+    electrical [0:13] BP;
+    electrical DGND, DVDD;
+    electrical SOUT;
+    electrical COMP, COMN;
+    electrical RST1, CAL_RST, CAL_CLK;
+    electrical CLK_SAR, CLK00, CLK;
+    electrical [0:12] BITD_CAL, BITU_CAL;
+    electrical CAL, DONE, ERR;
+
+
+    parameter real VTH_FRACTION = 0.5 from (0.0:1.0);
+    parameter real TD = 0.0 from [0.0:inf);
+    parameter real TR = 20p from (0.0:inf);
+    parameter real TF = 20p from (0.0:inf);
+    parameter real TD_CAL = 200p from [0.0:inf);
+    parameter real TD_CMP_CAL = 2n from [0.0:inf);
+    parameter real RDRV_CLK = 1.0 from (0.0:inf);
+    parameter integer CMP_SWAP = 1 from [0:1];
+    parameter real CMP_VALID_FRACTION = 0.20 from (0.0:1.0);
+    parameter integer MAX_INVALID = 3 from [0:inf);
+    parameter integer FIRST_INVERT = 0 from [0:1];
+    parameter integer RAW_INVERT = 0 from [0:1];
+    parameter integer DEBUG = 1 from [0:2];
+    parameter integer FRAC_BITS = 6 from [0:8];
+
+    // ===== USER-EDITABLE CALIBRATION PARAMETERS =====
+    parameter integer CAL_BYPASS = 0 from [0:1];
+
+    // Independent anchor.  Set these to separately characterized physical
+    // W3/W4 values for absolute calibration.  Defaults implement A34=512.
+    parameter real ANCHOR_W3_LSB = 256.0 from (0.0:inf);
+    parameter real ANCHOR_W4_LSB = 256.0 from (0.0:inf);
+
+    // Number of D+/D- pairs = 2**AVG_PAIRS_LOG2.
+    parameter integer AVG_PAIRS_LOG2 = 5 from [0:8];
+    parameter integer ENFORCE_MIN_AVG = 1 from [0:1];
+    parameter integer MIN_AVG_PAIRS_LOG2 = 5 from [0:8];
+
+    // Plausibility window around nominal top-bit weights.
+    parameter integer WEIGHT_TOL_PCT = 35 from [0:100];
+
+    // Known physical weight of stage 5 used for coarse recentering.
+    // Keep at 128 when the low-bit capacitors are ideal.
+    parameter real COARSE_W5_LSB = 128.0 from (0.0:inf);
+
+    // Maximum fraction of saturated D+/D- pairs after coarse recentering.
+    // Saturated pairs are not included in accum_d_plus/accum_d_minus.
+    parameter integer MAX_SAT_PAIR_PCT = 25 from [0:100];
+
+    parameter integer APPLY_CAL_WEIGHT = 1 from [0:1];
+    parameter integer REMOVE_REDUNDANCY_OFFSET = 1 from [0:1];
+    parameter integer WARN_ON_OUTPUT_CLIP = 1 from [0:1];
+    parameter integer ZERO_ON_INVALID_PHASE0 = 1 from [0:1];
+    // ================================================
+
+    integer w0, w1, w2, w3, w4, w5, w6;
+    integer w7, w8, w9, w10, w11, w12, w13;
+    integer q_scale;
+    integer weight_frac_bits;
+    integer avg_pairs;
+
+    integer cal_state;
+    localparam CAL_IDLE       = 0;
+    localparam CAL_PRECHARGE  = 1;
+    localparam CAL_SAR_TRIAL  = 2;
+    localparam CAL_TERMINAL   = 3;
+    localparam CAL_FINISH_DIR = 4;
+
+    integer sar_step;
+    integer trial_mask;
+    integer switched_mask;
+    integer switched_sum;
+    integer d_plus_code;
+    integer d_minus_code;
+    integer d_plus_saturated;
+    integer d_minus_saturated;
+    integer coarse_mode;          // -1, 0, +1; R_fine = R - coarse_mode*W5
+    integer coarse_probe_used;    // one k=0 saturated probe allowed per target
+    integer coarse_weight_q;
+    integer overflow_pos;
+    integer overflow_neg;
+    integer direction;
+    integer target_idx;
+    integer target_mask;
+    integer wall_mask;
+    integer caldac_mask;
+    integer d_mask, u_mask;
+
+    integer repeat_idx;
+    integer valid_pair_count;
+    integer saturated_pair_count;
+    integer accum_d_plus;
+    integer accum_d_minus;
+
+    integer cal_mode_i;
+    integer cal_done_i;
+    integer cal_error_i;
+    integer finish_pending_i;
+    integer frame_active_i;
+    integer invalid_count;
+    integer zero_force_i;
+    integer target_rejected;
+
+    integer measured_weight_q;
+    integer wall_weight_q;
+    integer residual_q;
+    integer rounding_term;
+
+    integer clk_sar_i;
+    integer clk_cal_i;
+
+    integer r0, r1, r2, r3, r4, r5, r6;
+    integer r7, r8, r9, r10, r11, r12, r13;
+    integer raw_sum;
+    integer total_weight_q;
+    integer dec_w0, dec_w1, dec_w2;
+    integer redundancy_offset_q;
+    integer centered_sum;
+    integer adc_code;
+    integer clip_low_i;
+    integer clip_high_i;
+    integer b0, b1, b2, b3, b4, b5;
+    integer b6, b7, b8, b9, b10, b11;
+
+    integer cmp_p_gt_n;
+    integer cmp_valid;
+    integer code_value;
+    integer trial_w;
+
+    real vlogic;
+    real vth;
+    real cmp_delta;
+    real cmp_valid_min;
+
+    genvar g;
+
+    analog begin
+        vlogic = V(DVDD, DGND);
+        vth = VTH_FRACTION * vlogic;
+        cmp_valid_min = CMP_VALID_FRACTION * vlogic;
+
+        @(initial_step) begin
+            weight_frac_bits = (FRAC_BITS < 6) ? 6 : FRAC_BITS;
+            q_scale = 1 << weight_frac_bits;
+            avg_pairs = 1 << (((ENFORCE_MIN_AVG != 0) &&
+                (AVG_PAIRS_LOG2 < MIN_AVG_PAIRS_LOG2)) ?
+                MIN_AVG_PAIRS_LOG2 : AVG_PAIRS_LOG2);
+            caldac_mask = 8128; // stages 6..12
+
+            // Nominal top weights; independently supplied W3/W4 anchor.
+            w0 = 2048*q_scale;
+            w1 = 1024*q_scale;
+            w2 = 512*q_scale;
+            w3 = $rtoi(ANCHOR_W3_LSB*q_scale + 0.5);
+            w4 = $rtoi(ANCHOR_W4_LSB*q_scale + 0.5);
+            w5 = $rtoi(COARSE_W5_LSB*q_scale + 0.5);
+            w6 = 48*q_scale;
+            w7 = 32*q_scale;
+            w8 = 20*q_scale;
+            w9 = 12*q_scale;
+            w10 = 8*q_scale;
+            w11 = 4*q_scale;
+            w12 = 2*q_scale;
+            w13 = q_scale;
+
+            cal_state = CAL_IDLE;
+            sar_step = 0;
+            trial_mask = 0;
+            switched_mask = 0;
+            switched_sum = 0;
+            d_plus_code = 0;
+            d_minus_code = 0;
+            d_plus_saturated = 0;
+            d_minus_saturated = 0;
+            coarse_mode = 0;
+            coarse_probe_used = 0;
+            coarse_weight_q = w5;
+            overflow_pos = 0;
+            overflow_neg = 0;
+            direction = 0;
+            target_idx = 2;
+            target_mask = 4;
+            wall_mask = 24;
+            d_mask = 0;
+            u_mask = 0;
+
+            repeat_idx = 0;
+            valid_pair_count = 0;
+            saturated_pair_count = 0;
+            accum_d_plus = 0;
+            accum_d_minus = 0;
+
+            cal_mode_i = 0;
+            cal_done_i = 0;
+            cal_error_i = 0;
+            finish_pending_i = 0;
+            frame_active_i = 0;
+            invalid_count = 0;
+            zero_force_i = 0;
+            target_rejected = 0;
+
+            wall_weight_q = w3 + w4;
+            measured_weight_q = 0;
+            residual_q = 0;
+            adc_code = 0;
+
+            if (CAL_BYPASS != 0) begin
+                cal_done_i = 1;
+            end else if (V(CAL_RST, DGND) < vth) begin
+                cal_mode_i = 1;
+            end
+
+            if (DEBUG != 0)
+                $strobe("OFFSAR V6.6 init t=%g Q=%0d pairs=%0d anchor34=%g",
+                    $abstime, weight_frac_bits, avg_pairs,
+                    1.0*(w3+w4)/q_scale);
+        end
+
+        // CAL_RST rising: reset weights, status, and state.
+        @(cross(V(CAL_RST, DGND) - vth, +1)) begin
+            weight_frac_bits = (FRAC_BITS < 6) ? 6 : FRAC_BITS;
+            q_scale = 1 << weight_frac_bits;
+            avg_pairs = 1 << (((ENFORCE_MIN_AVG != 0) &&
+                (AVG_PAIRS_LOG2 < MIN_AVG_PAIRS_LOG2)) ?
+                MIN_AVG_PAIRS_LOG2 : AVG_PAIRS_LOG2);
+            caldac_mask = 8128;
+
+            w0 = 2048*q_scale;
+            w1 = 1024*q_scale;
+            w2 = 512*q_scale;
+            w3 = $rtoi(ANCHOR_W3_LSB*q_scale + 0.5);
+            w4 = $rtoi(ANCHOR_W4_LSB*q_scale + 0.5);
+            w5 = $rtoi(COARSE_W5_LSB*q_scale + 0.5);
+            w6 = 48*q_scale;
+            w7 = 32*q_scale;
+            w8 = 20*q_scale;
+            w9 = 12*q_scale;
+            w10 = 8*q_scale;
+            w11 = 4*q_scale;
+            w12 = 2*q_scale;
+            w13 = q_scale;
+
+            cal_state = CAL_IDLE;
+            sar_step = 0;
+            trial_mask = 0;
+            switched_mask = 0;
+            switched_sum = 0;
+            d_plus_code = 0;
+            d_minus_code = 0;
+            d_plus_saturated = 0;
+            d_minus_saturated = 0;
+            coarse_mode = 0;
+            coarse_probe_used = 0;
+            coarse_weight_q = w5;
+            overflow_pos = 0;
+            overflow_neg = 0;
+            direction = 0;
+            target_idx = 2;
+            target_mask = 4;
+            wall_mask = 24;
+            d_mask = 0;
+            u_mask = 0;
+
+            repeat_idx = 0;
+            valid_pair_count = 0;
+            saturated_pair_count = 0;
+            accum_d_plus = 0;
+            accum_d_minus = 0;
+
+            cal_mode_i = 0;
+            cal_done_i = (CAL_BYPASS != 0) ? 1 : 0;
+            cal_error_i = 0;
+            finish_pending_i = 0;
+            frame_active_i = 0;
+            invalid_count = 0;
+            zero_force_i = 0;
+            target_rejected = 0;
+
+            wall_weight_q = w3 + w4;
+            measured_weight_q = 0;
+            residual_q = 0;
+            adc_code = 0;
+        end
+
+        // CAL_RST falling: arm and start foreground calibration.
+        @(cross(V(CAL_RST, DGND) - vth, -1)) begin
+            if (CAL_BYPASS == 0) begin
+                // Start every run from a deterministic coefficient set.
+                w0 = 2048*q_scale;
+                w1 = 1024*q_scale;
+                w2 = 512*q_scale;
+                w3 = $rtoi(ANCHOR_W3_LSB*q_scale + 0.5);
+                w4 = $rtoi(ANCHOR_W4_LSB*q_scale + 0.5);
+                w5 = $rtoi(COARSE_W5_LSB*q_scale + 0.5);
+                w6 = 48*q_scale;
+                w7 = 32*q_scale;
+                w8 = 20*q_scale;
+                w9 = 12*q_scale;
+                w10 = 8*q_scale;
+                w11 = 4*q_scale;
+                w12 = 2*q_scale;
+                w13 = q_scale;
+
+                cal_state = CAL_IDLE;
+                sar_step = 0;
+                trial_mask = 0;
+                switched_mask = 0;
+                switched_sum = 0;
+                d_plus_code = 0;
+                d_minus_code = 0;
+                d_plus_saturated = 0;
+                d_minus_saturated = 0;
+                coarse_mode = 0;
+                coarse_probe_used = 0;
+                coarse_weight_q = w5;
+                overflow_pos = 0;
+                overflow_neg = 0;
+                direction = 0;
+                target_idx = 2;
+                target_mask = 4;
+                wall_mask = 24;
+                d_mask = 0;
+                u_mask = 0;
+
+                repeat_idx = 0;
+                valid_pair_count = 0;
+                saturated_pair_count = 0;
+                accum_d_plus = 0;
+                accum_d_minus = 0;
+
+                cal_mode_i = 1;
+                cal_done_i = 0;
+                cal_error_i = 0;
+                finish_pending_i = 0;
+                frame_active_i = 0;
+                invalid_count = 0;
+                zero_force_i = 0;
+                target_rejected = 0;
+
+                wall_weight_q = w3 + w4;
+                measured_weight_q = 0;
+                residual_q = 0;
+
+                if (DEBUG != 0)
+                    $strobe("OFFSAR start t=%g pairs=%0d Q=%0d anchor34=%g",
+                        $abstime, avg_pairs, weight_frac_bits,
+                        1.0*(w3+w4)/q_scale);
+            end
+        end
+
+        // RST1 falling: start frame.
+        @(cross(V(RST1, DGND) - vth, -1)) begin
+            if ((cal_mode_i != 0) && (finish_pending_i == 0)) begin
+                frame_active_i = 1;
+                d_mask = 0; u_mask = 0;
+                cal_state = CAL_PRECHARGE;
+                sar_step = 0; trial_mask = 0;
+                switched_mask = 0; switched_sum = 0;
+                zero_force_i = 0;
+                if (direction == 0)
+                    d_plus_saturated = 0;
+                else
+                    d_minus_saturated = 0;
+                if (DEBUG > 1)
+                    $strobe("OFFSAR frame start target=%0d dir=%0d pair=%0d t=%g",
+                        target_idx, direction, repeat_idx, $abstime);
+            end
+        end
+
+        // CAL_CLK rising: set up trial (switch one calDAC cap from 10 to 01).
+        @(cross(V(CAL_CLK, DGND) - vth, +1)) begin
+            if ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                (finish_pending_i == 0)) begin
+
+                if (cal_state == CAL_PRECHARGE) begin
+                    switched_mask = 0;
+                    switched_sum = 0;
+                    sar_step = 0;
+                    cal_state = CAL_SAR_TRIAL;
+                    trial_mask = 64;  // stage 6 = C7, weight 48
+                end else if (cal_state == CAL_SAR_TRIAL) begin
+                    case (sar_step)
+                        0: trial_mask = 64;   // C7, w=48, stage 6
+                        1: trial_mask = 128;  // C6, w=32, stage 7
+                        2: trial_mask = 256;  // C5, w=20, stage 8
+                        3: trial_mask = 512;  // C4, w=12, stage 9
+                        4: trial_mask = 1024; // C3, w=8, stage 10
+                        5: trial_mask = 2048; // C2, w=4, stage 11
+                        6: trial_mask = 4096; // C1, w=2, stage 12
+                        default: trial_mask = 0;
+                    endcase
+                end
+
+                if (direction == 0) begin
+                    d_mask = target_mask |
+                             (caldac_mask & ~(switched_mask | trial_mask));
+                    u_mask = wall_mask | switched_mask | trial_mask;
+
+                    // k=+1 subtracts W5 from R; k=-1 adds W5 to R.
+                    if (coarse_mode > 0)
+                        u_mask = u_mask | 32;
+                    else if (coarse_mode < 0)
+                        d_mask = d_mask | 32;
+                end else begin
+                    d_mask = wall_mask |
+                             (caldac_mask & ~(switched_mask | trial_mask));
+                    u_mask = target_mask | switched_mask | trial_mask;
+
+                    // Complementary placement makes the D- residue -R_fine.
+                    if (coarse_mode > 0)
+                        d_mask = d_mask | 32;
+                    else if (coarse_mode < 0)
+                        u_mask = u_mask | 32;
+                end
+            end
+        end
+
+        // CAL_CLK falling: latch comparator, decide keep/undo.
+        @(cross(V(CAL_CLK, DGND) - vth, -1)) begin
+            if ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                (finish_pending_i == 0) && (cal_state != CAL_PRECHARGE)) begin
+
+                cmp_delta = V(COMP, DGND) - V(COMN, DGND);
+                if (cmp_delta < 0.0)
+                    cmp_valid = ((-cmp_delta) > cmp_valid_min) ? 1 : 0;
+                else
+                    cmp_valid = (cmp_delta > cmp_valid_min) ? 1 : 0;
+
+                if (cmp_valid == 0) begin
+                    invalid_count = invalid_count + 1;
+                    if (invalid_count > MAX_INVALID) begin
+                        if (ZERO_ON_INVALID_PHASE0 != 0) begin
+                            invalid_count = 0;
+                            cmp_valid = 1;
+                            if (cal_state == CAL_TERMINAL)
+                                cmp_p_gt_n = 0;
+                            else
+                                cmp_p_gt_n = 1;
+                            zero_force_i = 1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR zero-hit target=%0d dir=%0d step=%0d state=%0d t=%g",
+                                    target_idx, direction, sar_step, cal_state, $abstime);
+                        end else begin
+                            cal_error_i = 1;
+                            finish_pending_i = 1;
+                        end
+                    end
+                end
+
+                if (cmp_valid != 0) begin
+                    invalid_count = 0;
+                    if (zero_force_i == 0) begin
+                        cmp_p_gt_n = (V(COMP, DGND) < V(COMN, DGND)) ? 1 : 0;
+                        if (CMP_SWAP != 0)
+                            cmp_p_gt_n = 1 - cmp_p_gt_n;
+                    end
+                    zero_force_i = 0;
+
+                    if (DEBUG > 1) begin
+                        case (sar_step)
+                            0: trial_w = 48;
+                            1: trial_w = 32;
+                            2: trial_w = 20;
+                            3: trial_w = 12;
+                            4: trial_w = 8;
+                            5: trial_w = 4;
+                            6: trial_w = 2;
+                            default: trial_w = 0;
+                        endcase
+                        $strobe("OFFSAR CMPDIAG tgt=%0d dir=%0d st=%0d step=%0d S=%0d trW=%0d S_tr=%0d dmask=%0d umask=%0d CMPd=%gV cmp=%0d t=%g",
+                            target_idx, direction, cal_state, sar_step,
+                            switched_sum, trial_w, switched_sum + trial_w,
+                            d_mask, u_mask, cmp_delta, cmp_p_gt_n, $abstime);
+                    end
+
+                    if (cal_state == CAL_SAR_TRIAL) begin
+                        if (cmp_p_gt_n != 0) begin
+                            switched_mask = switched_mask | trial_mask;
+                            case (sar_step)
+                                0: switched_sum = switched_sum + 48;
+                                1: switched_sum = switched_sum + 32;
+                                2: switched_sum = switched_sum + 20;
+                                3: switched_sum = switched_sum + 12;
+                                4: switched_sum = switched_sum + 8;
+                                5: switched_sum = switched_sum + 4;
+                                6: switched_sum = switched_sum + 2;
+                            endcase
+                        end
+
+                        sar_step = sar_step + 1;
+                        trial_mask = 0;
+
+                        if (sar_step >= 7) begin
+                            cal_state = CAL_TERMINAL;
+                        end
+                    end else if (cal_state == CAL_TERMINAL) begin
+                        code_value = switched_sum + (cmp_p_gt_n != 0 ? 1 : 0);
+
+                        if (direction == 0) begin
+                            d_plus_code = code_value;
+                            if (DEBUG > 1)
+                                $strobe("OFFSAR code target=%0d dir=+ D+=%0d switched=%0d bT=%0d t=%g",
+                                    target_idx, d_plus_code, switched_sum,
+                                    cmp_p_gt_n, $abstime);
+                        end else begin
+                            d_minus_code = code_value;
+                            if (DEBUG > 1)
+                                $strobe("OFFSAR code target=%0d dir=- D-=%0d switched=%0d bT=%0d t=%g",
+                                    target_idx, d_minus_code, switched_sum,
+                                    cmp_p_gt_n, $abstime);
+                        end
+
+                        // V6.6: mark saturation per direction.  The pair is
+                        // counted once, after D- completes, and saturated pairs
+                        // are excluded from the residual average.
+                        if (code_value >= 126 || code_value <= 1) begin
+                            if (direction == 0)
+                                d_plus_saturated = 1;
+                            else
+                                d_minus_saturated = 1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR SATURATE target=%0d dir=%0d code=%0d (endpoint) t=%g",
+                                    target_idx, direction, code_value, $abstime);
+                        end
+
+                        cal_state = CAL_FINISH_DIR;
+                    end
+                end
+            end
+        end
+
+        // RST1 rising: finish the active direction/pair first, then
+        // perform calibration handoff on the SAME edge if the last target ended.
+        @(cross(V(RST1, DGND) - vth, +1)) begin
+            frame_active_i = 0;
+            d_mask = 0;
+            u_mask = 0;
+
+            // Consume a completed D+ or D- direction unless a hard error
+            // already requested handoff.
+            if ((cal_mode_i != 0) && (finish_pending_i == 0) &&
+                (cal_state == CAL_FINISH_DIR)) begin
+
+                if (direction == 0) begin
+                    // D+ complete; D- is performed in the next RST1-low frame.
+                    direction = 1;
+                    cal_state = CAL_IDLE;
+                end else begin
+                    // D- complete: one D+/D- observation is now available.
+                    // A saturated k=0 observation is a range probe only and is
+                    // not counted toward AVG_PAIRS.
+                    overflow_pos = ((d_plus_code >= 126) ||
+                                    (d_minus_code <= 1)) ? 1 : 0;
+                    overflow_neg = ((d_plus_code <= 1) ||
+                                    (d_minus_code >= 126)) ? 1 : 0;
+
+                    if (((d_plus_saturated != 0) ||
+                         (d_minus_saturated != 0)) &&
+                        (coarse_mode == 0) &&
+                        (coarse_probe_used == 0)) begin
+
+                        coarse_probe_used = 1;
+                        if ((overflow_pos != 0) && (overflow_neg == 0)) begin
+                            coarse_mode = 1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR AUTORANGE target=%0d R positive: k=+1, subtract W5=%g t=%g",
+                                    target_idx, 1.0*coarse_weight_q/q_scale,
+                                    $abstime);
+                        end else if ((overflow_neg != 0) &&
+                                     (overflow_pos == 0)) begin
+                            coarse_mode = -1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR AUTORANGE target=%0d R negative: k=-1, add W5=%g t=%g",
+                                    target_idx, 1.0*coarse_weight_q/q_scale,
+                                    $abstime);
+                        end else begin
+                            // Both signs asserted means the range cannot be
+                            // determined reliably from this pair.
+                            cal_error_i = 1;
+                            finish_pending_i = 1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR AUTORANGE FAIL target=%0d D+=%0d D-=%0d t=%g",
+                                    target_idx, d_plus_code, d_minus_code,
+                                    $abstime);
+                        end
+
+                        // Discard the probe and restart this target.  Any
+                        // earlier k=0 samples are discarded so one average never
+                        // mixes different coarse ranges.
+                        repeat_idx = 0;
+                        valid_pair_count = 0;
+                        saturated_pair_count = 0;
+                        accum_d_plus = 0;
+                        accum_d_minus = 0;
+                        d_plus_saturated = 0;
+                        d_minus_saturated = 0;
+                    end else begin
+                        repeat_idx = repeat_idx + 1;
+
+                        if ((d_plus_saturated != 0) ||
+                            (d_minus_saturated != 0)) begin
+                            saturated_pair_count = saturated_pair_count + 1;
+                        end else begin
+                            accum_d_plus = accum_d_plus + d_plus_code;
+                            accum_d_minus = accum_d_minus + d_minus_code;
+                            valid_pair_count = valid_pair_count + 1;
+                        end
+
+                        if (DEBUG > 1)
+                            $strobe("OFFSAR pair target=%0d k=%0d D+=%0d D-=%0d pair=%0d valid=%0d sat_pairs=%0d t=%g",
+                                target_idx, coarse_mode, d_plus_code,
+                                d_minus_code, repeat_idx, valid_pair_count,
+                                saturated_pair_count, $abstime);
+
+                        d_plus_saturated = 0;
+                        d_minus_saturated = 0;
+                    end
+
+                    if ((finish_pending_i == 0) &&
+                        (repeat_idx >= avg_pairs)) begin
+                        target_rejected = 0;
+
+                        if (valid_pair_count <= 0) begin
+                            target_rejected = 1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR REJECT target=%0d no valid pairs t=%g",
+                                    target_idx, $abstime);
+                        end else if (saturated_pair_count * 100 >
+                                     MAX_SAT_PAIR_PCT * avg_pairs) begin
+                            target_rejected = 1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR REJECT target=%0d sat_pairs=%0d/%0d limit=%0d%% t=%g",
+                                    target_idx, saturated_pair_count,
+                                    avg_pairs, MAX_SAT_PAIR_PCT, $abstime);
+                        end else begin
+                            // Average only non-saturated pairs.
+                            if ((accum_d_plus - accum_d_minus) >= 0)
+                                rounding_term = valid_pair_count / 2;
+                            else
+                                rounding_term = -valid_pair_count / 2;
+
+                            residual_q =
+                                (q_scale * (accum_d_plus - accum_d_minus)
+                                + rounding_term) / valid_pair_count;
+
+                            // D+ - D- estimates R_fine = R-k*W5.
+                            // Restore the removed coarse component here.
+                            residual_q = residual_q +
+                                         coarse_mode * coarse_weight_q;
+                            measured_weight_q = wall_weight_q + residual_q;
+
+                            case (target_idx)
+                                2: begin
+                                    if ((measured_weight_q * 100 >=
+                                         512*q_scale*(100-WEIGHT_TOL_PCT)) &&
+                                        (measured_weight_q * 100 <=
+                                         512*q_scale*(100+WEIGHT_TOL_PCT)))
+                                        w2 = measured_weight_q;
+                                    else
+                                        target_rejected = 1;
+                                end
+                                1: begin
+                                    if ((measured_weight_q * 100 >=
+                                         1024*q_scale*(100-WEIGHT_TOL_PCT)) &&
+                                        (measured_weight_q * 100 <=
+                                         1024*q_scale*(100+WEIGHT_TOL_PCT)))
+                                        w1 = measured_weight_q;
+                                    else
+                                        target_rejected = 1;
+                                end
+                                0: begin
+                                    if ((measured_weight_q * 100 >=
+                                         2048*q_scale*(100-WEIGHT_TOL_PCT)) &&
+                                        (measured_weight_q * 100 <=
+                                         2048*q_scale*(100+WEIGHT_TOL_PCT)))
+                                        w0 = measured_weight_q;
+                                    else
+                                        target_rejected = 1;
+                                end
+                                default: target_rejected = 1;
+                            endcase
+
+                            if (DEBUG != 0) begin
+                                if (target_rejected == 0)
+                                    $strobe("OFFSAR ACCEPT target=%0d k=%0d wall=%g R=%g measured=%g valid=%0d/%0d t=%g",
+                                        target_idx, coarse_mode,
+                                        1.0*wall_weight_q/q_scale,
+                                        1.0*residual_q/q_scale,
+                                        1.0*measured_weight_q/q_scale,
+                                        valid_pair_count, avg_pairs, $abstime);
+                                else
+                                    $strobe("OFFSAR REJECT target=%0d measured=%g tolerance=%0d%% t=%g",
+                                        target_idx,
+                                        1.0*measured_weight_q/q_scale,
+                                        WEIGHT_TOL_PCT, $abstime);
+                            end
+                        end
+
+                        if (target_rejected != 0) begin
+                            // Recursive downstream measurements are not valid
+                            // after an upstream rejection.  Fail fast.
+                            cal_error_i = 1;
+                            finish_pending_i = 1;
+                        end else begin
+                            target_idx = target_idx - 1;
+
+                            case (target_idx)
+                                1: begin
+                                    target_mask = 2;
+                                    wall_mask = 28; // physical W2+W3+W4
+                                    wall_weight_q = w2 + w3 + w4;
+                                end
+                                0: begin
+                                    target_mask = 1;
+                                    wall_mask = 30; // physical W1+W2+W3+W4
+                                    wall_weight_q = w1 + w2 + w3 + w4;
+                                end
+                                default: begin
+                                    target_idx = -1;
+                                    finish_pending_i = 1;
+                                end
+                            endcase
+                        end
+
+                        repeat_idx = 0;
+                        valid_pair_count = 0;
+                        saturated_pair_count = 0;
+                        accum_d_plus = 0;
+                        accum_d_minus = 0;
+                        coarse_mode = 0;
+                        coarse_probe_used = 0;
+                        overflow_pos = 0;
+                        overflow_neg = 0;
+                    end
+
+                    direction = 0;
+                    cal_state = CAL_IDLE;
+                end
+            end
+
+            // Independent IF, not ELSE-IF: finish_pending_i may have been set
+            // immediately above by the last target.
+            if ((cal_mode_i != 0) && (finish_pending_i != 0)) begin
+                if (cal_error_i != 0) begin
+                    // Never expose a partial recursive calibration.
+                    w0 = 2048*q_scale;
+                    w1 = 1024*q_scale;
+                    w2 = 512*q_scale;
+                end
+
+                cal_mode_i = 0;
+                cal_done_i = 1;
+                frame_active_i = 0;
+                cal_state = CAL_IDLE;
+                direction = 0;
+                d_mask = 0;
+                u_mask = 0;
+
+                if (DEBUG != 0) begin
+                    $strobe("OFFSAR finish t=%g done=%0d err=%0d",
+                        $abstime, cal_done_i, cal_error_i);
+                    $strobe("OFFSAR weights={%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g}",
+                        1.0*w0/q_scale, 1.0*w1/q_scale,
+                        1.0*w2/q_scale, 1.0*w3/q_scale,
+                        1.0*w4/q_scale, 1.0*w5/q_scale,
+                        1.0*w6/q_scale, 1.0*w7/q_scale,
+                        1.0*w8/q_scale, 1.0*w9/q_scale,
+                        1.0*w10/q_scale, 1.0*w11/q_scale,
+                        1.0*w12/q_scale, 1.0*w13/q_scale);
+                end
+            end
+        end
+
+        // Decode the clock inputs into piecewise-constant integers.
+        // CLK00 is retained only for symbol/netlist compatibility.
+        clk_sar_i = (V(CLK_SAR, DGND) > vth) ? 1 : 0;
+        clk_cal_i = (V(CAL_CLK, DGND) > vth) ? 1 : 0;
+
+        // Latch one completed raw conversion only on SOUT.
+        @(cross(V(SOUT, DGND) - vth, +1)) begin
+            if ((CAL_BYPASS != 0) ||
+                ((cal_done_i != 0) && (cal_mode_i == 0))) begin
+                r0  = (V(BP[13], DGND) > vth) ? 1 : 0;
+                r1  = (V(BP[12], DGND) > vth) ? 1 : 0;
+                r2  = (V(BP[11], DGND) > vth) ? 1 : 0;
+                r3  = (V(BP[10], DGND) > vth) ? 1 : 0;
+                r4  = (V(BP[9],  DGND) > vth) ? 1 : 0;
+                r5  = (V(BP[8],  DGND) > vth) ? 1 : 0;
+                r6  = (V(BP[7],  DGND) > vth) ? 1 : 0;
+                r7  = (V(BP[6],  DGND) > vth) ? 1 : 0;
+                r8  = (V(BP[5],  DGND) > vth) ? 1 : 0;
+                r9  = (V(BP[4],  DGND) > vth) ? 1 : 0;
+                r10 = (V(BP[3],  DGND) > vth) ? 1 : 0;
+                r11 = (V(BP[2],  DGND) > vth) ? 1 : 0;
+                r12 = (V(BP[1],  DGND) > vth) ? 1 : 0;
+                r13 = (V(BP[0],  DGND) > vth) ? 1 : 0;
+
+                if (RAW_INVERT != 0) begin
+                    r1 = 1-r1;   r2 = 1-r2;   r3 = 1-r3;
+                    r4 = 1-r4;   r5 = 1-r5;   r6 = 1-r6;
+                    r7 = 1-r7;   r8 = 1-r8;   r9 = 1-r9;
+                    r10 = 1-r10; r11 = 1-r11; r12 = 1-r12;
+                    r13 = 1-r13;
+                end
+                if (FIRST_INVERT != 0)
+                    r0 = 1-r0;
+
+                // Failed calibration always falls back to nominal top weights.
+                if ((APPLY_CAL_WEIGHT != 0) &&
+                    (cal_error_i == 0) &&
+                    (cal_done_i != 0)) begin
+                    dec_w0 = w0;
+                    dec_w1 = w1;
+                    dec_w2 = w2;
+                end else begin
+                    dec_w0 = 2048*q_scale;
+                    dec_w1 = 1024*q_scale;
+                    dec_w2 = 512*q_scale;
+                end
+
+                raw_sum = r0*dec_w0 + r1*dec_w1 + r2*dec_w2 +
+                    r3*w3 + r4*w4 + r5*w5 + r6*w6 + r7*w7 +
+                    r8*w8 + r9*w9 + r10*w10 + r11*w11 +
+                    r12*w12 + r13*w13;
+
+                total_weight_q = dec_w0 + dec_w1 + dec_w2 +
+                    w3 + w4 + w5 + w6 + w7 + w8 + w9 +
+                    w10 + w11 + w12 + w13;
+
+                if (REMOVE_REDUNDANCY_OFFSET != 0) begin
+                    redundancy_offset_q = total_weight_q - 4095*q_scale;
+                    if (redundancy_offset_q >= 0)
+                        redundancy_offset_q = (redundancy_offset_q + 1)/2;
+                    else
+                        redundancy_offset_q = (redundancy_offset_q - 1)/2;
+                    centered_sum = raw_sum - redundancy_offset_q;
+                end else begin
+                    redundancy_offset_q = 0;
+                    centered_sum = raw_sum;
+                end
+
+                // Single symmetric Q-to-integer quantization.
+                if (centered_sum >= 0)
+                    adc_code = (centered_sum + q_scale/2) / q_scale;
+                else
+                    adc_code = (centered_sum - q_scale/2) / q_scale;
+
+                clip_low_i = 0;
+                clip_high_i = 0;
+                if (adc_code < 0) begin
+                    adc_code = 0;
+                    clip_low_i = 1;
+                end else if (adc_code > 4095) begin
+                    adc_code = 4095;
+                    clip_high_i = 1;
+                end
+
+                if ((DEBUG != 0) && (WARN_ON_OUTPUT_CLIP != 0) &&
+                    ((clip_low_i != 0) || (clip_high_i != 0)))
+                    $strobe("OFFSAR decode clip t=%g raw_q=%0d total_q=%0d offset_q=%0d code=%0d low=%0d high=%0d",
+                        $abstime, raw_sum, total_weight_q,
+                        redundancy_offset_q, adc_code,
+                        clip_low_i, clip_high_i);
+            end
+        end
+
+        b0  = (adc_code      ) & 1;
+        b1  = (adc_code >>  1) & 1;
+        b2  = (adc_code >>  2) & 1;
+        b3  = (adc_code >>  3) & 1;
+        b4  = (adc_code >>  4) & 1;
+        b5  = (adc_code >>  5) & 1;
+        b6  = (adc_code >>  6) & 1;
+        b7  = (adc_code >>  7) & 1;
+        b8  = (adc_code >>  8) & 1;
+        b9  = (adc_code >>  9) & 1;
+        b10 = (adc_code >> 10) & 1;
+        b11 = (adc_code >> 11) & 1;
+
+        V(CAL,  DGND) <+ vlogic * transition(cal_mode_i,  TD, TR, TF);
+        V(DONE, DGND) <+ vlogic * transition(cal_done_i,  TD, TR, TF);
+        V(ERR,  DGND) <+ vlogic * transition(cal_error_i, TD, TR, TF);
+
+        I(CLK, DGND) <+ (V(CLK, DGND) - vlogic * (
+            (1 - cal_mode_i) * transition(clk_sar_i, TD, TR, TF) +
+            cal_mode_i * transition(frame_active_i * clk_cal_i,
+                                    TD_CMP_CAL, TR, TF)))
+            / RDRV_CLK;
+
+        V(Bit[0],  DGND) <+ vlogic * transition(b0,  TD, TR, TF);
+        V(Bit[1],  DGND) <+ vlogic * transition(b1,  TD, TR, TF);
+        V(Bit[2],  DGND) <+ vlogic * transition(b2,  TD, TR, TF);
+        V(Bit[3],  DGND) <+ vlogic * transition(b3,  TD, TR, TF);
+        V(Bit[4],  DGND) <+ vlogic * transition(b4,  TD, TR, TF);
+        V(Bit[5],  DGND) <+ vlogic * transition(b5,  TD, TR, TF);
+        V(Bit[6],  DGND) <+ vlogic * transition(b6,  TD, TR, TF);
+        V(Bit[7],  DGND) <+ vlogic * transition(b7,  TD, TR, TF);
+        V(Bit[8],  DGND) <+ vlogic * transition(b8,  TD, TR, TF);
+        V(Bit[9],  DGND) <+ vlogic * transition(b9,  TD, TR, TF);
+        V(Bit[10], DGND) <+ vlogic * transition(b10, TD, TR, TF);
+        V(Bit[11], DGND) <+ vlogic * transition(b11, TD, TR, TF);
+
+        for (g = 0; g <= 12; g = g + 1) begin
+            V(BITD_CAL[g], DGND) <+ vlogic * transition(
+                cal_mode_i * ((d_mask >> g) & 1), TD_CAL, TR, TF);
+            V(BITU_CAL[g], DGND) <+ vlogic * transition(
+                cal_mode_i * ((u_mask >> g) & 1), TD_CAL, TR, TF);
+        end
+    end
+endmodule
