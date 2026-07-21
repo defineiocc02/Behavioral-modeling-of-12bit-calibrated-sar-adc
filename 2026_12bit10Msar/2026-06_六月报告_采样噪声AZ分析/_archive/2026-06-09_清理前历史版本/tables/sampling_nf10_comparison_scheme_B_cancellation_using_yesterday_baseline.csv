@@ -1,0 +1,8 @@
+﻿corner,baseline_td,td,baseline_snr_db,snr_db,delta_snr_db,residual_noise_power_pct_of_yesterday_24p05n,cancelled_noise_power_pct,baseline_enob,enob,delta_enob
+tt,24.05n_yesterday,28n_comparison_scheme_A_B,53.822000,66.132116,12.310116,5.874737,94.125263,8.696800,10.660390,1.963590
+ff,24.05n_yesterday,28n_comparison_scheme_A_B,54.678900,68.170408,13.491508,4.475578,95.524422,8.809200,11.033313,2.224113
+ss,24.05n_yesterday,28n_comparison_scheme_A_B,55.494900,64.030358,8.535458,14.010520,85.989480,8.874200,10.349671,1.475471
+sf,24.05n_yesterday,28n_comparison_scheme_A_B,53.710600,65.764579,12.053979,6.231636,93.768364,8.664500,10.617997,1.953497
+fs,24.05n_yesterday,28n_comparison_scheme_A_B,53.991400,66.773945,12.782545,5.269210,94.730790,8.717000,10.742362,2.025362
+average_by_corner_residual,24.05n_yesterday,28n_comparison_scheme_A_B,54.339600,66.174281,11.834681,7.172336,92.827664,8.752400,10.680747,1.928347
+average_by_avg_SNR,24.05n_yesterday,28n_comparison_scheme_A_B,54.339600,66.174281,11.834681,6.554384,93.445616,8.752400,10.680747,1.928347

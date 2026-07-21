@@ -1,0 +1,118 @@
+{
+  "measurements": [
+    {
+      "target": 5,
+      "wall": 8064,
+      "measured": 8132,
+      "value_q": 8132,
+      "pairs": 16,
+      "residual_sum": 2176,
+      "residual_avg": 68,
+      "diversity": 1,
+      "snap": 0,
+      "value": 127.062
+    },
+    {
+      "target": 3,
+      "wall": 16196,
+      "measured": 16304,
+      "value_q": 16304,
+      "pairs": 16,
+      "residual_sum": 3456,
+      "residual_avg": 108,
+      "diversity": 1,
+      "snap": 0,
+      "value": 254.75
+    },
+    {
+      "target": 4,
+      "wall": 16196,
+      "measured": 16264,
+      "value_q": 16264,
+      "pairs": 16,
+      "residual_sum": 2176,
+      "residual_avg": 68,
+      "diversity": 1,
+      "snap": 0,
+      "value": 254.125
+    },
+    {
+      "target": 2,
+      "wall": 32568,
+      "measured": 32628,
+      "value_q": 32628,
+      "pairs": 16,
+      "residual_sum": 1920,
+      "residual_avg": 60,
+      "diversity": 1,
+      "snap": 0,
+      "value": 509.812
+    },
+    {
+      "target": 1,
+      "wall": 65196,
+      "measured": 65272,
+      "value_q": 65272,
+      "pairs": 16,
+      "residual_sum": 2432,
+      "residual_avg": 76,
+      "diversity": 1,
+      "snap": 0,
+      "value": 1019.88
+    },
+    {
+      "target": 0,
+      "wall": 130468,
+      "measured": 130440,
+      "value_q": 130440,
+      "pairs": 16,
+      "residual_sum": -896,
+      "residual_avg": -28,
+      "diversity": 1,
+      "snap": 0,
+      "value": 2038.12
+    }
+  ],
+  "finish": {
+    "time_s": 1.92001e-05,
+    "done": 1,
+    "err": 0
+  },
+  "weights": {
+    "frac_bits": 6,
+    "pairs": 16,
+    "values_q": [
+      130440,
+      65272,
+      32628,
+      16304,
+      16264,
+      8132,
+      3072,
+      2048,
+      1280,
+      768,
+      512,
+      256,
+      128,
+      64
+    ],
+    "values_lsb": [
+      2038.125,
+      1019.875,
+      509.8125,
+      254.75,
+      254.125,
+      127.0625,
+      48.0,
+      32.0,
+      20.0,
+      12.0,
+      8.0,
+      4.0,
+      2.0,
+      1.0
+    ]
+  },
+  "complete": true
+}

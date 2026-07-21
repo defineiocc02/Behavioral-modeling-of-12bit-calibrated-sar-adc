@@ -1,0 +1,366 @@
+// Calibration-aware behavioral replacement for the existing SWITCH cell.
+//
+// Normal mode (CAL=0) preserves the existing external interface and functional
+// switching convention:
+//   RST=1              -> BITD samples VIP, BITU samples VIN
+//   RST=0, SET=0       -> the corresponding bottom plate is held at VCM
+//   RST=0, SET=1       -> original SWITCH_0713 polarity:
+//                         BITD/P side: BITN->VREFP, BITP->VREFN
+//                         BITU/N side: BITP->VREFP, BITN->VREFN
+//
+// Calibration mode (CAL=1) disables the input-sampling and normal SAR-control
+// paths.  The BITD_CAL/BITU_CAL pair encodes a differential ternary
+// state without adding a third bus:
+//     10 -> D/P side VREFP, U/N side VREFN
+//     01 -> D/P side VREFN, U/N side VREFP
+//     00 -> both bottom plates VCM (inactive)
+//     11 -> both bottom plates VCM (safe/guard state)
+// P and N use RST1 for normal top-plate VCM precharge.  During calibration,
+// CAL_CLK=0 precharges the top plates and CAL_CLK=1 releases them.
+//
+// Hybrid physical/stage interface:
+//   * BITD/BITU<1:13> keep the CDAC physical capacitor numbering.  C10
+//     therefore remains BITD/U<10>; the new CR is BITD/U<13>.
+//   * BITP/BITN<0:12> and SET<0:12> follow the real SAR conversion order,
+//     so stage 4 is CR.
+//   * BITD_CAL/BITU_CAL<0:12> use the same stage-order index as SET.
+//
+// Stage map:
+//   stage 0:C12 -> physical 12
+//   stage 1:C11 -> physical 11
+//   stage 2:C10 -> physical 10
+//   stage 3:C9  -> physical 9
+//   stage 4:CR  -> physical 13
+//   stage 5:C8  -> physical 8
+//   ...
+//   stage 12:C1 -> physical 1.
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module SWITCH_CAL (
+    AGND, AVDD,
+    BITD, BITN, BITP, BITU,
+    N, P,
+    RST, RST1, SET,
+    VCM, VIN, VIP, VREFN, VREFP,
+    BITD_CAL, BITU_CAL, CAL, CAL_CLK
+);
+
+    inout AGND, AVDD;
+    inout [1:13] BITD;
+    input [0:12] BITN;
+    input [0:12] BITP;
+    inout [1:13] BITU;
+    inout N, P;
+    input RST, RST1;
+    input [0:12] SET;
+    inout VCM, VIN, VIP, VREFN, VREFP;
+    input [0:12] BITD_CAL, BITU_CAL;
+    input CAL, CAL_CLK;
+
+    electrical AGND, AVDD;
+    electrical [1:13] BITD;
+    electrical [0:12] BITN;
+    electrical [0:12] BITP;
+    electrical [1:13] BITU;
+    electrical N, P;
+    electrical RST, RST1;
+    electrical [0:12] SET;
+    electrical VCM, VIN, VIP, VREFN, VREFP;
+    electrical [0:12] BITD_CAL, BITU_CAL;
+    electrical CAL, CAL_CLK;
+
+    parameter real RON_SAMPLE = 5.0 from (0.0:inf);
+    parameter real RON_REF = 10.0 from (0.0:inf);
+    parameter real RON_TOP = 5.0 from (0.0:inf);
+    parameter real ROFF = 1.0e15 from (0.0:inf);
+    // Smooth logic-control transition used by the conductance model.
+    parameter real VSMOOTH = 10m from (0.0:inf);
+    // The original schematic generates RSTT/RST11 with two cascaded 10 ps
+    // inverters.  RSTT drives both BS_VIN and the bottom-plate VCM select so
+    // those paths do not acquire an artificial overlap/dead interval.
+    parameter real TD_RSTT = 20p from [0.0:inf);
+    parameter real TD_RST11 = 20p from [0.0:inf);
+    parameter real TCLK_EDGE = 10p from (0.0:inf);
+    // Normal conversion polarity.  1 matches the original SWITCH_0713:
+    //   BITD/P side: BITN->VREFP, BITP->VREFN.
+    //   BITU/N side: BITP->VREFP, BITN->VREFN.
+    // Set to 0 only for an experimental non-original polarity check.
+    parameter integer NORMAL_REF_SWAP = 1 from [0:1];
+
+    real vth;
+    real s_cal;
+    real s_cal_clk;
+    real s_top_pre;
+    real s_rstt;
+    real s_rst11;
+    real s_norm;
+    real gon_sample;
+    real gon_ref;
+    real gon_top;
+    real goff;
+    genvar k;
+
+    analog function real logic_level;
+        input x;
+        real x;
+        begin
+            logic_level = 0.5 + 0.5 * tanh(x / VSMOOTH);
+        end
+    endfunction
+
+    analog function real pair_pos;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_pos = ld * (1.0 - lu);
+        end
+    endfunction
+
+    analog function real pair_neg;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_neg = (1.0 - ld) * lu;
+        end
+    endfunction
+
+    analog function real pair_cm;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_cm = 1.0 - ld * (1.0 - lu) -
+                (1.0 - ld) * lu;
+        end
+    endfunction
+
+    analog begin
+        vth = 0.5 * V(AVDD, AGND);
+        s_cal = logic_level(V(CAL, AGND) - vth);
+        s_cal_clk = logic_level(V(CAL_CLK, AGND) - vth);
+        s_norm = 1.0 - s_cal;
+        // Original timing hierarchy:
+        //   RST  --two 10 ps inverters--> RSTT -> sampler and S_VCM logic
+        //   RST1 --two 10 ps inverters--> RST11 -> P/N top-plate precharge.
+        s_rstt = transition((V(RST, AGND) > vth) ? 1.0 : 0.0,
+            TD_RSTT, TCLK_EDGE);
+        s_rst11 = transition((V(RST1, AGND) > vth) ? 1.0 : 0.0,
+            TD_RST11, TCLK_EDGE);
+        // Normal mode retains delayed RST1/RST11.  Calibration mode derives
+        // an independent precharge phase from CAL_CLK: low=precharge,
+        // high=residue/evaluate.
+        s_top_pre = s_norm * s_rst11 + s_cal * (1.0 - s_cal_clk);
+
+        gon_sample = 1.0 / RON_SAMPLE;
+        gon_ref = 1.0 / RON_REF;
+        gon_top = 1.0 / RON_TOP;
+        goff = 1.0 / ROFF;
+
+        // Top-plate VCM switch.  CAL_CLK replaces the slow frame-level RST1
+        // only while CAL=1; normal sampling behavior is unchanged.
+        I(P, VCM) <+ V(P, VCM) *
+            (goff + (gon_top - goff) * s_top_pre);
+        I(N, VCM) <+ V(N, VCM) *
+            (goff + (gon_top - goff) * s_top_pre);
+
+        // Physical C1..C8 map to stages 12..5.
+        for (k = 1; k <= 8; k = k + 1) begin
+            I(BITD[k], VIP) <+ V(BITD[k], VIP) *
+                (goff + (gon_sample - goff) * s_norm * s_rstt);
+            I(BITU[k], VIN) <+ V(BITU[k], VIN) *
+                (goff + (gon_sample - goff) * s_norm * s_rstt);
+
+            I(BITD[k], VCM) <+ V(BITD[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                s_norm * (1.0 - s_rstt) *
+                (1.0 - logic_level(V(SET[13-k], AGND) - vth)) +
+                s_cal * pair_cm(
+                    V(BITD_CAL[13-k], AGND) - vth,
+                    V(BITU_CAL[13-k], AGND) - vth)));
+            I(BITU[k], VCM) <+ V(BITU[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                s_norm * (1.0 - s_rstt) *
+                (1.0 - logic_level(V(SET[13-k], AGND) - vth)) +
+                s_cal * pair_cm(
+                    V(BITD_CAL[13-k], AGND) - vth,
+                    V(BITU_CAL[13-k], AGND) - vth)));
+
+            I(BITD[k], VREFP) <+ V(BITD[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITN[13-k], AGND) - vth) :
+                        logic_level(V(BITP[13-k], AGND) - vth)) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            I(BITD[k], VREFN) <+ V(BITD[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITP[13-k], AGND) - vth) :
+                        logic_level(V(BITN[13-k], AGND) - vth)) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            I(BITU[k], VREFP) <+ V(BITU[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITP[13-k], AGND) - vth) :
+                        logic_level(V(BITN[13-k], AGND) - vth)) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            I(BITU[k], VREFN) <+ V(BITU[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITN[13-k], AGND) - vth) :
+                        logic_level(V(BITP[13-k], AGND) - vth)) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+        end
+
+        // Physical C9..C12 map to stages 3..0.
+        for (k = 9; k <= 12; k = k + 1) begin
+            I(BITD[k], VIP) <+ V(BITD[k], VIP) *
+                (goff + (gon_sample - goff) * s_norm * s_rstt);
+            I(BITU[k], VIN) <+ V(BITU[k], VIN) *
+                (goff + (gon_sample - goff) * s_norm * s_rstt);
+
+            I(BITD[k], VCM) <+ V(BITD[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                s_norm * (1.0 - s_rstt) *
+                (1.0 - logic_level(V(SET[12-k], AGND) - vth)) +
+                s_cal * pair_cm(
+                    V(BITD_CAL[12-k], AGND) - vth,
+                    V(BITU_CAL[12-k], AGND) - vth)));
+            I(BITU[k], VCM) <+ V(BITU[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                s_norm * (1.0 - s_rstt) *
+                (1.0 - logic_level(V(SET[12-k], AGND) - vth)) +
+                s_cal * pair_cm(
+                    V(BITD_CAL[12-k], AGND) - vth,
+                    V(BITU_CAL[12-k], AGND) - vth)));
+
+            I(BITD[k], VREFP) <+ V(BITD[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[12-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITN[12-k], AGND) - vth) :
+                        logic_level(V(BITP[12-k], AGND) - vth)) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[12-k], AGND) - vth,
+                        V(BITU_CAL[12-k], AGND) - vth)));
+
+            I(BITD[k], VREFN) <+ V(BITD[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[12-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITP[12-k], AGND) - vth) :
+                        logic_level(V(BITN[12-k], AGND) - vth)) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[12-k], AGND) - vth,
+                        V(BITU_CAL[12-k], AGND) - vth)));
+
+            I(BITU[k], VREFP) <+ V(BITU[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[12-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITP[12-k], AGND) - vth) :
+                        logic_level(V(BITN[12-k], AGND) - vth)) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[12-k], AGND) - vth,
+                        V(BITU_CAL[12-k], AGND) - vth)));
+
+            I(BITU[k], VREFN) <+ V(BITU[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * logic_level(V(SET[12-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITN[12-k], AGND) - vth) :
+                        logic_level(V(BITP[12-k], AGND) - vth)) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[12-k], AGND) - vth,
+                        V(BITU_CAL[12-k], AGND) - vth)));
+        end
+
+        // CR is a new physical branch at index 13 and stage 4.
+        I(BITD[13], VIP) <+ V(BITD[13], VIP) *
+            (goff + (gon_sample - goff) * s_norm * s_rstt);
+        I(BITU[13], VIN) <+ V(BITU[13], VIN) *
+            (goff + (gon_sample - goff) * s_norm * s_rstt);
+
+        I(BITD[13], VCM) <+ V(BITD[13], VCM) *
+            (goff + (gon_ref - goff) * (
+            s_norm * (1.0 - s_rstt) *
+            (1.0 - logic_level(V(SET[4], AGND) - vth)) +
+            s_cal * pair_cm(
+                V(BITD_CAL[4], AGND) - vth,
+                V(BITU_CAL[4], AGND) - vth)));
+        I(BITU[13], VCM) <+ V(BITU[13], VCM) *
+            (goff + (gon_ref - goff) * (
+            s_norm * (1.0 - s_rstt) *
+            (1.0 - logic_level(V(SET[4], AGND) - vth)) +
+            s_cal * pair_cm(
+                V(BITD_CAL[4], AGND) - vth,
+                V(BITU_CAL[4], AGND) - vth)));
+
+        I(BITD[13], VREFP) <+ V(BITD[13], VREFP) *
+            (goff + (gon_ref - goff) * (
+                s_norm * logic_level(V(SET[4], AGND) - vth) *
+                (NORMAL_REF_SWAP ?
+                    logic_level(V(BITN[4], AGND) - vth) :
+                    logic_level(V(BITP[4], AGND) - vth)) +
+                s_cal * pair_pos(
+                    V(BITD_CAL[4], AGND) - vth,
+                    V(BITU_CAL[4], AGND) - vth)));
+
+        I(BITD[13], VREFN) <+ V(BITD[13], VREFN) *
+            (goff + (gon_ref - goff) * (
+                s_norm * logic_level(V(SET[4], AGND) - vth) *
+                (NORMAL_REF_SWAP ?
+                    logic_level(V(BITP[4], AGND) - vth) :
+                    logic_level(V(BITN[4], AGND) - vth)) +
+                s_cal * pair_neg(
+                    V(BITD_CAL[4], AGND) - vth,
+                    V(BITU_CAL[4], AGND) - vth)));
+
+        I(BITU[13], VREFP) <+ V(BITU[13], VREFP) *
+            (goff + (gon_ref - goff) * (
+                s_norm * logic_level(V(SET[4], AGND) - vth) *
+                (NORMAL_REF_SWAP ?
+                    logic_level(V(BITP[4], AGND) - vth) :
+                    logic_level(V(BITN[4], AGND) - vth)) +
+                s_cal * pair_neg(
+                    V(BITD_CAL[4], AGND) - vth,
+                    V(BITU_CAL[4], AGND) - vth)));
+
+        I(BITU[13], VREFN) <+ V(BITU[13], VREFN) *
+            (goff + (gon_ref - goff) * (
+                s_norm * logic_level(V(SET[4], AGND) - vth) *
+                (NORMAL_REF_SWAP ?
+                    logic_level(V(BITN[4], AGND) - vth) :
+                    logic_level(V(BITP[4], AGND) - vth)) +
+                s_cal * pair_pos(
+                    V(BITD_CAL[4], AGND) - vth,
+                    V(BITU_CAL[4], AGND) - vth)));
+    end
+endmodule
+
+
+

@@ -1,0 +1,5 @@
+openResults("/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_debug2u_800m/psf")
+selectResult('tran)
+ocnPrint(v("OUT") ?numberNotation (quote scientific) ?from 98.505n ?to 1.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_debug2u_800m/exports/OUT.txt")
+ocnPrint(v("SOUT") ?numberNotation (quote scientific) ?from 98.505n ?to 1.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_debug2u_800m/exports/SOUT.txt")
+exit()

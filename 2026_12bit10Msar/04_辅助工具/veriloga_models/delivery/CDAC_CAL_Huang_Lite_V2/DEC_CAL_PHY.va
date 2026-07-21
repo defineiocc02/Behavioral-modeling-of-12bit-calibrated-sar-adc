@@ -1,0 +1,735 @@
+// Physical closed-loop foreground calibration and calibrated decoder
+// for test_12bit50MSAR_AMS_final.
+//
+// The calibration result is obtained only from the external CDAC and the
+// external comparator outputs COMP/COMN.  No ACT_W* plant parameters are used.
+//
+// Physical capacitor/control mapping:
+//   BITD_CAL[0]  / BITU_CAL[0]  -> physical BITD<1>  / BITU<1>
+//   ...
+//   BITD_CAL[11] / BITU_CAL[11] -> physical BITD<12> / BITU<12>
+//
+// Huang-style lightweight foreground calibration:
+//   * physical capacitors 1..6 form the initial calibration DAC;
+//   * C7 is calibrated first and is then included while calibrating C8;
+//   * the procedure continues recursively through C12;
+//   * every target is measured in both differential directions;
+//   * repeated positive/negative pairs are accumulated in fixed point.
+//
+// Every decision is produced by the external physical CDAC and the external
+// COMP/COMN comparator.  The model contains no hidden "actual weight" input.
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module DEC_CAL_PHY (
+    Bit, BP, DGND, DVDD, SOUT,
+    COMP, COMN, RST1, CAL_RST,
+    CLK_SAR, CLK00, CLK,
+    BITD_CAL, BITU_CAL,
+    CAL, DONE, ERR
+);
+
+    output [11:0] Bit;
+    input  [12:0] BP;
+    inout  DGND, DVDD;
+    input  SOUT;
+    input  COMP, COMN;
+    input  RST1, CAL_RST;
+    input  CLK_SAR, CLK00;
+    output CLK;
+    output [11:0] BITD_CAL, BITU_CAL;
+    output CAL, DONE, ERR;
+
+    electrical [11:0] Bit;
+    electrical [12:0] BP;
+    electrical DGND, DVDD;
+    electrical SOUT;
+    electrical COMP, COMN;
+    electrical RST1, CAL_RST;
+    electrical CLK_SAR, CLK00, CLK;
+    electrical [11:0] BITD_CAL, BITU_CAL;
+    electrical CAL, DONE, ERR;
+
+    // Logic/interface parameters.
+    parameter real VTH_FRACTION = 0.5 from (0.0:1.0);
+    parameter real TD = 0.0 from [0.0:inf);
+    parameter real TR = 20p from (0.0:inf);
+    parameter real TF = 20p from (0.0:inf);
+    // Delays the precharge-to-residue bottom-plate transition after RST1 falls.
+    parameter real TD_CAL = 200p from [0.0:inf);
+
+    // StrongArm polarity convention.  Default: COMP falling below COMN means
+    // P is higher than N.  Set CMP_SWAP=1 if the one-bit polarity test shows
+    // the opposite convention in the concrete COM_IAZ instance.
+    parameter integer CMP_SWAP = 1;
+    parameter real CMP_VALID_FRACTION = 0.20 from (0.0:1.0);
+    parameter integer MAX_INVALID = 3 from [0:inf);
+
+    // Existing raw-code polarity controls retained from DEC_CAL v2.
+    parameter integer FIRST_INVERT = 0;
+    parameter integer RAW_INVERT = 0;
+
+    // Candidate-weight safety check and diagnostics.
+    parameter real WEIGHT_TOL = 0.25 from (0.0:1.0);
+    parameter integer DEBUG = 1;
+
+    // 2^AVG_LOG2 positive/negative measurement pairs are averaged.  The same
+    // power-of-two is also the stored fixed-point scale.  Eight Q3 pairs are
+    // the 12-bit default; Q4/Q5 (16/32 pairs) remain available for noisy cases.
+    parameter integer AVG_LOG2 = 3 from [0:5];
+
+    // Static bypass for comparison runs.  No extra schematic pin is required:
+    // nominal Q-format weights are loaded and DONE is asserted at startup.
+    parameter integer CAL_BYPASS = 0 from [0:1];
+
+    // Calibration phase encoding.
+    // phase=0: zero-search sign measurement.
+    // phase=1: non-binary SAR search using 16,10,6,4,2,1.
+    integer phase;
+    integer target_idx;
+    integer target_side;       // 0: BITD/P target, 1: BITU/N target.
+    integer search_step;
+    integer search_mask;
+    integer trial_mask;
+    integer target_mask;
+    integer wall_mask;
+    integer residual_sign;
+    integer q_d;
+    integer q_u;
+    integer q_mag;
+    integer q_scale;
+    integer repeat_idx;
+    integer accum_q_d;
+    integer accum_q_u;
+    integer first_pair_sum;
+    integer diversity_i;
+
+    integer cal_mode_i;
+    integer cal_done_i;
+    integer cal_error_i;
+    integer cal_armed_i;
+    integer cal_started_i;
+    integer measurement_ready_i;
+    integer finish_pending_i;
+    integer invalid_count;
+
+    integer d_mask;
+    integer u_mask;
+
+    // Calibrated differential raw-decision weights in Q(AVG_LOG2) format.  w0
+    // is the final comparator-only decision; w1..w12 map to C1..C12.
+    integer w0, w1, w2, w3, w4, w5, w6;
+    integer w7, w8, w9, w10, w11, w12;
+    integer candidate_weight;
+    integer wall_weight;
+    integer nominal_weight;
+
+    integer cmp_p_gt_n;
+    integer target_is_higher;
+    integer keep_trial;
+    integer cmp_valid;
+    integer saturation_i;
+
+    integer clk_sar_i;
+    integer clk00_i;
+
+    integer r0, r1, r2, r3, r4, r5, r6;
+    integer r7, r8, r9, r10, r11, r12;
+    integer raw_sum;
+    integer weight_sum;
+    integer adc_code;
+    integer b0, b1, b2, b3, b4, b5;
+    integer b6, b7, b8, b9, b10, b11;
+
+    real vlogic;
+    real vth;
+    real cmp_delta;
+    real cmp_valid_min;
+    real scaled_code;
+
+    genvar g;
+
+    analog begin
+        vlogic = V(DVDD, DGND);
+        vth = VTH_FRACTION * vlogic;
+        cmp_valid_min = CMP_VALID_FRACTION * vlogic;
+
+        @(initial_step) begin
+            q_scale = 1 << AVG_LOG2;
+            phase = 0;
+            target_idx = 7;
+            target_side = 0;
+            search_step = 0;
+            search_mask = 0;
+            trial_mask = 0;
+            target_mask = 64;       // physical capacitor 7 -> mask bit 6.
+            wall_mask = 42;         // C6 + C4 + C2 = 16 + 6 + 2.
+            residual_sign = 0;
+            q_d = 0;
+            q_u = 0;
+            q_mag = 0;
+            repeat_idx = 0;
+            accum_q_d = 0;
+            accum_q_u = 0;
+            first_pair_sum = 0;
+            diversity_i = 0;
+
+            cal_mode_i = 0;
+            cal_done_i = 0;
+            cal_error_i = 0;
+            cal_armed_i = 0;
+            cal_started_i = 0;
+            measurement_ready_i = 0;
+            finish_pending_i = 0;
+            invalid_count = 0;
+            saturation_i = 0;
+
+            d_mask = 0;
+            u_mask = 0;
+
+            w0 = q_scale;
+            w1 = 2*q_scale;
+            w2 = 4*q_scale;
+            w3 = 8*q_scale;
+            w4 = 12*q_scale;
+            w5 = 20*q_scale;
+            w6 = 32*q_scale;
+            w7 = 48*q_scale;
+            w8 = 128*q_scale;
+            w9 = 256*q_scale;
+            w10 = 512*q_scale;
+            w11 = 1024*q_scale;
+            w12 = 2048*q_scale;
+
+            candidate_weight = 0;
+            wall_weight = 0;
+            nominal_weight = 0;
+
+            clk_sar_i = (V(CLK_SAR, DGND) > vth) ? 1 : 0;
+            clk00_i = (V(CLK00, DGND) > vth) ? 1 : 0;
+
+            adc_code = 0;
+
+            // A bypassed instance immediately produces nominal decoded output.
+            // Otherwise, a low CAL_RST at t=0 arms the foreground sequence.
+            if (CAL_BYPASS != 0) begin
+                cal_mode_i = 0;
+                cal_done_i = 1;
+                cal_armed_i = 0;
+            end else if (V(CAL_RST, DGND) < vth) begin
+                cal_mode_i = 1;
+                cal_armed_i = 1;
+            end
+        end
+
+        // Recalibration reset.  A new falling edge starts a new foreground run.
+        @(cross(V(CAL_RST, DGND) - vth, +1)) begin
+            q_scale = 1 << AVG_LOG2;
+            phase = 0;
+            target_idx = 7;
+            target_side = 0;
+            search_step = 0;
+            search_mask = 0;
+            trial_mask = 0;
+            target_mask = 64;
+            wall_mask = 42;
+            residual_sign = 0;
+            q_d = 0;
+            q_u = 0;
+            q_mag = 0;
+            repeat_idx = 0;
+            accum_q_d = 0;
+            accum_q_u = 0;
+            first_pair_sum = 0;
+            diversity_i = 0;
+
+            cal_mode_i = 0;
+            cal_done_i = (CAL_BYPASS != 0) ? 1 : 0;
+            cal_error_i = 0;
+            cal_armed_i = 0;
+            cal_started_i = 0;
+            measurement_ready_i = 0;
+            finish_pending_i = 0;
+            invalid_count = 0;
+            saturation_i = 0;
+
+            d_mask = 0;
+            u_mask = 0;
+
+            w0 = q_scale;
+            w1 = 2*q_scale;
+            w2 = 4*q_scale;
+            w3 = 8*q_scale;
+            w4 = 12*q_scale;
+            w5 = 20*q_scale;
+            w6 = 32*q_scale;
+            w7 = 48*q_scale;
+            w8 = 128*q_scale;
+            w9 = 256*q_scale;
+            w10 = 512*q_scale;
+            w11 = 1024*q_scale;
+            w12 = 2048*q_scale;
+
+            adc_code = 0;
+        end
+
+        @(cross(V(CAL_RST, DGND) - vth, -1)) begin
+            if (CAL_BYPASS == 0) begin
+            phase = 0;
+            target_idx = 7;
+            target_side = 0;
+            search_step = 0;
+            search_mask = 0;
+            trial_mask = 0;
+            target_mask = 64;
+            wall_mask = 42;
+            residual_sign = 0;
+            q_d = 0;
+            q_u = 0;
+            q_mag = 0;
+            repeat_idx = 0;
+            accum_q_d = 0;
+            accum_q_u = 0;
+            first_pair_sum = 0;
+            diversity_i = 0;
+
+            cal_mode_i = 1;
+            cal_done_i = 0;
+            cal_error_i = 0;
+            cal_armed_i = 1;
+            cal_started_i = 0;
+            measurement_ready_i = 0;
+            finish_pending_i = 0;
+            invalid_count = 0;
+            saturation_i = 0;
+
+            d_mask = 0;
+            u_mask = 0;
+
+            if (DEBUG != 0)
+                $strobe("DEC_CAL_PHY start t=%g", $abstime);
+            end
+        end
+
+        // Build the PRECHARGE bottom-plate state at the beginning of a frame.
+        // If the final measurement completed in the preceding frame, hand back
+        // control while RST1 is high so the normal switch never changes mode on
+        // a floating CDAC top plate.
+        @(cross(V(RST1, DGND) - vth, +1)) begin
+            if (cal_mode_i != 0) begin
+                if (finish_pending_i != 0) begin
+                    cal_mode_i = 0;
+                    cal_armed_i = 0;
+                    cal_started_i = 0;
+                    measurement_ready_i = 0;
+                    d_mask = 0;
+                    u_mask = 0;
+
+                    // A failed calibration never leaves a partially calibrated
+                    // decoder active.  Fall back atomically to nominal Q weights;
+                    // DONE means the foreground interval has ended, while ERR
+                    // tells the testbench that the nominal fallback is in use.
+                    if (cal_error_i != 0) begin
+                        w0 = q_scale;
+                        w1 = 2*q_scale;
+                        w2 = 4*q_scale;
+                        w3 = 8*q_scale;
+                        w4 = 12*q_scale;
+                        w5 = 20*q_scale;
+                        w6 = 32*q_scale;
+                        w7 = 48*q_scale;
+                        w8 = 128*q_scale;
+                        w9 = 256*q_scale;
+                        w10 = 512*q_scale;
+                        w11 = 1024*q_scale;
+                        w12 = 2048*q_scale;
+                    end
+                    cal_done_i = 1;
+
+                    if (DEBUG != 0) begin
+                        $strobe("DEC_CAL_PHY finish t=%g done=%0d err=%0d",
+                            $abstime, cal_done_i, cal_error_i);
+                        $strobe("DEC_CAL_PHY weights_q={%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d} Q=%0d pairs=%0d",
+                            w0, w1, w2, w3, w4, w5, w6, w7, w8,
+                            w9, w10, w11, w12, AVG_LOG2, q_scale);
+                    end
+                end else begin
+                    cal_started_i = 1;
+                    measurement_ready_i = 0;
+
+                    // Target side precharge: wall capacitors at VREFP, target
+                    // capacitor at VREFN.  Unused capacitors stay at VREFN.
+                    if (target_side == 0) begin
+                        d_mask = wall_mask;
+                        // A negative target-minus-wall residue is increased by
+                        // precharging the trial capacitors high and returning
+                        // them low after the top plate is released.
+                        if ((phase == 1) && (residual_sign < 0))
+                            u_mask = trial_mask;
+                        else
+                            u_mask = 0;
+                    end else begin
+                        u_mask = wall_mask;
+                        if ((phase == 1) && (residual_sign < 0))
+                            d_mask = trial_mask;
+                        else
+                            d_mask = 0;
+                    end
+                end
+            end
+        end
+
+        // Build the RESIDUE state.  The output transition itself is delayed by
+        // TD_CAL so that the top-plate VCM switch opens before the bottom plates
+        // make the target/wall transition.
+        @(cross(V(RST1, DGND) - vth, -1)) begin
+            if ((cal_mode_i != 0) && (cal_started_i != 0) &&
+                (finish_pending_i == 0)) begin
+                if (target_side == 0) begin
+                    d_mask = target_mask;
+                    if (phase == 0)
+                        u_mask = 0;
+                    else if (residual_sign > 0)
+                        u_mask = trial_mask;
+                    else
+                        u_mask = 0;
+                end else begin
+                    u_mask = target_mask;
+                    if (phase == 0)
+                        d_mask = 0;
+                    else if (residual_sign > 0)
+                        d_mask = trial_mask;
+                    else
+                        d_mask = 0;
+                end
+                measurement_ready_i = 1;
+            end
+        end
+
+        // The existing SOUT rises near the end of each 100-ns frame, while
+        // CLK00 is still in evaluation.  It is therefore used both to capture
+        // the real comparator decision and, after calibration, to latch codes.
+        @(cross(V(SOUT, DGND) - vth, +1)) begin
+            if ((cal_mode_i != 0) && (cal_started_i != 0) &&
+                (measurement_ready_i != 0) && (finish_pending_i == 0)) begin
+
+                cmp_delta = V(COMP, DGND) - V(COMN, DGND);
+                if (cmp_delta < 0.0)
+                    cmp_valid = ((-cmp_delta) > cmp_valid_min) ? 1 : 0;
+                else
+                    cmp_valid = (cmp_delta > cmp_valid_min) ? 1 : 0;
+
+                if (cmp_valid == 0) begin
+                    invalid_count = invalid_count + 1;
+                    if (invalid_count > MAX_INVALID) begin
+                        cal_error_i = 1;
+                        finish_pending_i = 1;
+                        if (DEBUG != 0)
+                            $strobe("DEC_CAL_PHY invalid comparator target=%0d side=%0d t=%g",
+                                target_idx, target_side, $abstime);
+                    end
+                end else begin
+                    invalid_count = 0;
+
+                    // Default polarity: COMP is the output that falls when the
+                    // P input is larger.  CMP_SWAP reverses this convention.
+                    cmp_p_gt_n = (V(COMP, DGND) < V(COMN, DGND)) ? 1 : 0;
+                    if (CMP_SWAP != 0)
+                        cmp_p_gt_n = 1 - cmp_p_gt_n;
+
+                    // Normalize the comparator result to "target-side top plate
+                    // is higher than search-side top plate".
+                    if (target_side == 0)
+                        target_is_higher = cmp_p_gt_n;
+                    else
+                        target_is_higher = 1 - cmp_p_gt_n;
+
+                    if (phase == 0) begin
+                        residual_sign = (target_is_higher != 0) ? 1 : -1;
+                        phase = 1;
+                        search_step = 0;
+                        search_mask = 0;
+                        trial_mask = 32;  // First trial: physical C6 = 16 units.
+                    end else begin
+                        // Keep a trial only while the comparison retains the
+                        // zero-search sign.  A sign reversal means overshoot.
+                        if (residual_sign > 0)
+                            keep_trial = target_is_higher;
+                        else
+                            keep_trial = 1 - target_is_higher;
+
+                        if (keep_trial != 0)
+                            search_mask = trial_mask;
+
+                        if (search_step < 5) begin
+                            search_step = search_step + 1;
+                            trial_mask = search_mask | (1 << (5 - search_step));
+                        end else begin
+                            // Do not force the final 1C decision.  Keeping the
+                            // actual comparator decision allows repeated noisy
+                            // trials to encode a fractional-LSB mean in Q format.
+                            q_mag = 0;
+                            if ((search_mask & 1)  != 0) q_mag = q_mag + 1;
+                            if ((search_mask & 2)  != 0) q_mag = q_mag + 2;
+                            if ((search_mask & 4)  != 0) q_mag = q_mag + 4;
+                            if ((search_mask & 8)  != 0) q_mag = q_mag + 6;
+                            if ((search_mask & 16) != 0) q_mag = q_mag + 10;
+                            if ((search_mask & 32) != 0) q_mag = q_mag + 16;
+
+                            saturation_i = ((search_mask == 63) &&
+                                (keep_trial != 0)) ? 1 : 0;
+
+                            if (target_side == 0) begin
+                                // Bottom-plate motion makes the observed
+                                // top-plate residue target_weight-wall_weight.
+                                q_d = residual_sign * q_mag;
+                                if (DEBUG != 0)
+                                    $strobe("DEC_CAL_PHY measure target=%0d pair=%0d side=D q=%0d",
+                                        target_idx, repeat_idx, q_d);
+
+                                if (saturation_i != 0) begin
+                                    cal_error_i = 1;
+                                    finish_pending_i = 1;
+                                end else begin
+                                    // Mirror measurement: BITU/N becomes target.
+                                    target_side = 1;
+                                    phase = 0;
+                                    search_step = 0;
+                                    search_mask = 0;
+                                    trial_mask = 0;
+                                    residual_sign = 0;
+                                end
+                            end else begin
+                                q_u = residual_sign * q_mag;
+                                if (DEBUG != 0)
+                                    $strobe("DEC_CAL_PHY measure target=%0d pair=%0d side=U qD=%0d qU=%0d",
+                                        target_idx, repeat_idx, q_d, q_u);
+
+                                if (repeat_idx == 0)
+                                    first_pair_sum = q_d + q_u;
+                                else if ((q_d + q_u) != first_pair_sum)
+                                    diversity_i = 1;
+
+                                if (saturation_i != 0) begin
+                                    cal_error_i = 1;
+                                    finish_pending_i = 1;
+                                end else if (repeat_idx < (q_scale - 1)) begin
+                                    // One Huang positive/negative pair is done.
+                                    // Accumulate signed residual codes, then run
+                                    // the same physical experiment again.
+                                    accum_q_d = accum_q_d + q_d;
+                                    accum_q_u = accum_q_u + q_u;
+                                    repeat_idx = repeat_idx + 1;
+                                    target_side = 0;
+                                    phase = 0;
+                                    search_step = 0;
+                                    search_mask = 0;
+                                    trial_mask = 0;
+                                    residual_sign = 0;
+                                    q_d = 0;
+                                    q_u = 0;
+                                end else begin
+                                    accum_q_d = accum_q_d + q_d;
+                                    accum_q_u = accum_q_u + q_u;
+
+                                    // Recursive calibrated wall in differential
+                                    // raw-decision Q units.  Because q_scale is
+                                    // also the number of measurement pairs, the
+                                    // integer residual accumulators already have
+                                    // exactly the required Q scaling.
+                                    case (target_idx)
+                                        7: begin
+                                            wall_weight = w6 + w4 + w2;
+                                            nominal_weight = 48*q_scale;
+                                        end
+                                        8: begin
+                                            wall_weight = w1 + w2 + w3 + w4 +
+                                                w5 + w6 + w7;
+                                            nominal_weight = 128*q_scale;
+                                        end
+                                        9: begin
+                                            wall_weight = w1 + w2 + w3 + w4 +
+                                                w5 + w6 + w7 + w8;
+                                            nominal_weight = 256*q_scale;
+                                        end
+                                        10: begin
+                                            wall_weight = w1 + w2 + w3 + w4 +
+                                                w5 + w6 + w7 + w8 + w9;
+                                            nominal_weight = 512*q_scale;
+                                        end
+                                        11: begin
+                                            wall_weight = w1 + w2 + w3 + w4 +
+                                                w5 + w6 + w7 + w8 + w9 + w10;
+                                            nominal_weight = 1024*q_scale;
+                                        end
+                                        default: begin
+                                            wall_weight = w1 + w2 + w3 + w4 +
+                                                w5 + w6 + w7 + w8 + w9 + w10 + w11;
+                                            nominal_weight = 2048*q_scale;
+                                        end
+                                    endcase
+
+                                    // The unforced last decision is a stochastic
+                                    // one-LSB threshold.  With decision diversity,
+                                    // a half-LSB correction per measured CDAC pair
+                                    // gives the midpoint estimate.  If a noiseless
+                                    // transient produces no diversity near the
+                                    // nominal 63:64 bridge endpoint, retain the
+                                    // nominal target instead of writing a biased
+                                    // powers-minus-one sequence.  Large deterministic
+                                    // deviations still use the coarse measured code.
+                                    if (target_idx == 7) begin
+                                        candidate_weight = wall_weight +
+                                            accum_q_d + accum_q_u;
+                                    end else if ((diversity_i == 0) &&
+                                        (first_pair_sum >= 0) &&
+                                        (first_pair_sum <= 2)) begin
+                                        candidate_weight = nominal_weight;
+                                    end else begin
+                                        candidate_weight = wall_weight +
+                                            accum_q_d + accum_q_u + q_scale;
+                                    end
+
+                                    if ((candidate_weight <
+                                            nominal_weight * (1.0 - WEIGHT_TOL)) ||
+                                        (candidate_weight >
+                                            nominal_weight * (1.0 + WEIGHT_TOL))) begin
+                                        cal_error_i = 1;
+                                        finish_pending_i = 1;
+                                        if (DEBUG != 0)
+                                            $strobe("DEC_CAL_PHY weight error target=%0d candidate=%0d",
+                                                target_idx, candidate_weight);
+                                    end else begin
+                                        case (target_idx)
+                                            7:  w7  = candidate_weight;
+                                            8:  w8  = candidate_weight;
+                                            9:  w9  = candidate_weight;
+                                            10: w10 = candidate_weight;
+                                            11: w11 = candidate_weight;
+                                            12: w12 = candidate_weight;
+                                        endcase
+
+                                        if (DEBUG != 0)
+                                            $strobe("DEC_CAL_PHY weight target=%0d value_q=%0d value=%g pairs=%0d residual_q=%0d diversity=%0d",
+                                                target_idx, candidate_weight,
+                                                1.0*candidate_weight/q_scale,
+                                                q_scale, accum_q_d+accum_q_u,
+                                                diversity_i);
+
+                                        if (target_idx == 12) begin
+                                            finish_pending_i = 1;
+                                        end else begin
+                                            target_idx = target_idx + 1;
+                                            target_mask = 1 << (target_idx - 1);
+                                            wall_mask = (1 << (target_idx - 1)) - 1;
+                                            target_side = 0;
+                                            phase = 0;
+                                            search_step = 0;
+                                            search_mask = 0;
+                                            trial_mask = 0;
+                                            residual_sign = 0;
+                                            q_d = 0;
+                                            q_u = 0;
+                                            repeat_idx = 0;
+                                            accum_q_d = 0;
+                                            accum_q_u = 0;
+                                            first_pair_sum = 0;
+                                            diversity_i = 0;
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+
+                measurement_ready_i = 0;
+            end else if ((cal_done_i != 0) && (cal_mode_i == 0)) begin
+
+                r0  = (V(BP[0],  DGND) > vth) ? 1 : 0;
+                r1  = (V(BP[1],  DGND) > vth) ? 1 : 0;
+                r2  = (V(BP[2],  DGND) > vth) ? 1 : 0;
+                r3  = (V(BP[3],  DGND) > vth) ? 1 : 0;
+                r4  = (V(BP[4],  DGND) > vth) ? 1 : 0;
+                r5  = (V(BP[5],  DGND) > vth) ? 1 : 0;
+                r6  = (V(BP[6],  DGND) > vth) ? 1 : 0;
+                r7  = (V(BP[7],  DGND) > vth) ? 1 : 0;
+                r8  = (V(BP[8],  DGND) > vth) ? 1 : 0;
+                r9  = (V(BP[9],  DGND) > vth) ? 1 : 0;
+                r10 = (V(BP[10], DGND) > vth) ? 1 : 0;
+                r11 = (V(BP[11], DGND) > vth) ? 1 : 0;
+                r12 = (V(BP[12], DGND) > vth) ? 1 : 0;
+
+                if (RAW_INVERT != 0) begin
+                    r0 = 1-r0;   r1 = 1-r1;   r2 = 1-r2;
+                    r3 = 1-r3;   r4 = 1-r4;   r5 = 1-r5;
+                    r6 = 1-r6;   r7 = 1-r7;   r8 = 1-r8;
+                    r9 = 1-r9;   r10 = 1-r10; r11 = 1-r11;
+                end
+                if (FIRST_INVERT != 0)
+                    r12 = 1-r12;
+
+                raw_sum = r0*w0 + r1*w1 + r2*w2 + r3*w3 + r4*w4 +
+                    r5*w5 + r6*w6 + r7*w7 + r8*w8 + r9*w9 +
+                    r10*w10 + r11*w11 + r12*w12;
+
+                weight_sum = w0 + w1 + w2 + w3 + w4 + w5 + w6 +
+                    w7 + w8 + w9 + w10 + w11 + w12;
+
+                scaled_code = 4095.0 * raw_sum / weight_sum;
+                adc_code = $rtoi(scaled_code + 0.5);
+                if (adc_code < 0)
+                    adc_code = 0;
+                else if (adc_code > 4095)
+                    adc_code = 4095;
+            end
+        end
+
+        // Track both candidate clocks discretely.  The actual MUX is inside
+        // this module, so the top-level schematic needs no third module.
+        @(cross(V(CLK_SAR, DGND) - vth, +1)) clk_sar_i = 1;
+        @(cross(V(CLK_SAR, DGND) - vth, -1)) clk_sar_i = 0;
+        @(cross(V(CLK00, DGND) - vth, +1)) clk00_i = 1;
+        @(cross(V(CLK00, DGND) - vth, -1)) clk00_i = 0;
+
+        b0  = (adc_code      ) & 1;
+        b1  = (adc_code >>  1) & 1;
+        b2  = (adc_code >>  2) & 1;
+        b3  = (adc_code >>  3) & 1;
+        b4  = (adc_code >>  4) & 1;
+        b5  = (adc_code >>  5) & 1;
+        b6  = (adc_code >>  6) & 1;
+        b7  = (adc_code >>  7) & 1;
+        b8  = (adc_code >>  8) & 1;
+        b9  = (adc_code >>  9) & 1;
+        b10 = (adc_code >> 10) & 1;
+        b11 = (adc_code >> 11) & 1;
+
+        V(CAL,  DGND) <+ vlogic * transition(cal_mode_i,  TD, TR, TF);
+        V(DONE, DGND) <+ vlogic * transition(cal_done_i,  TD, TR, TF);
+        V(ERR,  DGND) <+ vlogic * transition(cal_error_i, TD, TR, TF);
+        V(CLK,  DGND) <+ vlogic * transition(
+            cal_mode_i ? clk00_i : clk_sar_i, TD, TR, TF);
+
+        V(Bit[0],  DGND) <+ vlogic * transition(b0,  TD, TR, TF);
+        V(Bit[1],  DGND) <+ vlogic * transition(b1,  TD, TR, TF);
+        V(Bit[2],  DGND) <+ vlogic * transition(b2,  TD, TR, TF);
+        V(Bit[3],  DGND) <+ vlogic * transition(b3,  TD, TR, TF);
+        V(Bit[4],  DGND) <+ vlogic * transition(b4,  TD, TR, TF);
+        V(Bit[5],  DGND) <+ vlogic * transition(b5,  TD, TR, TF);
+        V(Bit[6],  DGND) <+ vlogic * transition(b6,  TD, TR, TF);
+        V(Bit[7],  DGND) <+ vlogic * transition(b7,  TD, TR, TF);
+        V(Bit[8],  DGND) <+ vlogic * transition(b8,  TD, TR, TF);
+        V(Bit[9],  DGND) <+ vlogic * transition(b9,  TD, TR, TF);
+        V(Bit[10], DGND) <+ vlogic * transition(b10, TD, TR, TF);
+        V(Bit[11], DGND) <+ vlogic * transition(b11, TD, TR, TF);
+
+        for (g = 0; g < 12; g = g + 1) begin
+            V(BITD_CAL[g], DGND) <+ vlogic * transition(
+                (d_mask >> g) & 1, TD_CAL, TR, TF);
+            V(BITU_CAL[g], DGND) <+ vlogic * transition(
+                (u_mask >> g) & 1, TD_CAL, TR, TF);
+        end
+    end
+endmodule

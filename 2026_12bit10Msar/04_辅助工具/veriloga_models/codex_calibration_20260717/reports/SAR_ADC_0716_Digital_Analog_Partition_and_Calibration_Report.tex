@@ -1,0 +1,2977 @@
+% !TEX program = xelatex
+% !TEX encoding = UTF-8 Unicode
+% 0716 SAR ADC 数字—模拟分区、校准控制与真实开关实现报告
+% LaTeX 版本（与 Markdown 内容一致）
+% 编译方式：XeLaTeX
+\documentclass[UTF8,a4paper,11pt]{ctexart}
+
+\usepackage[
+  top=2.5cm, bottom=2.5cm, left=2.4cm, right=2.4cm,
+  headheight=14pt, headsep=0.4cm, footskip=0.8cm
+]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs,longtable,array,multirow,tabularx}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption,subcaption}
+\usepackage[hidelinks,bookmarksnumbered,bookmarksopen,bookmarksopenlevel=2]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,calc,fit,backgrounds,shapes.multipart}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{mdframed}
+
+% ---------- 颜色定义 ----------
+\definecolor{verifiedgreen}{RGB}{0,128,0}
+\definecolor{inferorange}{RGB}{204,102,0}
+\definecolor{suggestblue}{RGB}{0,51,153}
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{keywordblue}{RGB}{0,0,180}
+\definecolor{commentgreen}{RGB}{0,128,0}
+\definecolor{stringred}{RGB}{163,21,21}
+\definecolor{linkblue}{RGB}{0,0,139}
+
+% ---------- 证据分级命令 ----------
+\newcommand{\verified}{\textcolor{verifiedgreen}{\textbf{[已验证]}}}
+\newcommand{\inferred}{\textcolor{inferorange}{\textbf{[工程推断]}}}
+\newcommand{\suggested}{\textcolor{suggestblue}{\textbf{[设计建议]}}}
+\providecommand{\textOmega}{\ensuremath{\Omega}}
+\providecommand{\textmu}{\ensuremath{\mu}}
+
+% ---------- listings 配置 ----------
+\lstdefinestyle{verilogstyle}{
+  language=Verilog,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keywordblue}\bfseries,
+  commentstyle=\color{commentgreen}\itshape,
+  stringstyle=\color{stringred},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{gray!50},
+  framerule=0.4pt,
+  breaklines=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  tabsize=2,
+  captionpos=b,
+}
+\lstdefinestyle{textstyle}{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{gray!50},
+  framerule=0.4pt,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  captionpos=b,
+}
+\lstset{style=verilogstyle}
+
+% ---------- 页眉页脚 ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 0716 SAR ADC 分区与校准报告}
+\fancyhead[R]{\small \thepage}
+\fancyfoot[C]{\small 0716 SAR ADC 数字—模拟分区、校准控制与真实开关实现报告}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ---------- 章节标题样式 ----------
+\titleformat{\section}{\Large\bfseries\color{black}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{black!85}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{black!70}}{\thesubsubsection}{0.6em}{}
+
+% ---------- 超链接颜色 ----------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue,
+}
+
+% ---------- mdframed 样式（用于重要说明框） ----------
+\newmdenv[
+  linecolor=gray!60,
+  linewidth=0.4pt,
+  backgroundcolor=gray!5,
+  roundcorner=3pt,
+  innertopmargin=6pt,
+  innerbottommargin=6pt,
+  innerleftmargin=8pt,
+  innerrightmargin=8pt,
+]{infobox}
+
+% ---------- 长表格设置 ----------
+\setlength{\LTcapwidth}{\linewidth}
+
+% ---------- 文档信息 ----------
+\title{\textbf{0716 SAR ADC 数字—模拟分区、校准控制与真实开关实现报告}\\[4pt]
+\large \textnormal{项目: \texttt{test\_12bit50MSAR\_AMS\_final\_0716}}\\[2pt]
+\textnormal{ADC 类型: 12-bit 非二进制冗余 SAR ADC \quad 采样率: 10 MS/s}\\[2pt]
+\textnormal{工艺: TSMC 0.18\textmu m RF CMOS \quad 日期: 2026-07-17}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\begin{infobox}
+\textbf{项目}: \texttt{test\_12bit50MSAR\_AMS\_final\_0716}\\
+\textbf{ADC 类型}: 12-bit 非二进制冗余 SAR ADC\\
+\textbf{采样率}: 10 MS/s\\
+\textbf{工艺}: TSMC 0.18\textmu m RF CMOS\\
+\textbf{日期}: 2026-07-17
+\end{infobox}
+
+\tableofcontents
+\newpage
+
+% ==================================================================
+\section{证据分级说明}
+% ==================================================================
+
+本报告中所有关键结论严格标记为以下三类：
+
+\begin{table}[H]
+\centering
+\caption{证据分级标记说明}
+\label{tab:evidence-grade}
+\begin{tabular}{cl}
+\toprule
+标记 & 含义 \\
+\midrule
+\verified & 由网表、代码、仿真波形、日志或审计报告直接支持 \\
+\inferred & 由现有结构推导，但尚未完成晶体管级或版图级验证 \\
+\suggested & 拟采用的改进方案，尚未实现或验证 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==================================================================
+\section{摘要与结论}
+% ==================================================================
+
+\subsection{项目目标}
+
+本项目 \texttt{test\_12bit50MSAR\_AMS\_final\_0716} 是一个 12-bit 非二进制冗余 SAR ADC，采样率 10 MS/s，采用 TSMC 0.18\textmu m RF CMOS 工艺。当前状态为：校准闭环已通过 Verilog-A/Spectre 验证，在确定性电容失配条件下校准后 SNDR 达到 73.24 dB（ENOB 11.874 bit），但 \texttt{SWITCH\_CAL} 与 \texttt{DEC\_CAL\_PHY} 仍是混合行为模型，需要进一步拆分为真实模拟开关、混合信号接口和可综合数字逻辑，以完成 ASIC 落地。
+
+\subsection{当前已验证结果}
+
+以下结果由完整晶体管级 Spectre 仿真直接支持 \verified：
+
+\begin{table}[H]
+\centering
+\caption{当前已验证结果对比}
+\label{tab:verified-results}
+\begin{tabular}{lccc}
+\toprule
+指标 & 旁路模式 & 校准模式 & 说明 \\
+\midrule
+SNDR  & -5.17 dB   & 73.24 dB    & 128 点相干采样，无窗 \\
+SFDR  & 3.35 dB    & 82.22 dB    & \\
+ENOB  & 0 bit      & 11.874 bit  & \\
+DONE  & N/A        & 1.8 V (有效) & 校准完成标志 \\
+ERR   & N/A        & 0 V (无错误) & 校准错误标志 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}[leftmargin=2em]
+\item 仿真条件：\texttt{va=800m}，\texttt{C=4f}，\texttt{fs=10MHz}，\texttt{fin=4.609375MHz}（bin 59），\texttt{NFFT=128}，相干采样
+\item 关键参数变更：\texttt{NORMALIZE\_REDUNDANT\_RANGE=0}（偏移模式），\texttt{HIGH\_WEIGHT\_UPDATE\_DEADBAND\_LSB=1.0}（高位窄死区）
+\item Spectre 命令行添加 \texttt{+preset=cx} 以确保收敛一致性
+\end{itemize}
+
+\subsection{Phase 0 离线验证结果}
+
+通过 Phase 0 离线 RAW 重映射实验，已验证 NORMALIZE 假设的根因分析 \verified：
+
+\begin{table}[H]
+\centering
+\caption{Phase 0: 离线 RAW 重映射实验结果（含反推伪影诊断）}
+\label{tab:phase0_results}
+\begin{tabular}{lccc}
+\toprule
+映射方式 & SNDR (dB) & 与 offset-only 差异 & 结论 \\
+\midrule
+V\_OUT 直接 FFT（模拟域基准） & 73.24 & — & 最可信 SNDR \\
+浮点 Code 反推（不 round） & 73.24 & 0.00 & 精确恢复，确认 73.24 为真实 SNDR \\
+y1: offset-only 浮点 & 73.24 & 基准 & 当前模式，最优 \\
+y2: normalize + 整数化 & 70.35 & \textbf{-2.89 dB} & 再量化噪声是主因 \\
+y3: normalize 浮点 (不舍入) & 73.24 & 0.00 dB & 线性增益不影响 SNDR \\
+整数 Code 反推（round，对照组） & 70.88 & -2.36 & round() 引入 $\pm$0.5 LSB 量化伪影 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{关键结论} \verified：
+\begin{itemize}[leftmargin=2em]
+\item 浮点反推（不 round）与 V\_OUT 直接 FFT 完全一致（73.24 dB），确认 73.24 dB 是校准后真实 SNDR
+\item y3（浮点 normalize）与 y1 SNDR 完全一致（0.00 dB），证明线性增益压缩本身不影响 SNDR
+\item y2（舍入 normalize）比 y1 低 2.89 dB，证明根因是归一化后再量化为整数码引入的独立量化噪声
+\item 整数反推 round() 引入 $\pm$0.5 LSB 量化误差（标准差 0.287 LSB），在 128 点 FFT 中损失 2.36 dB，这是反推处理的伪影，不是 ADC 本身噪声
+\item \textbf{校准成功：SNDR = 73.24 dB $>$ 73 dB 目标，DONE=1.8V, ERR=0V}
+\item \textbf{推荐使用 offset-only 模式 (\texttt{NORMALIZE\_REDUNDANT\_RANGE=0}) 已由离线实验确认}
+\end{itemize}
+
+\noindent 注：Phase 0 的核心目的是对比 offset-only vs normalize 的相对 SNDR 差异。round() 对所有序列影响相同，因此相对差异（-2.89 dB）不受影响。绝对 SNDR 应引用浮点反推的 73.24 dB。
+
+\subsection{当前结构性问题}
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{\texttt{SWITCH\_CAL} 混合功能} \verified：当前 Verilog-A 模型同时承担正常/校准模式选择、CDAC 参考选择、顶板采样/复位、校准预充与释放、真实开关行为建模和物理索引映射六项功能，无法直接综合为 RTL 或晶体管级电路。
+\item \textbf{\texttt{DEC\_CAL\_PHY} 混合功能} \verified：当前 Verilog-A 模型同时承担校准 FSM、搜索算法、权重更新、错误检测、时钟复用、电压阈值判决、正常码重构和输出电压驱动八项功能，跨越模拟/数字/验证三个域。
+\item \textbf{比较器接口未离散化} \verified：\texttt{DEC\_CAL\_PHY} 直接读取 \texttt{COMP}/\texttt{COMN} 模拟电压差进行判决，最终硬件不能让 RTL 读取模拟电压。
+\item \textbf{无资源仲裁 FSM} \inferred：当前 \texttt{CAL} 信号同时承担请求、忙、模式和时钟隔离四种语义，缺少正式的 normal/calibration 资源仲裁状态机。
+\item \textbf{无双权重 bank} \inferred：校准过程中正常解码可能暴露半更新权重，缺少 ACTIVE/SHADOW 双 bank 原子提交机制。
+\end{enumerate}
+
+\subsection{推荐最终分区}
+
+\begin{table}[H]
+\centering
+\caption{推荐最终分区}
+\label{tab:recommended-partition}
+\begin{tabular}{llp{7cm}}
+\toprule
+域 & 模块 & 说明 \\
+\midrule
+模拟核心 & BS, CDAC\_0716, COM\_IAZ, 参考网络, 真实 TG 开关阵列 & 进入芯片 \\
+数字核心 & MODE\_ARB, SAR\_CTRL, TIMING\_CTRL, CAL\_CTRL, CAL\_SEARCH, 权重 bank, CODE\_RECON, CONFIG\_STATUS & 可综合 RTL \\
+混合信号接口 & 比较器接收器, 时钟驱动, level shifter, 本地开关驱动 & 进入芯片 \\
+验证环境 & SNDR\_DAC, 理想比较器, OCEAN/Python FFT & 不进入芯片 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{最高优先级改动}
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{P0}: 将 \texttt{DEC\_CAL\_PHY} 的模拟电压阈值检测替换为 \texttt{cmp\_bit}/\texttt{cmp\_done} 数字接口
+\item \textbf{P0}: 将 \texttt{SWITCH\_CAL} 拆分为数字开关控制器 + one-hot interlock + 本地驱动 + 真实 TG 开关阵列
+\item \textbf{P0}: 实现 \texttt{MODE\_ARB} 资源仲裁 FSM，确保 normal/calibration 切换在安全边界发生
+\item \textbf{P1}: 实现双权重 bank（ACTIVE/SHADOW）原子提交机制
+\item \textbf{P1}: 将输出归一化从模拟域移至数字域固定点实现
+\end{enumerate}
+
+% ==================================================================
+\section{项目背景与现有 0716 架构}
+% ==================================================================
+
+\subsection{非二进制 CDAC}
+
+0716 ADC 采用非二进制冗余 CDAC 架构，P/N 两侧各含 13 个物理电容 + 1 个终端决定。物理电容权重如下 \verified：
+
+\begin{table}[H]
+\centering
+\caption{物理电容权重映射表}
+\label{tab:physical-weights}
+\begin{tabular}{ccccc c}
+\toprule
+stage & BP & CDAC 物理端 & 名称 & 物理电容 & 输出权重/LSB \\
+\midrule
+0  & 13 & BITD/U13 & C12      & 16C & 2048 \\
+1  & 12 & BITD/U12 & C11      & 8C  & 1024 \\
+2  & 11 & BITD/U11 & C10      & 4C  & 512  \\
+3  & 10 & BITD/U10 & C9       & 2C  & 256  \\
+4  & 9  & BITD/U9  & CR       & 2C  & 256  \\
+5  & 8  & BITD/U8  & C8       & C   & 128  \\
+6  & 7  & BITD/U7  & C7       & 24C & 48   \\
+7  & 6  & BITD/U6  & C6       & 16C & 32   \\
+8  & 5  & BITD/U5  & C5       & 10C & 20   \\
+9  & 4  & BITD/U4  & C4       & 6C  & 12   \\
+10 & 3  & BITD/U3  & C3       & 4C  & 8    \\
+11 & 2  & BITD/U2  & C2       & 2C  & 4    \\
+12 & 1  & BITD/U1  & C1       & C   & 2    \\
+13 & 0  & terminal & 终端     & 桥/余项 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+低位阵列通过桥接电容接入高位顶板。桥接低位阵列总和为 $24+16+10+6+4+2+1=63$，桥接衰减系数为：
+\begin{equation}
+\alpha = \frac{1}{1+63} = \frac{1}{64}
+\label{eq:bridge-alpha}
+\end{equation}
+
+因此低位物理电容在差分输出码域对应 48、32、20、12、8、4、2 LSB；终端决定补足 1 LSB \verified。
+
+\subsection{冗余支路}
+
+冗余 2C 支路（CR，stage 4）使高位序列由严格二进制的 $2048, 1024, 512, 256, 128$ 变成 $2048, 1024, 512, 256, 256, 128$，提供 256 LSB 的数字覆盖区 \verified。
+
+名义非二进制权重总和为：
+\begin{equation}
+W_\Sigma = 2048 + 1024 + 512 + 256 + 256 + 128 + 48 + 32 + 20 + 12 + 8 + 4 + 2 + 1 = 4351
+\label{eq:wsum}
+\end{equation}
+
+比标准 12 位满量程 4095 多出冗余 256 LSB（$\pm 128$ LSB 每端）。
+
+冗余的主要价值不是自动消除失配，而是让后续决定可修正前一决定附近的过冲、比较器延迟和小幅 DAC 误差 \verified。
+
+\subsection{物理权重和 BP 顺序}
+
+0716 顶层 PN 缓冲把 \texttt{BITP<13>} 送到 \texttt{BP<13>}，依次到 \texttt{BP<0>}。\texttt{BP<13>} 是首个 C12 决策（MSB），\texttt{BP<0>} 是终端决定。\texttt{DEC\_CAL\_PHY} 在 \texttt{SOUT} 上升沿锁存 \texttt{BP} 时显式反转总线：\texttt{r0 = BP[13]}, \texttt{r1 = BP[12]}, ..., \texttt{r13 = BP[0]}，使 \texttt{w0} 对应 C12 权重，\texttt{w13} 对应终端 \verified。
+
+\subsection{正常转换路径}
+
+正常转换的信号链为 \verified：
+
+\begin{lstlisting}[style=textstyle]
+VIP/VIN -> BS(采样) -> CDAC_0716(电荷重分配) -> COM_IAZ(比较器)
+    -> SAR_LOGIC_0716(14级决策) -> BP<13:0> -> DEC_CAL_PHY(SOUT锁存+权重求和)
+    -> Bit<11:0> -> SNDR_DAC(测试用DAC) -> OUT
+\end{lstlisting}
+
+每 100 ns 完成一次完整转换。\texttt{PRST} 在帧起始预置 SAR 链，\texttt{RST}/\texttt{RST1} 控制采样和比较器复位窗口，\texttt{SOUT} 标记原始决策有效，\texttt{CLK00} 标记正常 SAR 窗口。
+
+\subsection{校准路径}
+
+校准路径在 \texttt{DEC\_CAL\_PHY} 控制下，复用同一套 CDAC 和比较器 \verified：
+
+\begin{lstlisting}[style=textstyle]
+DEC_CAL_PHY -> BITD_CAL/BITU_CAL -> SWITCH_CAL -> CDAC_0716(校准激励)
+    -> COM_IAZ(比较器) -> DEC_CAL_PHY(CMP/COMN读取)
+    -> 权重更新 -> SOUT正常解码(使用校准后权重)
+\end{lstlisting}
+
+校准时序以每 100 ns 帧为原子单位。\texttt{RST1} 上升沿清除帧状态，\texttt{RST1} 下降沿打开新帧。\texttt{CAL\_CLK} 在帧内提供 8 次有效比较周期。6 个目标 $\times$ 8 pair $\times$ 2 侧 = 96 帧，理论前景时间约 9.6 \textmu s \verified。
+
+% ==================================================================
+\section{现有模块审计}
+% ==================================================================
+
+\subsection{BS（自举采样开关）}
+
+\begin{table}[H]
+\centering
+\caption{BS 模块属性}
+\label{tab:bs-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & 晶体管级 subckt（nch/pch/mimcap） \\
+当前功能   & 自举采样开关，CLK 控制采样/保持 \\
+模拟/数字  & 纯模拟 \\
+现有风险   & 无自举电容充电保证；采样线性度依赖晶体管尺寸 \\
+最终去向   & 模拟核心，进入芯片 \\
+是否可综合 & N/A（模拟电路） \\
+是否需要重构 & 否（当前实现已是真实晶体管级） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{端口} \verified：
+
+\begin{table}[H]
+\centering
+\caption{BS 端口定义}
+\label{tab:bs-ports}
+\begin{tabular}{lll}
+\toprule
+端口 & 方向 & 功能 \\
+\midrule
+AGND, AVDD & 电源 & 模拟电源与地 \\
+CLK        & 输入 & 采样时钟（CLK0 的反相） \\
+VIN        & 输入 & 采样输入（VIP1 或 VIN1） \\
+VOUT       & 输出 & 采样输出（VIP 或 VIN） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+两个实例：\texttt{I55} 采样 VIP1$\rightarrow$VIP，\texttt{I54} 采样 VIN1$\rightarrow$VIN \verified。
+
+\subsection{CDAC\_0716（电容 DAC）}
+
+\begin{table}[H]
+\centering
+\caption{CDAC\_0716 模块属性}
+\label{tab:cdac-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & 晶体管级 subckt（capacitor） \\
+当前功能   & P/N 两侧差分电容阵列，含桥接低位阵列 \\
+模拟/数字  & 纯模拟 \\
+现有风险   & 电容失配（C12: +5.81 LSB, C11: +3.82 LSB, C10: +1.12 LSB） \\
+最终去向   & 模拟核心，进入芯片 \\
+是否可综合 & N/A \\
+是否需要重构 & 否（电容阵列本身不需要修改） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{电容映射} \verified：
+
+\begin{table}[H]
+\centering
+\caption{CDAC\_0716 电容映射表}
+\label{tab:cdac-mapping}
+\small
+\begin{tabular}{l l l l l}
+\toprule
+电容编号 & P 侧节点 & N 侧节点 & 电容值 & 对应权重 \\
+\midrule
+C143     & BITD<13>  & ---       & 16C & C12 \\
+C156     & ---       & BITU<13>  & 16C & C12 \\
+C141     & BITD<12>  & ---       & 8C  & C11 \\
+C154     & ---       & BITU<12>  & 8C  & C11 \\
+C142     & BITD<11>  & ---       & 4C  & C10 \\
+C155     & ---       & BITU<11>  & 4C  & C10 \\
+C139     & BITD<10>  & ---       & 2C  & CR  \\
+C152     & ---       & BITU<10>  & 2C  & CR  \\
+C248     & BITD<9>   & ---       & 2C  & C9  \\
+C249     & ---       & BITU<9>   & 2C  & C9  \\
+C140     & BITD<8>   & ---       & C   & C8  \\
+C153     & ---       & BITU<8>   & C   & C8  \\
+C138/C151 & net3/net4 & BITD<7>/BITU<7> & 24C & C7 \\
+C137/C150 & net3/net4 & BITD<6>/BITU<6> & 16C & C6 \\
+C136/C149 & net3/net4 & BITD<5>/BITU<5> & 10C & C5 \\
+C132/C157 & net3/net4 & BITD<4>/BITU<4> & 6C  & C4 \\
+C135/C148 & net3/net4 & BITD<3>/BITU<3> & 4C  & C3 \\
+C134/C147 & net3/net4 & BITD<2>/BITU<2> & 2C  & C2 \\
+C133/C146 & net3/net4 & BITD<1>/BITU<1> & C   & C1 \\
+C144/C145 & P/N       & net3/net4        & C   & 桥接电容 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{COM\_IAZ（比较器）}
+
+\begin{table}[H]
+\centering
+\caption{COM\_IAZ 模块属性}
+\label{tab:com-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & 晶体管级 subckt（pch\_mis, nch\_mis, INVX2, NOR1） \\
+当前功能   & 动态比较器，含 IAZ（Auto-Zero）复位机制 \\
+模拟/数字  & 模拟（输出为模拟电压 VON/VOP） \\
+现有风险   & RST 高期间 VON/VOP 保持旧值（stale output）；无 timeout 保护 \\
+最终去向   & 模拟核心，进入芯片 \\
+是否可综合 & N/A \\
+是否需要重构 & 是（需添加数字输出接口 cmp\_bit/cmp\_done） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{端口} \verified：
+
+\begin{table}[H]
+\centering
+\caption{COM\_IAZ 端口定义}
+\label{tab:com-ports}
+\begin{tabular}{lll}
+\toprule
+端口 & 方向 & 功能 \\
+\midrule
+AGND, AVDD & 电源 & 模拟电源与地 \\
+CLK        & 输入 & 比较器评估时钟 \\
+RST        & 输入 & 复位/IAZ 控制 \\
+VIN, VIP   & 输入 & 差分输入（CDAC 顶板 N/P） \\
+VON, VOP   & 输出 & 差分模拟输出（顶层命名 COMN/COMP） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{关键时序行为} \verified：
+\begin{itemize}[leftmargin=2em]
+\item RST 为高时：输出保持上一次决定（stale latch），不能作为新比较结果采样
+\item RST 为低时：CLK 上升沿触发评估，可连续给出 8 次可靠比较
+\item 正/负 20 mV 输入差分时输出极性已验证
+\end{itemize}
+
+\subsection{SAR\_LOGIC\_0716（SAR 决策链）}
+
+\begin{table}[H]
+\centering
+\caption{SAR\_LOGIC\_0716 模块属性}
+\label{tab:sar-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & 晶体管级 subckt（DFF, NOR1, NAND1, INVX1/2） \\
+当前功能   & 14 级非二进制 SAR 决策链，产生 BITP/BITN<13:0> 互补输出和 SET<0:13> 逐级控制 \\
+模拟/数字  & 数字（但当前为晶体管级实现） \\
+现有风险   & 物理顺序与 stage 顺序的映射在 SWITCH\_CAL 中用 13-k 完成 \\
+最终去向   & 数字核心（可综合 RTL） \\
+是否可综合 & 是（逻辑等价 RTL） \\
+是否需要重构 & 是（迁移为 RTL，添加 cmp\_bit/cmp\_done 接口） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{端口} \verified：
+
+\begin{table}[H]
+\centering
+\caption{SAR\_LOGIC\_0716 端口定义}
+\label{tab:sar-ports}
+\begin{tabular}{lll}
+\toprule
+端口组 & 方向 & 功能 \\
+\midrule
+BITN/P<13:0> & 输出 & 14 级互补决策输出 \\
+CCLK         & 输入 & SAR 链时钟 \\
+COMN         & 输入 & 比较器决定输入 \\
+PRST         & 输入 & 整帧预置 \\
+SET<0:13>    & 输出 & 逐级置位控制 \\
+DGND, DVDD   & 电源 & 数字电源与地 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{关键映射} \verified：\texttt{SET<0>} 对应 C12（物理 13），\texttt{SET<13>} 对应终端。\texttt{BITP<13>} 对应 C12 决策，\texttt{BITP<0>} 对应终端决策。stage 索引与物理索引的关系为 \texttt{stage = 13 - physical\_index}。
+
+\subsection{SYNC\_asnyc（异步同步器）}
+
+\begin{table}[H]
+\centering
+\caption{SYNC\_asnyc 模块属性}
+\label{tab:sync-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & 晶体管级 subckt（INVX1/3, NOR1, NAND1, not\_gate） \\
+当前功能   & 产生 CCLK（SAR 链时钟）、CLK00（正常窗口标记）、DEC\_N（有效/完成路径） \\
+模拟/数字  & 数字 \\
+现有风险   & CLK 来自 DEC\_CAL\_PHY 的 normal/calibration 时钟选择，存在多源时钟语义 \\
+最终去向   & 数字核心（TIMING\_CTRL 的一部分） \\
+是否可综合 & 是 \\
+是否需要重构 & 是（时钟选择逻辑需移入 MODE\_ARB） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{端口} \verified：
+
+\begin{table}[H]
+\centering
+\caption{SYNC\_asnyc 端口定义}
+\label{tab:sync-ports}
+\begin{tabular}{lll}
+\toprule
+端口 & 方向 & 功能 \\
+\midrule
+CCLK       & 输出 & SAR 链时钟 \\
+CLK        & 输入 & 来自 DEC\_CAL\_PHY 的时钟选择 \\
+CLK00      & 输出 & 正常 SAR 窗口标记 \\
+COMN, COMP & 输入 & 比较器输出 \\
+DEC\_N     & 输出 & 有效/完成路径 \\
+SET<12>    & 输入 & 最后有效级完成反馈 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{SWITCH\_CAL（校准感知 CDAC 开关）}
+
+\begin{table}[H]
+\centering
+\caption{SWITCH\_CAL 模块属性}
+\label{tab:sw-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & Verilog-A 行为模型（tanh 平滑开关） \\
+当前功能   & 正常/校准模式选择、CDAC 参考选择、顶板采样/复位、校准预充与释放、真实开关行为建模、物理索引映射 \\
+模拟/数字  & 混合（模拟开关 + 数字模式选择 + 校准控制） \\
+现有风险   & 六项功能混合在同一模块；无法综合；tanh 开关非真实晶体管 \\
+最终去向   & 拆分：数字控制器$\rightarrow$RTL，本地驱动+TG$\rightarrow$模拟核心 \\
+是否可综合 & 否（当前为 VA） \\
+是否需要重构 & 是（核心重构对象） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{端口} \verified：
+
+\begin{table}[H]
+\centering
+\caption{SWITCH\_CAL 端口定义}
+\label{tab:sw-ports}
+\begin{tabular}{lll}
+\toprule
+端口组 & 方向 & 功能 \\
+\midrule
+AGND, AVDD               & 电源 & 模拟电源 \\
+BITD/U<1:13>             & 双向 & CDAC 物理底板节点（P/N 两侧） \\
+BITN/P<0:13>             & 输入 & 正常 SAR 决策 \\
+N, P                     & 双向 & 比较器输入顶板 \\
+RST, RST1                & 输入 & 采样/顶板复位和比较器帧窗口 \\
+SET<0:12>                & 输入 & 逐级置位控制 \\
+VCM, VIN, VIP, VREFN, VREFP & 双向 & 顶板采样与底板参考 \\
+BITD/U\_CAL<0:12>        & 输入 & 校准激励掩码（stage 顺序） \\
+CAL, CAL\_CLK            & 输入 & 模式选择和校准子时钟 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{功能拆分分析} \verified：
+
+当前 \texttt{SWITCH\_CAL} 同时承担以下功能：
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{正常/校准模式选择}：\texttt{s\_cal = logic\_level(V(CAL))} 控制 \texttt{s\_norm = 1 - s\_cal}
+\item \textbf{CDAC 参考选择逻辑}：每个底板节点三选一（VREFP/VREFN/VCM），通过 \texttt{SET}、\texttt{BITP/N} 和 \texttt{NORMAL\_REF\_SWAP} 组合
+\item \textbf{顶板采样/复位}：\texttt{s\_top\_pre = s\_norm * s\_rst11 + s\_cal * (1 - s\_cal\_clk)} 控制 P/N 到 VCM 的开关
+\item \textbf{校准预充与释放}：\texttt{pair\_pos}/\texttt{pair\_neg}/\texttt{pair\_cm} 函数控制差分校准激励
+\item \textbf{真实开关行为建模}：tanh 平滑函数模拟开关导通/关断电阻
+\item \textbf{物理索引映射}：\texttt{13-k} 将 stage 索引映射到物理电容索引
+\end{enumerate}
+
+\subsection{DEC\_CAL\_PHY（校准解码器/控制器）}
+
+\begin{table}[H]
+\centering
+\caption{DEC\_CAL\_PHY 模块属性}
+\label{tab:dec-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & Verilog-A 行为模型（1031 行） \\
+当前功能   & 校准 FSM、搜索算法、权重更新、错误检测、时钟复用、电压阈值判决、正常码重构、输出驱动 \\
+模拟/数字  & 混合（数字 FSM + 模拟电压读取 + 测试 DAC 驱动） \\
+现有风险   & 八项功能混合；直接读取模拟电压；无双权重 bank；无资源仲裁 FSM \\
+最终去向   & 拆分：数字部分$\rightarrow$RTL，模拟接口$\rightarrow$混合信号接口，输出 DAC$\rightarrow$验证环境 \\
+是否可综合 & 否（当前为 VA） \\
+是否需要重构 & 是（核心重构对象） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{端口} \verified：
+
+\begin{table}[H]
+\centering
+\caption{DEC\_CAL\_PHY 端口定义}
+\label{tab:dec-ports}
+\begin{tabular}{lll}
+\toprule
+端口组 & 方向 & 功能 \\
+\midrule
+Bit<11:0>                  & 输出 & 重构 12 位输出码 \\
+BP<0:13>                   & 输入 & 正常 SAR 原始决策 \\
+DGND, DVDD                 & 电源 & 数字电源 \\
+SOUT                       & 输入 & 上升沿锁存原始决策 \\
+COMP, COMN                 & 输入 & 比较器模拟输出（校准搜索用） \\
+RST1, CAL\_RST             & 输入 & 帧边界和校准启动复位 \\
+CLK\_SAR, CLK00            & 输入 & 正常 SAR 时钟和窗口 \\
+CAL\_CLK                   & 输入 & 校准子时钟 \\
+CLK                        & 输出 & 时钟复用输出 \\
+BITD/U\_CAL<0:12>          & 输出 & 校准激励掩码 \\
+CAL, DONE, ERR             & 输出 & 模式、完成、错误状态 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{功能拆分分析} \verified：
+
+当前 \texttt{DEC\_CAL\_PHY} 同时承担以下功能：
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{校准模式 FSM}：\texttt{cal\_mode\_i}、\texttt{cal\_armed\_i}、\texttt{cal\_started\_i}、\texttt{finish\_pending\_i} 状态机
+\item \textbf{目标和 wall 选择}：\texttt{target\_idx}、\texttt{target\_mask}、\texttt{wall\_mask} 递归构造
+\item \textbf{搜索算法}：phase 0 符号测量 + phase 1 非二进制 SAR 搜索（C7$\rightarrow$C1）
+\item \textbf{镜像测量和平均}：P/D 侧和 N/U 侧各测一次，8 pair 平均
+\item \textbf{权重更新}：\texttt{candidate\_weight = wall\_weight + 2*residual\_avg}，deadband 保护
+\item \textbf{错误检测}：\texttt{WEIGHT\_TOL} 范围检查、\texttt{saturation\_i} 检测、\texttt{MAX\_INVALID} 超限
+\item \textbf{时钟复用}：\texttt{CLK = (1-cal\_mode)*CLK\_SAR + cal\_mode*(CAL\_CLK * frame\_active * cal\_started * (1-finish\_pending))}
+\item \textbf{电压阈值判决}：\texttt{cmp\_delta = V(COMP) - V(COMN)}，\texttt{CMP\_VALID\_FRACTION} 判断有效性
+\item \textbf{正常码重构}：\texttt{raw\_sum = $\Sigma$ r\_i * w\_i}，归一化/偏移，输出 \texttt{Bit<11:0>}
+\item \textbf{输出电压驱动}：\texttt{V(Bit[k]) = vlogic * transition(b\_k)} 驱动 SNDR\_DAC
+\end{enumerate}
+
+\subsection{SNDR\_DAC（测试用 DAC）}
+
+\begin{table}[H]
+\centering
+\caption{SNDR\_DAC 模块属性}
+\label{tab:sndr-attr}
+\begin{tabular}{ll}
+\toprule
+属性 & 内容 \\
+\midrule
+当前实现   & Verilog-A/原理图混合（vcvs 级联 + not\_gate 缓冲） \\
+当前功能   & 将 12 位数字码转换为理想模拟电压，专用于动态性能测量 \\
+模拟/数字  & 混合（数字输入$\rightarrow$模拟输出） \\
+现有风险   & 不参与物理 CDAC 反馈，仅用于测试 \\
+最终去向   & 验证环境，不进入芯片 \\
+是否可综合 & N/A（测试电路） \\
+是否需要重构 & 否 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{端口} \verified：\texttt{Bit<11:0>} 输入，\texttt{OUT} 输出（0$\sim$3.5V 满量程），\texttt{AGND} 参考。
+
+输出电压公式 \verified：
+\begin{equation}
+V_{OUT} = V_{ref} \sum_{k=0}^{11} \frac{B_k}{2^{k+1}} \times 2
+\label{eq:sndr-dac}
+\end{equation}
+
+其中 $V_{ref} = 1.8$ V，$B_k$ 为 Bit<11:0> 的第 k 位。
+
+% ==================================================================
+\section{模拟、数字、混合接口和验证环境的正式分区}
+% ==================================================================
+
+\subsection{当前系统框图}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  block/.style={draw, rounded corners=2pt, minimum width=1.8cm, minimum height=0.6cm, align=center, inner sep=2pt},
+  ana/.style={block, fill=red!10},
+  dig/.style={block, fill=blue!10},
+  ver/.style={block, fill=green!10},
+  src/.style={block, fill=orange!10},
+  arr/.style={-{Stealth[length=2mm]}, thick},
+  grp/.style={draw, dashed, rounded corners=4pt, inner sep=6pt}
+]
+% 模拟核心
+\node[ana] (bsP) {BS P侧采样};
+\node[ana, below=0.2cm of bsP] (bsN) {BS N侧采样};
+\node[ana, right=0.4cm of bsP] (cdac) {CDAC\_0716};
+\node[ana, right=0.4cm of cdac] (com) {COM\_IAZ 比较器};
+\node[ana, below=0.3cm of cdac] (sw) {SWITCH\_CAL VA};
+% 数字核心
+\node[dig, right=0.6cm of com] (sar) {SAR\_LOGIC};
+\node[dig, below=0.3cm of sar] (sync) {SYNC\_asnyc};
+\node[dig, below=0.3cm of sync] (dec) {DEC\_CAL\_PHY VA};
+% 验证环境
+\node[ver, right=0.6cm of dec] (sndr) {SNDR\_DAC};
+% 激励源
+\node[src, left=1.2cm of bsP] (vin) {VIN1 正弦};
+\node[src, below=0.1cm of vin] (vip) {VIP1 正弦};
+\node[src, below=0.1cm of vip] (vref) {VREFP/N/CM};
+\node[src, below=0.1cm of vref] (clksrc) {时钟源组};
+% 背景分组
+\begin{scope}[on background layer]
+  \node[grp, fit=(bsP)(bsN)(cdac)(com)(sw), label={[font=\scriptsize]above:模拟核心}] {};
+  \node[grp, fit=(sar)(sync)(dec), label={[font=\scriptsize]above:数字核心}] {};
+  \node[grp, fit=(sndr), label={[font=\scriptsize]above:验证环境}] {};
+  \node[grp, fit=(vin)(vip)(vref)(clksrc), label={[font=\scriptsize]above:激励源}] {};
+\end{scope}
+% 连线
+\draw[arr] (vin) -- (bsN);
+\draw[arr] (vip) -- (bsP);
+\draw[arr] (bsP) -- (cdac);
+\draw[arr] (bsN) -- (cdac);
+\draw[arr] (vref) -| (sw);
+\draw[arr] (sw) -- (cdac);
+\draw[arr] (cdac) -- (com);
+\draw[arr] (com) -- (sar);
+\draw[arr] (com) -- (dec);
+\draw[arr] (sar) -- (sw);
+\draw[arr] (sar) -- (dec);
+\draw[arr] (dec) -- (sw);
+\draw[arr] (dec) -- (sndr);
+\draw[arr] (clksrc) -| (sar);
+\draw[arr] (clksrc) -| (sync);
+\draw[arr] (clksrc) -| (dec);
+\draw[arr] (sync) -- (sar);
+\end{tikzpicture}
+\caption{当前 0716 SAR ADC 系统框图}
+\label{fig:current-block-diagram}
+\end{figure}
+
+\Cref{fig:current-block-diagram} \verified。
+
+\subsection{推荐最终系统框图}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize,
+  block/.style={draw, rounded corners=2pt, minimum width=1.6cm, minimum height=0.5cm, align=center, inner sep=2pt},
+  ana/.style={block, fill=red!10},
+  dig/.style={block, fill=blue!10},
+  mix/.style={block, fill=yellow!20},
+  ver/.style={block, fill=green!10},
+  arr/.style={-{Stealth[length=1.5mm]}, thick},
+  grp/.style={draw, dashed, rounded corners=4pt, inner sep=5pt}
+]
+% 模拟核心
+\node[ana] (bsP2) {BS P侧};
+\node[ana, below=0.15cm of bsP2] (bsN2) {BS N侧};
+\node[ana, right=0.3cm of bsP2] (cdac2) {CDAC\_0716};
+\node[ana, right=0.3cm of cdac2] (com2) {COM\_IAZ};
+\node[ana, below=0.2cm of cdac2] (tg) {真实 TG 开关阵列};
+\node[ana, below=0.2cm of tg] (refnet) {参考网络};
+\node[ana, right=0.3cm of com2] (cmplat) {比较器输出锁存};
+\node[ana, below=0.2cm of cmplat] (drv) {本地开关驱动};
+% 数字核心
+\node[dig, right=0.5cm of cmplat] (modearb) {MODE\_ARB};
+\node[dig, below=0.15cm of modearb] (sarctrl) {SAR\_CTRL};
+\node[dig, below=0.15cm of sarctrl] (timing) {TIMING};
+\node[dig, below=0.15cm of timing] (calctrl) {CAL\_CTRL};
+\node[dig, below=0.15cm of calctrl] (calsearch) {CAL\_SEARCH};
+\node[dig, below=0.15cm of calsearch] (wbank) {双权重 bank};
+\node[dig, below=0.15cm of wbank] (recon) {CODE\_RECON};
+\node[dig, below=0.15cm of recon] (cfg) {CONFIG};
+\node[dig, below=0.15cm of cfg] (wdog) {Watchdog};
+% 混合信号接口
+\node[mix, right=0.5cm of modearb] (cmprecv) {比较器接收器};
+\node[mix, below=0.15cm of cmprecv] (clkdrv) {时钟驱动};
+\node[mix, below=0.15cm of clkdrv] (ls) {Level Shifter};
+% 验证环境
+\node[ver, right=0.5cm of cmprecv] (sndr2) {SNDR\_DAC};
+\node[ver, below=0.15cm of sndr2] (fft) {OCEAN/Python FFT};
+% 背景分组
+\begin{scope}[on background layer]
+  \node[grp, fit=(bsP2)(bsN2)(cdac2)(com2)(tg)(refnet)(cmplat)(drv), label={[font=\tiny]above:模拟核心 (进入芯片)}] {};
+  \node[grp, fit=(modearb)(sarctrl)(timing)(calctrl)(calsearch)(wbank)(recon)(cfg)(wdog), label={[font=\tiny]above:数字核心 (RTL, 进入芯片)}] {};
+  \node[grp, fit=(cmprecv)(clkdrv)(ls), label={[font=\tiny]above:混合信号接口 (进入芯片)}] {};
+  \node[grp, fit=(sndr2)(fft), label={[font=\tiny]above:验证环境 (不进入芯片)}] {};
+\end{scope}
+% 连线
+\draw[arr] (bsP2) -- (cdac2);
+\draw[arr] (bsN2) -- (cdac2);
+\draw[arr] (refnet) -- (tg);
+\draw[arr] (tg) -- (cdac2);
+\draw[arr] (cdac2) -- (com2);
+\draw[arr] (com2) -- (cmplat);
+\draw[arr] (cmplat) -- (cmprecv);
+\draw[arr] (cmprecv) -- (sarctrl);
+\draw[arr] (cmprecv) -- (calsearch);
+\draw[arr] (sarctrl) -- (tg);
+\draw[arr] (calctrl) -- (tg);
+\draw[arr] (modearb) -- (sarctrl);
+\draw[arr] (modearb) -- (calctrl);
+\draw[arr] (timing) -- (clkdrv);
+\draw[arr] (clkdrv) -- (com2);
+\draw[arr] (clkdrv) -- (sarctrl);
+\draw[arr] (calsearch) -- (wbank);
+\draw[arr] (wbank) -- (recon);
+\draw[arr] (sarctrl) -- (recon);
+\draw[arr] (recon) -- (sndr2);
+\draw[arr] (sndr2) -- (fft);
+\draw[arr] (drv) -- (tg);
+\draw[arr] (cfg) -- (modearb);
+\draw[arr] (wdog) -- (modearb);
+\end{tikzpicture}
+\caption{推荐最终系统框图}
+\label{fig:recommended-block-diagram}
+\end{figure}
+
+\Cref{fig:recommended-block-diagram} \suggested。
+
+\subsection{模块归属表}
+
+\begin{table}[H]
+\centering
+\caption{模块归属表}
+\label{tab:module-ownership}
+\small
+\begin{tabular}{lccccc}
+\toprule
+模块 & 当前实现 & 当前功能 & 最终归属 & 是否可综合 & 进入芯片 \\
+\midrule
+BS             & 晶体管级 & 自举采样开关 & 模拟核心       & N/A    & 是 \\
+CDAC\_0716     & 晶体管级 & 电容 DAC 阵列 & 模拟核心       & N/A    & 是 \\
+COM\_IAZ       & 晶体管级 & 动态比较器   & 模拟核心       & N/A    & 是 \\
+SAR\_LOGIC\_0716 & 晶体管级 & SAR 决策链  & 数字核心       & 是(RTL) & 是 \\
+SYNC\_asnyc    & 晶体管级 & 时钟同步     & 数字核心       & 是(RTL) & 是 \\
+SWITCH\_CAL    & Verilog-A & 校准感知开关 & 拆分：数字+模拟 & 部分   & 是 \\
+DEC\_CAL\_PHY  & Verilog-A & 校准解码器   & 拆分：数字+验证 & 部分   & 是 \\
+SNDR\_DAC      & 混合     & 测试 DAC     & 验证环境       & N/A    & 否 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{电源域}
+
+\begin{table}[H]
+\centering
+\caption{电源域划分}
+\label{tab:power-domain}
+\begin{tabular}{lllp{5cm}}
+\toprule
+电源域 & 电压 & 供电对象 & 隔离要求 \\
+\midrule
+AVDD/AGND & 1.8 V & BS, CDAC, COM\_IAZ, 参考网络, TG 开关 & 模拟岛隔离 \\
+DVDD/DGND & 1.8 V & SAR\_LOGIC, SYNC, DEC\_CAL\_PHY (数字部分) & 数字噪声隔离 \\
+VREFP     & 1.8 V & CDAC 正参考 & 去耦 + 局部缓冲 \\
+VREFN     & 0 V   & CDAC 负参考 & 低阻抗地 \\
+VCM       & 0.9 V & CDAC 共模/顶板复位 & 低阻抗缓冲 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{时钟域}
+
+\begin{table}[H]
+\centering
+\caption{时钟域划分}
+\label{tab:clock-domain}
+\small
+\begin{tabular}{lllll}
+\toprule
+时钟 & 频率 & 来源 & 用途 & 安全切换条件 \\
+\midrule
+CLK0    & 10 MHz  & 外部          & BS 采样时钟        & --- \\
+RST     & 10 MHz  & 外部          & 采样/比较器复位    & --- \\
+RST1    & 10 MHz  & 外部          & 比较器帧窗口       & --- \\
+PRST    & 10 MHz  & 外部          & SAR 链预置         & --- \\
+SOUT    & 10 MHz  & 外部          & 原始决策锁存       & --- \\
+CLK00   & 10 MHz  & SYNC\_asnyc  & 正常 SAR 窗口      & --- \\
+CCLK    & 10 MHz  & SYNC\_asnyc  & SAR 链时钟         & 仅正常模式有效 \\
+CAL\_CLK & 100 MHz & 外部         & 校准子时钟         & 仅校准模式有效 \\
+CLK     & 10 MHz  & DEC\_CAL\_PHY 复用 & 比较器时钟 & 在 RST1 上升沿切换 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{数据域}
+
+\begin{table}[H]
+\centering
+\caption{数据总线定义}
+\label{tab:data-domain}
+\small
+\begin{tabular}{lllll}
+\toprule
+数据总线 & 位宽 & 方向 & 编码 & 物理意义 \\
+\midrule
+BP<13:0>          & 14   & SAR$\rightarrow$DEC   & 一热码     & 14 级 SAR 原始决策 \\
+BITP/N<13:0>      & 14$\times$2 & SAR$\rightarrow$SWITCH & 一热码 & 物理索引顺序 \\
+SET<0:13>         & 14   & SAR$\rightarrow$SWITCH & 逐级脉冲 & 逐级置位控制 \\
+BITD/U<1:13>      & 13$\times$2 & SWITCH$\leftrightarrow$CDAC & 物理节点 & 底板参考选择 \\
+BITD/U\_CAL<0:12> & 13$\times$2 & DEC$\rightarrow$SWITCH & stage 顺序 & 校准激励掩码 \\
+Bit<11:0>         & 12   & DEC$\rightarrow$SNDR\_DAC & 二进制 & 重构输出码 \\
+w0..w13           & 14$\times$Q4 & DEC 内部 & Q4 定点 & 校准权重 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==================================================================
+\section{真实 CDAC 开关阵列设计}
+% ==================================================================
+
+\subsection{开关单元}
+
+每个物理 CDAC 底板节点使用一套三选一参考开关 \suggested：
+
+\begin{itemize}[leftmargin=2em]
+\item \texttt{VREFP}：正参考（1.8 V）
+\item \texttt{VREFN}：负参考（0 V）
+\item \texttt{VCM}：共模（0.9 V）
+\end{itemize}
+
+建议采用 CMOS transmission gate（TG）实现。数字控制必须经过 one-hot interlock 和 break-before-make 保护。
+
+\textbf{逻辑约束} \suggested：
+\begin{equation}
+sel_{P,i} + sel_{N,i} + sel_{C,i} \leq 1
+\label{eq:onehot-leq}
+\end{equation}
+
+正常稳定状态下：
+\begin{equation}
+sel_{P,i} + sel_{N,i} + sel_{C,i} = 1
+\label{eq:onehot-eq}
+\end{equation}
+
+切换死区允许三者短暂为 0，但禁止任意两个同时为 1。
+
+\textbf{CDAC one-hot 合法状态表} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{CDAC one-hot 合法状态表}
+\label{tab:onehot-states}
+\begin{tabular}{lccccc}
+\toprule
+状态 & sel\_P & sel\_N & sel\_C & 含义 & 允许 \\
+\midrule
+REF\_P     & 1 & 0 & 0 & 接 VREFP   & 是 \\
+REF\_N     & 0 & 1 & 0 & 接 VREFN   & 是 \\
+CM         & 0 & 0 & 1 & 接 VCM     & 是 \\
+FLOAT      & 0 & 0 & 0 & 切换死区   & 仅瞬态 \\
+ILLEGAL\_1 & 1 & 1 & 0 & ---        & 禁止 \\
+ILLEGAL\_2 & 1 & 0 & 1 & ---        & 禁止 \\
+ILLEGAL\_3 & 0 & 1 & 1 & ---        & 禁止 \\
+ILLEGAL\_4 & 1 & 1 & 1 & ---        & 禁止 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  tg/.style={draw, fill=red!15, minimum width=1.6cm, minimum height=0.5cm},
+  nodeblk/.style={draw, circle, fill=gray!10, minimum size=0.8cm, align=center}
+]
+\node[tg] (tgp) {TG: VREFP};
+\node[tg, below=0.2cm of tgp] (tgn) {TG: VREFN};
+\node[tg, below=0.2cm of tgn] (tgc) {TG: VCM};
+\node[nodeblk, right=1.2cm of tgn] (node) {BITD/U\_k};
+\draw[-{Stealth}, thick] (tgp) -- node[above, font=\tiny] {sel\_P} (node);
+\draw[-{Stealth}, thick] (tgn) -- node[above, font=\tiny] {sel\_N} (node);
+\draw[-{Stealth}, thick] (tgc) -- node[below, font=\tiny] {sel\_C} (node);
+\begin{scope}[on background layer]
+  \node[draw, dashed, rounded corners, fit=(tgp)(tgn)(tgc)(node), label={[font=\scriptsize]above:三选一开关单元}] {};
+\end{scope}
+\end{tikzpicture}
+\caption{CDAC 三选一真实开关单元}
+\label{fig:tswitch-cell}
+\end{figure}
+
+\Cref{fig:tswitch-cell} \suggested。
+
+\subsection{模式选择原则}
+
+\textbf{禁止}在模拟信号路径中额外串联一个 normal/calibration 模拟 MUX \suggested。
+
+必须采用以下结构：
+
+\begin{lstlisting}[style=textstyle]
+normal control ---+
+                  +-- digital owner mux -- one-hot interlock -- local driver -- 同一套真实 TG
+cal control ------+
+\end{lstlisting}
+
+正常转换与校准必须复用同一套物理开关，以避免 \suggested：
+
+\begin{itemize}[leftmargin=2em]
+\item 串联电阻增加
+\item 两种模式寄生不一致
+\item 校准权重与正常转换权重不一致
+\item 额外电荷注入
+\item 版图不对称
+\end{itemize}
+
+\textbf{normal/calibration 控制真值表} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{normal/calibration 控制真值表}
+\label{tab:mode-control}
+\begin{tabular}{ccllll}
+\toprule
+CAL & owner & sel\_P 来源 & sel\_N 来源 & sel\_C 来源 & 说明 \\
+\midrule
+0 & normal & SET, BITP/N & SET, BITP/N & SET 反相 & 正常 SAR 转换 \\
+1 & cal    & BITD/U\_CAL pair\_pos & BITD/U\_CAL pair\_neg & BITD/U\_CAL pair\_cm & 校准激励 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{开关尺寸分析}
+
+报告给出尺寸设计方法，而非固定宽度 \suggested。
+
+\textbf{关键参数}：
+\begin{equation}
+R_{on}, \quad C_{par}, \quad Q_{inj}, \quad t_{settle}
+\label{eq:switch-params}
+\end{equation}
+
+对于目标建立误差，使用：
+\begin{equation}
+e^{-t_{settle}/\tau} < \varepsilon
+\label{eq:settle-error}
+\end{equation}
+
+其中 12-bit、0.25 LSB 的理想一阶约束可写为：
+\begin{equation}
+\varepsilon < \frac{1}{4 \cdot 2^{12}} = \frac{1}{16384} \approx 6.1 \times 10^{-5}
+\label{eq:epsilon-bound}
+\end{equation}
+
+从而得到：
+\begin{equation}
+\frac{t_{settle}}{\tau} > \ln(16384) \approx 9.7
+\label{eq:settle-ratio}
+\end{equation}
+
+\textbf{该公式仅作为初始预算} \suggested。最终需以完整多节点 CDAC + 参考网络 PVT/post-layout 建立仿真签核。
+
+\textbf{当前 VA 模型参数参考} \verified：
+
+\begin{table}[H]
+\centering
+\caption{当前 VA 模型开关参数}
+\label{tab:va-switch-params}
+\begin{tabular}{lll}
+\toprule
+参数 & 当前值 & 说明 \\
+\midrule
+RON\_SAMPLE & 5 \textOmega         & 采样开关导通电阻 \\
+RON\_REF    & 10 \textOmega        & 参考开关导通电阻 \\
+RON\_TOP    & 5 \textOmega         & 顶板开关导通电阻 \\
+ROFF        & $1\times10^{15}$ \textOmega & 关断电阻 \\
+VSMOOTH     & 10 mV                & tanh 平滑过渡宽度 \\
+TD\_RSTT    & 200 ps               & RST 延迟 \\
+TD\_RST11   & 200 ps               & RST1 延迟 \\
+TCLK\_EDGE  & 10 ps                & 时钟边沿 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{TG 开关尺寸估算} \inferred：
+
+对于 TSMC 0.18\textmu m 工艺，给定 $R_{on} = 10$ \textOmega 的目标，TG 的等效导通电阻约为：
+\begin{equation}
+R_{on,TG} \approx \frac{1}{\mu_n C_{ox} (W/L)_n (V_{GS} - V_{TH})} \parallel \frac{1}{\mu_p C_{ox} (W/L)_p (V_{SG} - V_{TH})}
+\label{eq:ron-tg}
+\end{equation}
+
+在 1.8 V 电源、0.5 V 过驱动下，NMOS 的 $W/L$ 约需 50$\sim$100，PMOS 约需 150$\sim$200（补偿空穴迁移率）。具体尺寸需结合 PDK 参数和版图寄生最终确定。
+
+\subsection{版图约束}
+
+\begin{itemize}[leftmargin=2em]
+\item P/N 两侧开关阵列严格对称布线 \suggested
+\item 每个开关单元的 VREFP/VREFN/VCM 布线长度匹配 \suggested
+\item 参考布线使用低阻金属层（顶层金属）\suggested
+\item guard ring 包围模拟岛，隔离数字噪声 \suggested
+\item 电容阵列采用共质心布局 \suggested
+\end{itemize}
+
+% ==================================================================
+\section{数字控制器架构}
+% ==================================================================
+
+\subsection{MODE\_ARB（模式仲裁器）}
+
+\textbf{功能} \suggested：管理系统在正常转换和校准模式之间的切换，确保资源切换仅在安全边界发生。
+
+\textbf{外部控制接口} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{MODE\_ARB 外部控制接口}
+\label{tab:modearb-interface}
+\begin{tabular}{lll}
+\toprule
+信号 & 方向 & 功能 \\
+\midrule
+cal\_en    & 输入 & 校准使能（外部配置） \\
+cal\_start & 输入 & 校准启动请求（上升沿触发） \\
+cal\_abort & 输入 & 校准中止请求（异步） \\
+cal\_reset & 输入 & 校准模块硬复位 \\
+cal\_busy  & 输出 & 校准进行中 \\
+cal\_done  & 输出 & 校准完成（有效高，锁存） \\
+cal\_err   & 输出 & 校准错误（有效高，锁存） \\
+cal\_valid & 输出 & 当前权重有效 \\
+cal\_active & 输出 & 校准拥有 CDAC 所有权 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{状态转移表} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{MODE\_ARB 状态转移表}
+\label{tab:modearb-transition}
+\small
+\begin{tabular}{llll}
+\toprule
+当前状态 & 条件 & 下一状态 & 动作 \\
+\midrule
+NORMAL              & cal\_en=1 \&\& cal\_start=1 & WAIT\_SAFE\_BOUNDARY & 准备进入校准 \\
+NORMAL              & ---                         & NORMAL               & 正常转换 \\
+WAIT\_SAFE\_BOUNDARY & RST1$\uparrow$              & CAL\_PREPARE         & 在安全边界切换所有权 \\
+CAL\_PREPARE        & cal\_started=1              & CAL\_RUN             & 初始化目标/wall \\
+CAL\_RUN            & 所有目标完成                 & CAL\_COMMIT          & 提交权重 \\
+CAL\_RUN            & cal\_abort=1                & CAL\_FAIL            & 中止校准 \\
+CAL\_RUN            & timeout=1                   & CAL\_FAIL            & 超时中止 \\
+CAL\_RUN            & MAX\_INVALID                & CAL\_FAIL            & 错误超限 \\
+CAL\_COMMIT         & RST1$\uparrow$              & NORMAL               & 原子提交 SHADOW$\rightarrow$ACTIVE \\
+CAL\_FAIL           & RST1$\uparrow$              & NORMAL               & 丢弃 SHADOW，保持 ACTIVE \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  node distance=1.2cm and 1.4cm,
+  state/.style={draw, rounded corners=3pt, fill=blue!8, minimum width=2.2cm, minimum height=0.6cm, align=center},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[state] (normal) {NORMAL};
+\node[state, right=of normal] (wait) {WAIT\_SAFE\\BOUNDARY};
+\node[state, right=of wait] (prepare) {CAL\_PREPARE};
+\node[state, below=of prepare] (run) {CAL\_RUN};
+\node[state, left=of run] (commit) {CAL\_COMMIT};
+\node[state, below=of run] (fail) {CAL\_FAIL};
+
+\draw[arr] (normal) -- node[above, font=\tiny] {cal\_en \&\& cal\_start} (wait);
+\draw[arr] (normal) edge[loop above] node[above, font=\tiny] {正常转换} (normal);
+\draw[arr] (wait) -- node[above, font=\tiny] {RST1$\uparrow$} (prepare);
+\draw[arr] (prepare) -- node[right, font=\tiny] {cal\_started} (run);
+\draw[arr] (run) edge[loop right] node[right, font=\tiny] {下一目标/下一pair} (run);
+\draw[arr] (run) -- node[above, font=\tiny] {所有目标完成} (commit);
+\draw[arr] (run) -- node[right, font=\tiny] {abort/timeout/error} (fail);
+\draw[arr] (commit) |- node[below left, font=\tiny] {RST1$\uparrow$ (SHADOW$\rightarrow$ACTIVE)} (normal);
+\draw[arr] (fail) -| node[below right, font=\tiny] {RST1$\uparrow$ (保持ACTIVE)} (normal);
+\end{tikzpicture}
+\caption{MODE\_ARB 状态机}
+\label{fig:modearb-fsm}
+\end{figure}
+
+\Cref{fig:modearb-fsm} \suggested。
+
+\textbf{安全边界定义} \suggested：建议以 \texttt{RST1} 上升沿（比较器/CDAC reset 窗口开始）作为安全边界。此时比较器输出无效、CDAC 顶板已复位，资源切换不会影响正在进行的转换。
+
+\subsection{SAR\_CTRL（SAR 控制器）}
+
+\textbf{功能} \suggested：替代当前 \texttt{SAR\_LOGIC\_0716} 的决策链功能，使用 \texttt{cmp\_bit}/\texttt{cmp\_done} 数字接口代替直接模拟电压输入。
+
+\textbf{接口} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{SAR\_CTRL 接口定义}
+\label{tab:sarctrl-interface}
+\begin{tabular}{lll}
+\toprule
+信号 & 方向 & 功能 \\
+\midrule
+cmp\_bit   & 输入 & 比较器决策结果（1=正, 0=负） \\
+cmp\_done  & 输入 & 比较器完成脉冲 \\
+cclk       & 输入 & SAR 链时钟 \\
+prst       & 输入 & 帧预置 \\
+raw<13:0>  & 输出 & 14 级原始决策（stage 顺序） \\
+set<0:13>  & 输出 & 逐级置位控制 \\
+raw\_valid & 输出 & 原始决策有效 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{与当前实现差异} \verified：
+\begin{itemize}[leftmargin=2em]
+\item 当前 \texttt{SAR\_LOGIC\_0716} 直接接收 \texttt{COMN} 模拟信号
+\item 最终实现接收 \texttt{cmp\_bit}（数字化后的比较器结果）
+\item 决策链逻辑不变：DFF + NOR1 + NAND1 结构等价为标准 SAR shift-register + decision-DFF
+\end{itemize}
+
+\subsection{TIMING\_CTRL（时序控制器）}
+
+\textbf{功能} \suggested：替代当前 \texttt{SYNC\_asnyc}，产生所有时序控制信号。时钟选择逻辑由 MODE\_ARB 控制。
+
+\textbf{接口} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{TIMING\_CTRL 接口定义}
+\label{tab:timing-interface}
+\begin{tabular}{lll}
+\toprule
+信号 & 方向 & 功能 \\
+\midrule
+clk\_sar    & 输入 & 正常 SAR 时钟 \\
+cal\_clk    & 输入 & 校准子时钟 \\
+mode\_normal & 输入 & 模式选择（来自 MODE\_ARB） \\
+clk\_out    & 输出 & 复用后的比较器时钟 \\
+cclk        & 输出 & SAR 链时钟 \\
+clk00       & 输出 & 正常 SAR 窗口标记 \\
+rst1\_edge  & 输出 & RST1 上升沿检测（安全边界标记） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{关键约束} \inferred：时钟切换必须在 RST1 上升沿发生，确保不在比较器评估期间切换。
+
+\subsection{CAL\_CTRL（校准控制器）}
+
+\textbf{功能} \suggested：管理校准目标序列、pair 循环和帧计数。替代 \texttt{DEC\_CAL\_PHY} 中的 \texttt{target\_idx}、\texttt{pair\_idx}、\texttt{trial\_idx} 逻辑。
+
+\textbf{校准目标序列} \verified：
+
+\begin{table}[H]
+\centering
+\caption{校准目标序列}
+\label{tab:cal-target-seq}
+\begin{tabular}{ccccc}
+\toprule
+序号 & target\_idx & 目标电容 & wall 构造 & 名义权重 \\
+\midrule
+0 & 0 & C12 & 空 wall             & 2048 \\
+1 & 1 & C11 & \{w0\}              & 1024 \\
+2 & 2 & C10 & \{w0,w1\}           & 512  \\
+3 & 3 & C9  & \{w0,w1,w2\}        & 256  \\
+4 & 4 & CR  & \{w0,w1,w2,w3\}     & 256  \\
+5 & 5 & C8  & \{w0,w1,w2,w3,w4\}  & 128  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+每个目标执行 8 pair $\times$ 2 侧 = 16 次测量。总帧数 = 6 $\times$ 16 = 96 帧 \verified。
+
+\subsection{CAL\_SEARCH（校准搜索引擎）}
+
+\textbf{功能} \suggested：执行相位 0 符号测量和相位 1 非二进制 SAR 搜索。
+
+\textbf{搜索算法} \verified：
+
+Phase 0（符号测量）：
+\begin{enumerate}[leftmargin=2em]
+\item 将目标电容设为 VREFP，wall 设为 VREFN
+\item 比较器评估方向
+\item 根据方向决定后续搜索极性
+\end{enumerate}
+
+Phase 1（非二进制搜索 C7$\rightarrow$C1）：
+\begin{enumerate}[leftmargin=2em]
+\item 从 C7 开始，依次测试 C6、C5、C4、C3、C2、C1
+\item 每级根据比较器结果保留或撤销
+\item 搜索完成后计算 residual\_avg
+\end{enumerate}
+
+\textbf{residual 计算} \verified：
+\begin{equation}
+q_{residual} = \sum_{k=1}^{7} r_k \cdot w_k^{search}
+\label{eq:q-residual}
+\end{equation}
+
+\begin{equation}
+residual\_avg = \frac{1}{N_{pair} \times 2} \sum_{pair=0}^{N_{pair}-1} (q_P + q_N)
+\label{eq:residual-avg}
+\end{equation}
+
+其中 $N_{pair} = 2^{AVG\_PAIRS\_LOG2} = 8$，P/N 两侧各测一次。
+
+\subsection{双权重 bank}
+
+\textbf{ACTIVE\_WEIGHT\_BANK} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 存储当前有效的 14 个权重值（w0$\sim$w13，每个 Q4.16 格式）
+\item 校准期间只读
+\item 正常解码使用此 bank
+\end{itemize}
+
+\textbf{SHADOW\_WEIGHT\_BANK} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 校准搜索结果写入此 bank
+\item 校准成功后在安全边界原子提交到 ACTIVE
+\item 校准失败时丢弃
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  block/.style={draw, rounded corners=2pt, minimum width=2.2cm, minimum height=0.7cm, align=center},
+  shadow/.style={block, fill=yellow!20},
+  active/.style={block, fill=green!20},
+  nominal/.style={block, fill=gray!10},
+  recon/.style={block, fill=blue!10},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[block, fill=blue!10] (search) {CAL\_SEARCH};
+\node[shadow, right=1.0cm of search] (shadow) {SHADOW\_WEIGHT\\BANK};
+\node[active, right=1.0cm of shadow] (active) {ACTIVE\_WEIGHT\\BANK};
+\node[recon, right=1.0cm of active] (recon) {CODE\_RECON};
+\node[nominal, below=0.8cm of active] (nominal) {名义权重};
+
+\draw[arr] (search) -- (shadow);
+\draw[arr] (shadow) -- node[above, font=\tiny] {原子提交 RST1$\uparrow$} (active);
+\draw[arr] (active) -- (recon);
+\draw[arr] (nominal) -- node[right, font=\tiny] {回退} (active);
+\end{tikzpicture}
+\caption{双权重 bank 提交流程}
+\label{fig:dual-bank}
+\end{figure}
+
+\Cref{fig:dual-bank} \suggested。
+
+\textbf{回退策略} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 校准失败时丢弃 SHADOW，ACTIVE 保持旧值
+\item 若无旧有效值，则回退名义权重：w0=2048, w1=1024, ..., w13=1
+\item 同时置 \texttt{cal\_err=1}
+\end{itemize}
+
+\subsection{CODE\_RECON（码域重构器）}
+
+\textbf{功能} \suggested：将 14 级原始决策与 ACTIVE 权重加权求和，输出 12 位二进制码。
+
+\textbf{算法} \verified：
+\begin{equation}
+raw\_sum = \sum_{i=0}^{13} r_i \cdot w_i
+\label{eq:raw-sum}
+\end{equation}
+
+当 \texttt{NORMALIZE\_REDUNDANT\_RANGE=0}（偏移模式）：
+\begin{equation}
+Code = raw\_sum - 128
+\label{eq:offset-mode}
+\end{equation}
+
+当 \texttt{NORMALIZE\_REDUNDANT\_RANGE=1}（归一化模式）：
+\begin{equation}
+Code = \left\lfloor \frac{4095 \cdot raw\_sum}{W_\Sigma} \right\rfloor
+\label{eq:normalize-mode}
+\end{equation}
+
+\textbf{推荐使用偏移模式} \verified：归一化模式引入 0.527 dB 增益压缩和约 2.89 dB 再量化噪声（Phase 0 离线实测值），而偏移模式仅产生恒定 -128 LSB 偏移（可数字校正）。Phase 0 离线 RAW 重映射实验确认：浮点归一化（不舍入）与 offset-only 的 SNDR 完全一致（0.00 dB），证明线性增益压缩本身不影响 SNDR；SNDR 损失的根因是归一化后再量化为整数码引入的独立量化噪声。
+
+\subsection{CONFIG\_STATUS（配置与状态寄存器）}
+
+\textbf{配置寄存器} \verified：
+
+\begin{table}[H]
+\centering
+\caption{配置寄存器定义}
+\label{tab:config-regs}
+\small
+\begin{tabular}{llll}
+\toprule
+参数 & 地址 & 默认值 & 说明 \\
+\midrule
+CAL\_BYPASS                    & 0x00 & 0    & 0=校准模式, 1=旁路 \\
+NORMALIZE\_REDUNDANT\_RANGE   & 0x01 & 0    & 0=偏移, 1=归一化 \\
+REMOVE\_REDUNDANT\_OFFSET     & 0x02 & 1    & 移除冗余偏移 \\
+HIGH\_WEIGHT\_UPDATE\_DEADBAND\_LSB & 0x03 & 1.0  & C10/C11/C12 死区 \\
+UPDATE\_DEADBAND\_LSB          & 0x04 & 2.0  & C8/C9/CR 死区 \\
+WEIGHT\_TOL                    & 0x05 & 0.25 & 权重容差（$\pm$25\%） \\
+FRAC\_BITS                     & 0x06 & 4    & 定点小数位 \\
+AVG\_PAIRS\_LOG2               & 0x07 & 3    & 平均 pair 数对数 \\
+MAX\_CAL\_CYCLES               & 0x08 & 200  & 校准超时帧数 \\
+MAX\_INVALID                   & 0x09 & 5    & 最大无效次数 \\
+CMP\_VALID\_FRACTION           & 0x0A & 0.25 & 比较器有效阈值 \\
+APPLY\_BIN\_MIDPOINT           & 0x0B & 0    & 强制中点偏移 \\
+AUTO\_BIN\_MIDPOINT            & 0x0C & 1    & 自动中点补偿 \\
+ZERO\_ON\_INVALID              & 0x0D & 1    & 零残差处理 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{状态寄存器} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{状态寄存器定义}
+\label{tab:status-regs}
+\begin{tabular}{cll}
+\toprule
+位 & 名称 & 说明 \\
+\midrule
+{[7]}   & cal\_done      & 校准完成 \\
+{[6]}   & cal\_err       & 校准错误 \\
+{[5]}   & cal\_valid     & 权重有效 \\
+{[4]}   & cal\_active    & 校准占用 CDAC \\
+{[3:0]} & cal\_target\_idx & 当前校准目标索引 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==================================================================
+\section{比较器与数字接口}
+% ==================================================================
+
+\subsection{当前问题}
+
+当前 \texttt{DEC\_CAL\_PHY} 通过以下方式读取比较器结果 \verified：
+
+\begin{lstlisting}[style=verilogstyle]
+cmp_delta = V(COMP) - V(COMN);
+cmp_q = (cmp_delta > CMP_VALID_FRACTION) ? 1 :
+        (cmp_delta < -CMP_VALID_FRACTION) ? 0 : -1; // invalid
+\end{lstlisting}
+
+这直接读取模拟电压差，无法在最终 RTL 中实现。最终硬件必须使用数字化的 \texttt{cmp\_bit} 和 \texttt{cmp\_done} 信号。
+
+\subsection{推荐结构}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  block/.style={draw, rounded corners=2pt, minimum width=3.2cm, minimum height=0.6cm, align=center},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[block, fill=red!10] (com) {COM\_IAZ 动态输出 (VOP/VON)};
+\node[block, fill=yellow!20, below=0.4cm of com] (latch) {本地静态锁存 / SR latch};
+\node[block, fill=blue!10, below=0.4cm of latch] (out) {cmp\_bit (1=VOP>VON, 0=VOP<VON)\\cmp\_done (当前比较周期完成脉冲)};
+\draw[arr] (com) -- (latch);
+\draw[arr] (latch) -- (out);
+\end{tikzpicture}
+\caption{比较器接收接口}
+\label{fig:cmp-recv}
+\end{figure}
+
+\Cref{fig:cmp-recv} \suggested。
+
+\subsection{关键设计要点}
+
+\begin{table}[H]
+\centering
+\caption{比较器接口关键设计要点}
+\label{tab:cmp-design-points}
+\small
+\begin{tabular}{p{2.5cm}p{4cm}p{6cm}}
+\toprule
+问题 & 分析 & 解决方案 \\
+\midrule
+reset 状态     & RST 高时输出保持旧值      & cmp\_done 在 RST 期间不产生 \\
+evaluate 状态  & CLK 上升沿触发评估        & cmp\_done 在评估完成后产生 \\
+stale output 风险 & 上一周期结果残留         & SR latch 在每周期 RST 上升沿清零 \\
+当前周期隔离   & 必须区分当前与上周期结果  & cmp\_done 绑定当前周期 \\
+timeout        & 比较器可能不收敛          & watchdog 计数器，超时后 cmp\_done=1, cmp\_bit=上一周期值 \\
+亚稳态         & 输入差分极小时            & 双采样或增加再生时间 \\
+输出缓冲负载   & 驱动 RTL 输入             & 两级反相器缓冲 \\
+PVT 完成时间   & 温度/工艺变化             & 最坏情况分析，timeout 设为 2$\times$ 标称值 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{cmp\_done 时序约束}
+
+\texttt{cmp\_done} 必须与当前比较周期绑定，不能仅由两个静态输出当前值组合得到 \suggested。
+
+\textbf{推荐实现} \suggested：
+
+\begin{lstlisting}[style=verilogstyle]
+// 伪代码
+always @(posedge clk_eval) begin
+    if (rst_cmp) begin
+        cmp_bit_reg <= 0;
+        cmp_done_reg <= 0;
+    end else begin
+        cmp_bit_reg <= (vop > von);
+        cmp_done_reg <= 1; // 评估完成
+    end
+end
+// cmp_done 在下一 RST 上升沿清零
+\end{lstlisting}
+
+\textbf{约束} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item \texttt{cmp\_done} 脉冲宽度 $\geq$ 1 个 CCLK 周期
+\item \texttt{cmp\_bit} 在 \texttt{cmp\_done} 有效时稳定
+\item \texttt{cmp\_done} 在 RST 期间必须为 0
+\end{itemize}
+
+\subsection{极性与电平转换}
+
+当前 \texttt{COMP}/\texttt{COMN} 在顶层的极性 \verified：
+\begin{itemize}[leftmargin=2em]
+\item \texttt{COMP} = \texttt{VOP} = 比较器正输出
+\item \texttt{COMN} = \texttt{VON} = 比较器负输出
+\item \texttt{COMP > COMN} $\rightarrow$ \texttt{cmp\_bit = 1}（VIP > VIN）
+\end{itemize}
+
+电平转换 \suggested：如果模拟核心使用 1.8 V，数字核心使用 1.8 V，则无需 level shifter。若数字核心使用更低电压（如 1.2 V），则需在 \texttt{cmp\_bit}/\texttt{cmp\_done} 路径添加 level shifter。
+
+% ==================================================================
+\section{校准算法和固定点实现}
+% ==================================================================
+
+\subsection{目标顺序}
+
+校准目标从 C12（最高权重）到 C8，共 6 个目标 \verified：
+
+\begin{table}[H]
+\centering
+\caption{校准目标顺序}
+\label{tab:cal-target-order}
+\begin{tabular}{cccp{3cm}c}
+\toprule
+序号 & 目标 & wall 权重和 & & 名义目标权重 \\
+\midrule
+0 & w0 (C12) & 0                   & & 2048 \\
+1 & w1 (C11) & w0                  & & 1024 \\
+2 & w2 (C10) & w0+w1               & & 512  \\
+3 & w3 (C9)  & w0+w1+w2            & & 256  \\
+4 & w4 (CR)  & w0+w1+w2+w3         & & 256  \\
+5 & w5 (C8)  & w0+w1+w2+w3+w4      & & 128  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{wall 构造}
+
+wall 是除目标电容外所有已校准高位电容的总权重 \verified：
+\begin{equation}
+wall\_weight_j = \sum_{i=0}^{j-1} w_i^{calibrated}
+\label{eq:wall-weight}
+\end{equation}
+
+wall 在校准激励时设为 VREFN（或 VREFP，取决于极性），使目标电容的残差可以通过比较器检测。
+
+\subsection{镜像测量}
+
+每个目标在 P 侧（D 侧）和 N 侧（U 侧）各测一次 \verified：
+
+\begin{equation}
+q_P = \text{phase0\_sign} \times \text{phase1\_search\_result}
+\label{eq:qp}
+\end{equation}
+
+\begin{equation}
+q_N = \text{phase0\_sign} \times \text{phase1\_search\_result}
+\label{eq:qn}
+\end{equation}
+
+8 pair 平均 \verified：
+\begin{equation}
+residual\_avg = \frac{1}{8} \sum_{p=0}^{7} \frac{q_P(p) + q_N(p)}{2}
+\label{eq:residual-avg-8}
+\end{equation}
+
+\subsection{权重更新}
+
+候选权重计算 \verified：
+\begin{equation}
+w_{candidate} = wall\_weight + 2 \times residual\_avg
+\label{eq:wcandidate}
+\end{equation}
+
+\textbf{deadband 保护} \verified：
+
+\begin{table}[H]
+\centering
+\caption{deadband 保护设置}
+\label{tab:deadband}
+\begin{tabular}{lcl}
+\toprule
+目标 & 死区 (LSB) & 说明 \\
+\midrule
+C10, C11, C12 & 1.0 & 高权重窄死区 \\
+C8, C9, CR    & 2.0 & 低权重宽死区 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+当 $|residual\_avg| < deadband$ 时，不更新权重。
+
+\textbf{更新逻辑} \verified：
+
+\begin{lstlisting}[style=textstyle]
+if (|residual_avg| >= deadband) {
+    w_candidate = wall_weight + 2 * residual_avg;
+    if (|w_candidate - w_nominal| <= w_nominal * WEIGHT_TOL) {
+        w_shadow[target] = w_candidate;
+    } else {
+        invalid_count++;
+    }
+} else {
+    w_shadow[target] = w_nominal; // 残差在死区内，使用名义值
+}
+\end{lstlisting}
+
+\subsection{固定点实现}
+
+\textbf{定点格式} \verified：Q(FRAC\_BITS).INF，其中 FRAC\_BITS=4。
+
+\begin{table}[H]
+\centering
+\caption{固定点数据位宽定义}
+\label{tab:fixedpoint}
+\begin{tabular}{lccll}
+\toprule
+数据 & 位宽 & 格式 & 范围 \\
+\midrule
+权重 w\_i       & 16+4=20 bit & Q4.16 & 0 $\sim$ 4351$\times$16 = 69616 \\
+raw\_sum        & 24+4=28 bit & Q4.24 & 0 $\sim$ 4351$\times$16 \\
+residual        & 12+4=16 bit & Q4.12 & -2048$\times$16 $\sim$ +2048$\times$16 \\
+wall\_weight    & 20 bit      & Q4.16 & 0 $\sim$ 4351$\times$16 \\
+Code            & 12 bit      & 整数  & 0 $\sim$ 4095 \\
+residual\_avg   & 16 bit      & Q4.12 & 上述范围/16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{饱和处理} \verified：\texttt{saturation\_i} 检测：当 \texttt{search\_mask == 8128}（所有低位全部命中）且 \texttt{keep\_trial == 0} 且 \texttt{force\_keep\_trial == 0} 时，标记为饱和。
+
+\subsection{范围检查}
+
+\textbf{WEIGHT\_TOL 检查} \verified：
+\begin{equation}
+|w_{candidate} - w_{nominal}| \leq w_{nominal} \times WEIGHT\_TOL
+\label{eq:weight-tol}
+\end{equation}
+
+当前 \texttt{WEIGHT\_TOL = 0.25}（$\pm$25\%），允许的权重范围：
+
+\begin{table}[H]
+\centering
+\caption{权重允许范围（WEIGHT\_TOL=0.25）}
+\label{tab:weight-range}
+\begin{tabular}{lcc}
+\toprule
+目标 & 名义值 & 允许范围 \\
+\midrule
+w0 (C12) & 2048 & 1536$\sim$2560 \\
+w1 (C11) & 1024 & 768$\sim$1280  \\
+w2 (C10) & 512  & 384$\sim$640   \\
+w3 (C9)  & 256  & 192$\sim$320   \\
+w4 (CR)  & 256  & 192$\sim$320   \\
+w5 (C8)  & 128  & 96$\sim$160    \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{错误处理}
+
+\begin{table}[H]
+\centering
+\caption{错误处理类型与措施}
+\label{tab:error-handling}
+\begin{tabular}{lll}
+\toprule
+错误类型 & 检测条件 & 处理 \\
+\midrule
+权重超限   & $|w_{candidate} - w_{nominal}| > tol$ & invalid\_count++ \\
+饱和       & search\_mask==8128 \&\& !keep\_trial  & 标记饱和 \\
+超时       & cal\_cycle $>$ MAX\_CAL\_CYCLES       & cal\_err=1, 回退 \\
+无效超限   & invalid\_count $>$ MAX\_INVALID       & cal\_err=1, 回退 \\
+残差无效   & cmp\_q == -1 (invalid)                & 该 pair 不计入 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==================================================================
+\section{正常/校准时序和资源仲裁}
+% ==================================================================
+
+\subsection{正常转换微时序}
+
+\begin{lstlisting}[style=textstyle]
+SAMPLE       (CLK0 低 -> 采样开关闭合)
+HOLD         (CLK0 高 -> 采样开关断开)
+DAC_UPDATE   (SAR_CTRL 更新 CDAC 底板)
+WAIT_SETTLE  (等待 CDAC 建立完成)
+CMP_EVAL     (CLK 上升沿 -> 比较器评估)
+WAIT_CMP_DONE(等待 cmp_done 脉冲)
+CAPTURE_BIT  (锁存 cmp_bit -> raw_i)
+NEXT_BIT     (下一级决策)
+RAW_VALID    (14 级完成 -> SOUT 脉冲)
+\end{lstlisting}
+
+\Cref{fig:normal-timing} 为正常 SAR 时序图 \suggested。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\scriptsize]
+\node[draw, fill=gray!5, minimum width=13cm, minimum height=1.2cm, align=center] (t) {正常 SAR 时序流程：SAMPLE $\rightarrow$ HOLD $\rightarrow$ DAC\_UPDATE $\rightarrow$ WAIT\_SETTLE $\rightarrow$ CMP\_EVAL $\rightarrow$ WAIT\_CMP\_DONE $\rightarrow$ CAPTURE\_BIT $\rightarrow$ NEXT\_BIT $\rightarrow$ RAW\_VALID};
+\end{tikzpicture}
+\caption{正常 SAR 时序}
+\label{fig:normal-timing}
+\end{figure}
+
+\textbf{当前 100 ns 帧时序分配} \verified：
+
+\begin{table}[H]
+\centering
+\caption{正常转换 100 ns 帧时序分配}
+\label{tab:normal-timing}
+\begin{tabular}{lll}
+\toprule
+时段 & 时刻 & 事件 \\
+\midrule
+采样     & 0$\sim$5 ns     & BS 采样开关闭合 \\
+保持     & 5$\sim$10 ns    & 采样开关断开，CDAC 顶板浮空 \\
+决策 1   & 10$\sim$15 ns   & C12 决策 \\
+决策 2   & 15$\sim$20 ns   & C11 决策 \\
+...      & ...             & ... \\
+决策 14  & 75$\sim$80 ns   & 终端决策 \\
+输出     & 80$\sim$100 ns  & SOUT 锁存, Bit 输出 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{校准测量微时序}
+
+\begin{lstlisting}[style=textstyle]
+CAL_PRECHARGE       (目标电容预充到 VREFP/VREFN)
+SET_TARGET_AND_WALL (设置目标激励和 wall 激励)
+RELEASE_TOP_PLATE   (释放顶板，开始电荷重分配)
+WAIT_SETTLE         (等待 CDAC 建立)
+CMP_EVAL            (CLK 上升沿 -> 比较器评估)
+WAIT_CMP_DONE       (等待 cmp_done)
+CAPTURE             (锁存 cmp_bit -> search_result)
+NEXT_TRIAL          (下一搜索级或下一 pair)
+FRAME_DONE          (本帧完成)
+\end{lstlisting}
+
+\Cref{fig:cal-timing} 为校准帧时序图 \suggested。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\scriptsize]
+\node[draw, fill=gray!5, minimum width=13cm, minimum height=1.2cm, align=center] (t) {校准帧时序流程：CAL\_PRECHARGE $\rightarrow$ SET\_TARGET\_AND\_WALL $\rightarrow$ RELEASE\_TOP\_PLATE $\rightarrow$ WAIT\_SETTLE $\rightarrow$ CMP\_EVAL $\rightarrow$ WAIT\_CMP\_DONE $\rightarrow$ CAPTURE $\rightarrow$ NEXT\_TRIAL $\rightarrow$ FRAME\_DONE};
+\end{tikzpicture}
+\caption{校准帧时序}
+\label{fig:cal-timing}
+\end{figure}
+
+\textbf{当前校准帧 100 ns 时序分配} \verified：
+
+\begin{table}[H]
+\centering
+\caption{校准帧 100 ns 时序分配}
+\label{tab:cal-timing}
+\begin{tabular}{lll}
+\toprule
+时段 & 时刻 & 事件 \\
+\midrule
+预充      & 0$\sim$20 ns      & RST1 高, CDAC 复位到 VCM \\
+激励设置  & 20$\sim$30 ns     & BITD/U\_CAL 设置目标/wall \\
+释放      & 30$\sim$35 ns     & RST1 低, 顶板释放 \\
+搜索 1    & 35$\sim$42.5 ns   & C7 搜索 \\
+搜索 2    & 42.5$\sim$50 ns   & C6 搜索 \\
+...       & ...               & ... \\
+搜索 7    & 77.5$\sim$85 ns   & C1 搜索 \\
+帧结束    & 85$\sim$100 ns    & RST1 上升沿, 帧状态清除 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{资源所有权切换}
+
+\textbf{当前问题} \verified：\texttt{CAL} 信号同时承担请求（cal\_start）、忙（cal\_busy）、模式选择（cal\_mode）和时钟隔离（CLK 复用）四种语义。
+
+\textbf{推荐方案} \suggested：将上述四种语义拆分为独立信号：
+
+\begin{table}[H]
+\centering
+\caption{CAL 信号语义拆分}
+\label{tab:cal-split}
+\begin{tabular}{lll}
+\toprule
+信号 & 功能 & 替代原 CAL 的哪个语义 \\
+\midrule
+cal\_start & 请求        & CAL 上升沿 \\
+cal\_busy  & 忙          & CAL 高电平 \\
+cal\_active & CDAC 所有权 & CAL 驱动 SWITCH\_CAL \\
+clk\_sel   & 时钟选择    & CAL 影响 CLK 复用 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{原子权重提交}
+
+\textbf{时序约束} \suggested：
+
+\begin{lstlisting}[style=textstyle]
+校准完成 (CAL_RUN -> CAL_COMMIT)
+    -> 等待 RST1↑ (安全边界)
+    -> 原子提交: ACTIVE <= SHADOW
+    -> 下一帧使用新权重
+    -> cal_done=1, cal_busy=0
+\end{lstlisting}
+
+\textbf{禁止}在校准帧间暴露半更新权重 \suggested。当前实现中，权重在搜索过程中逐步更新，正常解码在同一帧内可能使用部分更新的权重。双权重 bank 确保正常解码始终使用完整的 ACTIVE 权重集。
+
+\subsection{时钟选择安全}
+
+\textbf{当前时钟复用} \verified：
+
+\begin{lstlisting}[style=verilogstyle]
+CLK = (1-cal_mode) * CLK_SAR + cal_mode * (CAL_CLK * frame_active * cal_started * (1-finish_pending));
+\end{lstlisting}
+
+\textbf{风险} \inferred：如果 \texttt{cal\_mode} 在比较器评估期间变化，会导致 CLK 毛刺。
+
+\textbf{推荐方案} \suggested：时钟选择仅在 RST1 上升沿（安全边界）切换：
+
+\begin{lstlisting}[style=verilogstyle]
+always @(posedge rst1) begin
+    clk_sel_reg <= mode_normal ? 1'b0 : 1'b1;
+end
+assign clk_out = clk_sel_reg ? cal_clk_gated : clk_sar;
+\end{lstlisting}
+
+% ==================================================================
+\section{输出重构和码域映射}
+% ==================================================================
+
+\subsection{raw decision}
+
+14 级原始决策 \texttt{r0}$\sim$\texttt{r13} 在 SOUT 上升沿锁存 \verified：
+
+\begin{table}[H]
+\centering
+\caption{raw decision 映射表}
+\label{tab:raw-decision}
+\begin{tabular}{llll}
+\toprule
+raw 索引 & BP 索引 & 物理电容 & 含义 \\
+\midrule
+r0  & BP<13> & C12  & MSB 决策 \\
+r1  & BP<12> & C11  & \\
+r2  & BP<11> & C10  & \\
+r3  & BP<10> & C9   & \\
+r4  & BP<9>  & CR   & 冗余决策 \\
+r5  & BP<8>  & C8   & \\
+r6  & BP<7>  & C7   & \\
+r7  & BP<6>  & C6   & \\
+r8  & BP<5>  & C5   & \\
+r9  & BP<4>  & C4   & \\
+r10 & BP<3>  & C3   & \\
+r11 & BP<2>  & C2   & \\
+r12 & BP<1>  & C1   & \\
+r13 & BP<0>  & 终端 & LSB 决策 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{加权和}
+
+\begin{equation}
+raw\_sum = \sum_{i=0}^{13} r_i \cdot w_i
+\label{eq:raw-sum-2}
+\end{equation}
+
+名义值：$raw\_sum \in [0, W_\Sigma] = [0, 4351]$ \verified。
+
+\subsection{非二进制冗余范围处理}
+
+\textbf{偏移模式} (\texttt{NORMALIZE\_REDUNDANT\_RANGE=0}) \verified：
+\begin{equation}
+Code = raw\_sum - 128
+\label{eq:offset-mode-2}
+\end{equation}
+
+\begin{itemize}[leftmargin=2em]
+\item 优点：无增益压缩，无再量化噪声
+\item 缺点：输出有恒定 -128 LSB 偏移（可数字校正）
+\item 信噪比影响：0 dB
+\item 推荐使用
+\end{itemize}
+
+\textbf{归一化模式} (\texttt{NORMALIZE\_REDUNDANT\_RANGE=1}) \verified：
+\begin{equation}
+Code = \left\lfloor \frac{4095 \cdot raw\_sum}{4351} \right\rfloor
+\label{eq:normalize-mode-2}
+\end{equation}
+
+\begin{itemize}[leftmargin=2em]
+\item 优点：输出码严格映射到 [0, 4095]
+\item 缺点：0.527 dB 增益压缩（线性，不影响 SNDR） + 2.89 dB 再量化噪声（Phase 0 实测）
+\item 信噪比影响：约 -2.89 dB（再量化噪声，Phase 0 离线验证实测值）
+\item 不推荐使用
+\end{itemize}
+
+\subsection{动态归一化的硬件代价}
+
+\textbf{偏移模式硬件} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 加法器：28 bit + 12 bit（减 128）
+\item 截断：保留 [11:0]
+\item 硬件代价：1 个 28-bit 减法器 + 饱和逻辑
+\end{itemize}
+
+\textbf{归一化模式硬件} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 乘法器：28 bit $\times$ 12 bit
+\item 除法器：28 bit $\div$ 13 bit（或预计算 4095/4351 的倒数）
+\item 截断：保留 [11:0]
+\item 硬件代价：1 个 28$\times$12 乘法器 + 1 个 28-bit 除法器（或 LUT）
+\end{itemize}
+
+偏移模式的硬件代价显著低于归一化模式 \inferred。
+
+\subsection{固定点位宽}
+
+\begin{table}[H]
+\centering
+\caption{输出重构固定点位宽}
+\label{tab:recon-bitwidth}
+\begin{tabular}{lccll}
+\toprule
+运算 & 输入位宽 & 运算 & 输出位宽 & 截断策略 \\
+\midrule
+r\_i $\times$ w\_i & 1 $\times$ 20 bit & 乘法 & 20 bit & 无截断 \\
+$\Sigma$ r\_i $\times$ w\_i & 20 bit $\times$ 14 & 累加 & 24 bit & 无截断 \\
+raw\_sum - 128 & 24 bit - 8 bit & 减法 & 24 bit & 无截断 \\
+Code[11:0] & 24 bit & 截断 & 12 bit & 取 [11:0]，饱和到 [0,4095] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{溢出处理} \suggested：如果 \texttt{raw\_sum} 超出 [128, 4223]（即 Code 超出 [0, 4095]），执行饱和：
+\begin{equation}
+Code = \begin{cases} 0 & \text{if } raw\_sum < 128 \\ 4095 & \text{if } raw\_sum > 4223 \\ raw\_sum - 128 & \text{otherwise} \end{cases}
+\label{eq:overflow}
+\end{equation}
+
+\subsection{校准 DAC 低位 INL 对高位估计的影响}
+
+校准搜索使用 C7$\sim$C1 作为搜索 DAC。如果这些低位电容本身存在失配，搜索结果 \texttt{residual\_avg} 会包含搜索 DAC 的 INL 误差 \inferred。
+
+\textbf{影响分析} \inferred：
+\begin{itemize}[leftmargin=2em]
+\item C7 的 INL 直接影响所有目标的残差测量
+\item 低位电容（C1$\sim$C3）的 INL 影响较小（权重低）
+\item 冗余 256 LSB 覆盖区可以吸收部分搜索 DAC INL
+\end{itemize}
+
+\textbf{缓解措施} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 确保搜索 DAC 低位电容的匹配优于 1\%
+\item 可考虑对搜索 DAC 进行单独校准（递归校准）
+\item 增加 pair 数以提高平均效果
+\end{itemize}
+
+\subsection{Phase 2: RAW 端点对称性验证}
+
+通过从 MC0 校准仿真 CSV 数据反推 \texttt{raw\_sum}，验证 RAW 传输端点对称性 \verified：
+
+\begin{table}[H]
+\centering
+\caption{Phase 2: RAW 端点验证结果}
+\label{tab:phase2_raw_endpoint}
+\begin{tabular}{lcccc}
+\toprule
+指标 & 实测值 & 理论值 & 差异 & 结论 \\
+\midrule
+raw(+FS) & 4219 & — & — & 接近上限 4351 \\
+raw(-FS) & 248 & — & — & 接近下限 0 \\
+raw(+FS)+raw(-FS) & 4467 & 4351 & +116 & 近似对称 \\
+raw 中点 & 2233.5 & 2175.5 & +58.0 & 近似中点 \\
+Code(+FS) & 4091 & 4095 & -4 & 接近满量程 \\
+Code(-FS) & 120 & 0 & +120 & 冗余余量 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{结论} \verified：
+\begin{itemize}[leftmargin=2em]
+\item \texttt{raw\_sum} 端点覆盖 [248, 4219]，占用 4351 量程的 91.3\%，与正弦输入幅度（800 mV）一致
+\item 端点不对称量 +116 LSB，来源于输入正弦波的 DC 偏移和非理想对称性
+\item \texttt{raw(+FS)+raw(-FS)} 与 $W_\Sigma$ 的偏差 +116 LSB 在冗余 256 LSB 覆盖区内，不影响正常解码
+\item offset-only 映射（\texttt{Code = raw\_sum - 128}）正确工作：Code 覆盖 [120, 4091]，无溢出
+\end{itemize}
+
+% ==================================================================
+\section{版图与物理实现约束}
+% ==================================================================
+
+\subsection{模拟岛}
+
+\textbf{分区原则} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 所有模拟模块（BS、CDAC、COM\_IAZ、TG 开关阵列、参考网络）布置在独立模拟岛内
+\item 模拟岛四周由 N+ guard ring 和 P+ substrate ring 包围
+\item 模拟岛内部不穿越数字信号线
+\end{itemize}
+
+\textbf{模拟岛内容} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{模拟岛内容布局}
+\label{tab:analog-island}
+\begin{tabular}{lll}
+\toprule
+模块 & 位置优先级 & 约束 \\
+\midrule
+CDAC 电容阵列   & 中心     & 共质心布局，P/N 对称 \\
+COM\_IAZ 比较器 & CDAC 旁边 & 短连线到顶板 \\
+TG 开关阵列     & CDAC 底板旁 & 每个开关单元紧邻对应电容底板 \\
+BS 采样开关     & CDAC 顶板旁 & 短连线到顶板 \\
+参考去耦电容     & TG 开关旁 & 局部去耦 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{数字区}
+
+\textbf{分区原则} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 所有数字模块布置在模拟岛外的独立数字区
+\item 数字区使用独立 DVDD/DGND 电源
+\item 数字区与模拟岛之间保持 $\geq$ 50 \textmu m 间距
+\item 数字信号通过 level shifter 进入模拟岛
+\end{itemize}
+
+\subsection{本地 driver 和 level shifter}
+
+\textbf{本地开关驱动} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 每个 TG 开关配备本地 driver（两级反相器）
+\item driver 紧邻 TG 开关（距离 $\leq$ 10 \textmu m）
+\item driver 输入来自数字区的 one-hot interlock 输出
+\end{itemize}
+
+\textbf{Level Shifter} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 数字核心 1.8 V $\rightarrow$ 模拟核心 1.8 V：无需 level shifter
+\item 数字核心 1.2 V $\rightarrow$ 模拟核心 1.8 V：需在 \texttt{sel\_P}/\texttt{sel\_N}/\texttt{sel\_C} 路径添加 level shifter
+\item Level shifter 紧邻模拟岛边界
+\end{itemize}
+
+\subsection{差分对称}
+
+\textbf{P/N 对称要求} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item P 侧和 N 侧 CDAC 电容阵列镜像对称
+\item P 侧和 N 侧 TG 开关阵列镜像对称
+\item P 侧和 N 侧参考布线长度匹配（误差 $\leq$ 1\%）
+\item P 侧和 N 侧采样开关尺寸匹配
+\end{itemize}
+
+\subsection{时钟屏蔽}
+
+\textbf{时钟布线约束} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item CCLK、CAL\_CLK 等高速时钟使用顶层金属屏蔽布线（两侧接地）
+\item 时钟线远离 CDAC 顶板和比较器输入
+\item 时钟 buffer 放置在数字区，不在模拟岛内
+\end{itemize}
+
+\subsection{参考布线}
+
+\textbf{VREFP/VREFN/VCM 布线} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 使用顶层金属（低阻）布线
+\item VREFP 和 VREFN 平行布线，等长
+\item VCM 独立布线，去耦电容 $\geq$ 10 pF
+\item 每个 TG 开关单元的 VREFP/VREFN/VCM 连线等长
+\end{itemize}
+
+\subsection{地回流}
+
+\textbf{地设计} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item AGND 和 DGND 在芯片外部单点连接
+\item 模拟岛内使用 mesh 地（M1/M2）
+\item 数字区使用网格地
+\item guard ring 提供低阻抗回流路径
+\end{itemize}
+
+\subsection{guard ring}
+
+\textbf{guard ring 配置} \suggested：
+
+\begin{table}[H]
+\centering
+\caption{guard ring 配置}
+\label{tab:guard-ring}
+\begin{tabular}{llll}
+\toprule
+类型 & 位置 & 宽度 & 接地 \\
+\midrule
+N+ ring & 模拟岛外围     & $\geq$ 2 \textmu m & AVDD \\
+P+ ring & N+ ring 外侧  & $\geq$ 2 \textmu m & AGND \\
+N+ ring & 数字区外围     & $\geq$ 2 \textmu m & DVDD \\
+P+ ring & N+ ring 外侧  & $\geq$ 2 \textmu m & DGND \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{电容阵列共质心}
+
+\textbf{共质心布局} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item C12（16C）拆分为 16 个单位电容，分布在阵列中心
+\item C11（8C）拆分为 8 个单位电容，围绕 C12 分布
+\item 低位电容（C1$\sim$C7）在阵列外围
+\item P/N 两侧电容交叉排列
+\end{itemize}
+
+% ==================================================================
+\section{分阶段迁移路线}
+% ==================================================================
+
+\subsection{迁移阶段总览}
+
+\begin{table}[H]
+\centering
+\caption{迁移阶段总览}
+\label{tab:migration-overview}
+\small
+\begin{tabular}{clp{3.5cm}p{3.5cm}}
+\toprule
+阶段 & 名称 & 目标 & 验证标准 \\
+\midrule
+1  & VA switch 保留 + 数字算法拆分 & 将 DEC\_CAL\_PHY 的数字部分提取为 RTL & 功能等价 \\
+2  & 比较器接口离散化 & 添加 cmp\_bit/cmp\_done & 比较器级仿真通过 \\
+3  & 真实 CDAC switch cell & 替换 VA tanh 开关为 TG & 建立精度达标 \\
+4  & 完整 switch array & 全部底板使用真实 TG & 系统级仿真通过 \\
+5  & 顶板/参考真实开关 & 采样和顶板开关真实化 & 采样线性度达标 \\
+6  & RTL 联合仿真 & 数字 RTL + 模拟晶体管级 & SNDR $\geq$ 73 dB \\
+7  & PVT 验证 & 全 corner 仿真 & 所有 corner $\geq$ 70 dB \\
+8  & Monte Carlo & 统计性验证 & 90\% 样本 $\geq$ 70 dB \\
+9  & post-layout & 含寄生仿真 & SNDR $\geq$ 70 dB \\
+10 & signoff & 最终签核 & 全部标准达标 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{阶段 1：VA switch 保留 + 数字算法拆分}
+
+\textbf{输入}：当前完整 VA 闭环模型\\
+\textbf{输出}：RTL 数字控制器（MODE\_ARB, CAL\_CTRL, CAL\_SEARCH, CODE\_RECON, CONFIG\_STATUS）\\
+\textbf{验证}：RTL + VA 联合仿真，SNDR 应与当前一致（73.24 dB）
+
+\textbf{关键任务} \suggested：
+\begin{enumerate}[leftmargin=2em]
+\item 提取 DEC\_CAL\_PHY 中的 FSM 逻辑，编写等价 RTL
+\item 提取权重更新算法，编写等价 RTL
+\item 提取码域重构算法，编写等价 RTL
+\item 保留 SWITCH\_CAL VA 不变
+\item 在 RTL + VA 联合仿真环境中验证
+\end{enumerate}
+
+\subsection{阶段 2：比较器接口离散化}
+
+\textbf{输入}：阶段 1 输出\\
+\textbf{输出}：COM\_IAZ + SR latch $\rightarrow$ cmp\_bit/cmp\_done
+
+\textbf{关键任务} \suggested：
+\begin{enumerate}[leftmargin=2em]
+\item 在 COM\_IAZ 输出端添加 SR latch
+\item 生成 cmp\_done 脉冲（绑定当前比较周期）
+\item 移除 DEC\_CAL\_PHY 中的 V(COMP)/V(COMN) 读取
+\item 修改 CAL\_SEARCH 使用 cmp\_bit/cmp\_done
+\item 验证校准搜索结果一致
+\end{enumerate}
+
+\subsection{阶段 3：真实 CDAC switch cell}
+
+\textbf{输入}：阶段 2 输出\\
+\textbf{输出}：单个 TG 开关单元替代 VA tanh 开关
+
+\textbf{关键任务} \suggested：
+\begin{enumerate}[leftmargin=2em]
+\item 设计 TG 开关单元（NMOS + PMOS transmission gate）
+\item 实现 one-hot interlock 逻辑
+\item 实现 break-before-make 定时
+\item 验证单个开关的 Ron、Cpar、Qinj
+\item 验证建立精度 $\leq$ 0.25 LSB
+\end{enumerate}
+
+\subsection{阶段 4：完整 switch array}
+
+\textbf{输入}：阶段 3 输出\\
+\textbf{输出}：26 个 TG 开关单元（P/N 两侧 $\times$ 13 个底板）
+
+\textbf{关键任务} \suggested：
+\begin{enumerate}[leftmargin=2em]
+\item 例化 13$\times$2=26 个 TG 开关单元
+\item 实现数字 owner mux（normal/calibration 选择）
+\item 实现本地 driver 阵列
+\item 验证系统级仿真，SNDR $\geq$ 73 dB
+\end{enumerate}
+
+\subsection{阶段 5：顶板/参考真实开关}
+
+\textbf{输入}：阶段 4 输出\\
+\textbf{输出}：BS 和顶板 VCM 开关真实化
+
+\textbf{关键任务} \suggested：
+\begin{enumerate}[leftmargin=2em]
+\item 保留现有 BS 晶体管级实现（已是真实开关）
+\item 将顶板 VCM 复位开关从 VA 替换为真实 TG
+\item 验证采样线性度（THD $\leq$ -75 dB）
+\end{enumerate}
+
+\subsection{阶段 6：RTL 联合仿真}
+
+\textbf{输入}：阶段 5 输出\\
+\textbf{输出}：完整 RTL + 晶体管级联合仿真
+
+\textbf{关键任务} \suggested：
+\begin{enumerate}[leftmargin=2em]
+\item 使用 Verilog RTL + Spectre 模拟联合仿真
+\item 验证正常转换 SNDR $\geq$ 73 dB
+\item 验证校准后 SNDR $\geq$ 73 dB
+\item 验证校准时间 $\leq$ 15 \textmu s
+\end{enumerate}
+
+\subsection{阶段 7-10：PVT、MC、post-layout、signoff}
+
+\textbf{PVT} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item Corner：TT/FF/SS $\times$ -40$^\circ$C/27$^\circ$C/85$^\circ$C
+\item 验证所有 corner SNDR $\geq$ 70 dB
+\end{itemize}
+
+\textbf{Monte Carlo} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 样本数 $\geq$ 100
+\item 验证 90\% 样本 SNDR $\geq$ 70 dB
+\end{itemize}
+
+\textbf{post-layout} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 提取 RC 寄生
+\item 验证 SNDR $\geq$ 70 dB（含寄生）
+\end{itemize}
+
+\textbf{signoff} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item DRC/LVS 通过
+\item ERC 通过
+\item 功耗 $\leq$ 预算
+\item 面积 $\leq$ 预算
+\end{itemize}
+
+% ==================================================================
+\section{验证计划与验收标准}
+% ==================================================================
+
+\subsection{验证矩阵}
+
+\begin{table}[H]
+\centering
+\caption{验证矩阵}
+\label{tab:verify-matrix}
+\small
+\begin{tabular}{llp{2.5cm}p{2.5cm}p{1.5cm}}
+\toprule
+层级 & 测试项 & 仿真条件 & 通过标准 & 当前状态 \\
+\midrule
+单元级   & TG 开关 Ron          & TT 27$^\circ$C & $\leq$ 10 \textOmega        & 未验证 \\
+单元级   & TG 开关建立精度      & TT 27$^\circ$C & $\leq$ 0.25 LSB             & 未验证 \\
+单元级   & 比较器延迟           & TT 27$^\circ$C & $\leq$ 5 ns                 & 已验证 \\
+单元级   & 比较器失调           & TT 27$^\circ$C & $\leq$ 1 mV                 & 已验证 \\
+接口级   & cmp\_done 时序       & TT 27$^\circ$C & 脉宽 $\geq$ CCLK            & 未验证 \\
+接口级   & one-hot interlock    & TT 27$^\circ$C & 无同时为 1                   & 未验证 \\
+接口级   & break-before-make    & TT 27$^\circ$C & 死区 $\geq$ 100 ps          & 未验证 \\
+模块级   & CAL\_SEARCH 功能     & TT 27$^\circ$C & 权重正确                     & 已验证 \\
+模块级   & CODE\_RECON 功能     & TT 27$^\circ$C & SNDR $\geq$ 73 dB           & 已验证 \\
+模块级   & 双权重 bank          & TT 27$^\circ$C & 原子提交                     & 未验证 \\
+系统级   & 正常转换 SNDR        & TT 27$^\circ$C & $\geq$ 73 dB                & 已验证 \\
+系统级   & 校准后 SNDR          & TT 27$^\circ$C & $\geq$ 73 dB                & 已验证 \\
+系统级   & 校准时间             & TT 27$^\circ$C & $\leq$ 15 \textmu s         & 已验证 \\
+PVT      & SS 85$^\circ$C SNDR  & SS 85$^\circ$C & $\geq$ 70 dB                & 未验证 \\
+PVT      & FF -40$^\circ$C SNDR & FF -40$^\circ$C & $\geq$ 70 dB               & 未验证 \\
+MC       & 90\% 样本 SNDR       & TT 27$^\circ$C MC & $\geq$ 70 dB             & 未验证 \\
+post-layout & SNDR (含寄生)     & TT 27$^\circ$C & $\geq$ 70 dB                & 未验证 \\
+post-layout & DNL/INL            & TT 27$^\circ$C & DNL $\leq$ $\pm$0.5, INL $\leq$ $\pm$1 & 未验证 \\
+功耗     & 总功耗               & TT 27$^\circ$C & $\leq$ 预算                  & 未验证 \\
+错误恢复 & 校准失败回退         & TT 27$^\circ$C & 名义权重                     & 未验证 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{FFT 测试条件}
+
+\begin{table}[H]
+\centering
+\caption{FFT 测试条件}
+\label{tab:fft-cond}
+\begin{tabular}{lll}
+\toprule
+参数 & 值 & 说明 \\
+\midrule
+fs        & 10 MHz       & 采样率 \\
+fin       & 4.609375 MHz & 相干输入频率 \\
+NFFT      & 128          & 采样点数 \\
+bin       & 59           & 信号 bin \\
+窗        & 无           & 相干采样无需窗 \\
+采样时刻  & 10.002\textmu$\sim$22.702\textmu & 100 ns 步进 \\
+stop      & 25 \textmu s & 仿真停止时间 \\
++preset=cx & 是          & Spectre 收敛保证 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{DNL/INL 测试}
+
+\textbf{方法} \suggested：斜坡输入法
+\begin{itemize}[leftmargin=2em]
+\item 输入缓慢斜坡信号
+\item 在 4096 个码上各取 16 个采样点
+\item 计算 DNL 和 INL
+\item 通过标准：DNL $\leq$ $\pm$0.5 LSB, INL $\leq$ $\pm$1 LSB
+\end{itemize}
+
+\subsection{参考建立测试}
+
+\textbf{方法} \suggested：
+\begin{itemize}[leftmargin=2em]
+\item 在 TG 开关切换后测量底板电压建立
+\item 建立 to 0.25 LSB 的时间 $\leq$ 可用时间窗口
+\item 所有 PVT corner 验证
+\end{itemize}
+
+\subsection{功耗测试}
+
+\begin{table}[H]
+\centering
+\caption{功耗测试项目}
+\label{tab:power-test}
+\begin{tabular}{lll}
+\toprule
+模块 & 预算 & 测试条件 \\
+\midrule
+BS            & --- & 正常转换模式 \\
+CDAC          & --- & 正常转换模式 \\
+COM\_IAZ      & --- & 10 MHz 时钟 \\
+TG 开关阵列   & --- & 10 MHz 切换 \\
+数字核心      & --- & 10 MHz 时钟 \\
+总计          & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{校准时间测试}
+
+\begin{table}[H]
+\centering
+\caption{校准时间测试}
+\label{tab:cal-time-test}
+\begin{tabular}{lll}
+\toprule
+项目 & 理论值 & 通过标准 \\
+\midrule
+单目标时间   & 1.6 \textmu s (16帧 $\times$ 100 ns) & $\leq$ 2 \textmu s \\
+全部 6 目标  & 9.6 \textmu s (96帧 $\times$ 100 ns) & $\leq$ 15 \textmu s \\
+权重提交     & 1 帧 (100 ns)                       & $\leq$ 200 ns \\
+总校准时间   & $\sim$9.7 \textmu s                 & $\leq$ 15 \textmu s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{错误恢复测试}
+
+\begin{table}[H]
+\centering
+\caption{错误恢复测试场景}
+\label{tab:error-recovery}
+\begin{tabular}{lll}
+\toprule
+场景 & 注入方法 & 预期行为 \\
+\midrule
+权重超限       & 修改 CDAC 电容使失配 $>$ 25\% & cal\_err=1, 回退名义权重 \\
+校准超时       & 设置 MAX\_CAL\_CYCLES=10       & cal\_err=1, 回退 \\
+比较器无响应   & 禁用比较器输出                  & cmp\_done timeout, 该 pair 跳过 \\
+校准中止       & 仿真中途拉高 cal\_abort         & 立即回退, cal\_err=1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==================================================================
+\section{风险清单和优先级}
+% ==================================================================
+
+\subsection{接口风险完整列表}
+
+\begin{table}[H]
+\centering
+\caption{接口风险完整列表}
+\label{tab:risk-list}
+\scriptsize
+\begin{tabular}{cp{3cm}cp{2.5cm}p{4cm}}
+\toprule
+\# & 风险 & 级别 & 影响 & 缓解措施 \\
+\midrule
+1  & BP<13:0> 物理顺序和权重顺序错位 & P0 & 解码错误 & DEC\_CAL\_PHY 已显式反转 \verified \\
+2  & SOUT 与 raw decision 的 setup/hold & P0 & 锁存错误 & SOUT 在 BP 稳定后产生 \verified \\
+3  & CLK00 的真实定义和是否保留 & P1 & 语义模糊 & 在 TIMING\_CTRL 中重新定义 \suggested \\
+4  & CAL 语义混乱 & P0 & 资源冲突 & 拆分为 cal\_start/busy/active/clk\_sel \suggested \\
+5  & normal/calibration 模式切换毛刺 & P0 & CDAC 损坏 & 安全边界切换 + one-hot interlock \suggested \\
+6  & RST1 与 CAL\_CLK 同时边沿竞争 & P1 & 帧状态错误 & start\_pending 机制 \verified \\
+7  & 比较器 stale output & P0 & 错误决策 & SR latch 清零 + cmp\_done 绑定周期 \suggested \\
+8  & CDAC 顶板未充分建立 & P1 & 精度损失 & 建立时间分析 + PVT 验证 \suggested \\
+9  & P/N 开关路径延迟不一致 & P1 & 失配 & 版图对称 + 等长布线 \suggested \\
+10 & VREFP/VREFN/VCM 同时导通 & P0 & 参考短路 & one-hot interlock \suggested \\
+11 & level shifter 延迟和静态电流 & P2 & 功耗/速度 & 尺寸优化 \suggested \\
+12 & 数字切换噪声耦合进 CDAC & P1 & SNDR 下降 & guard ring + 屏蔽布线 \suggested \\
+13 & 校准权重半更新 & P0 & 解码错误 & 双权重 bank 原子提交 \suggested \\
+14 & 校准失败回退 & P1 & 功能中断 & 名义权重回退 + cal\_err \suggested \\
+15 & 输出动态归一化的硬件代价 & P2 & 面积/功耗 & 使用偏移模式 \verified \\
+16 & 固定点位宽和溢出 & P1 & 计算错误 & 饱和逻辑 + 位宽分析 \suggested \\
+17 & 校准 DAC 低位 INL 对高位估计的影响 & P2 & 校准精度 & 低位匹配 + 递归校准 \inferred \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{风险优先级分布}
+
+\begin{table}[H]
+\centering
+\caption{风险优先级分布}
+\label{tab:risk-priority}
+\begin{tabular}{lcl}
+\toprule
+级别 & 数量 & 说明 \\
+\midrule
+P0 & 6  & 结构错误，必须先修 \\
+P1 & 7  & 影响功能或线性度 \\
+P2 & 4  & 影响鲁棒性和签核 \\
+P3 & 0  & 后续优化 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==================================================================
+\section{最终建议和下一步执行清单}
+% ==================================================================
+
+\subsection{近期任务（1$\sim$2 周）}
+
+\begin{table}[H]
+\centering
+\caption{近期任务（1$\sim$2 周）}
+\label{tab:near-tasks}
+\begin{tabular}{clll}
+\toprule
+\# & 任务 & 输出 & 验证标准 \\
+\midrule
+1 & 编写 MODE\_ARB RTL      & Verilog 代码 + testbench & FSM 状态覆盖 100\% \\
+2 & 编写 CAL\_SEARCH RTL    & Verilog 代码 + testbench & 权重搜索结果与 VA 一致 \\
+3 & 编写 CODE\_RECON RTL    & Verilog 代码 + testbench & SNDR $\geq$ 73 dB \\
+4 & 编写双权重 bank RTL     & Verilog 代码 + testbench & 原子提交验证通过 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{中期任务（3$\sim$4 周）}
+
+\begin{table}[H]
+\centering
+\caption{中期任务（3$\sim$4 周）}
+\label{tab:mid-tasks}
+\begin{tabular}{clll}
+\toprule
+\# & 任务 & 输出 & 验证标准 \\
+\midrule
+5 & 设计 TG 开关单元        & 晶体管级 schematic     & Ron $\leq$ 10 \textOmega, 建立 $\leq$ 0.25 LSB \\
+6 & 实现 one-hot interlock  & RTL + schematic        & 无非法状态 \\
+7 & 比较器接口离散化        & COM\_IAZ + SR latch    & cmp\_done 时序正确 \\
+8 & RTL + VA 联合仿真       & 仿真结果               & SNDR $\geq$ 73 dB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{远期任务（5$\sim$8 周）}
+
+\begin{table}[H]
+\centering
+\caption{远期任务（5$\sim$8 周）}
+\label{tab:far-tasks}
+\begin{tabular}{clll}
+\toprule
+\# & 任务 & 输出 & 验证标准 \\
+\midrule
+9  & 完整 TG 开关阵列       & 晶体管级 schematic & 系统级 SNDR $\geq$ 73 dB \\
+10 & PVT 验证               & 仿真报告           & 所有 corner $\geq$ 70 dB \\
+11 & Monte Carlo 验证       & 统计报告           & 90\% $\geq$ 70 dB \\
+12 & 版图设计               & GDSII              & DRC/LVS 通过 \\
+13 & post-layout 仿真       & 仿真报告           & SNDR $\geq$ 70 dB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{签核清单}
+
+\begin{table}[H]
+\centering
+\caption{签核清单}
+\label{tab:signoff-checklist}
+\begin{tabular}{cl}
+\toprule
+状态 & 签核项 \\
+\midrule
+{$\square$} & RTL 代码审查通过 \\
+{$\square$} & RTL + VA 联合仿真 SNDR $\geq$ 73 dB \\
+{$\square$} & TG 开关单元 Ron $\leq$ 10 \textOmega \\
+{$\square$} & TG 开关建立精度 $\leq$ 0.25 LSB \\
+{$\square$} & 比较器 cmp\_done 时序正确 \\
+{$\square$} & one-hot interlock 无非法状态 \\
+{$\square$} & 双权重 bank 原子提交 \\
+{$\square$} & 完整系统 SNDR $\geq$ 73 dB \\
+{$\square$} & PVT 所有 corner $\geq$ 70 dB \\
+{$\square$} & MC 90\% $\geq$ 70 dB \\
+{$\square$} & post-layout SNDR $\geq$ 70 dB \\
+{$\square$} & DRC/LVS 通过 \\
+{$\square$} & 功耗 $\leq$ 预算 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ==================================================================
+% 附录
+% ==================================================================
+\appendix
+
+\section{信号定义表}
+\label{app:signal-defs}
+
+\begin{table}[H]
+\centering
+\caption{信号定义表}
+\label{tab:app-signal-defs}
+\scriptsize
+\begin{tabular}{lllll}
+\toprule
+信号 & 方向 & 宽度 & 电源域 & 含义 \\
+\midrule
+CLK0              & 输入 & 1  & 模拟 & 采样时钟 \\
+RST               & 输入 & 1  & 模拟 & 比较器复位 \\
+RST1              & 输入 & 1  & 模拟 & 帧窗口复位 \\
+PRST              & 输入 & 1  & 数字 & SAR 链预置 \\
+SOUT              & 输入 & 1  & 数字 & 原始决策锁存 \\
+CLK00             & 内部 & 1  & 数字 & 正常 SAR 窗口 \\
+CCLK              & 内部 & 1  & 数字 & SAR 链时钟 \\
+CAL\_CLK          & 输入 & 1  & 数字 & 校准子时钟 \\
+CAL               & 输出 & 1  & 数字 & 模式/忙标志 \\
+DONE              & 输出 & 1  & 数字 & 校准完成 \\
+ERR               & 输出 & 1  & 数字 & 校准错误 \\
+BP<13:0>          & 输出 & 14 & 数字 & SAR 原始决策 \\
+BITP/N<13:0>      & 输出 & 28 & 数字 & 物理索引决策 \\
+SET<0:13>         & 输出 & 14 & 数字 & 逐级置位 \\
+BITD/U<1:13>      & 双向 & 26 & 模拟 & CDAC 底板 \\
+BITD/U\_CAL<0:12> & 输出 & 26 & 数字 & 校准激励 \\
+Bit<11:0>         & 输出 & 12 & 数字 & 重构输出码 \\
+OUT               & 输出 & 1  & 模拟 & SNDR\_DAC 输出 \\
+COMP              & 输出 & 1  & 模拟 & 比较器正输出 \\
+COMN              & 输出 & 1  & 模拟 & 比较器负输出 \\
+VREFP             & 输入 & 1  & 模拟 & 正参考 \\
+VREFN             & 输入 & 1  & 模拟 & 负参考 \\
+VCM               & 输入 & 1  & 模拟 & 共模参考 \\
+VIP/VIN           & 输入 & 2  & 模拟 & 差分输入 \\
+VIP1/VIN1         & 输入 & 2  & 模拟 & 采样前输入 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{模块端口表}
+\label{app:module-ports}
+
+\subsection{BS}
+
+\begin{table}[H]
+\centering
+\caption{BS 端口表}
+\label{tab:app-bs-ports}
+\begin{tabular}{llll}
+\toprule
+端口 & 方向 & 类型 & 描述 \\
+\midrule
+AGND  & --- & 电源 & 模拟地 \\
+AVDD  & --- & 电源 & 模拟电源 1.8V \\
+CLK   & 输入 & 数字 & 采样时钟 \\
+VIN   & 输入 & 模拟 & 采样输入 \\
+VOUT  & 输出 & 模拟 & 采样输出 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{CDAC\_0716}
+
+\begin{table}[H]
+\centering
+\caption{CDAC\_0716 端口表}
+\label{tab:app-cdac-ports}
+\begin{tabular}{llll}
+\toprule
+端口 & 方向 & 类型 & 描述 \\
+\midrule
+AGND              & --- & 电源 & 模拟地 \\
+AVDD              & --- & 电源 & 模拟电源 \\
+BITD<1:13>        & 双向 & 模拟 & P侧底板 \\
+BITU<1:13>        & 双向 & 模拟 & N侧底板 \\
+N, P              & 双向 & 模拟 & 比较器顶板 \\
+VCM, VREFN, VREFP, VIP, VIN & 双向 & 模拟 & 参考与采样 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{COM\_IAZ}
+
+\begin{table}[H]
+\centering
+\caption{COM\_IAZ 端口表}
+\label{tab:app-com-ports}
+\begin{tabular}{llll}
+\toprule
+端口 & 方向 & 类型 & 描述 \\
+\midrule
+AGND, AVDD & --- & 电源 & 模拟电源 \\
+CLK        & 输入 & 数字 & 评估时钟 \\
+RST        & 输入 & 数字 & 复位 \\
+VIN, VIP   & 输入 & 模拟 & 差分输入 \\
+VON, VOP   & 输出 & 模拟 & 差分输出 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{SAR\_LOGIC\_0716}
+
+\begin{table}[H]
+\centering
+\caption{SAR\_LOGIC\_0716 端口表}
+\label{tab:app-sar-ports}
+\begin{tabular}{llll}
+\toprule
+端口 & 方向 & 类型 & 描述 \\
+\midrule
+DGND, DVDD           & --- & 电源 & 数字电源 \\
+BITN<0:13>, BITP<0:13> & 输出 & 数字 & 互补决策 \\
+CCLK                 & 输入 & 数字 & SAR时钟 \\
+COMN                 & 输入 & 模拟 & 比较器输入 \\
+PRST                 & 输入 & 数字 & 预置 \\
+SET<0:13>            & 输出 & 数字 & 置位控制 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{SWITCH\_CAL}
+
+\begin{table}[H]
+\centering
+\caption{SWITCH\_CAL 端口表}
+\label{tab:app-sw-ports}
+\scriptsize
+\begin{tabular}{llll}
+\toprule
+端口 & 方向 & 类型 & 描述 \\
+\midrule
+AGND, AVDD                       & --- & 电源 & 模拟电源 \\
+BITD<1:13>, BITU<1:13>           & 双向 & 模拟 & 底板 \\
+BITN<0:13>, BITP<0:13>           & 输入 & 数字 & 决策 \\
+BITD\_CAL<0:12>, BITU\_CAL<0:12> & 输入 & 数字 & 校准激励 \\
+CAL, CAL\_CLK                    & 输入 & 数字 & 模式/子时钟 \\
+N, P                             & 双向 & 模拟 & 顶板 \\
+RST, RST1                        & 输入 & 数字 & 复位 \\
+SET<0:12>                        & 输入 & 数字 & 置位 \\
+VCM, VIN, VIP, VREFN, VREFP      & 双向 & 模拟 & 参考 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{DEC\_CAL\_PHY}
+
+\begin{table}[H]
+\centering
+\caption{DEC\_CAL\_PHY 端口表}
+\label{tab:app-dec-ports}
+\scriptsize
+\begin{tabular}{llll}
+\toprule
+端口 & 方向 & 类型 & 描述 \\
+\midrule
+DGND, DVDD                       & --- & 电源 & 数字电源 \\
+Bit<11:0>                        & 输出 & 数字 & 输出码 \\
+BP<0:13>                         & 输入 & 数字 & 原始决策 \\
+BITD\_CAL<0:12>, BITU\_CAL<0:12> & 输出 & 数字 & 校准激励 \\
+CAL, DONE, ERR                   & 输出 & 数字 & 状态 \\
+CAL\_CLK, CAL\_RST, CLK00, CLK\_SAR, RST1 & 输入 & 数字 & 控制 \\
+CLK                              & 输出 & 数字 & 时钟复用 \\
+COMP, COMN                       & 输入 & 模拟 & 比较器输出 \\
+SOUT                             & 输入 & 数字 & 决策锁存 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{状态转移表}
+\label{app:state-trans}
+
+\subsection{MODE\_ARB 状态转移}
+
+\begin{table}[H]
+\centering
+\caption{MODE\_ARB 状态转移表}
+\label{tab:app-modearb-trans}
+\small
+\begin{tabular}{llll}
+\toprule
+当前状态 & 输入条件 & 下一状态 & 输出 \\
+\midrule
+NORMAL              & cal\_en=0                & NORMAL               & cal\_active=0 \\
+NORMAL              & cal\_en=1, cal\_start$\uparrow$ & WAIT\_SAFE\_BOUNDARY & cal\_busy=1 \\
+WAIT\_SAFE\_BOUNDARY & RST1$\uparrow$           & CAL\_PREPARE         & cal\_active=1 \\
+CAL\_PREPARE        & init\_done               & CAL\_RUN             & cal\_started=1 \\
+CAL\_RUN            & target\_done \&\& !all\_done & CAL\_RUN          & next target \\
+CAL\_RUN            & all\_targets\_done        & CAL\_COMMIT          & --- \\
+CAL\_RUN            & cal\_abort               & CAL\_FAIL            & cal\_err=1 \\
+CAL\_RUN            & timeout                  & CAL\_FAIL            & cal\_err=1 \\
+CAL\_COMMIT         & RST1$\uparrow$           & NORMAL               & cal\_done=1, ACTIVE$\leftarrow$SHADOW \\
+CAL\_FAIL           & RST1$\uparrow$           & NORMAL               & cal\_done=0, cal\_err=1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{权重映射表}
+\label{app:weight-mapping}
+
+\begin{table}[H]
+\centering
+\caption{权重映射表}
+\label{tab:app-weight-mapping}
+\small
+\begin{tabular}{llllcl}
+\toprule
+w 索引 & BP 索引 & 物理电容 & 名义权重 & 校准目标 & deadband \\
+\midrule
+w0  & BP<13> & C12 & 2048 & 是 & 1.0 LSB \\
+w1  & BP<12> & C11 & 1024 & 是 & 1.0 LSB \\
+w2  & BP<11> & C10 & 512  & 是 & 1.0 LSB \\
+w3  & BP<10> & C9  & 256  & 是 & 2.0 LSB \\
+w4  & BP<9>  & CR  & 256  & 是 & 2.0 LSB \\
+w5  & BP<8>  & C8  & 128  & 是 & 2.0 LSB \\
+w6  & BP<7>  & C7  & 48   & 否 (搜索DAC) & --- \\
+w7  & BP<6>  & C6  & 32   & 否 (搜索DAC) & --- \\
+w8  & BP<5>  & C5  & 20   & 否 (搜索DAC) & --- \\
+w9  & BP<4>  & C4  & 12   & 否 (搜索DAC) & --- \\
+w10 & BP<3>  & C3  & 8    & 否 (搜索DAC) & --- \\
+w11 & BP<2>  & C2  & 4    & 否 (搜索DAC) & --- \\
+w12 & BP<1>  & C1  & 2    & 否 (搜索DAC) & --- \\
+w13 & BP<0>  & 终端 & 1   & 否 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{校准目标与 wall 表}
+\label{app:cal-target-wall}
+
+\begin{table}[H]
+\centering
+\caption{校准目标与 wall 表}
+\label{tab:app-cal-target-wall}
+\begin{tabular}{lllll}
+\toprule
+target\_idx & 目标 & wall 权重 & wall 电容 & 名义目标权重 \\
+\midrule
+0 & C12 & 0                   & 无                    & 2048 \\
+1 & C11 & w0                  & C12                   & 1024 \\
+2 & C10 & w0+w1               & C12,C11               & 512  \\
+3 & C9  & w0+w1+w2            & C12,C11,C10           & 256  \\
+4 & CR  & w0+w1+w2+w3         & C12,C11,C10,C9        & 256  \\
+5 & C8  & w0+w1+w2+w3+w4      & C12,C11,C10,C9,CR     & 128  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{固定点位宽表}
+\label{app:fixedpoint-bitwidth}
+
+\begin{table}[H]
+\centering
+\caption{固定点位宽表}
+\label{tab:app-fixedpoint}
+\begin{tabular}{lcccccc}
+\toprule
+数据 & 符号 & 位宽 & 格式 & 整数位 & 小数位 & 范围 \\
+\midrule
+权重      & w\_i    & 20 & Q4.16 & 4 & 16 & 0 $\sim$ 69616 \\
+原始和    & raw\_sum & 28 & Q4.24 & 4 & 24 & 0 $\sim$ 69616 \\
+残差      & residual & 16 & Q4.12 & 4 & 12 & $\pm$32768 \\
+wall 权重 & wall\_w  & 20 & Q4.16 & 4 & 16 & 0 $\sim$ 69616 \\
+输出码    & Code     & 12 & 整数  & 12 & 0 & 0 $\sim$ 4095 \\
+平均残差  & avg      & 16 & Q4.12 & 4 & 12 & $\pm$2048 \\
+候选权重  & w\_cand  & 20 & Q4.16 & 4 & 16 & 0 $\sim$ 69616 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{验证矩阵}
+\label{app:verify-matrix}
+
+\begin{table}[H]
+\centering
+\caption{验证矩阵（完整版）}
+\label{tab:app-verify-matrix}
+\scriptsize
+\begin{tabular}{llllp{2.5cm}}
+\toprule
+层级 & 测试项 & 工具 & 条件 & 通过标准 \\
+\midrule
+单元  & TG Ron        & Spectre  & TT 27$^\circ$C & $\leq$ 10 \textOmega \\
+单元  & TG 建立       & Spectre  & TT 27$^\circ$C & $\leq$ 0.25 LSB \\
+单元  & 比较器延迟    & Spectre  & TT 27$^\circ$C & $\leq$ 5 ns \\
+接口  & cmp\_done     & Spectre  & TT 27$^\circ$C & 脉宽 $\geq$ CCLK \\
+接口  & one-hot       & RTL sim  & TT 27$^\circ$C & 无非法 \\
+模块  & CAL\_SEARCH   & RTL sim  & TT 27$^\circ$C & 权重正确 \\
+模块  & CODE\_RECON   & RTL+VA   & TT 27$^\circ$C & SNDR $\geq$ 73 dB \\
+系统  & 正常转换      & Spectre  & TT 27$^\circ$C & SNDR $\geq$ 73 dB \\
+系统  & 校准后        & Spectre  & TT 27$^\circ$C & SNDR $\geq$ 73 dB \\
+PVT   & SS 85$^\circ$C  & Spectre & SS 85$^\circ$C  & $\geq$ 70 dB \\
+PVT   & FF -40$^\circ$C & Spectre & FF -40$^\circ$C & $\geq$ 70 dB \\
+MC    & 100 样本     & Spectre  & TT 27$^\circ$C MC & 90\% $\geq$ 70 dB \\
+版图  & post-layout  & Spectre  & TT 27$^\circ$C & $\geq$ 70 dB \\
+版图  & DNL/INL       & Spectre  & TT 27$^\circ$C & DNL$\leq$$\pm$0.5, INL$\leq$$\pm$1 \\
+功耗  & 总功耗        & Spectre  & TT 27$^\circ$C & $\leq$ 预算 \\
+错误  & 校准失败      & RTL sim  & TT 27$^\circ$C & 回退正确 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{术语表}
+\label{app:glossary}
+
+\begin{table}[H]
+\centering
+\caption{术语表}
+\label{tab:app-glossary}
+\scriptsize
+\begin{tabular}{p{4cm}p{9cm}}
+\toprule
+术语 & 定义 \\
+\midrule
+SAR ADC                       & 逐次逼近型模数转换器 \\
+CDAC                          & 电容式数模转换器 \\
+BS                            & 自举采样开关 (Bootstrap Switch) \\
+COM\_IAZ                      & 带输入自动清零的比较器 (Comparator with Input Auto-Zero) \\
+TG                            & 传输门 (Transmission Gate) \\
+VA                            & Verilog-A 行为模型 \\
+RTL                           & 寄存器传输级 (Register Transfer Level) \\
+FSM                           & 有限状态机 (Finite State Machine) \\
+SNDR                          & 信号噪声失真比 (Signal-to-Noise-and-Distortion Ratio) \\
+SFDR                          & 无杂散动态范围 (Spurious-Free Dynamic Range) \\
+ENOB                          & 有效位数 (Effective Number of Bits) \\
+DNL                           & 微分非线性 (Differential Nonlinearity) \\
+INL                           & 积分非线性 (Integral Nonlinearity) \\
+LSB                           & 最小有效位 (Least Significant Bit) \\
+MSB                           & 最大有效位 (Most Significant Bit) \\
+PVT                           & 工艺-电压-温度 (Process-Voltage-Temperature) \\
+MC                            & 蒙特卡洛 (Monte Carlo) \\
+one-hot                       & 独热编码 \\
+break-before-make             & 先断后合 \\
+wall                          & 校准参考墙（已校准高位电容总权重） \\
+residual                      & 残差（目标电容与 wall 之间的电荷差） \\
+deadband                      & 死区（不触发更新的残差范围） \\
+ACTIVE bank                   & 当前有效权重存储 \\
+SHADOW bank                   & 校准结果暂存权重存储 \\
+原子提交                       & 在安全边界一次性将 SHADOW 复制到 ACTIVE \\
+安全边界                       & 资源切换的安全时间窗口（RST1 上升沿） \\
+cmp\_bit                      & 比较器数字决策输出 \\
+cmp\_done                     & 比较器完成脉冲 \\
+NORMALIZE\_REDUNDANT\_RANGE  & 冗余范围归一化模式选择 \\
+偏移模式                       & Code = raw\_sum - 128（无再量化噪声） \\
+归一化模式                     & Code = 4095 * raw\_sum / 4351（有再量化噪声） \\
+资源仲裁                       & normal/calibration 模式的 CDAC 所有权管理 \\
+前景校准                       & 在正常转换前执行的离线校准 \\
+冗余覆盖区                     & 冗余支路提供的数字修正范围（256 LSB） \\
+桥接衰减                       & 低位阵列通过桥接电容的权重衰减系数（1/64） \\
+start\_pending                & 启动等待机制，避免 start 与 clk 同边沿竞争 \\
+search\_mask                  & 搜索 DAC 的激励掩码（7位，对应 C7$\sim$C1） \\
+saturation                    & 搜索 DAC 全部命中，表示目标残差超出搜索范围 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{1cm}
+
+\begin{infobox}
+\textbf{报告结束}\\[4pt]
+本报告基于 \texttt{test\_12bit50MSAR\_AMS\_final\_0716} 项目的完整网表、Verilog-A 源码、审计报告和 Spectre 仿真结果编写。所有关键结论已标记证据分级。报告内容将随设计迭代持续更新。
+\end{infobox}
+
+\end{document}

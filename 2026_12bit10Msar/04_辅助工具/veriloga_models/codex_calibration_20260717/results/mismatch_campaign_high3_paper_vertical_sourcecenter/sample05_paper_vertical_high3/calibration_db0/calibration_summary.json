@@ -1,0 +1,82 @@
+{
+  "measurements": [
+    {
+      "target": 2,
+      "wall": 32768,
+      "measured": 32832,
+      "value_q": 32832,
+      "pairs": 1,
+      "residual_sum": 128,
+      "residual_avg": 64,
+      "diversity": 0,
+      "snap": 0,
+      "value": 513.0
+    },
+    {
+      "target": 1,
+      "wall": 65600,
+      "measured": 65792,
+      "value_q": 65792,
+      "pairs": 1,
+      "residual_sum": 384,
+      "residual_avg": 192,
+      "diversity": 0,
+      "snap": 0,
+      "value": 1028.0
+    },
+    {
+      "target": 0,
+      "wall": 131392,
+      "measured": 131456,
+      "value_q": 131456,
+      "pairs": 1,
+      "residual_sum": 128,
+      "residual_avg": 64,
+      "diversity": 0,
+      "snap": 0,
+      "value": 2054.0
+    }
+  ],
+  "finish": {
+    "time_s": 6.00105e-07,
+    "done": 1,
+    "err": 0
+  },
+  "weights": {
+    "frac_bits": 6,
+    "pairs": 1,
+    "values_q": [
+      131456,
+      65792,
+      32832,
+      16384,
+      16384,
+      8192,
+      3072,
+      2048,
+      1280,
+      768,
+      512,
+      256,
+      128,
+      64
+    ],
+    "values_lsb": [
+      2054.0,
+      1028.0,
+      513.0,
+      256.0,
+      256.0,
+      128.0,
+      48.0,
+      32.0,
+      20.0,
+      12.0,
+      8.0,
+      4.0,
+      2.0,
+      1.0
+    ]
+  },
+  "complete": true
+}

@@ -1,0 +1,82 @@
+{
+  "bridge_attenuation": 0.015625,
+  "input_half_amplitude_v": 0.8,
+  "analog_weights": [
+    2053.805632,
+    1024.3488,
+    512.0,
+    256.0,
+    256.0,
+    128.0,
+    48.0,
+    32.0,
+    20.0,
+    12.0,
+    8.0,
+    4.0,
+    2.0,
+    1.0
+  ],
+  "nominal_weights": [
+    2048.0,
+    1024.0,
+    512.0,
+    256.0,
+    256.0,
+    128.0,
+    48.0,
+    32.0,
+    20.0,
+    12.0,
+    8.0,
+    4.0,
+    2.0,
+    1.0
+  ],
+  "calibrated_weights_q4_deadband2": [
+    2053.8125,
+    1024.0,
+    512.0,
+    256.0,
+    256.0,
+    128.0,
+    48.0,
+    32.0,
+    20.0,
+    12.0,
+    8.0,
+    4.0,
+    2.0,
+    1.0
+  ],
+  "c12_nominal_error_lsb": 5.80563200000006,
+  "c11_nominal_error_lsb": 0.3487999999999829,
+  "omran_2016_context": {
+    "scope_note": "0.18um measured MOM context; extrapolated to 4fF and not a foundry signoff model",
+    "unit_cap_ff": 4.0,
+    "kc_lateral_fraction_sqrt_ff": 0.002,
+    "kc_vertical_fraction_sqrt_ff": 0.0014,
+    "unit_sigma_lateral_fraction": 0.001,
+    "unit_sigma_vertical_fraction": 0.0007,
+    "c12_sigma_lsb_lateral": 0.512,
+    "c11_sigma_lsb_lateral": 0.3620386719675123,
+    "c12_sigma_lsb_vertical": 0.3584,
+    "c11_sigma_lsb_vertical": 0.2534270703772586,
+    "c12_actual_error_sigma_lateral": 11.339125000000116,
+    "c11_actual_error_sigma_lateral": 0.9634329893666238
+  },
+  "nominal_sine": {
+    "sndr_dbc": 60.43346962856347,
+    "sfdr_dbc": 64.0150738434267,
+    "enob": 9.746423526339449
+  },
+  "calibrated_sine": {
+    "sndr_dbc": 71.90585826590609,
+    "sfdr_dbc": 82.51678045687856,
+    "enob": 11.652135924569118
+  },
+  "nominal_nonmonotonic_steps": 1,
+  "calibrated_nonmonotonic_steps": 0,
+  "nominal_largest_output_drop_codes": -5,
+  "calibrated_largest_output_drop_codes": 0
+}

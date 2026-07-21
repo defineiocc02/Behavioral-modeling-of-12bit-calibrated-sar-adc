@@ -1,0 +1,97 @@
+{
+  "bridge_attenuation": 0.015625,
+  "input_half_amplitude_v": 0.89,
+  "analog_raw_range_lsb": 4361.748544,
+  "analog_weights": [
+    2053.805632,
+    1027.820352,
+    513.12256,
+    256.0,
+    256.0,
+    128.0,
+    48.0,
+    32.0,
+    20.0,
+    12.0,
+    8.0,
+    4.0,
+    2.0,
+    1.0
+  ],
+  "nominal_weights": [
+    2048.0,
+    1024.0,
+    512.0,
+    256.0,
+    256.0,
+    128.0,
+    48.0,
+    32.0,
+    20.0,
+    12.0,
+    8.0,
+    4.0,
+    2.0,
+    1.0
+  ],
+  "calibrated_weights_q4_split_deadband": [
+    2051.0,
+    1027.0,
+    512.0,
+    256.0,
+    256.0,
+    128.0,
+    48.0,
+    32.0,
+    20.0,
+    12.0,
+    8.0,
+    4.0,
+    2.0,
+    1.0
+  ],
+  "c12_nominal_error_lsb": 5.80563200000006,
+  "c11_nominal_error_lsb": 3.820351999999957,
+  "c10_nominal_error_lsb": 1.1225600000000213,
+  "omran_2016_context": {
+    "scope_note": "0.18um measured MOM context; extrapolated to 4fF and not a foundry signoff model",
+    "unit_cap_ff": 4.0,
+    "kc_lateral_fraction_sqrt_ff": 0.002,
+    "kc_vertical_fraction_sqrt_ff": 0.0014,
+    "unit_sigma_lateral_fraction": 0.001,
+    "unit_sigma_vertical_fraction": 0.0007,
+    "c12_sigma_lsb_lateral": 0.512,
+    "c11_sigma_lsb_lateral": 0.3620386719675123,
+    "c10_sigma_lsb_lateral": 0.256,
+    "c12_sigma_lsb_vertical": 0.3584,
+    "c11_sigma_lsb_vertical": 0.2534270703772586,
+    "c10_sigma_lsb_vertical": 0.1792,
+    "c12_actual_error_sigma_lateral": 11.339125000000116,
+    "c11_actual_error_sigma_lateral": 10.552331272342027,
+    "c10_actual_error_sigma_lateral": 4.385000000000083
+  },
+  "nominal_sine": {
+    "sndr_dbc": 65.84399110052583,
+    "sfdr_dbc": 74.12710280652979,
+    "enob": 10.645181245934523
+  },
+  "calibrated_sine": {
+    "sndr_dbc": 69.10138828218663,
+    "sfdr_dbc": 76.49278243755239,
+    "enob": 11.186277123286816
+  },
+  "nominal_offset_only_sine": {
+    "sndr_dbc": 34.76139696526448,
+    "sfdr_dbc": 38.63907708333811,
+    "enob": 5.481959628781476
+  },
+  "calibrated_offset_only_sine": {
+    "sndr_dbc": 34.44070190324873,
+    "sfdr_dbc": 38.25016818851177,
+    "enob": 5.428688023795471
+  },
+  "nominal_nonmonotonic_steps": 6,
+  "calibrated_nonmonotonic_steps": 4,
+  "nominal_largest_output_drop_codes": -2,
+  "calibrated_largest_output_drop_codes": -1
+}

@@ -1,0 +1,4 @@
+openResults("/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_frame_cal_890m_norm_noiseless_matched_cx/psf")
+selectResult('tran)
+ocnPrint(v("OUT") ?numberNotation (quote scientific) ?from 10.098505u ?to 22.798505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_frame_cal_890m_norm_noiseless_matched_cx/exports/OUT.txt")
+exit()

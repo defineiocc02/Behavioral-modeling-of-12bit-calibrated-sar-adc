@@ -1,0 +1,368 @@
+% !TEX program = xelatex
+% patent_jiaodishu.tex
+% 专利技术交底书（严格参照模板）
+\documentclass[UTF8,a4paper,11pt]{ctexart}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,array,tabularx,longtable,multirow,makecell}
+\usepackage{graphicx,float,caption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor,hyperref,cleveref}
+
+\definecolor{navy}{HTML}{163A5F}
+\definecolor{lightblue}{HTML}{EAF2F8}
+\definecolor{lightteal}{HTML}{E8F5F4}
+\definecolor{graybox}{HTML}{F3F4F6}
+
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy,
+  pdftitle={专利技术交底书},pdfauthor={重庆吉芯科技有限公司}}
+
+\setlist[itemize]{leftmargin=2em,itemsep=0.2em,topsep=0.3em}
+\setlist[enumerate]{leftmargin=2.2em,itemsep=0.2em,topsep=0.3em}
+\renewcommand{\arraystretch}{1.2}
+\captionsetup{font=small,labelfont=bf}
+
+\tikzset{
+  block/.style={rectangle,draw=navy,thick,fill=lightblue,align=center,
+    minimum height=8mm,text width=28mm,inner sep=3pt},
+  arrow/.style={-{Stealth[length=2mm]},thick,draw=navy}
+}
+
+\title{\textbf{专利技术交底书}\\[6pt]
+\large 技术问题联系人：\quad 所属技术领域：模拟集成电路\\
+发明人：\quad 所属部门：\quad 联系人电话：\quad 电子邮箱：}
+\author{}
+\date{2026年7月}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{发明的名称}
+
+（后期与代理人确定）
+
+一种基于阈值抖动的SAR ADC电容权重校准方法及装置
+
+% ============================================================
+\section{所属技术领域}
+
+本发明属于模拟/混合信号集成电路设计技术领域，具体涉及逐次逼近型模数转换器（SAR ADC）的电容失配校准技术，应用于12位及以上精度SAR ADC产品中高位电容等效权重的上电前景测量与数字修正。
+
+% ============================================================
+\section{背景技术及其缺陷}
+
+\subsection{现有技术}
+
+高分辨率SAR ADC的线性度受电容DAC（CDAC）中单位电容失配的限制。根据Pelgrom律，电容失配标准差$\sigma(\Delta C/C)$与电容面积平方根成反比，增大单位电容面积可降低失配，但会增加CDAC面积、功耗和采样网络$kT/C$噪声，在高速场景下不可接受。
+
+为缓解电容失配，现有技术主要包括以下方案：
+
+（1）增大单位电容面积。通过增大电容面积降低失配，但面积、功耗和噪声代价大。
+
+（2）动态元件匹配（DEM）。通过随机或轮换使用MSB电容，将静态失配转化为随机噪声。该方案会增加带内噪声，降低信噪比（SNR），且需要额外的随机数发生器和控制逻辑。
+
+（3）背景数字校准。在ADC正常工作期间利用冗余位或辅助电路在线估计电容权重。该方案不中断正常转换，但数字逻辑复杂，收敛时间长，且校准精度受噪声限制。
+
+（4）前景数字校准。在上电或空闲阶段测量高位电容的真实权重，校准完成后切回正常转换模式。该方案测量条件可控、精度高，但需中断正常转换。
+
+\subsection{最接近的现有技术}
+
+最接近的现有技术为基于D+/D$-$双向测量的前景权重校准方案。参见专利文献：US 2022/0362658 A1，"SAR ADC with Foreground Calibration"，公开日期2022年11月10日，申请人Analog Devices Inc.。该专利公开了一种利用低位冗余电容组成offset-binary校准DAC（calDAC），对高位电容进行正反双向测量，通过残差$R \approx D_+ - D_-$恢复权重的方法。
+
+另参见非专利文献：X. Zhu et al., "A 14-bit 4-channel SAR ADC with digital foreground calibration," in Proc. IEEE Asian Solid-State Circuits Conf. (A-SSCC), Nov. 2022, pp. 21--24. 该文献描述了类似的D+/D$-$差分测量方案。
+
+\subsection{现有技术的技术内容}
+
+上述最接近现有技术的技术内容如下：
+
+calDAC由低位冗余电容组成，本设计中calDAC权重为[48, 32, 20, 12, 8, 4, 2]，最小步长为2 LSB，实际可达分辨率为4 LSB。校准时，calDAC设置为中心码64，对应差分电压$V_{\mathrm{cal}} = 126 - 2S$（$S$为calDAC码值）。对每个目标权重，分别在D+方向（差分输入高于参考墙）和D$-$方向（差分输入低于参考墙）进行测量，记录两个方向的SAR判决码$D_+$和$D_-$，残差$R \approx D_+ - D_-$。
+
+\subsection{现有技术的问题和缺点}
+
+上述现有技术存在以下问题和缺点：
+
+（1）calDAC离散步长限制测量分辨率。calDAC由有限个低位电容组成，其最小步长为整数个ADC LSB。当目标电容的真实权重与标称值之差小于一个calDAC步长时（例如本设计中calDAC步长为4 LSB，残差在$[-4, +4)$ LSB范围内），D+/D$-$测量无法分辨该残差，形成测量盲区。原因在于calDAC的物理步长由电容面积和工艺决定，无法无限减小。
+
+（2）比较器固定失调引入系统偏置。实际比较器存在输入等效失调电压$V_{\mathrm{OS}}$，该失调叠加在D+/D$-$测量结果上。现有技术虽采用双向测量试图抵消失调，但当失调随温度漂移时，正反向平均无法完全消除。
+
+（3）随机噪声需大量平均。为克服比较器噪声和量化噪声，现有技术对每个D+/D$-$测量进行多次平均。随机噪声的收敛速度为$1/\sqrt{N}$，达到0.1 LSB精度需上百次平均，校准时间过长。原因在于随机噪声的方差随样本数线性减小，收敛慢。
+
+（4）校准模式与正常模式切换存在残留。部分方案在从校准模式切换到正常转换模式时，校准电路的残留状态（如阈值偏移寄存器）会影响正常转换的线性度。
+
+% ============================================================
+\section{发明目的}
+
+本发明针对现有技术中calDAC离散步长限制测量分辨率、比较器固定失调引入偏置、随机噪声收敛慢、校准/正常模式切换残留等问题，提供一种基于阈值抖动的SAR ADC电容权重校准方法及装置，要解决的技术问题包括：
+
+（1）在不增加calDAC电容面积的前提下，将权重测量分辨率从calDAC步长提升至calDAC步长的$1/N$；
+
+（2）消除比较器固定失调对权重估计的影响；
+
+（3）缩短校准收敛时间；
+
+（4）保证校准模式与正常转换模式切换无残留。
+
+% ============================================================
+\section{发明内容}
+
+本发明通过在比较器判决阈值上注入确定性抖动电压，结合D+/D$-$双向差分测量，实现高位电容权重的精确恢复。本发明的技术方案包括以下步骤：
+
+\textbf{步骤1：}在SAR ADC上电或空闲阶段，校准使能信号CAL从低电平变为高电平，比较器进入校准模式。比较器内部的抖动状态机初始化：抖动索引$k$清零，边沿计数器清零，抖动电压$V_{\mathrm{dith}}$设置为第一个中点值。
+
+该步骤的作用是启动校准流程并初始化抖动序列。
+
+\textbf{步骤2：}比较器在每个D+/D$-$测量对的第一个CLK上升沿更新抖动电压，抖动值按以下公式计算：
+
+\begin{equation}
+V_{\mathrm{dith},k} = V_{\mathrm{LSB,cal}} \cdot \left(\frac{k + 0.5}{N} - 0.5\right), \quad k = 0, 1, \ldots, N-1
+\end{equation}
+
+其中$N$为抖动级数（本实施例$N=32$），$V_{\mathrm{LSB,cal}}$为一个校准码LSB对应的差分电压，$k$为抖动序列索引。抖动电压在整个D+/D$-$测量对内（包含16个CLK上升沿，D+方向8次、D$-$方向8次）保持不变。
+
+该步骤的作用是将比较器判决阈值在$[-0.5, +0.5)\,V_{\mathrm{LSB,cal}}$区间内按$N$个等间距中点均匀扫描，使$N$次测量的平均值严格等于真实期望，消除一阶量化误差。抖动步进为$V_{\mathrm{LSB,cal}}/N$，提供$1/N$校准LSB的有效分辨率。D+/D$-$对内保持抖动不变，保证两个方向在相同阈值条件下测量，使差分测量有效。
+
+\textbf{步骤3：}对每个目标权重，在抖动序列的每一级执行D+/D$-$双向测量：
+
+步骤3.1：calDAC设置为参考墙码值，使差分输入高于参考墙$R_{\mathrm{true}}$，执行D+方向8次CLK判决，记录判决码；
+
+步骤3.2：calDAC设置为目标权重码值，使差分输入低于参考墙$R_{\mathrm{true}}$，执行D$-$方向8次CLK判决，记录判决码；
+
+步骤3.3：抖动索引$k$加1，更新抖动电压，重复步骤3.1和3.2，直到$N$级抖动全部完成。
+
+该步骤的作用是通过双向测量获取残差信息。D+和D$-$方向使用相同抖动电压，使得比较器固定失调$V_{\mathrm{OS}}$在两个方向上产生相同的偏移，在后续差分计算中被消除。
+
+\textbf{步骤4：}根据D+/D$-$测量结果计算残差并恢复目标权重：
+
+\begin{equation}
+R = \frac{1}{N}\sum_{k=0}^{N-1}\left(D_+^{(k)} - D_-^{(k)}\right) \approx \frac{2 R_{\mathrm{true}}}{V_{\mathrm{LSB,cal}}}
+\end{equation}
+
+权重恢复采用从低位到高位的递归顺序：
+
+\begin{align}
+\widehat{W}_2 &= W_{\mathrm{wall}} + R_2 \\
+\widehat{W}_1 &= (\widehat{W}_2 - W_3) + R_1 \\
+\widehat{W}_0 &= (\widehat{W}_1 - W_4) + R_0
+\end{align}
+
+其中$W_{\mathrm{wall}} = W_3 + W_4$为参考墙（未校准的低位权重之和），$R_i$为各目标权重的测量残差。校准后的权重以Q格式定点数存储（$Q = 2^{N_F}$，$N_F=6$）。
+
+该步骤的作用是利用已校准的低位结果作为下一步测量的参考，避免误差累积。D+/D$-$差分计算消除比较器固定失调$V_{\mathrm{OS}}$，无需额外测量或校准失调本身。
+
+\textbf{步骤5：}校准使能信号CAL从高电平变为低电平，比较器进入正常转换模式。抖动电压强制归零，边沿计数器复位。此后每个CLK上升沿，抖动保持为零。
+
+该步骤的作用是保证正常转换模式下比较器完全理想，无任何抖动残留，使校准后A/B验证结果可靠。
+
+\textbf{步骤6：}正常转换时，14个原始判决$r_0, r_1, \ldots, r_{13}$使用校准后的Q格式权重进行加权求和，减去冗余中心偏移后截断为12位输出：
+
+\begin{equation}
+D_{\mathrm{out}} = \mathrm{clip}_{[0, 4095]}\left(\mathrm{round}\left(\frac{\sum_{i=0}^{13} r_i \cdot w_i - 128 \cdot Q}{Q}\right)\right)
+\end{equation}
+
+该步骤的作用是将14个冗余判决精确映射为标准12位输出，输出线性度由校准权重精度决定。
+
+\textbf{可选步骤：}在步骤2中，抖动级数$N$可根据精度需求调整。当$N=64$时，有效分辨率为$V_{\mathrm{LSB,cal}}/64$，但校准时间加倍；当$N=16$时，有效分辨率为$V_{\mathrm{LSB,cal}}/16$，校准时间减半。步骤4中的递归顺序也可以从$W_0$（MSB）开始向下递归，但需要额外的参考墙校准。
+
+\textbf{装置方面：}本发明的装置包括非二进制冗余CDAC、比较器、SAR逻辑、校准解码控制器和底板开关驱动器。比较器包含抖动注入模块，由CAL信号控制。校准解码控制器包含抖动状态机、Q格式权重存储器和加权解码器。各部件的连接关系为：CDAC的差分输出连接到比较器的P和N输入端；比较器的COMP和COMN输出连接到SAR逻辑；SAR逻辑的14位判决输出连接到校准解码控制器；校准解码控制器的底板开关信号连接到CDAC；校准解码控制器的12位输出作为ADC最终输出。
+
+% ============================================================
+\section{有益效果}
+
+本发明与最接近的现有技术（基于D+/D$-$双向测量的前景校准，无抖动注入）相比，具有以下有益效果：
+
+（1）测量分辨率提升$N$倍。现有技术中calDAC步长为4 LSB，存在$[-4, +4)$ LSB的测量盲区。本发明通过32级抖动扫描，将有效测量分辨率提升至$4/32 = 0.125$ LSB。原因是抖动扫描将连续残差映射为离散计数，计数斜率为$1/V_{\mathrm{LSB,cal}}$，$N$次测量给出$V_{\mathrm{LSB,cal}}/N$的有效分辨率。
+
+（2）比较器固定失调精确消除。现有技术中失调$V_{\mathrm{OS}}$在正反向平均中只能部分消除。本发明通过D+/D$-$差分计算$R = D_+ - D_-$，由于抖动序列零均值，$V_{\mathrm{OS}}$在两个方向上产生相同的偏移，在差分中被数学消除。原因是$V_{\mathrm{OS}}$对$D_+$和$D_-$的贡献相同，相减后为零。
+
+（3）收敛速度提升3倍以上。现有技术采用随机噪声抖动，收敛速度为$1/\sqrt{N}$，达到0.1 LSB精度需约100次平均。本发明采用确定性中点均匀抖动，32次测量后覆盖完整的$[-0.5, +0.5)\,V_{\mathrm{LSB,cal}}$区间，达到0.125 LSB精度。原因是中点法则消除一阶量化误差，不存在随机方差问题。
+
+（4）校准/正常模式无残留。现有技术中部分方案在模式切换时存在残留状态。本发明通过CAL下降沿触发抖动归零和计数器复位，保证正常转换模式下抖动严格为零。原因是状态机由CAL边沿驱动，切换时序确定。
+
+（5）不增加电容面积。现有技术中增大电容面积的方案在面积、功耗和速度上代价大。本发明的抖动方案用时间换精度，$N$次测量换取$N$倍分辨率提升，不增加任何calDAC电容面积。
+
+% ============================================================
+\section{最佳实施方式}
+
+\subsection{实施例一：12位非二进制冗余SAR ADC}
+
+本实施例针对一个12位差分SAR ADC，采用14个非二进制冗余电容权重，标称权重为：
+
+\begin{equation}
+\mathbf{W} = [2048, 1024, 512, 256, 256, 128, 48, 32, 20, 12, 8, 4, 2, 1]
+\end{equation}
+
+总权重$W_{\mathrm{total}} = 4351$，冗余$W_{\mathrm{red}} = 256$ LSB，对称冗余中心偏移$O_{\mathrm{red}} = 128$ LSB。差分满量程为$2 \times 1.8\,\mathrm{V} = 3.6\,\mathrm{V}$，校准LSB电压$V_{\mathrm{LSB,cal}} = 3.6/4351 = 0.8274\,\mathrm{mV}$。
+
+\textbf{CDAC结构：}CDAC采用差分结构，正相（P）和负相（N）各有一组14个电容。电容$C_i$的物理值与权重$W_i$成正比，$C_i = W_i \cdot C_{\mathrm{unit}}$，其中$C_{\mathrm{unit}} = 10\,\mathrm{fF}$。
+
+\textbf{calDAC配置：}校准DAC由低位电容$[C_6, C_7, C_8, C_9, C_{10}, C_{11}, C_{12}]$组成，对应权重$[48, 32, 20, 12, 8, 4, 2]$，总权重126。calDAC采用offset-binary编码，中心码为64。
+
+\textbf{比较器参数：}输出高电平$V_{\mathrm{HIGH}} = 1.8\,\mathrm{V}$，CLK判决阈值$V_{\mathrm{TH,CLK}} = 0.9\,\mathrm{V}$，CAL判决阈值$V_{\mathrm{TH,CAL}} = 0.9\,\mathrm{V}$，输入失调$V_{\mathrm{OS}} = 0\,\mathrm{V}$（可配置），传输延迟$T_D = 20\,\mathrm{ps}$，上升/下降时间$T_R = T_F = 10\,\mathrm{ps}$，输出驱动电阻$R_{\mathrm{DRV}} = 1.0\,\Omega$。
+
+\textbf{抖动参数：}抖动级数$N = 32$，每对CLK边沿数$M = 16$（D+方向8次，D$-$方向8次），校准LSB电压$V_{\mathrm{LSB,cal}} = 0.8274\,\mathrm{mV}$。
+
+\textbf{校准流程：}
+
+（1）CAL上升沿，初始化抖动序列：$k=0$，$V_{\mathrm{dith}} = 0.8274 \times (0.5/32 - 0.5) = -0.4007\,\mathrm{mV}$。
+
+（2）对目标权重$W_2$（标称512 LSB）：
+
+$k=0$：calDAC设为参考墙码（$W_3 + W_4 = 512$ LSB），D+方向8次CLK判决记录$D_+^{(0)}$；calDAC设为目标码（$W_2 = 512$ LSB），D$-$方向8次CLK判决记录$D_-^{(0)}$。
+
+$k=1$至$k=31$：重复上述过程，抖动电压按公式更新。
+
+（3）计算$R_2 = \frac{1}{32}\sum_k (D_+^{(k)} - D_-^{(k)})$，恢复$\widehat{W}_2 = W_{\mathrm{wall}} + R_2$。
+
+（4）对$W_1$和$W_0$重复步骤（2）和（3），使用递归公式。
+
+（5）CAL下降沿，抖动归零，切换到正常转换模式。
+
+\textbf{正常转换：}每次转换产生14个原始判决$r_0, \ldots, r_{13}$，按步骤6的公式解码为12位输出。
+
+\subsection{实施例二：可变抖动级数}
+
+当精度需求更高时，可选取$N=64$，有效分辨率$V_{\mathrm{LSB,cal}}/64 = 12.93\,\mu\mathrm{V}$，约为ADC LSB的$1/256$，但校准时间加倍。当面积或时间受限时，可选取$N=16$，有效分辨率$V_{\mathrm{LSB,cal}}/16 = 51.7\,\mu\mathrm{V}$，仍优于calDAC步长。其余参数和流程与实施例一相同。
+
+\subsection{实施例三：14位SAR ADC}
+
+本发明可推广至14位SAR ADC。此时总权重增大（例如$W_{\mathrm{total}} = 17403$），$V_{\mathrm{LSB,cal}}$相应减小，但抖动公式不变。更高的分辨率要求可通过增大$N$（如$N=64$或$128$）实现。其余参数和流程与实施例一相同。
+
+% ============================================================
+\section{附图及附图说明}
+
+\textbf{图1}为本发明的系统架构框图，标注各部件及连接关系。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.0cm and 1.4cm]
+\node[block] (1) {CDAC\\(部件1)};
+\node[block,right=of 1] (2) {比较器\\(部件2)};
+\node[block,right=of 2] (3) {SAR逻辑\\(部件3)};
+\node[block,below=of 3] (4) {校准解码\\控制器\\(部件4)};
+\node[block,left=of 4] (5) {底板开关\\驱动器\\(部件5)};
+\node[block,below=of 4] (6) {12位\\输出};
+
+\draw[arrow] (1) -- node[above,font=\scriptsize]{差分信号} (2);
+\draw[arrow] (2) -- node[above,font=\scriptsize]{COMP/COMN} (3);
+\draw[arrow] (3) -- node[right,font=\scriptsize]{BP[13:0]} (4);
+\draw[arrow] (4) -- node[above,font=\scriptsize]{开关信号} (5);
+\draw[arrow] (5) -- node[below,font=\scriptsize]{底板驱动} (1);
+\draw[arrow] (4) -- (6);
+\draw[arrow,dashed,draw=navy] (4) to[bend left=20] node[above,font=\scriptsize]{CAL信号} (2);
+\end{tikzpicture}
+\caption{系统架构框图}
+\label{fig:1}
+\end{figure}
+
+图1中：部件1为非二进制冗余CDAC，包含14个电容，产生差分比较器输入信号；部件2为比较器，包含抖动注入模块，在校准模式下按步骤2注入抖动电压；部件3为SAR逻辑，产生14次逐次逼近判决；部件4为校准解码控制器，包含抖动状态机、Q格式权重存储器和加权解码器；部件5为底板开关驱动器，根据校准解码控制器的信号驱动CDAC底板开关。
+
+\textbf{图2}为D+/D$-$测量对的时序图，标注CLK、抖动电压和边沿计数器的对应关系。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.85]
+\node[anchor=west] at (0,3.2) {\small CLK};
+\draw[thick,navy] (0,3) -- (0.5,3) -- (0.5,3.5) -- (1.5,3.5) -- (1.5,3) -- (2.5,3) -- (2.5,3.5) -- (3.5,3.5) -- (3.5,3) -- (4.5,3) -- (4.5,3.5) -- (5.5,3.5) -- (5.5,3) -- (6.5,3) -- (6.5,3.5) -- (7.5,3.5) -- (7.5,3);
+
+\draw[thick] (0.2,2.6) -- (3.7,2.6);
+\node[font=\small] at (1.95,2.3) {D+方向（8次判决）};
+\draw[thick] (3.8,2.6) -- (7.7,2.6);
+\node[font=\small] at (5.75,2.3) {D$-$方向（8次判决）};
+
+\node[anchor=west] at (0,1.3) {\small $V_{\mathrm{dith}}$};
+\draw[thick,orange] (0,1.0) -- (7.5,1.0);
+\node[font=\small] at (3.75,0.7) {抖动电压保持不变（16个CLK边沿）};
+
+\node[anchor=west] at (0,0.2) {\small 边沿计数};
+\foreach \i/\x in {0/0.5,1/1.5,2/2.5,3/3.5,4/4.5,5/5.5,6/6.5,7/7.5} \node[font=\tiny] at (\x,0.2) {\i};
+\end{tikzpicture}
+\caption{D+/D$-$测量对时序图}
+\label{fig:2}
+\end{figure}
+
+图2中：CLK为比较器时钟信号；D+方向包含8次CLK上升沿判决，calDAC设置为参考墙码值；D$-$方向包含8次CLK上升沿判决，calDAC设置为目标权重码值；抖动电压$V_{\mathrm{dith}}$在整个D+/D$-$对内（16个CLK边沿）保持不变；边沿计数器从0计到15，第16个边沿后清零并更新抖动电压。
+
+\textbf{图3}为抖动电压序列示意图，标注32个抖动值及其覆盖范围。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.7]
+\draw[->] (0,0) -- (9,0) node[right]{\small $k$};
+\draw[->] (0,-2) -- (0,2) node[above]{\small $V_{\mathrm{dith}}/V_{\mathrm{LSB,cal}}$};
+\draw[dashed] (0,0) -- (9,0);
+\draw[dashed] (0,0.5) -- (9,0.5) node[right]{\small $+0.5$};
+\draw[dashed] (0,-0.5) -- (9,-0.5) node[right]{\small $-0.5$};
+
+\foreach \k/\v in {0/-0.484,4/-0.359,8/-0.234,12/-0.109,16/0.016,20/0.141,24/0.266,28/0.391,31/0.484} {
+  \fill[orange] ({0.27*\k},\v) circle (0.06);
+  \draw[orange,thick] ({0.27*\k},0) -- ({0.27*\k},\v);
+}
+\node[font=\small] at (4.5,-1.7) {32个中点均匀抖动值，覆盖$[-0.5, +0.5)\,V_{\mathrm{LSB,cal}}$};
+\end{tikzpicture}
+\caption{抖动电压序列示意图}
+\label{fig:3}
+\end{figure}
+
+图3中：横轴$k$为抖动序列索引（0至31）；纵轴为抖动电压与$V_{\mathrm{LSB,cal}}$的比值；序列关于零点反对称，零均值；步进为$1/N = 1/32$。
+
+\textbf{图4}为校准流程图，标注各步骤及其顺序关系。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.8cm and 1.0cm]
+\node[block] (s1) {步骤1\\CAL上升沿\\初始化抖动};
+\node[block,below=of s1] (s2) {步骤2\\更新抖动电压};
+\node[block,below=of s2] (s3) {步骤3\\D+/D$-$双向测量};
+\node[block,below=of s3] (s4) {步骤4\\计算残差\\恢复权重};
+\node[block,below=of s4] (s5) {步骤5\\CAL下降沿\\抖动归零};
+\node[block,below=of s5] (s6) {步骤6\\加权解码\\12位输出};
+
+\draw[arrow] (s1) -- (s2);
+\draw[arrow] (s2) -- (s3);
+\draw[arrow] (s3) -- (s4);
+\draw[arrow] (s4) -- (s5);
+\draw[arrow] (s5) -- (s6);
+\draw[arrow,dashed] (s4.east) -- ++(1.5,0) |- (s2.east) node[right,font=\scriptsize]{下一权重};
+\end{tikzpicture}
+\caption{校准流程图}
+\label{fig:4}
+\end{figure}
+
+图4中：步骤1至步骤5为校准模式流程，步骤6为正常转换模式流程。步骤4完成后若仍有未校准的目标权重，返回步骤2进行下一权重的测量；所有权重校准完成后执行步骤5切换到正常模式。
+
+% ============================================================
+\section{权利要求书}
+
+（可暂不写，后期与代理人确定）
+
+\textbf{权利要求1.} 一种SAR ADC电容权重校准方法，其特征在于包括以下步骤：
+
+步骤1：校准使能信号有效时，比较器进入校准模式，初始化抖动序列；
+
+步骤2：比较器在每个测量对的第一个时钟上升沿按公式$V_{\mathrm{dith},k} = V_{\mathrm{LSB,cal}} \cdot \left(\frac{k+0.5}{N} - 0.5\right)$更新抖动电压，且该抖动电压在整个测量对内保持不变；
+
+步骤3：对每个目标权重，在抖动序列的每一级执行D+/D$-$双向测量；
+
+步骤4：根据D+/D$-$测量结果计算残差，通过递归公式恢复目标权重；
+
+步骤5：校准使能信号失效时，抖动电压归零，比较器进入正常转换模式，使用校准后的权重进行加权解码输出。
+
+\textbf{权利要求2.} 根据权利要求1所述的方法，其特征在于：所述抖动级数$N$为32，每个测量对包含16个时钟上升沿。
+
+\textbf{权利要求3.} 根据权利要求1所述的方法，其特征在于：所述D+/D$-$双向测量中，比较器固定失调在差分计算中被消除。
+
+\textbf{权利要求4.} 根据权利要求1所述的方法，其特征在于：所述校准使能信号上升沿初始化抖动序列，下降沿将抖动电压归零。
+
+\textbf{权利要求5.} 一种SAR ADC装置，包括非二进制冗余CDAC、比较器、SAR逻辑和校准解码控制器，其特征在于：所述比较器包含抖动注入模块，在校准模式下按权利要求1所述方法注入抖动电压。
+
+\textbf{权利要求6.} 根据权利要求5所述的装置，其特征在于：所述校准解码控制器包含Q格式权重存储器和加权解码器。
+
+\end{document}

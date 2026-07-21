@@ -1,0 +1,28 @@
+{
+  "nfft": 128,
+  "fs_hz": 10000000.0,
+  "fin_hz": 4609375.0,
+  "coherent_bin": 59,
+  "sample_time_start_s": 1.00985e-05,
+  "sample_time_stop_s": 2.27985e-05,
+  "code_min": 26,
+  "code_max": 4069,
+  "adctoolbox": {
+    "enob": 11.248064259000243,
+    "sndr_dbc": 69.47334683918146,
+    "sfdr_dbc": 75.84578293758193,
+    "snr_dbc": 69.96596812316453,
+    "sig_pwr_dbfs": -0.11013532956785302,
+    "noise_floor_dbfs": -70.07610345273238,
+    "nsd_dbfs_hz": -137.06580349609257,
+    "thd_dbc": -79.17004089484368
+  },
+  "manual_crosscheck": {
+    "fundamental_bin": 59,
+    "sndr_dbc": 69.4641650878348,
+    "snr_dbc": 69.95568481883568,
+    "sfdr_dbc": 75.8457829375821,
+    "thd_dbc": -79.17004089484418,
+    "enob": 11.246539051135349
+  }
+}

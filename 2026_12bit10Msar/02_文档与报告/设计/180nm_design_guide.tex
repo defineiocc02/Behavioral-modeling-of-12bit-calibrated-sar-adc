@@ -1,0 +1,163 @@
+\documentclass[11pt,a4paper,UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+\title{\textbf{180 nm工艺下12-bit 50 MS/s SAR ADC系统设计指南}\\[0.5em]
+\large ——基于CAAZ架构的模块化设计}
+\author{技术备忘录}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{引言}
+
+在180 nm工艺下设计一款12-bit 50 MS/s的SAR ADC，并且采用CAAZ架构，这是一项系统级工程。由于180 nm的数字逻辑速度和寄生电容劣势，我们必须在每个模块的设计上"精打细算"，充分利用CAAZ架构带来的"输入电容极小"这一红利。
+
+以下拆解该ADC系统的\textbf{5大核心模块}，提供详细的原理分析与180 nm下的关键参数设计建议。
+
+\section{模块一：CDAC采样网络}
+
+由于CAAZ架构将$kT/C$噪声的负担转移到了内部，主电容$C_1$理论上可以做得非常小。
+
+\subsection{原理分析}
+
+CDAC既负责在采样阶段保存输入信号，又负责在转换阶段通过内部电荷再分配产生参考电压（$V_{DAC}$）逼近输入信号。
+
+\subsection{180 nm关键参数建议}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{总电容值（$C_{1,total}$）：}建议控制在\textbf{$\SI{150}{\femto\farad} \sim \SI{250}{\femto\farad}$}（单边）。这比传统12-bit设计（通常$>\SI{4}{\pico\farad}$）小了二十倍，是论文最大的卖点。
+    
+    \item \textbf{单位电容（$C_u$）与阵列结构：}180 nm下如果总电容仅$\SI{200}{\femto\farad}$，对于12-bit，单位电容会小到无法制造。\textbf{强烈建议采用桥接电容（Bridge Capacitor / Split-DAC）结构}。例如，分为高6位和低6位，中间用桥接电容连接。这样可以使用安全的单位电容值（如$C_u = \SI{2}{\femto\farad} \sim \SI{5}{\femto\farad}$）构建阵列。
+    
+    \item \textbf{非理想效应应对：}在180 nm下，极小的电容会导致严重的$kT/C$噪声过关，但CAAZ解决了这个问题。然而，\textbf{极小电容会带来极差的工艺匹配（Mismatch）}，导致SFDR恶化。\textbf{必须在论文中声明引入了数字后台校准或加入冗余位}来吸收电容失配误差。
+\end{itemize}
+
+\section{模块二：自举开关}
+
+主采样开关必须具有极高的线性度，因为12-bit精度要求其导通电阻的非线性不能引入超过1 LSB的误差。
+
+\subsection{原理分析}
+
+传统的传输门开关，其$V_{gs}$会随输入信号$V_{in}$的变化而剧烈波动，导致导通电阻$R_{on}$严重非线性。自举开关通过一个预充电电容，在导通时将栅极电压"托举"到$V_{in} + V_{DD}$，使得$V_{gs}$恒定为$V_{DD}$，从而获得恒定且极低的$R_{on}$。
+
+\subsection{180 nm关键参数建议}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{开关尺寸（$W/L$）：}由于负载电容$C_1$只有不到$\SI{250}{\femto\farad}$，开关管\textbf{不需要做得很大}。建议尺寸在$W = \SI{5}{\micro\meter} \sim \SI{10}{\micro\meter}$即可，这能大幅减小开关带来的时钟馈通和电荷注入误差。
+    
+    \item \textbf{导通电阻（$R_{on}$）：}建议控制在\textbf{$\SI{200}{\ohm} \sim \SI{400}{\ohm}$}。配合$\SI{200}{\femto\farad}$的电容，RC时间常数不到$\SI{0.1}{\nano\second}$，在$\SI{4}{\nano\second}$的采样窗口内可以实现超过$40\tau$的建立，满足12-bit精度绰绰有余。
+\end{itemize}
+
+\section{模块三：CAAZ预放大器}
+
+这是论文的"心脏"。
+
+\subsection{原理分析}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Phase 2阶段：}负载管二极管连接，实现低阻抗极速充电（驱动内部大电容$C_{AZ}$），避免失调和差模大信号导致的饱和。
+    \item \textbf{Phase 3阶段：}恢复电流源负载，提供极高开环增益，衰减二次噪声并消除比较残差。
+\end{itemize}
+
+\subsection{180 nm关键参数建议}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{跨导（$g_{mp}, g_{mn}$）：}$\approx \SI{3}{\milli\siemens} \sim \SI{5}{\milli\siemens}$。确保$\tau_{CAAZ}$极小，使得不完全建立噪声可以忽略。
+    
+    \item \textbf{开环增益（$g_m R_{OA}$）：}目标$> \SI{50}{\volt\per\volt}$（$> \SI{34}{\decibel}$），推荐使用大$L$（$\SI{0.3}{\micro\meter} \sim \SI{0.5}{\micro\meter}$）的基础差分对或简单Cascode。
+    
+    \item \textbf{内部隐蔽电容（$C_{AZ}$）：}$\SI{300}{\femto\farad} \sim \SI{500}{\femto\farad}$。无需太大，否则在180 nm下会引发建立不完全的右侧"U型曲线"恶化。
+\end{itemize}
+
+\section{模块四：动态锁存比较器}
+
+跟在预放大器后面的判决级，负责将模拟残差放大为数字逻辑。
+
+\subsection{原理分析}
+
+利用交叉耦合反相器的正反馈机制，将预放大器输出的微小压差在极短时间内（几百皮秒）放大到轨到轨的$V_{DD}$或GND。
+
+\subsection{180 nm关键参数建议}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{失调电压要求（被极度放宽）：}这是CAAZ带来的又一隐形红利。因为预放大器有$>50$的增益，锁存器本身的失调电压（假设高达$\SI{20}{\milli\volt}$）和输入参考噪声，等效到ADC输入端会被除以50，仅剩$\SI{0.4}{\milli\volt}$。因此，\textbf{锁存器的晶体管可以使用最小沟道长度（$L=\SI{180}{\nano\meter}$）}以追求极致速度，完全不用为了匹配去增加面积。
+    
+    \item \textbf{速度与再生时间常数（$\tau_{reg}$）：}在180 nm下，确保输入对管和锁存对管有足够的宽度（如$W = \SI{4}{\micro\meter} \sim \SI{8}{\micro\meter}$），确保比较决策能在$\SI{0.2}{\nano\second} \sim \SI{0.3}{\nano\second}$内完成。
+\end{itemize}
+
+\section{模块五：异步SAR逻辑控制}
+
+在180 nm工艺下做50 MS/s，逻辑控制策略直接决定了数字功耗是$\SI{0.5}{\milli\watt}$还是$\SI{5}{\milli\watt}$。
+
+\subsection{原理分析}
+
+传统的同步SAR需要一个极高频的外部时钟（对于12-bit 50 MS/s，可能需要$14 \times \SI{50}{\mega\hertz} = \SI{700}{\mega\hertz}$的时钟）。在180 nm下，由于连线和门电容大，分发$\SI{700}{\mega\hertz}$时钟会消耗惊人的动态功耗。\textbf{异步时序}则是让比较器自己生成触发信号（Valid信号），一旦比较完成，立刻触发下一个周期，就像多米诺骨牌一样。
+
+\subsection{180 nm关键参数建议}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{架构选择：}必须在论文中明确声明采用了\textbf{异步时钟逻辑}或\textbf{自定时机制}。
+    
+    \item \textbf{时间冗余分配：}12-bit SAR至少需要12次比较。如果采用冗余设计（例如引入非二进制权重的电容，共进行14次比较），每个比较周期平均只有$\SI{1}{\nano\second}$（转换窗口总共$\SI{14}{\nano\second}$）。
+    
+    \item \textbf{延时单元：}异步逻辑环路中需要设计可调的延时单元，留出约$\SI{0.5}{\nano\second}$用于CDAC的稳定，剩下的$\SI{0.5}{\nano\second}$用于预放大器和锁存器的比较。因为$C_1$非常小（$<\SI{250}{\femto\farad}$），CDAC的稳定速度会极快，这是在180 nm下能跑到50 MS/s的关键保障。
+\end{itemize}
+
+\section{系统级联红利总结}
+
+得益于CAAZ架构带来的电容负担转移，本设计不仅实现了热噪声的深度抵消，更在系统层面引发了连锁红利：
+
+\begin{enumerate}[leftmargin=*]
+    \item 超小的CDAC（$\sim\SI{200}{\femto\farad}$）使得180 nm工艺下的DAC开关网络和基准缓冲器功耗骤降；
+    
+    \item 预放大器的高增益隔离了后级，使得StrongARM锁存器可以无视失调问题，专注于采用最小沟道长度进行极致提速；
+    
+    \item 结合异步时序逻辑，本设计在较老的180 nm节点上依然以极低的整体功耗突破了12-bit 50-MS/s的性能瓶颈。
+\end{enumerate}
+
+\section{参数汇总表}
+
+\begin{table}[htbp]
+\centering
+\caption{180 nm工艺下12-bit 50 MS/s SAR ADC关键参数汇总}
+\label{tab:params}
+\begin{tabular}{lll}
+\toprule
+\textbf{模块} & \textbf{参数} & \textbf{建议值} \\
+\midrule
+\multirow{3}{*}{CDAC} 
+    & 总电容 $C_{1,total}$ & $\SI{150}{\femto\farad} \sim \SI{250}{\femto\farad}$ \\
+    & 单位电容 $C_u$ & $\SI{2}{\femto\farad} \sim \SI{5}{\femto\farad}$ \\
+    & 结构 & Split-DAC + 冗余位 \\
+\midrule
+\multirow{2}{*}{自举开关} 
+    & 开关尺寸 $W$ & $\SI{5}{\micro\meter} \sim \SI{10}{\micro\meter}$ \\
+    & 导通电阻 $R_{on}$ & $\SI{200}{\ohm} \sim \SI{400}{\ohm}$ \\
+\midrule
+\multirow{3}{*}{CAAZ预放大器} 
+    & 跨导 $g_{mp}, g_{mn}$ & $\SI{3}{\milli\siemens} \sim \SI{5}{\milli\siemens}$ \\
+    & 开环增益 & $> \SI{50}{\volt\per\volt}$ \\
+    & 内部电容 $C_{AZ}$ & $\SI{300}{\femto\farad} \sim \SI{500}{\femto\farad}$ \\
+\midrule
+\multirow{2}{*}{动态锁存器} 
+    & 沟道长度 $L$ & $\SI{180}{\nano\meter}$（最小） \\
+    & 再生时间 & $\SI{0.2}{\nano\second} \sim \SI{0.3}{\nano\second}$ \\
+\midrule
+\multirow{2}{*}{异步逻辑} 
+    & 架构 & 自定时机制 \\
+    & 单周期时间 & $\sim\SI{1}{\nano\second}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

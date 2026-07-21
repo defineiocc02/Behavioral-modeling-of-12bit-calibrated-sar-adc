@@ -1,0 +1,122 @@
+// Real frozen CDAC and SWITCH with an ideal clocked comparator.
+simulator lang=spectre
+global 0
+parameters vdd=1.8 C=4f
+
+subckt CDAC_0716 BITD\<1\> BITD\<2\> BITD\<3\> BITD\<4\> BITD\<5\> \
+        BITD\<6\> BITD\<7\> BITD\<8\> BITD\<9\> BITD\<10\> BITD\<11\> \
+        BITD\<12\> BITD\<13\> BITU\<1\> BITU\<2\> BITU\<3\> BITU\<4\> \
+        BITU\<5\> BITU\<6\> BITU\<7\> BITU\<8\> BITU\<9\> BITU\<10\> \
+        BITU\<11\> BITU\<12\> BITU\<13\> N P
+    C153 (N BITU\<8\>) capacitor c=C
+    C154 (N BITU\<12\>) capacitor c=8.00545*C
+    C155 (N BITU\<11\>) capacitor c=4*C
+    C156 (N BITU\<13\>) capacitor c=16.0365*C
+    C157 (net4 BITU\<4\>) capacitor c=6*C
+    C249 (N BITU\<9\>) capacitor c=2*C
+    C248 (P BITD\<9\>) capacitor c=2*C
+    C152 (N BITU\<10\>) capacitor c=2*C
+    C141 (P BITD\<12\>) capacitor c=8.054243*C
+    C149 (net4 BITU\<5\>) capacitor c=10*C
+    C144 (net3 P) capacitor c=C
+    C147 (net4 BITU\<2\>) capacitor c=2*C
+    C143 (P BITD\<13\>) capacitor c=16.054213*C
+    C146 (net4 BITU\<1\>) capacitor c=C
+    C139 (P BITD\<10\>) capacitor c=2*C
+    C151 (net4 BITU\<7\>) capacitor c=24*C
+    C138 (net3 BITD\<7\>) capacitor c=24*C
+    C150 (net4 BITU\<6\>) capacitor c=16*C
+    C145 (net4 N) capacitor c=C
+    C142 (P BITD\<11\>) capacitor c=4.01754*C
+    C148 (net4 BITU\<3\>) capacitor c=4*C
+    C140 (P BITD\<8\>) capacitor c=C
+    C136 (net3 BITD\<5\>) capacitor c=10*C
+    C137 (net3 BITD\<6\>) capacitor c=16*C
+    C132 (net3 BITD\<4\>) capacitor c=6*C
+    C135 (net3 BITD\<3\>) capacitor c=4*C
+    C134 (net3 BITD\<2\>) capacitor c=2*C
+    C133 (net3 BITD\<1\>) capacitor c=C
+ends CDAC_0716
+
+VAGND (AGND 0) vsource dc=0 type=dc
+VDGND (DGND 0) vsource dc=0 type=dc
+VAVDD (AVDD AGND) vsource dc=vdd type=dc
+VDVDD (DVDD DGND) vsource dc=vdd type=dc
+VVCM (VCM AGND) vsource dc=vdd/2 type=dc
+VREFP_SRC (VREFP AGND) vsource dc=vdd type=dc
+VREFN_SRC (VREFN AGND) vsource dc=0 type=dc
+VVIP (VIP AGND) vsource dc=vdd/2 type=dc
+VVIN (VIN AGND) vsource dc=vdd/2 type=dc
+VRST (RST AGND) vsource type=pulse val0=0 val1=vdd period=100n delay=100p rise=10p fall=10p width=18n
+VRST1 (RST1 AGND) vsource type=pulse val0=0 val1=vdd period=100n delay=100p rise=10p fall=10p width=14n
+VCALRST (CAL_RST DGND) vsource type=pulse val0=0 val1=vdd period=150u delay=1n rise=10p fall=10p width=2n
+VCALCLK (CAL_CLK DGND) vsource type=pulse val0=0 val1=vdd period=10n delay=10p rise=10p fall=10p width=5n
+VSOUT (SOUT DGND) vsource dc=0 type=dc
+VCLKSAR (CLK_SAR DGND) vsource dc=0 type=dc
+VCLK00 (CLK00 DGND) vsource dc=0 type=dc
+VBP0 (BP0 DGND) vsource dc=0 type=dc
+VBITN0 (BITN0 AGND) vsource dc=0 type=dc
+VBITP0 (BITP0 AGND) vsource dc=0 type=dc
+VBP1 (BP1 DGND) vsource dc=0 type=dc
+VBITN1 (BITN1 AGND) vsource dc=0 type=dc
+VBITP1 (BITP1 AGND) vsource dc=0 type=dc
+VBP2 (BP2 DGND) vsource dc=0 type=dc
+VBITN2 (BITN2 AGND) vsource dc=0 type=dc
+VBITP2 (BITP2 AGND) vsource dc=0 type=dc
+VBP3 (BP3 DGND) vsource dc=0 type=dc
+VBITN3 (BITN3 AGND) vsource dc=0 type=dc
+VBITP3 (BITP3 AGND) vsource dc=0 type=dc
+VBP4 (BP4 DGND) vsource dc=0 type=dc
+VBITN4 (BITN4 AGND) vsource dc=0 type=dc
+VBITP4 (BITP4 AGND) vsource dc=0 type=dc
+VBP5 (BP5 DGND) vsource dc=0 type=dc
+VBITN5 (BITN5 AGND) vsource dc=0 type=dc
+VBITP5 (BITP5 AGND) vsource dc=0 type=dc
+VBP6 (BP6 DGND) vsource dc=0 type=dc
+VBITN6 (BITN6 AGND) vsource dc=0 type=dc
+VBITP6 (BITP6 AGND) vsource dc=0 type=dc
+VBP7 (BP7 DGND) vsource dc=0 type=dc
+VBITN7 (BITN7 AGND) vsource dc=0 type=dc
+VBITP7 (BITP7 AGND) vsource dc=0 type=dc
+VBP8 (BP8 DGND) vsource dc=0 type=dc
+VBITN8 (BITN8 AGND) vsource dc=0 type=dc
+VBITP8 (BITP8 AGND) vsource dc=0 type=dc
+VBP9 (BP9 DGND) vsource dc=0 type=dc
+VBITN9 (BITN9 AGND) vsource dc=0 type=dc
+VBITP9 (BITP9 AGND) vsource dc=0 type=dc
+VBP10 (BP10 DGND) vsource dc=0 type=dc
+VBITN10 (BITN10 AGND) vsource dc=0 type=dc
+VBITP10 (BITP10 AGND) vsource dc=0 type=dc
+VBP11 (BP11 DGND) vsource dc=0 type=dc
+VBITN11 (BITN11 AGND) vsource dc=0 type=dc
+VBITP11 (BITP11 AGND) vsource dc=0 type=dc
+VBP12 (BP12 DGND) vsource dc=0 type=dc
+VBITN12 (BITN12 AGND) vsource dc=0 type=dc
+VBITP12 (BITP12 AGND) vsource dc=0 type=dc
+VBP13 (BP13 DGND) vsource dc=0 type=dc
+VBITN13 (BITN13 AGND) vsource dc=0 type=dc
+VBITP13 (BITP13 AGND) vsource dc=0 type=dc
+VSET0 (SET0 AGND) vsource dc=0 type=dc
+VSET1 (SET1 AGND) vsource dc=0 type=dc
+VSET2 (SET2 AGND) vsource dc=0 type=dc
+VSET3 (SET3 AGND) vsource dc=0 type=dc
+VSET4 (SET4 AGND) vsource dc=0 type=dc
+VSET5 (SET5 AGND) vsource dc=0 type=dc
+VSET6 (SET6 AGND) vsource dc=0 type=dc
+VSET7 (SET7 AGND) vsource dc=0 type=dc
+VSET8 (SET8 AGND) vsource dc=0 type=dc
+VSET9 (SET9 AGND) vsource dc=0 type=dc
+VSET10 (SET10 AGND) vsource dc=0 type=dc
+VSET11 (SET11 AGND) vsource dc=0 type=dc
+VSET12 (SET12 AGND) vsource dc=0 type=dc
+
+XSW (AGND AVDD BITD1 BITD2 BITD3 BITD4 BITD5 BITD6 BITD7 BITD8 BITD9 BITD10 BITD11 BITD12 BITD13 BITN0 BITN1 BITN2 BITN3 BITN4 BITN5 BITN6 BITN7 BITN8 BITN9 BITN10 BITN11 BITN12 BITN13 BITP0 BITP1 BITP2 BITP3 BITP4 BITP5 BITP6 BITP7 BITP8 BITP9 BITP10 BITP11 BITP12 BITP13 BITU1 BITU2 BITU3 BITU4 BITU5 BITU6 BITU7 BITU8 BITU9 BITU10 BITU11 BITU12 BITU13 N P RST RST1 SET0 SET1 SET2 SET3 SET4 SET5 SET6 SET7 SET8 SET9 SET10 SET11 SET12 VCM VIN VIP VREFN VREFP BITD_CAL0 BITD_CAL1 BITD_CAL2 BITD_CAL3 BITD_CAL4 BITD_CAL5 BITD_CAL6 BITD_CAL7 BITD_CAL8 BITD_CAL9 BITD_CAL10 BITD_CAL11 BITD_CAL12 BITU_CAL0 BITU_CAL1 BITU_CAL2 BITU_CAL3 BITU_CAL4 BITU_CAL5 BITU_CAL6 BITU_CAL7 BITU_CAL8 BITU_CAL9 BITU_CAL10 BITU_CAL11 BITU_CAL12 CAL CAL_CLK) SWITCH_CAL RON_SAMPLE=5 RON_REF=10 RON_TOP=5 ROFF=1e15 TD_RSTT=200p TD_RST11=200p NORMAL_REF_SWAP=1
+XCDAC (BITD1 BITD2 BITD3 BITD4 BITD5 BITD6 BITD7 BITD8 BITD9 BITD10 BITD11 BITD12 BITD13 BITU1 BITU2 BITU3 BITU4 BITU5 BITU6 BITU7 BITU8 BITU9 BITU10 BITU11 BITU12 BITU13 N P) CDAC_0716
+XCOMP (CLK P N COMP COMN DGND DVDD) IDEAL_COMP
+XDEC (Bit11 Bit10 Bit9 Bit8 Bit7 Bit6 Bit5 Bit4 Bit3 Bit2 Bit1 Bit0 BP0 BP1 BP2 BP3 BP4 BP5 BP6 BP7 BP8 BP9 BP10 BP11 BP12 BP13 DGND DVDD SOUT COMP COMN RST1 CAL_RST CLK_SAR CLK00 CLK BITD_CAL0 BITD_CAL1 BITD_CAL2 BITD_CAL3 BITD_CAL4 BITD_CAL5 BITD_CAL6 BITD_CAL7 BITD_CAL8 BITD_CAL9 BITD_CAL10 BITD_CAL11 BITD_CAL12 BITU_CAL0 BITU_CAL1 BITU_CAL2 BITU_CAL3 BITU_CAL4 BITU_CAL5 BITU_CAL6 BITU_CAL7 BITU_CAL8 BITU_CAL9 BITU_CAL10 BITU_CAL11 BITU_CAL12 CAL DONE ERR CAL_CLK) DEC_CAL_PHY TD_CAL=200p TD_CMP_CAL=2n CMP_SWAP=1 CMP_VALID_FRACTION=0.2 MAX_INVALID=3 ZERO_ON_INVALID_PHASE0=1 ZERO_ON_INVALID_PHASE1=1 WEIGHT_TOL=0.25 REMOVE_REDUNDANCY_OFFSET=1 DEBUG=1 FRAC_BITS=6 AVG_PAIRS_LOG2=5 CAL_BYPASS=0
+tran tran stop=42u maxstep=100p annotate=status
+save P N CLK CAL DONE ERR
+saveOptions options save=selected
+ahdl_include "SWITCH_CAL_original.va"
+ahdl_include "DEC_CAL_PHY_FRAME_SYNC.va"
+ahdl_include "IDEAL_COMP.va"

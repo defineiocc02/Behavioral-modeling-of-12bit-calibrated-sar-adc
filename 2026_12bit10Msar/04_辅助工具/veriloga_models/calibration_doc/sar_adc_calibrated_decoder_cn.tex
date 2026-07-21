@@ -1,0 +1,1145 @@
+% !TEX program = xelatex
+% sar_adc_calibrated_decoder_cn.tex
+% 带高位前景校准的非二进制冗余 SAR ADC：D+/D- 权重测量与数字解码原理
+\documentclass[
+  UTF8,
+  a4paper,
+  11pt,
+  oneside,
+  fontset=fandol
+]{ctexrep}
+
+% ==================== 页面 ====================
+\usepackage[margin=2.25cm]{geometry}
+
+% ==================== 数学 ====================
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{bm}
+
+% ==================== 表格 ====================
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{makecell}
+
+% ==================== 单位 ====================
+\usepackage{siunitx}
+\DeclareSIUnit{\LSB}{LSB}
+
+% ==================== 图形 ====================
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% ==================== TikZ ====================
+\usepackage{tikz}
+\usetikzlibrary{
+  arrows.meta,
+  positioning,
+  shapes.geometric,
+  fit,
+  calc,
+  backgrounds
+}
+
+% ==================== 列表 ====================
+\usepackage{enumitem}
+
+% ==================== 代码 ====================
+\usepackage{listings}
+
+% ==================== 算法 ====================
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ==================== 页眉页脚 ====================
+\usepackage{fancyhdr}
+
+% ==================== 排版微调 ====================
+\usepackage{microtype}
+
+% ==================== 链接和颜色 ====================
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+% ==================== 颜色体系 ====================
+\definecolor{navy}{HTML}{163A5F}
+\definecolor{teal}{HTML}{167C80}
+\definecolor{orange}{HTML}{D97706}
+\definecolor{redx}{HTML}{B42318}
+\definecolor{lightblue}{HTML}{EAF2F8}
+\definecolor{lightteal}{HTML}{E8F5F4}
+\definecolor{lightorange}{HTML}{FFF3E0}
+\definecolor{graybox}{HTML}{F3F4F6}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=navy,
+  citecolor=teal,
+  urlcolor=navy
+}
+
+% ==================== 页眉页脚设置 ====================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{SAR ADC 校准与解码原理}
+\fancyhead[R]{\leftmark}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{15pt}
+
+% ==================== 列表与表格间距 ====================
+\setlist[itemize]{
+  leftmargin=2em,
+  itemsep=0.25em,
+  topsep=0.35em
+}
+\setlist[enumerate]{
+  leftmargin=2.2em,
+  itemsep=0.3em,
+  topsep=0.35em
+}
+\renewcommand{\arraystretch}{1.25}
+
+\captionsetup{
+  font=small,
+  labelfont=bf
+}
+
+% ==================== 代码风格 ====================
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{graybox},
+  frame=single,
+  rulecolor=\color{gray!35},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  keywordstyle=\color{navy}\bfseries,
+  commentstyle=\color{teal},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=1.5em,
+  framexleftmargin=1.2em,
+  language=Verilog
+}
+
+% ==================== 算法伪代码汉化 ====================
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}
+\renewcommand{\algorithmicensure}{\textbf{输出:}}
+\renewcommand{\algorithmicif}{\textbf{若}}
+\renewcommand{\algorithmicthen}{\textbf{则}}
+\renewcommand{\algorithmicelse}{\textbf{否则}}
+\renewcommand{\algorithmicfor}{\textbf{对于}}
+\renewcommand{\algorithmicdo}{\textbf{执行}}
+\renewcommand{\algorithmicwhile}{\textbf{当}}
+\renewcommand{\algorithmicreturn}{\textbf{返回}}
+\renewcommand{\algorithmicprocedure}{\textbf{过程}}
+\renewcommand{\algorithmicend}{\textbf{结束}}
+
+% ==================== 提示框环境 ====================
+\newenvironment{keybox}[1]{%
+  \begin{center}
+  \begin{minipage}{0.94\textwidth}
+  \colorbox{lightblue}{%
+    \parbox{0.96\textwidth}{\textbf{#1}}}
+  \vspace{0.35em}\par
+}{%
+  \end{minipage}
+  \end{center}
+}
+
+\newenvironment{warnbox}[1]{%
+  \begin{center}
+  \begin{minipage}{0.94\textwidth}
+  \colorbox{lightorange}{%
+    \parbox{0.96\textwidth}{\textbf{#1}}}
+  \vspace{0.35em}\par
+}{%
+  \end{minipage}
+  \end{center}
+}
+
+\newenvironment{tipbox}[1]{%
+  \begin{center}
+  \begin{minipage}{0.94\textwidth}
+  \colorbox{lightteal}{%
+    \parbox{0.96\textwidth}{\textbf{#1}}}
+  \vspace{0.35em}\par
+}{%
+  \end{minipage}
+  \end{center}
+}
+
+\newenvironment{notebox}[1]{%
+  \begin{center}
+  \begin{minipage}{0.94\textwidth}
+  \colorbox{graybox}{%
+    \parbox{0.96\textwidth}{\textbf{#1}}}
+  \vspace{0.35em}\par
+}{%
+  \end{minipage}
+  \end{center}
+}
+
+% ==================== TikZ 节点风格 ====================
+\tikzset{
+  block/.style={
+    rectangle,
+    rounded corners,
+    draw=navy,
+    thick,
+    fill=lightblue,
+    align=center,
+    minimum height=9mm,
+    text width=32mm,
+    inner sep=4pt
+  },
+  decision/.style={
+    diamond,
+    draw=teal,
+    thick,
+    fill=lightteal,
+    align=center,
+    aspect=2,
+    inner sep=2pt
+  },
+  arrow/.style={
+    -{Stealth[length=2.2mm]},
+    thick,
+    draw=navy
+  }
+}
+
+% ==================== 便捷命令 ====================
+\newcommand{\Vref}{V_{\mathrm{REF}}}
+\newcommand{\clip}{\operatorname{clip}}
+\newcommand{\round}{\operatorname{round}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\W}{\mathbf{W}}
+\newcommand{\What}{\widehat{W}}
+\newcommand{\Rhat}{\widehat{R}}
+\newcommand{\Rbar}{\overline{R}}
+\newcommand{\Vcal}{V_{\mathrm{cal}}}
+\newcommand{\Wtotal}{W_{\mathrm{total}}}
+\newcommand{\Wred}{W_{\mathrm{red}}}
+\newcommand{\Ored}{O_{\mathrm{red}}}
+\newcommand{\Sraw}{S_{\mathrm{raw}}}
+\newcommand{\Dout}{D_{\mathrm{out}}}
+\newcommand{\clipop}[1]{\clip_{[0,4095]}\!\left(#1\right)}
+\newcommand{\roundop}[1]{\round\!\left(#1\right)}
+
+% ==================== 文档信息 ====================
+\title{\textbf{带高位前景校准的非二进制冗余 SAR ADC：\\[4pt]
+D+/D$-$ 权重测量与数字解码原理}}
+\author{混合信号 IC 设计技术文档}
+\date{2026年7月}
+
+\begin{document}
+
+\maketitle
+
+% ==================== 摘要 ====================
+\begin{abstract}
+\noindent
+本文基于 \code{DEC\_CAL\_PHY} Verilog-A 行为级模型，系统阐述一个 \SI{12}{bit} 差分 SAR ADC 如何通过非二进制冗余 CDAC 产生 14 个原始比较器判决，并利用 D+/D$-$ 双向测量与 offset-binary 校准 DAC 对最高三位电容的有效权重进行前景校准，最终通过加权数字解码和冗余中心偏移消除将 14 个冗余判决映射为标准 \SI{12}{bit} 输出。文章推导了残差测量公式 $R \approx D_+ - D_-$、Q 格式定点平均公式、递归权重恢复公式以及最终数字解码公式，并通过自洽数值例子验证了推导的正确性。同时讨论了 D+/D$-$ 差分测量对比较器固定失调的抵消原理、随机噪声的多次平均需求、以及两种输出映射方案的工程取舍。
+\end{abstract}
+
+\bigskip
+
+% ==================== 目录 ====================
+\tableofcontents
+\newpage
+
+% ==================== 符号表 ====================
+\section*{符号表}
+\addcontentsline{toc}{section}{符号表}
+
+\begin{table}[H]
+\centering
+\caption{主要数学符号}
+\label{tab:symbols}
+\small
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+符号 & 含义 & 典型值 \\
+\midrule
+$N$ & ADC 有效输出位数 & 12 \\
+$W_i$ & 第 $i$ 个电容的等效数字权重 (LSB) & 见表\ref{tab:weights} \\
+$\What_i$ & 校准后第 $i$ 个权重 & --- \\
+$\Wtotal$ & 全部 14 个标称权重之和 & 4351 \\
+$\Wred$ & 冗余总量 & 256 \\
+$\Ored$ & 对称冗余中心偏移 & 128 \\
+$R$ & 目标权重与参考墙之差（残差） & --- \\
+$D_+, D_-$ & 正/负方向 offset-binary 测量码 & $0 \sim 127$ \\
+$\Sraw$ & 原始加权求和 & $0 \sim 4351$ \\
+$\Dout$ & 最终 \SI{12}{bit} 输出码 & $0 \sim 4095$ \\
+$Q$ & Q 格式缩放因子 ($2^{N_F}$) & 64 \\
+$N_F$ & 定点小数位数 (\code{FRAC\_BITS}) & 6 \\
+$N_{\mathrm{avg}}$ & D+/D$-$ 平均组数 & 32 \\
+$w_i$ & Q 格式权重 ($Q \cdot \What_i$) & 整数 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ==================== 缩略语表 ====================
+\section*{缩略语表}
+\addcontentsline{toc}{section}{缩略语表}
+
+\begin{table}[H]
+\centering
+\caption{缩略语}
+\label{tab:acronyms}
+\small
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+缩略语 & 全称 \\
+\midrule
+ADC & Analog-to-Digital Converter（模数转换器） \\
+SAR & Successive Approximation Register（逐次逼近寄存器） \\
+CDAC & Capacitor Digital-to-Analog Converter（电容数模转换器） \\
+DAC & Digital-to-Analog Converter（数模转换器） \\
+DNL & Differential Nonlinearity（差分非线性） \\
+INL & Integral Nonlinearity（积分非线性） \\
+SFDR & Spurious-Free Dynamic Range（无杂散动态范围） \\
+LSB & Least Significant Bit（最低有效位） \\
+MSB & Most Significant Bit（最高有效位） \\
+CDS & Correlated Double Sampling（相关双采样） \\
+LFSR & Linear Feedback Shift Register（线性反馈移位寄存器） \\
+VCM & Common-Mode Voltage（共模电压） \\
+PVT & Process-Voltage-Temperature（工艺-电压-温度） \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newpage
+
+% ==================== 1. 引言 ====================
+\chapter{引言}
+
+高分辨率 SAR ADC 的线性度主要受电容 DAC（CDAC）中单位电容失配的限制。在 \SI{12}{bit} 及以上精度下，仅靠版图匹配通常无法满足 INL/DNL 要求，因此需要引入数字校准技术。
+
+本文分析的 \code{DEC\_CAL\_PHY} 模块实现了一套完整的前景权重校准与校准后加权解码方案，其核心思想可概括为：
+
+\begin{enumerate}[leftmargin=2em]
+    \item 采用\textbf{非二进制冗余 CDAC}，用 14 个电容权重实现 \SI{12}{bit} 有效输出，提供 \SI{256}{\LSB} 冗余范围；
+    \item 在上电前景阶段，利用低位冗余电容组成 offset-binary 校准 DAC，对最高三个权重 $W_2, W_1, W_0$ 进行 D+/D$-$ 双向测量；
+    \item 通过 $R \approx D_+ - D_-$ 恢复残差，进而递归重建目标权重；
+    \item 正常转换时使用校准后的权重进行加权求和，减去冗余中心偏移后输出标准 \SI{12}{bit} 码。
+\end{enumerate}
+
+\begin{tipbox}{直观比喻}
+可以把 SAR ADC 的每个电容看成一组“砝码”。标准 12 位二进制 ADC 的理想砝码是 $[2048, 1024, 512, 256, 128, \ldots, 2, 1]$。转换过程中，比较器不断回答：“这个砝码应该保留，还是应该撤销？”如果电容完全理想，把所有保留的砝码直接相加就得到数字输出。但真实电容存在失配，例如 $2048 \to 2046.7$，因此需要先“校准砝码的真实重量，再用真实重量计算结果”。
+\end{tipbox}
+
+本文从 Verilog-A 源代码出发，逐步推导每个关键公式，并通过数值例子验证其自洽性。
+
+% ==================== 2. 系统架构概览 ====================
+\chapter{系统架构概览}
+
+该 SAR ADC 系统由以下主要模块构成：
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{CDAC}：14 个电容组成非二进制冗余阵列，产生差分比较器输入；
+    \item \textbf{比较器}：StrongArm 动态比较器，输出 COMP/COMN；
+    \item \textbf{SAR 逻辑}：产生 14 次逐次逼近判决，结果存入 BP$[13:0]$；
+    \item \textbf{DEC\_CAL\_PHY}：校准与解码控制器，包含校准状态机和加权解码器；
+    \item \textbf{SWITCH\_CAL}：根据 BITD\_CAL/BITU\_CAL 信号驱动 CDAC 底板开关。
+\end{itemize}
+
+校准阶段，DEC\_CAL\_PHY 接管比较器时钟（CAL\_CLK），利用 calDAC 对高位权重进行测量。正常转换阶段，DEC\_CAL\_PHY 在 SOUT 上升沿锁存 14 个原始判决，使用校准权重加权解码后输出 \SI{12}{bit} 结果。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.4cm and 1.8cm]
+\node[block] (cdac) {非二进制冗余\\CDAC (14 cap)};
+\node[block,right=of cdac] (cmp) {比较器\\COMP/COMN};
+\node[block,right=of cmp] (sar) {SAR 逻辑\\BP$[13:0]$};
+\node[block,below=of sar] (dec) {DEC\_CAL\_PHY\\校准\&解码};
+\node[block,left=of dec] (sw) {SWITCH\_CAL\\底板开关};
+\node[block,below=of dec] (out) {Bit$[11:0]$\\\SI{12}{bit} 输出};
+
+\draw[arrow] (cdac) -- (cmp);
+\draw[arrow] (cmp) -- (sar);
+\draw[arrow] (sar) -- (dec);
+\draw[arrow] (dec) -- (sw);
+\draw[arrow] (sw) -- (cdac);
+\draw[arrow] (dec) -- (out);
+\draw[arrow,dashed,draw=teal] (dec.north east) to[bend left=30] node[above,font=\scriptsize]{CAL\_CLK} (cmp.south east);
+\end{tikzpicture}
+\caption{系统架构概览}
+\label{fig:arch}
+\end{figure}
+
+% ==================== 3. 非二进制冗余权重 ====================
+\chapter{非二进制冗余权重}
+
+\section{权重序列}
+
+代码初始化的 14 个标称权重如\cref{tab:weights}所示。
+
+\begin{table}[H]
+\centering
+\caption{非二进制冗余权重序列}
+\label{tab:weights}
+\small
+\begin{tabularx}{\textwidth}{c c c c c X}
+\toprule
+索引 $i$ & 代码变量 & 标称权重 (LSB) & 对应电容 & Stage & 备注 \\
+\midrule
+0 & \code{w0}  & 2048 & C12 (16C) & 0  & MSB，可校准 \\
+1 & \code{w1}  & 1024 & C11 (8C)  & 1  & 可校准 \\
+2 & \code{w2}  & 512  & C10 (4C)  & 2  & 可校准 \\
+3 & \code{w3}  & 256  & C9 (2C)   & 3  & 冗余位 \\
+4 & \code{w4}  & 256  & CR (2C)   & 4  & 冗余位 \\
+5 & \code{w5}  & 128  & C8 (1C)   & 5  & --- \\
+6 & \code{w6}  & 48   & C7        & 6  & calDAC \\
+7 & \code{w7}  & 32   & C6        & 7  & calDAC \\
+8 & \code{w8}  & 20   & C5        & 8  & calDAC \\
+9 & \code{w9}  & 12   & C4        & 9  & calDAC \\
+10 & \code{w10} & 8    & C3        & 10 & calDAC \\
+11 & \code{w11} & 4    & C2        & 11 & calDAC \\
+12 & \code{w12} & 2    & C1        & 12 & calDAC \\
+13 & \code{w13} & 1    & terminal  & 13 & terminal bit \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{总权重与冗余}
+
+全部权重之和为：
+\begin{equation}
+\Wtotal = 2048 + 1024 + 512 + 256 + 256 + 128 + 48 + 32 + 20 + 12 + 8 + 4 + 2 + 1 = 4351
+\label{eq:wtotal}
+\end{equation}
+
+标准 \SI{12}{bit} ADC 的最大码为 $2^{12} - 1 = 4095$。因此冗余总量为：
+\begin{equation}
+\Wred = \Wtotal - 4095 = 4351 - 4095 = 256 \;\text{LSB}
+\label{eq:wred}
+\end{equation}
+
+\section{冗余的含义}
+
+这 \SI{256}{\LSB} 冗余允许 SAR 搜索过程中的早期判决误差被后续位纠正。在严格二进制 ADC 中，若某高位判决错误，后续位的总权重不足以补偿。而非二进制冗余结构中，后续权重之和大于严格二进制所需的值，从而提供了一定的容错裕量。
+
+例如，索引 3 和 4 的两个 \SI{256}{\LSB} 权重构成了一个冗余对：它们的总和 \SI{512}{\LSB} 等于索引 2 的权重，而非严格二进制中的 $256+128=384$。这种“重叠”正是冗余的来源。
+
+\begin{keybox}{关键关系}
+总权重 $\Wtotal = 4351$ 与标准 \SI{12}{bit} 最大码 4095 之间的差值 \SI{256}{\LSB} 即为冗余总量。这 \SI{256}{\LSB} 对称分布在搜索范围上下两端（各 \SI{128}{\LSB}），允许早期判决误差在后续位中被纠正。14 个原始判决最终映射为 \SI{12}{bit} 输出，\textbf{这不是一个 \SI{14}{bit} ADC}。
+\end{keybox}
+
+% ==================== 4. 14次判决与12bit输出 ====================
+\chapter{14 次判决与 \texorpdfstring{\SI{12}{bit}}{12 bit} 输出的关系}
+
+该 ADC 在每次转换中产生 14 个比较器判决 $r_0, r_1, \ldots, r_{13}$，但最终只输出 \SI{12}{bit} 码。这两者并不矛盾：
+
+\begin{equation}
+\boxed{14 \text{ 个冗余判决} \;\longrightarrow\; 12 \text{ bit 最终结果}}
+\end{equation}
+
+14 个判决对应的权重总和为 \SI{4351}{\LSB}，而 \SI{12}{bit} 合法输出范围为 $[0, 4095]$。多出的 \SI{256}{\LSB} 是冗余搜索空间，通过减去冗余中心偏移后被消除。因此，这并不是一个“\SI{14}{bit} ADC”，而是一个利用 14 次冗余判决实现 \SI{12}{bit} 精度的 SAR ADC。
+
+% ==================== 5. 原始判决的数字表示 ====================
+\chapter{原始判决的数字表示}
+
+在一次转换结束后，DEC\_CAL\_PHY 在 SOUT 上升沿从 BP$[13:0]$ 读取 14 个判决。映射关系为 BP$[13] \to r_0$（MSB 判决），BP$[0] \to r_{13}$（terminal 判决）。
+
+每个判决 $r_i \in \{0, 1\}$，若该权重在 SAR 搜索路径中被选中则 $r_i = 1$，否则 $r_i = 0$。极性可由 \code{RAW\_INVERT} 和 \code{FIRST\_INVERT} 参数调整，以适配比较器和 PN 缓冲器的实际逻辑方向。
+
+代码只在 SOUT 上升沿读取一次 BP 总线，而非在逐次逼近过程中连续解码，这样可以避免最终输出端出现中间试探码。
+
+% ==================== 6. 高位电容失配问题 ====================
+\chapter{高位电容失配问题}
+
+真实电容存在制造失配。例如标称 \SI{2048}{\LSB} 的电容实际可能为 \SI{2046.7}{\LSB}，标称 \SI{1024}{\LSB} 的可能为 \SI{1026.1}{\LSB}。如果数字解码器仍按标称值加权求和，就会产生 DNL 和 INL 误差。
+
+由于高位权重的绝对值最大，其失配对线性度的影响也最严重。因此，本系统选择对最高三个权重 $W_0, W_1, W_2$（标称 2048, 1024, \SI{512}{\LSB}）进行前景校准，其余权重仍使用标称值。
+
+校准的本质是：\textbf{不改变比较器已经产生的判决，只改变每个判决在数字加法器中的权重}。
+
+% ==================== 7. 递归式高位权重校准 ====================
+\chapter{递归式高位权重校准}
+
+\section{校准顺序}
+
+校准按从低到高的顺序进行：
+\begin{equation}
+\boxed{W_2 \;\to\; W_1 \;\to\; W_0}
+\end{equation}
+
+原因是高一级权重的参考墙（wall）需要使用已校准的低一级权重。
+
+\section{校准 $W_2$}
+
+参考墙由两个 \SI{256}{\LSB} 权重组成：
+\begin{equation}
+W_{\mathrm{wall},2} = W_3 + W_4 = 256 + 256 = 512
+\end{equation}
+
+定义残差：
+\begin{equation}
+R_2 = W_2 - (W_3 + W_4)
+\label{eq:R2}
+\end{equation}
+
+测出 $\Rhat_2$ 后恢复权重：
+\begin{equation}
+\boxed{\What_2 = W_3 + W_4 + \Rhat_2}
+\label{eq:What2}
+\end{equation}
+
+\section{校准 $W_1$}
+
+参考墙使用已校准的 $\What_2$：
+\begin{equation}
+W_{\mathrm{wall},1} = \What_2 + W_3 + W_4
+\end{equation}
+
+残差与权重恢复：
+\begin{equation}
+R_1 = W_1 - (\What_2 + W_3 + W_4)
+\end{equation}
+\begin{equation}
+\boxed{\What_1 = \What_2 + W_3 + W_4 + \Rhat_1}
+\label{eq:What1}
+\end{equation}
+
+\section{校准 $W_0$}
+
+参考墙使用 $\What_1$ 和 $\What_2$：
+\begin{equation}
+W_{\mathrm{wall},0} = \What_1 + \What_2 + W_3 + W_4
+\end{equation}
+
+残差与权重恢复：
+\begin{equation}
+R_0 = W_0 - (\What_1 + \What_2 + W_3 + W_4)
+\end{equation}
+\begin{equation}
+\boxed{\What_0 = \What_1 + \What_2 + W_3 + W_4 + \Rhat_0}
+\label{eq:What0}
+\end{equation}
+
+代码中，\code{wall\_weight\_q} 在每次目标切换时更新，使用已校准的 $w_2, w_1$ 寄存器值（而非标称值），这正是递归校准的关键。
+
+% ==================== 8. Offset-binary 校准 DAC ====================
+\chapter{Offset-binary 校准 DAC}
+
+\section{校准 DAC 结构}
+
+系统利用低位冗余电容 $W_6 \sim W_{12}$（权重 48, 32, 20, 12, 8, 4, 2）组成一个 \SI{7}{bit} offset-binary 校准 DAC。这些权重之和为：
+\begin{equation}
+48 + 32 + 20 + 12 + 8 + 4 + 2 = 126
+\end{equation}
+
+加上 terminal bit（权重 1），校准 DAC 可产生 $0 \sim 127$ 的数字测量结果。
+
+\section{初始输出 $+126$}
+
+校准开始时，所有校准电容处于正方向（SWITCH\_CAL 编码 10），总贡献为 $+126$。
+
+\section{翻转的 2 倍效应}
+
+当一个权重为 $w$ 的校准电容从正方向（$+w$）翻转到负方向（$-w$）时，其贡献变化为：
+\begin{equation}
+(-w) - (+w) = -2w
+\end{equation}
+
+因此，若已翻转的权重总和为 $S$，校准 DAC 输出为：
+\begin{equation}
+\boxed{\Vcal = 126 - 2S}
+\label{eq:Vcal}
+\end{equation}
+
+这就是 offset-binary 搜索的基础：从 $+126$ 开始，每次试探将一个电容从 10 翻转到 01，若比较器判决保留则该翻转生效（$S$ 增加 $w$），否则撤销。每次试探使 $\Vcal$ 减小 $2w$。
+
+\begin{tipbox}{为何是 2 倍？}
+校准电容从“正方向”翻转到“负方向”，其贡献从 $+w$ 变为 $-w$，变化量为 $-2w$。这就是 offset-binary 搜索中“2 倍效应”的物理本质：单次翻转产生 2 倍权重步进，因此 7 个 calDAC 电容能覆盖 $0 \sim 126$ 的 2 倍范围（即 $0 \sim 252$），足以量化 $\pm 126$ 范围内的残差。
+\end{tipbox}
+
+% ==================== 9. D+ 方向测量 ====================
+\chapter{D+ 方向测量}
+
+定义残差 $R = W_{\mathrm{target}} - W_{\mathrm{wall}}$。在 D+ 方向中，目标电容处于正方向，wall 处于负方向，因此比较器输入残差为：
+\begin{equation}
+\boxed{F_+ = R + 126 - 2S_+}
+\label{eq:Fplus}
+\end{equation}
+
+SAR 搜索目标是令 $F_+ \approx 0$，因此：
+\begin{equation}
+R + 126 - 2S_+ \approx 0 \quad \Longrightarrow \quad S_+ \approx \frac{126 + R}{2}
+\end{equation}
+
+七次权重试探后，再用比较器做一次 \SI{1}{\LSB} terminal 判决 $b_{T,+} \in \{0,1\}$，定义：
+\begin{equation}
+D_+ = S_+ + b_{T,+}
+\end{equation}
+
+因此：
+\begin{equation}
+\boxed{D_+ \approx \frac{126 + R}{2}}
+\label{eq:Dplus}
+\end{equation}
+
+% ==================== 10. D- 方向测量 ====================
+\chapter{D$-$ 方向测量}
+
+D$-$ 方向将目标与 wall 的极性互换，残差变为 $-R$。比较器输入为：
+\begin{equation}
+\boxed{F_- = -R + 126 - 2S_-}
+\label{eq:Fminus}
+\end{equation}
+
+令 $F_- \approx 0$：
+\begin{equation}
+S_- \approx \frac{126 - R}{2}
+\end{equation}
+
+加入 terminal bit：
+\begin{equation}
+\boxed{D_- \approx \frac{126 - R}{2}}
+\label{eq:Dminus}
+\end{equation}
+
+% ==================== 11. D+/D- 差分消除比较器失调 ====================
+\chapter{D+/D$-$ 差分消除比较器失调}
+
+\section{残差恢复}
+
+将式\eqref{eq:Dplus}与式\eqref{eq:Dminus}相减：
+\begin{equation}
+D_+ - D_- \approx \frac{126 + R}{2} - \frac{126 - R}{2} = \frac{2R}{2} = R
+\end{equation}
+
+因此：
+\begin{equation}
+\boxed{\Rhat = D_+ - D_-}
+\label{eq:Rhat}
+\end{equation}
+
+权重恢复：
+\begin{equation}
+\boxed{\What_{\mathrm{target}} = W_{\mathrm{wall}} + (D_+ - D_-)}
+\label{eq:What_target}
+\end{equation}
+
+\section{失调抵消原理}
+
+设比较器存在等效失调 $V_{\mathrm{os}}$。在 D+ 方向中，失调以同相加入：
+\begin{equation}
+D_+ \approx \frac{126 + R + V_{\mathrm{os}}}{2}
+\end{equation}
+
+在 D$-$ 方向中，目标和 wall 极性互换，但比较器自身失调方向不变：
+\begin{equation}
+D_- \approx \frac{126 - R + V_{\mathrm{os}}}{2}
+\end{equation}
+
+相减：
+\begin{equation}
+D_+ - D_- \approx \frac{(126 + R + V_{\mathrm{os}}) - (126 - R + V_{\mathrm{os}})}{2} = R
+\end{equation}
+
+其中 $V_{\mathrm{os}} - V_{\mathrm{os}} = 0$，固定失调被完全抵消。这等价于数字域的相关双采样（CDS），还能抑制低频噪声（如比较器 $1/f$ 噪声）。
+
+\begin{keybox}{D+/D$-$ 差分测量的核心价值}
+D+/D$-$ 双向测量将\textbf{信号相关}的残差 $R$ 保留（因为 $R$ 在两个方向中符号相反），同时将\textbf{信号无关}的比较器失调 $V_{\mathrm{os}}$ 消除（因为 $V_{\mathrm{os}}$ 在两个方向中符号相同）。相减运算 $\Rhat = D_+ - D_-$ 实现了完美的失调抵消，这是整个校准算法最关键的设计。
+\end{keybox}
+
+\section{随机噪声的处理}
+
+D+/D$-$ 只能消除\textbf{固定或慢变化}的失调。随机比较器噪声在每次测量中独立变化，无法通过单次 D+/D$-$ 相减消除，必须通过多次重复平均来降低。
+
+\begin{warnbox}{重要限制}
+D+/D$-$ 差分测量抵消的是\textbf{确定性}失调，不是\textbf{随机性}噪声。单次测量的残差 $\Rhat = D_+ - D_-$ 仍包含随机噪声分量。若比较器噪声较大，单次结果可能在相邻整数间跳动（如 2 和 3），必须通过 32 次以上重复平均才能获得子 LSB 精度。
+\end{warnbox}
+
+% ==================== 12. 重复平均与 Q 格式 ====================
+\chapter{重复平均与 Q 格式}
+
+\section{为何需要多次平均}
+
+单次 $D_+ - D_-$ 是整数结果。受比较器噪声影响，不同测量可能得到不同整数值。例如 32 次测量中 16 次得 2、16 次得 3，则平均值为 2.5，从而获得了半 LSB 的分数信息。
+
+\section{平均公式}
+
+$N$ 次测量的平均残差：
+\begin{equation}
+\boxed{\Rbar = \frac{1}{N} \sum_{k=1}^{N} \left(D_{+,k} - D_{-,k}\right)}
+\label{eq:Rbar}
+\end{equation}
+
+代码默认 $N = 2^5 = 32$ 组 D+/D$-$ 对（\code{AVG\_PAIRS\_LOG2}\,$=5$）。
+
+\section{Q 格式定点表示}
+
+真实权重通常不是整数（如 $\What_2 = 510.75$）。为用整数运算保存子 LSB 信息，代码采用 Q 格式：
+\begin{equation}
+Q = 2^{N_F} = 2^6 = 64
+\end{equation}
+
+Q 格式权重 $w_i = Q \cdot \What_i$。Q6 的最小步长为 $1/64 = \SI{0.015625}{\LSB}$。
+
+\begin{notebox}{Q 格式的工程意义}
+真实权重通常不是整数（如 $\What_2 = 510.75$）。若直接保存为整数 511，会丢失 \SI{0.25}{\LSB} 的校准信息。Q6 格式将权重放大 64 倍保存为整数（$510.75 \times 64 = 32688$），所有运算在整数域完成，仅在最终输出时除以 64 恢复实际 LSB 值。这样既保留了子 LSB 精度，又避免了浮点运算。
+\end{notebox}
+
+\section{Q 格式残差}
+
+Q 格式下的残差计算公式为：
+\begin{equation}
+\boxed{R_Q = \roundop{\frac{Q \left(\sum_{k=1}^{N} D_{+,k} - \sum_{k=1}^{N} D_{-,k}\right)}{N}}}
+\label{eq:RQ}
+\end{equation}
+
+目标权重恢复：
+\begin{equation}
+\boxed{w_{\mathrm{target},Q} = w_{\mathrm{wall},Q} + R_Q}
+\label{eq:WtargetQ}
+\end{equation}
+
+代码中使用四舍五入（加 $N/2$ 或 $-N/2$ 后整除）实现式\eqref{eq:RQ}。
+
+% ==================== 13. 校准寄存器的更新 ====================
+\chapter{校准寄存器的更新}
+
+校准完一个目标后，代码将测量结果写入对应的 Q 格式权重寄存器（\code{w2}, \code{w1}, \code{w0}），并带有 \code{WEIGHT\_TOL} 范围检查。若测量值偏离标称值超过容差（默认 35\%），则拒绝更新并保留标称值。
+
+更新后的权重寄存器立即用于下一个目标的参考墙计算。例如校准完 $W_2$ 后，校准 $W_1$ 时 \code{wall\_weight\_q} 使用已更新的 \code{w2}：
+\begin{equation}
+\code{wall\_weight\_q} = w_2 + w_3 + w_4
+\end{equation}
+
+\code{APPLY\_CAL\_WEIGHT} 参数控制正常解码时是否使用校准权重：设为 1 时使用 \code{w0, w1, w2}，设为 0 时回退到标称值。
+
+% ==================== 14. 正常转换时的加权解码 ====================
+\chapter{正常转换时的加权解码}
+
+\section{原始加权求和}
+
+校准后的原始加权和为：
+\begin{equation}
+\boxed{S_Q = \sum_{i=0}^{13} r_i \, w_i}
+\label{eq:SQ}
+\end{equation}
+
+其中 $w_0, w_1, w_2$ 为校准后的 Q 格式权重，$w_3 \sim w_{13}$ 为标称值。
+
+\section{总权重}
+
+\begin{equation}
+\boxed{W_{\Sigma,Q} = \sum_{i=0}^{13} w_i}
+\label{eq:WsumQ}
+\end{equation}
+
+\section{冗余中心偏移}
+
+\begin{equation}
+\boxed{O_Q = \roundop{\frac{W_{\Sigma,Q} - 4095 \, Q}{2}}}
+\label{eq:OQ}
+\end{equation}
+
+\section{中心化与输出}
+
+\begin{equation}
+S_{\mathrm{center},Q} = S_Q - O_Q
+\end{equation}
+
+\begin{equation}
+\boxed{\Dout = \clipop{\roundop{\frac{S_{\mathrm{center},Q}}{Q}}}}
+\label{eq:Dout}
+\end{equation}
+
+合并后：
+\begin{equation}
+\boxed{\Dout = \clipop{\roundop{\frac{\sum_{i=0}^{13} r_i w_i \;-\; \frac{\sum_{i=0}^{13} w_i - 4095Q}{2}}{Q}}}}
+\label{eq:Dout_full}
+\end{equation}
+
+\begin{keybox}{最终解码公式的四个步骤}
+正常转换的数字解码可分解为四个有序操作：
+\begin{enumerate}[leftmargin=1.5em,itemsep=0pt]
+    \item \textbf{加权求和}：$S_Q = \sum r_i w_i$（使用校准权重）
+    \item \textbf{去冗余偏移}：$S_{\mathrm{center},Q} = S_Q - O_Q$（消除 \SI{256}{\LSB} 冗余）
+    \item \textbf{Q 格式舍入}：$D = \roundop{S_{\mathrm{center},Q} / Q}$（整数化）
+    \item \textbf{限幅}：$\Dout = \clipop{D}$（限制到 $[0, 4095]$）
+\end{enumerate}
+\end{keybox}
+
+% ==================== 15. 冗余中心偏移消除 ====================
+\chapter{冗余中心偏移消除}
+
+标称条件下 $W_{\Sigma,Q} = 4351 \times 64 = 278464$，冗余偏移为：
+\begin{equation}
+O_Q = \frac{278464 - 4095 \times 64}{2} = \frac{278464 - 262080}{2} = \frac{16384}{2} = 8192
+\end{equation}
+
+对应的十进制值为 $8192 / 64 = \SI{128}{\LSB}$，即 $O_{\mathrm{red}} = 128$。
+
+校准后权重可能略有偏移（如 $\What_{\mathrm{total}} = 4349.5$），此时：
+\begin{equation}
+\hat{O}_{\mathrm{red}} = \frac{4349.5 - 4095}{2} = 127.25
+\end{equation}
+
+代码动态计算 $O_Q$，而非固定减 128，确保校准后冗余偏移正确。
+
+% ==================== 16. 全范围归一化方案 ====================
+\chapter{全范围归一化方案及其区别}
+
+代码还提供另一种映射模式（\code{NORMALIZE\_REDUNDANT\_RANGE}）：
+\begin{equation}
+D_{\mathrm{norm}} = \roundop{4095 \cdot \frac{S_{\mathrm{raw}}}{W_{\mathrm{total}}}}
+\end{equation}
+
+这会将整个 $[0, 4351]$ 区间线性压缩到 $[0, 4095]$。
+
+\textbf{两种方案的区别}：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{减冗余偏移}（默认）：保留正常 LSB 尺度，只去掉冗余中心偏移。输出增益与标称设计一致。
+    \item \textbf{全范围归一化}：将冗余搜索区也压缩进有效传输曲线，会改变 ADC 整体增益定义。
+\end{itemize}
+
+代码默认采用减冗余偏移方案，因为 \SI{256}{\LSB} 冗余是设计为容错搜索空间，不应成为正常输入范围的一部分。
+
+\begin{tipbox}{两种方案的直观理解}
+\textbf{减冗余偏移}（默认）：相当于把一把 \SI{4351}{mm} 的尺子，剪掉两端各 \SI{128}{mm}，保留中间 \SI{4095}{mm}。LSB 尺度不变，增益与设计一致。
+
+\textbf{全范围归一化}：相当于把 \SI{4351}{mm} 的尺子等比压缩到 \SI{4095}{mm}。LSB 尺度变小约 6\%，增益发生改变，冗余搜索区被“拉进”正常输出范围。
+\end{tipbox}
+
+% ==================== 17. 完整数值例子 ====================
+\chapter{完整数值例子}
+
+\section{D+/D$-$ 权重测量例子}
+
+校准标称 $W_2 = \SI{512}{\LSB}$，参考墙 $W_3 + W_4 = \SI{512}{\LSB}$。
+
+假设真实 $W_2 = \SI{510.75}{\LSB}$，则残差：
+\begin{equation}
+R = 510.75 - 512 = -1.25
+\end{equation}
+
+理论 D+ 和 D$-$：
+\begin{align}
+D_+ &\approx \frac{126 + (-1.25)}{2} = \frac{124.75}{2} = 62.375 \\
+D_- &\approx \frac{126 - (-1.25)}{2} = \frac{127.25}{2} = 63.625
+\end{align}
+
+残差恢复：
+\begin{equation}
+D_+ - D_- = 62.375 - 63.625 = -1.25
+\end{equation}
+
+权重恢复：
+\begin{equation}
+\What_2 = 512 + (-1.25) = \SI{510.75}{\LSB}
+\end{equation}
+
+\section{正常解码数值例子}
+
+设校准后权重为 $\What_0 = 2046.5$，$\What_1 = 1025.25$，$\What_2 = 510.75$，其余为标称值。
+
+取一组原始判决（$r_0 \sim r_{13}$）为：
+\begin{equation}
+[r_0, \ldots, r_{13}] = [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+\end{equation}
+
+\subsection{Q 格式权重（$Q = 64$）}
+
+\begin{table}[H]
+\centering
+\caption{Q 格式权重}
+\label{tab:qweights}
+\small
+\begin{tabularx}{\textwidth}{r r r r}
+\toprule
+$i$ & $\What_i$ (LSB) & $w_i = 64\What_i$ & $r_i$ \\
+\midrule
+0  & 2046.50 & 130976 & 1 \\
+1  & 1025.25 &  65616 & 0 \\
+2  &  510.75 &  32688 & 1 \\
+3  &   256   &  16384 & 1 \\
+4  &   256   &  16384 & 0 \\
+5  &   128   &   8192 & 1 \\
+6  &    48   &   3072 & 0 \\
+7  &    32   &   2048 & 1 \\
+8  &    20   &   1280 & 0 \\
+9  &    12   &    768 & 1 \\
+10 &     8   &    512 & 0 \\
+11 &     4   &    256 & 1 \\
+12 &     2   &    128 & 0 \\
+13 &     1   &     64 & 1 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{加权求和}
+
+\begin{equation}
+\begin{aligned}
+S_Q &= 130976{\times}1 + 65616{\times}0 + 32688{\times}1 + 16384{\times}1 \\
+&\quad + 16384{\times}0 + 8192{\times}1 + 3072{\times}0 + 2048{\times}1 \\
+&\quad + 1280{\times}0 + 768{\times}1 + 512{\times}0 + 256{\times}1 \\
+&\quad + 128{\times}0 + 64{\times}1 \\
+&= 130976 + 32688 + 16384 + 8192 + 2048 + 768 + 256 + 64 \\
+&= 191376
+\end{aligned}
+\end{equation}
+
+\subsection{总权重与冗余偏移}
+
+\begin{equation}
+W_{\Sigma,Q} = 130976 + 65616 + 32688 + \cdots + 64 = 278368
+\end{equation}
+
+\begin{equation}
+O_Q = \roundop{\frac{278368 - 4095 \times 64}{2}} = \roundop{\frac{278368 - 262080}{2}} = \roundop{\frac{16288}{2}} = 8144
+\end{equation}
+
+\subsection{最终输出}
+
+\begin{equation}
+S_{\mathrm{center},Q} = 191376 - 8144 = 183232
+\end{equation}
+
+\begin{equation}
+D = \roundop{\frac{183232}{64}} = \roundop{2863.0} = 2863
+\end{equation}
+
+$2863 \in [0, 4095]$，无需限幅，最终输出 $\Dout = 2863$。
+
+二进制表示：$2863 = \texttt{101100101111}_2$，即 Bit$[11:0] = \texttt{101100101111}$。
+
+\textit{验证}：若使用标称权重计算，$S_{\mathrm{raw}} = 2048 + 512 + 256 + 128 + 32 + 12 + 4 + 1 = 2993$，$O_{\mathrm{red}} = 128$，$D = 2993 - 128 = 2865$。校准后输出 2863 比标称 2865 小 \SI{2}{\LSB}，反映了高位权重失配的修正。
+
+% ==================== 18. Verilog-A 状态机与时序 ====================
+\chapter{Verilog-A 状态机与时序对应}
+
+\section{校准状态机}
+
+校准过程由五个状态组成：
+
+\begin{table}[H]
+\centering
+\caption{校准状态定义}
+\label{tab:states}
+\small
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+状态 & 名称 & 功能 \\
+\midrule
+0 & \code{CAL\_IDLE} & 空闲，等待 RST1 下降沿 \\
+1 & \code{CAL\_PRECHARGE} & 预充电，准备第一次试探 \\
+2 & \code{CAL\_SAR\_TRIAL} & SAR 试探阶段（7 次） \\
+3 & \code{CAL\_TERMINAL} & terminal bit 判决 \\
+4 & \code{CAL\_FINISH\_DIR} & 单方向结束，切换方向或计算权重 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{时序说明}
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{CAL\_RST}：下降沿启动校准，上升沿复位；
+    \item \textbf{RST1 下降沿}：开始一个校准 frame，进入 \code{CAL\_PRECHARGE}；
+    \item \textbf{CAL\_CLK 上升沿}：设置试探电容（从 48 开始递减到 2）；
+    \item \textbf{CAL\_CLK 下降沿}：读取比较器，决定保留或撤销试探；
+    \item 每个方向进行 7 次加权试探 $+$ 1 次 terminal 判决 $=$ 8 个 CAL\_CLK 周期；
+    \item D+ 和 D$-$ 构成一组测量 pair，需要 2 个 RST1 frame；
+    \item 每个目标权重重复至少 32 组 pair（\code{AVG\_PAIRS\_LOG2}\,$=5$）；
+    \item 校准顺序为 $W_2 \to W_1 \to W_0$；
+    \item 正常模式只在 SOUT 上升沿锁存完整原始转换结果；
+    \item 输出 Bit$[11:0]$ 在下一转换周期内保持稳定。
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm]
+\node[block] (idle) {CAL\_IDLE};
+\node[block,right=of idle] (pre) {CAL\_PRECHARGE};
+\node[block,right=of pre] (trial) {CAL\_SAR\_TRIAL};
+\node[block,below=of trial] (term) {CAL\_TERMINAL};
+\node[block,left=of term] (finish) {CAL\_FINISH\_DIR};
+
+\draw[arrow] (idle) -- node[above,font=\scriptsize]{RST1$\downarrow$} (pre);
+\draw[arrow] (pre) -- node[above,font=\scriptsize]{第1次试探} (trial);
+\draw[arrow] (trial) -- node[right,font=\scriptsize]{7次完成} (term);
+\draw[arrow] (term) -- node[above,font=\scriptsize]{} (finish);
+\draw[arrow] (finish) -- node[above,font=\scriptsize]{D+$\to$D$-$} (idle);
+\draw[arrow] (finish.south) -- ++(0,-0.6) -| node[below,font=\scriptsize]{计算权重} ++(3,-0.6) -| (idle.south);
+\end{tikzpicture}
+\caption{简化校准状态机}
+\label{fig:fsm}
+\end{figure}
+
+% ==================== 19. 工程实现注意事项 ====================
+\chapter{工程实现注意事项}
+
+\begin{warnbox}{十大工程注意事项}
+\begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
+    \item \textbf{D+/D$-$ 只抵消固定失调}：能消除比较器固定或慢变化失调，但不能消除随机噪声，后者需多次平均。
+    \item \textbf{校准精度受 calDAC 失配限制}：校准 DAC 自身电容（48, 32, 20, 12, 8, 4, 2）的失配会直接引入测量误差。
+    \item \textbf{只校准最高三个权重}：$W_0, W_1, W_2$ 被校准，其余 $W_3 \sim W_{13}$ 仍使用标称值。若低位权重也有明显失配，最终 INL 仍可能受限。
+    \item \textbf{Q 格式位数}：$N_F = 6$ 时最小步长 \SI{0.015625}{\LSB}，一般足够。位数过少会产生权重量化误差。
+    \item \textbf{平均次数与校准时间}：$N_{\mathrm{avg}}$ 增加降低随机误差（$\sigma \propto 1/\sqrt{N}$），但延长前景校准时间。每个目标需 $2 \times 32 = 64$ 个 RST1 frame。
+    \item \textbf{范围检查}：\code{WEIGHT\_TOL}（默认 0.35）用于拒绝明显异常的测量结果。若测量值偏离标称值超过 35\%，则保留标称值并记录告警。
+    \item \textbf{极性配置}：\code{RAW\_INVERT}、\code{FIRST\_INVERT} 和 \code{CMP\_SWAP} 必须与实际比较器极性和 PN 缓冲器逻辑方向一致，否则所有权重测量将符号反转。
+    \item \textbf{物理电容与数字权重}：物理电容倍数（如 16C, 8C）不能直接等同于数字 LSB 权重（如 2048, 1024）。必须通过完整 CDAC 拓扑（桥接电容、衰减关系、差分结构、开关方式）推导等效权重。
+\end{enumerate}
+\end{warnbox}
+
+% ==================== 20. 局限性 ====================
+\chapter{局限性}
+
+\begin{warnbox}{系统局限性}
+\begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
+    \item \textbf{基础墙未校准}：$W_3$ 和 $W_4$（各 \SI{256}{\LSB}）作为参考墙但自身未校准，其失配误差会通过递归过程传播至 $W_2, W_1, W_0$。
+    \item \textbf{低位权重未校准}：$W_5 \sim W_{13}$ 使用标称值，其失配无法被校准系统修正。
+    \item \textbf{校准 DAC 失配}：calDAC 电容自身的失配会直接限制残差测量精度。
+    \item \textbf{单次转换精度}：校准后的权重仍可能有残余误差，单次转换的 INL 不一定为零。
+    \item \textbf{无噪声量化偏差}：在完全无噪声的行为级仿真中，offset-binary 搜索可能保留固定量化偏差，需要注入适量噪声或 dither 才能收敛到真实权重。
+\end{enumerate}
+\end{warnbox}
+
+% ==================== 21. 结论 ====================
+\chapter{结论}
+
+本文系统分析了带高位前景校准的非二进制冗余 SAR ADC 的工作原理。核心要点总结如下：
+
+\begin{enumerate}[leftmargin=2em]
+    \item 14 个非二进制冗余权重（总 \SI{4351}{\LSB}）提供 \SI{256}{\LSB} 冗余范围，实现 \SI{12}{bit} 有效输出；
+    \item D+/D$-$ 双向 offset-binary 测量通过 $R \approx D_+ - D_-$ 恢复残差，消除比较器固定失调；
+    \item Q 格式定点平均（$Q = 64$，$N = 32$）保存子 LSB 权重信息并抑制随机噪声；
+    \item 递归校准顺序 $W_2 \to W_1 \to W_0$ 确保高位参考墙使用已校准的低权重；
+    \item 正常解码通过加权求和 $-$ 冗余中心偏移 $-$ Q 格式舍入 $-$ \SI{12}{bit} 限幅完成输出映射。
+\end{enumerate}
+
+\begin{keybox}{四个核心公式}
+\begin{align}
+& R = W_{\mathrm{target}} - W_{\mathrm{wall}} \label{eq:core1} \\
+& R \approx D_+ - D_- \label{eq:core2} \\
+& \What_{\mathrm{target}} = W_{\mathrm{wall}} + \overline{D_+ - D_-} \label{eq:core3} \\
+& \Dout = \clipop{\roundop{\sum_{i=0}^{13} r_i \What_i - \frac{\sum_{i=0}^{13} \What_i - 4095}{2}}} \label{eq:core4}
+\end{align}
+\end{keybox}
+
+% ==================== 附录 A ====================
+\chapter*{附录 A：代码变量与数学符号对照表}
+\addcontentsline{toc}{chapter}{附录 A：代码变量与数学符号对照表}
+
+\begin{table}[H]
+\centering
+\caption{Verilog-A 变量与数学符号对照}
+\label{tab:varmap}
+\small
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+Verilog-A 变量 & 数学符号 & 说明 \\
+\midrule
+\code{w0}$\sim$\code{w13} & $w_0 \sim w_{13}$ & Q 格式权重寄存器 \\
+\code{q\_scale} & $Q$ & Q 格式缩放因子 \\
+\code{weight\_frac\_bits} & $N_F$ & 定点小数位数 \\
+\code{avg\_pairs} & $N_{\mathrm{avg}}$ & D+/D$-$ 平均组数 \\
+\code{wall\_weight\_q} & $w_{\mathrm{wall},Q}$ & Q 格式参考墙权重 \\
+\code{residual\_q} & $R_Q$ & Q 格式残差 \\
+\code{measured\_weight\_q} & $w_{\mathrm{target},Q}$ & Q 格式测量权重 \\
+\code{d\_plus\_code} & $D_+$ & D+ 方向 offset-binary 码 \\
+\code{d\_minus\_code} & $D_-$ & D$-$ 方向 offset-binary 码 \\
+\code{accum\_d\_plus} & $\sum D_+$ & D+ 累加值 \\
+\code{accum\_d\_minus} & $\sum D_-$ & D$-$ 累加值 \\
+\code{switched\_sum} & $S$ & 已翻转权重总和 \\
+\code{raw\_sum} & $S_Q$ & Q 格式原始加权和 \\
+\code{total\_weight\_q} & $W_{\Sigma,Q}$ & Q 格式总权重 \\
+\code{redundancy\_offset\_q} & $O_Q$ & Q 格式冗余偏移 \\
+\code{centered\_sum} & $S_{\mathrm{center},Q}$ & 中心化加权和 \\
+\code{adc\_code} & $\Dout$ & 最终 \SI{12}{bit} 输出 \\
+\code{target\_idx} & --- & 当前校准目标索引（2$\to$1$\to$0） \\
+\code{direction} & --- & 测量方向（0=D+, 1=D$-$） \\
+\code{r0}$\sim$\code{r13} & $r_0 \sim r_{13}$ & 原始比较器判决 \\
+\code{WEIGHT\_TOL} & --- & 权重容差检查阈值 \\
+\code{APPLY\_CAL\_WEIGHT} & --- & 是否使用校准权重解码 \\
+\code{REMOVE\_REDUNDANCY\_OFFSET} & --- & 是否减去冗余偏移 \\
+\code{NORMALIZE\_REDUNDANT\_RANGE} & --- & 是否全范围归一化 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ==================== 附录 B ====================
+\chapter*{附录 B：核心伪代码}
+\addcontentsline{toc}{chapter}{附录 B：核心伪代码}
+
+\begin{algorithm}[H]
+\caption{前景权重校准}
+\label{alg:cal}
+\begin{algorithmic}[1]
+\Require CDAC 已就绪，CAL\_RST 下降沿
+\Ensure 校准权重 $w_0, w_1, w_2$
+\State $w_i \gets W_i \times Q$ \Comment{初始化为标称 Q 格式权重}
+\State $\mathit{target} \gets 2$ \Comment{从 $W_2$ 开始}
+\State $\mathit{wall} \gets w_3 + w_4$
+\While{$\mathit{target} \geq 0$}
+    \State $\mathit{accum\_d\_plus} \gets 0$;\quad $\mathit{accum\_d\_minus} \gets 0$
+    \For{$k = 1$ \textbf{到} $N_{\mathrm{avg}}$}
+        \State $D_+ \gets \mathit{OffsetBinarySAR}(+\mathit{target}, +\mathit{wall})$
+        \State $D_- \gets \mathit{OffsetBinarySAR}(-\mathit{target}, -\mathit{wall})$
+        \State $\mathit{accum\_d\_plus} \mathrel{+}= D_+$
+        \State $\mathit{accum\_d\_minus} \mathrel{+}= D_-$
+    \EndFor
+    \State $R_Q \gets \roundop{Q \times (\mathit{accum\_d\_plus} - \mathit{accum\_d\_minus}) / N_{\mathrm{avg}}}$
+    \State $w_{\mathit{target}} \gets \mathit{wall} + R_Q$
+    \If{$|w_{\mathit{target}} - W_{\mathit{target}} \times Q| > W_{\mathit{target}} \times Q \times \mathit{WEIGHT\_TOL}$}
+        \State $w_{\mathit{target}} \gets W_{\mathit{target}} \times Q$ \Comment{超差，回退标称值}
+    \EndIf
+    \State $\mathit{target} \gets \mathit{target} - 1$
+    \State 更新 $\mathit{wall}$：加入刚校准的 $w_{\mathit{target}+1}$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Offset-binary SAR 单方向测量}
+\label{alg:offsar}
+\begin{algorithmic}[1]
+\Require 目标极性 $\sigma_{\mathrm{tgt}} \in \{+1,-1\}$，wall 极性 $\sigma_{\mathrm{wall}}$
+\Ensure 测量码 $D \in [0, 127]$
+\State $S \gets 0$ \Comment{已翻转权重和}
+\For{step $= 0$ \textbf{到} $6$}
+    \State $w_{\mathrm{trial}} \gets [48, 32, 20, 12, 8, 4, 2][\text{step}]$
+    \State $\Vcal \gets 126 - 2(S + w_{\mathrm{trial}})$
+    \State $F \gets \sigma_{\mathrm{tgt}} W_{\mathrm{tgt}} - \sigma_{\mathrm{wall}} W_{\mathrm{wall}} + \Vcal$
+    \If{$F > 0$}
+        \State $S \gets S + w_{\mathrm{trial}}$ \Comment{保留翻转}
+    \EndIf
+\EndFor
+\State $b_T \gets \text{比较器 terminal 判决}$
+\State \Return $S + b_T$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{正常转换加权解码}
+\label{alg:decode}
+\begin{algorithmic}[1]
+\Require 14 个原始判决 $r_0 \sim r_{13}$，校准权重 $w_0 \sim w_{13}$
+\Ensure \SI{12}{bit} 输出 $\Dout$
+\State $S_Q \gets \sum_{i=0}^{13} r_i \, w_i$
+\State $W_{\Sigma,Q} \gets \sum_{i=0}^{13} w_i$
+\State $O_Q \gets \roundop{(W_{\Sigma,Q} - 4095 \times Q) / 2}$
+\State $S_{\mathrm{center},Q} \gets S_Q - O_Q$
+\State $D \gets \roundop{S_{\mathrm{center},Q} / Q}$
+\If{$D < 0$} \State $D \gets 0$ \ElsIf{$D > 4095$} \State $D \gets 4095$ \EndIf
+\State \Return $D$
+\end{algorithmic}
+\end{algorithm}
+
+\end{document}

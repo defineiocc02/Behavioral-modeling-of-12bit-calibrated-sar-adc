@@ -1,0 +1,471 @@
+\documentclass[11pt,a4paper,UTF8]{ctexart}
+
+\usepackage{geometry}
+\geometry{left=2.35cm,right=2.35cm,top=2.3cm,bottom=2.3cm}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!60!black
+}
+
+\definecolor{codebg}{RGB}{247,248,250}
+\definecolor{bluebox}{RGB}{235,243,255}
+\definecolor{greenbox}{RGB}{238,248,240}
+\definecolor{orangebox}{RGB}{255,246,232}
+\definecolor{redbox}{RGB}{255,239,239}
+\definecolor{mygreen}{rgb}{0,0.48,0}
+\definecolor{mygray}{rgb}{0.45,0.45,0.45}
+
+\lstdefinestyle{va}{
+    backgroundcolor=\color{codebg},
+    basicstyle=\small\ttfamily,
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+    keywordstyle=\color{blue!70!black},
+    commentstyle=\color{mygreen},
+    stringstyle=\color{purple!70!black},
+    numbers=left,
+    numberstyle=\tiny\color{mygray},
+    frame=single,
+    rulecolor=\color{black!15},
+    language=Verilog
+}
+
+\newtcolorbox{summarybox}[1]{
+    colback=bluebox,
+    colframe=blue!65!black,
+    title=\textbf{#1},
+    boxrule=0.6pt,
+    arc=2mm,
+    left=1.2mm,
+    right=1.2mm,
+    top=1mm,
+    bottom=1mm
+}
+
+\newtcolorbox{notebox}[1]{
+    colback=greenbox,
+    colframe=green!50!black,
+    title=\textbf{#1},
+    boxrule=0.6pt,
+    arc=2mm,
+    left=1.2mm,
+    right=1.2mm,
+    top=1mm,
+    bottom=1mm
+}
+
+\newtcolorbox{warnbox}[1]{
+    colback=orangebox,
+    colframe=orange!75!black,
+    title=\textbf{#1},
+    boxrule=0.6pt,
+    arc=2mm,
+    left=1.2mm,
+    right=1.2mm,
+    top=1mm,
+    bottom=1mm
+}
+
+\newtcolorbox{riskbox}[1]{
+    colback=redbox,
+    colframe=red!65!black,
+    title=\textbf{#1},
+    boxrule=0.6pt,
+    arc=2mm,
+    left=1.2mm,
+    right=1.2mm,
+    top=1mm,
+    bottom=1mm
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.48em}
+\renewcommand{\arraystretch}{1.22}
+\sloppy
+
+\title{\textbf{CMP2SAR\_IF 模块 IP 规格与维护说明书}\\
+\large Comparator-to-SAR Valid-Gated Decision Interface}
+\author{12-bit SAR ADC 项目}
+\date{2026-06-01}
+
+\begin{document}
+\maketitle
+
+\begin{summarybox}{一分钟结论}
+\texttt{CMP2SAR\_IF} 的作用不是简单合并 \texttt{COMP/COMN}，而是在动态比较器和原 \texttt{SAR\_LOGIC} 之间增加一个安全判决协议：
+
+\[
+\texttt{COMP/COMN} \rightarrow \texttt{valid-gated interface} \rightarrow \texttt{DEC\_N} \rightarrow \texttt{SAR\_LOGIC}
+\]
+
+比较器无效、reset、pre-reset 或输出为 \texttt{00/11} 时，\texttt{DEC\_N} 强制保持安全高电平。只有比较器进入有效窗口，并且 \texttt{COMP/COMN} 形成指定互补态时，\texttt{DEC\_N} 才允许变低。
+\end{summarybox}
+
+\begin{notebox}{推荐首轮配置}
+\begin{itemize}
+    \item 首先固定：\texttt{td\_out=10 ps}，\texttt{tr=10 ps}，\texttt{tf=10 ps}。
+    \item 只扫：\texttt{td\_valid=200 ps, 500 ps, 800 ps, 1 ns}。
+    \item 先看短 transient，不要一上来跑 FFT。
+    \item 若输出方向反了，优先改 \texttt{pol\_sel}，不要先改原 SAR logic。
+\end{itemize}
+\end{notebox}
+
+\section{模块定位}
+
+\texttt{CMP2SAR\_IF} 是比较器到 SAR 逻辑之间的行为级接口单元。当前源码位置为：
+
+\begin{lstlisting}[style=va,numbers=none]
+10_项目区/2026_12bit50Msar/04_辅助工具/veriloga_models/CMP2SAR_IF.va
+\end{lstlisting}
+
+当前设计说明主文档为：
+
+\begin{lstlisting}[style=va,numbers=none]
+10_项目区/2026_12bit50Msar/02_文档与报告/IP规格/CMP2SAR_IF_specification.md
+\end{lstlisting}
+
+推荐顶层接线：
+
+\begin{lstlisting}[style=va,numbers=none]
+I_IF (COMP COMN CLK RST PRST DGND DVDD DEC_N) CMP2SAR_IF
+I15  (... CCLK DEC_N DGND DVDD PRST SET<0> ... SET<12>) SAR_LOGIC
+\end{lstlisting}
+
+\begin{warnbox}{不要把 CLK 和 CCLK 接反}
+\texttt{CLK} 是 \texttt{COM\_IAZ} 比较器 evaluate 时钟。\texttt{CCLK} 是原 \texttt{SAR\_LOGIC} 的采样/推进时钟。接口单元的 \texttt{CLK} 端应接比较器时钟，不应接 \texttt{CCLK}。
+\end{warnbox}
+
+\section{解决的问题}
+
+PMOS/IAZ 动态比较器在 reset 或未判决阶段可能出现：
+
+\begin{lstlisting}[style=va,numbers=none]
+COMP = 0
+COMN = 0
+\end{lstlisting}
+
+但原 \texttt{SAR\_LOGIC} 对输入低电平敏感。如果裸接 \texttt{COMN} 或 \texttt{COMP}，原 SAR DFF 可能把 reset 态误读成有效低电平判决。
+
+接口的安全规则如下：
+
+\begin{center}
+\begin{tabularx}{0.92\textwidth}{>{\bfseries}lX}
+\toprule
+状态 & \texttt{DEC\_N} 行为 \\
+\midrule
+比较器无效 & \texttt{DEC\_N=1}，不触发原 SAR 低有效通路 \\
+reset/pre-reset & \texttt{DEC\_N=1}，屏蔽 \texttt{COMP/COMN} \\
+\texttt{COMP/COMN=00} & \texttt{DEC\_N=1}，过滤 reset/未判决态 \\
+\texttt{COMP/COMN=11} & \texttt{DEC\_N=1}，过滤非法同高态 \\
+有效互补判决 & 按 \texttt{pol\_sel} 决定是否输出 \texttt{DEC\_N=0} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{端口定义}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l l X}
+\toprule
+\textbf{端口} & \textbf{方向} & \textbf{类型} & \textbf{含义} \\
+\midrule
+COMP & input & electrical & 比较器正输出 \\
+COMN & input & electrical & 比较器负输出 \\
+CLK & input & electrical & 比较器 evaluate 时钟，对应当前 \texttt{COM\_IAZ.CLK} \\
+RST & input & electrical & 比较器/模拟 reset，高有效 \\
+PRST & input & electrical & SAR logic pre-reset，高有效 \\
+DGND & inout & electrical & 数字地 \\
+DVDD & inout & electrical & 数字电源 \\
+DEC\_N & output & electrical & 送给原 \texttt{SAR\_LOGIC.COMN} 的低有效安全判决信号 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{核心逻辑}
+
+行为模型的核心等价逻辑为：
+
+\begin{lstlisting}[style=va,numbers=none]
+CLK_DLY   = delay(CLK, td_valid)
+CMP_VALID = CLK & CLK_DLY & ~RST & ~PRST
+
+if pol_sel = 0:
+    LOW_EVENT = CMP_VALID & COMP & ~COMN
+
+if pol_sel = 1:
+    LOW_EVENT = CMP_VALID & COMN & ~COMP
+
+DEC_N = ~LOW_EVENT
+\end{lstlisting}
+
+\subsection{当前源码实现}
+
+当前源码使用 \texttt{absdelay()} 生成延迟时钟：
+
+\begin{lstlisting}[style=va]
+vdd_now = V(DVDD, DGND);
+vth = 0.5 * vdd_now;
+
+clk_dly_v = absdelay(V(CLK, DGND), td_valid);
+
+clk_bit     = (V(CLK, DGND)  > vth);
+clk_dly_bit = (clk_dly_v     > vth);
+rst_bit     = (V(RST, DGND)  > vth);
+prst_bit    = (V(PRST, DGND) > vth);
+comp_bit    = (V(COMP, DGND) > vth);
+comn_bit    = (V(COMN, DGND) > vth);
+
+cmp_valid = clk_bit && clk_dly_bit && (!rst_bit) && (!prst_bit);
+\end{lstlisting}
+
+\begin{warnbox}{关于 cross + valid\_time 写法}
+也可以用 \texttt{cross + valid\_time} 表达同样思路。但当前项目源码采用 \texttt{absdelay()}。若未来改写为 \texttt{cross + valid\_time}，需要确认 \texttt{valid\_time} 初始化、reset 后清零、CLK 下降后关闭 valid，以及下一 bit 不残留。
+\end{warnbox}
+
+\section{参数速查}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X X}
+\toprule
+\textbf{参数} & \textbf{默认值} & \textbf{作用} & \textbf{建议} \\
+\midrule
+td\_valid & 500 ps & CLK 上升后多久相信比较器输出 & 第一优先扫参：200 ps、500 ps、800 ps、1 ns \\
+td\_out & 10 ps & DEC\_N 输出传播延时 & 通常 10--50 ps，不要一开始设太大 \\
+tr & 10 ps & DEC\_N 上升时间 & 收敛差时可试 50 ps \\
+tf & 10 ps & DEC\_N 下降时间 & 过大会影响 CCLK 采样边界 \\
+pol\_sel & 0 & 比较器极性选择 & 输出方向反了先改它 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{四个延时怎么理解}
+
+\subsection{\texttt{td\_valid}: 最关键的有效窗口延时}
+
+\texttt{td\_valid} 决定 \texttt{CLK} 上升后等待多久才认为 \texttt{COMP/COMN} 有效。
+
+\begin{center}
+\begin{tabularx}{0.96\textwidth}{lX}
+\toprule
+\textbf{情况} & \textbf{表现} \\
+\midrule
+太小 & 比较器未完成再生，\texttt{DEC\_N} 可能跟随 \texttt{00}、半摆幅或毛刺状态，导致误判、码不稳、SFDR/SNDR 异常。 \\
+太大 & 比较器已经判完但接口太晚放行，\texttt{DEC\_N} 赶不上 \texttt{CCLK}，SAR 可能采不到正确判决。 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{\texttt{td\_out}: 输出传播延时}
+
+\texttt{td\_out} 不决定什么时候相信比较器，只决定 \texttt{low\_event} 生成后，\texttt{DEC\_N} 输出变化前的行为级延迟。它主要用于模拟小门延时和改善瞬时跳变。
+
+\subsection{\texttt{tr/tf}: 输出边沿斜率}
+
+\texttt{tr} 是 \texttt{DEC\_N} 从低到高的时间，影响下一 bit 前能否恢复安全态。\texttt{tf} 是从高到低的时间，影响有效低判决能否在 \texttt{CCLK} 前形成清晰低电平。
+
+\begin{riskbox}{边沿不能太慢}
+如果 \texttt{tr} 太大，上一 bit 的低电平可能拖到下一 bit。如果 \texttt{tf} 太大，\texttt{CCLK} 采样时 \texttt{DEC\_N} 可能仍在中间电平。收敛困难时可以把 \texttt{tr/tf} 从 10 ps 放宽到 50 ps，但不建议一开始就设到几百 ps。
+\end{riskbox}
+
+\section{时序约束}
+
+低有效判决路径可以近似看成：
+
+\begin{lstlisting}[style=va,numbers=none]
+CLK rise
+  -> td_valid
+  -> CMP_VALID = 1
+  -> low_event generated from COMP/COMN
+  -> td_out
+  -> DEC_N starts falling
+  -> tf
+  -> DEC_N stable
+  -> CCLK samples DEC_N
+\end{lstlisting}
+
+因此：
+
+\[
+t_{\mathrm{DEC\_N,valid}}
+\approx
+t_{\mathrm{CLK,rise}} + t_{\mathrm{d\_valid}} + t_{\mathrm{d\_out}} + t_f
+\]
+
+采样前至少应满足：
+
+\[
+t_{\mathrm{CCLK,sample}}
+>
+t_{\mathrm{CLK,rise}} + t_{\mathrm{d\_valid}} + t_{\mathrm{d\_out}} + t_f + t_{\mathrm{setup}}
+\]
+
+安全高电平恢复主要看：
+
+\[
+t_{\mathrm{recover}} \approx t_{\mathrm{d\_out}} + t_r
+\]
+
+它必须保证下一 bit 开始前 \texttt{DEC\_N} 已经回到 1。
+
+\section{与原工程 tdac/tdel 的关系}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+\textbf{参数} & \textbf{位置} & \textbf{作用} \\
+\midrule
+tdac & SAR/SYNC 逻辑 & DAC settling 和采样/比较触发之间的时序关系 \\
+tdel & SAR/SYNC 逻辑 & 每 bit token/转换步进间隔 \\
+td\_valid & CMP2SAR\_IF & CLK 上升后多久认为比较器输出有效 \\
+td\_out & CMP2SAR\_IF & DEC\_N 输出传播延时 \\
+tr/tf & CMP2SAR\_IF & DEC\_N 输出边沿斜率 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{notebox}{嵌入原时序的直觉}
+\texttt{td\_valid} 不能独立拍脑袋，它必须落在原 \texttt{CLK/CCLK/SET} 的时间窗口中：
+
+\[
+\texttt{CLK rise}
+\rightarrow
+\texttt{td\_valid}
+\rightarrow
+\texttt{DEC\_N stable}
+\rightarrow
+\texttt{CCLK sample}
+\rightarrow
+\texttt{next bit}
+\]
+\end{notebox}
+
+\section{极性选择}
+
+\begin{center}
+\begin{tabularx}{0.9\textwidth}{>{\ttfamily}l X X}
+\toprule
+\textbf{pol\_sel} & \textbf{低有效事件} & \textbf{含义} \\
+\midrule
+0 & \texttt{CMP\_VALID \& COMP \& \textasciitilde COMN} & \texttt{COMP=1, COMN=0} 时 \texttt{DEC\_N=0} \\
+1 & \texttt{CMP\_VALID \& COMN \& \textasciitilde COMP} & \texttt{COMN=1, COMP=0} 时 \texttt{DEC\_N=0} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+如果换比较器后输出方向反了，优先切换 \texttt{pol\_sel}，不要先改原 \texttt{SAR\_LOGIC}。
+
+\section{真值表}
+
+假设 \texttt{pol\_sel=0}：
+
+\begin{center}
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{状态} & \textbf{CLK} & \textbf{CLK\_DLY} & \textbf{RST} & \textbf{PRST} & \textbf{COMP} & \textbf{COMN} & \textbf{DEC\_N} \\
+\midrule
+比较器 reset & x & x & 1 & x & 0 & 0 & 1 \\
+SAR pre-reset & x & x & x & 1 & 0 & 0 & 1 \\
+CLK 刚上升 & 1 & 0 & 0 & 0 & x & x & 1 \\
+未判决 & 1 & 1 & 0 & 0 & 0 & 0 & 1 \\
+非法同高态 & 1 & 1 & 0 & 0 & 1 & 1 & 1 \\
+有效低事件 & 1 & 1 & 0 & 0 & 1 & 0 & 0 \\
+有效非低事件 & 1 & 1 & 0 & 0 & 0 & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{调试流程}
+
+先保存短 transient 波形：
+
+\begin{lstlisting}[style=va,numbers=none]
+CLK
+RST
+PRST
+COMP
+COMN
+DEC_N
+CCLK
+SET<12>
+BITP<12>
+BITN<12>
+\end{lstlisting}
+
+推荐检查顺序：
+
+\begin{enumerate}
+    \item reset 期间：\texttt{DEC\_N=1}。
+    \item \texttt{CLK} 刚进入 evaluate、\texttt{td\_valid} 未到时：\texttt{DEC\_N=1}。
+    \item \texttt{COMP=1, COMN=0} 且 \texttt{pol\_sel=0} 时：\texttt{DEC\_N=0}。
+    \item \texttt{COMP=0, COMN=1} 且 \texttt{pol\_sel=0} 时：\texttt{DEC\_N=1}。
+    \item \texttt{CCLK} 采样沿前：\texttt{DEC\_N} 已经稳定。
+    \item 下一 bit 前：\texttt{DEC\_N} 已回到安全高电平。
+    \item TT、FF、SS、FS、SF 下重复检查 \texttt{td\_valid} 裕量。
+\end{enumerate}
+
+\section{常见现象与处理}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{X X X}
+\toprule
+\textbf{现象} & \textbf{可能原因} & \textbf{处理} \\
+\midrule
+reset 期间 \texttt{DEC\_N} 掉到 0 & \texttt{RST/PRST} 极性或接线错误 & 检查接口接线和 \texttt{cmp\_valid} 公式 \\
+\texttt{DEC\_N} 过早变化 & \texttt{td\_valid} 太小 & 增大 \texttt{td\_valid} \\
+\texttt{DEC\_N} 赶不上 \texttt{CCLK} & \texttt{td\_valid} 或 \texttt{td\_out/tf} 太大 & 减小延时或调整原时钟关系 \\
+输出码方向反了 & 比较器极性相反 & 切换 \texttt{pol\_sel} \\
+仿真收敛困难 & 输出边沿太理想 & 将 \texttt{tr/tf} 调到 50 ps \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{后续晶体管级替换}
+
+行为模型通过后，建议替换为晶体管级接口。等价逻辑保持：
+
+\begin{lstlisting}[style=va,numbers=none]
+CMP_VALID = CLK & delay(CLK) & ~RST & ~PRST
+
+LOW0 = CMP_VALID & COMP & ~COMN
+LOW1 = CMP_VALID & COMN & ~COMP
+
+DEC_N = ~(POL_SEL ? LOW1 : LOW0)
+\end{lstlisting}
+
+推荐晶体管组成：
+
+\begin{itemize}
+    \item \texttt{COMP/COMN} 对称 buffer；
+    \item \texttt{CLK} delay chain；
+    \item \texttt{CMP\_VALID} 组合逻辑；
+    \item polarity select logic；
+    \item \texttt{DEC\_N} output buffer。
+\end{itemize}
+
+\begin{riskbox}{动态预充版本另行验证}
+如果做动态预充式 \texttt{DEC\_N\_INT}，必须单独验证 keeper、泄漏、bit 间恢复、PVT 时序裕量。不要在静态行为模型尚未跑通时直接上动态 latch。
+\end{riskbox}
+
+\section{维护规则}
+
+\begin{enumerate}
+    \item 不建议后续让 \texttt{COMN/COMP} 直接进入原 \texttt{SAR\_LOGIC}。
+    \item 换比较器后先检查 \texttt{CLK/RST/PRST} 极性，再检查 \texttt{P>N} 对应的 \texttt{COMP/COMN} 极性。
+    \item 输出方向反了优先调 \texttt{pol\_sel}。
+    \item FF/FS 下 SFDR 异常时，优先看 \texttt{DEC\_N} 是否在 reset 或 valid 前出现低脉冲。
+    \item \texttt{td\_valid} 应作为正式仿真的 sweep 参数保留。
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,4 @@
+﻿scheme,td,ENOB_avg,SNR_avg,SFDR_avg,Power_uW_avg,COMPOWER_uW_avg,residual_noise_power_pct_vs_original,cancelled_noise_power_pct_vs_original
+FIA / 方案A,28n,10.3484,63.9574,75.6688,307.8167,176.2009,10.918253,89.081747
+电压型KT_C正式对比,28n,10.6807,66.1743,77.9141,439.8245,236.2862,6.554384,93.445616
+电流型KT_C无FIA正式对比,28n,10.2750,64.0150,75.7346,351.5700,148.0453,10.776060,89.223940

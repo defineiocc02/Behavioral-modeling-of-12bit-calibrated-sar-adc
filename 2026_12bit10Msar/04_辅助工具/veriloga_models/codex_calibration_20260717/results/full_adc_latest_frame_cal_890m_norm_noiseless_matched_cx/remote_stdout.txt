@@ -1,0 +1,1567 @@
+
+Spectre (R) Circuit Simulator
+Version 23.1.0.242.isr1 64bit -- 7 Sep 2023
+Copyright (C) 1989-2023 Cadence Design Systems, Inc. All rights reserved
+        worldwide. Cadence and Spectre are registered trademarks of Cadence
+        Design Systems, Inc. All others are the property of their respective
+        holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA
+        Security, Inc.
+
+User: meow   Host: meowu   HostID: 7F0101   PID: 20408
+Memory  available: 17.8045 GB  physical: 22.0406 GB
+Linux   : CentOS Linux release 7 (Core)
+CPU Type: AMD Ryzen 7 8845H w/ Radeon 780M Graphics
+All processors running at 3792.6 MHz
+        Socket: Processors
+        0:       0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+                10, 11
+        
+System load averages (1min, 5min, 15min) : 10.4 %, 22.6 %, 24.5 %
+HPC is enabled
+This is a virtual machine
+
+
+Simulating `full_adc_latest_frame_cal_890m_norm_noiseless.scs' on meowu at
+        1:44:32 AM, Sat Jul 18, 2026 (process id: 20408).
+Current working directory:
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_frame_cal_890m_norm_noiseless_matched_cx
+Command line:
+    /opt/cadence/SPECTRE231/tools.lnx86/bin/spectre -64  \
+        full_adc_latest_frame_cal_890m_norm_noiseless.scs +log  \
+        spectre.out -format psfxl -raw psf +mt +preset=cx
+Licensing Information:
+[01:44:32.406897] Configured Lic search path (22.01-s002):
+        /opt/cadence/IC618/share/license/license.dat
+
+Licensing Information:
+[01:44:32.168923] Periodic Lic check successful
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_frame_cal_890m_norm_noiseless_matched_cx/full_adc_latest_frame_cal_890m_norm_noiseless.scs
+
+Notice from spectre during circuit read-in.
+    Pre_Configuration file used:
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+    Configuration file used:
+        `/opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg'.
+
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+Reading file:  /usr/include/stdc-predef.h
+Reading file:  /home/meow/Desktop/TSMC18RF/models/spectre/rf018.scs
+
+Warning from spectre in `ndio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16006: The inline subckt definition `ndio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16023: The inline subckt definition `pdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `nwdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16040: The inline subckt definition `nwdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `ndio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16067: The inline subckt definition `ndio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16084: The inline subckt definition `pdio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+        Further occurrences of this warning will be suppressed.
+
+Reading link: 
+        /opt/cadence/IC618/tools/dfII/samples/artist/ahdlLib/not_gate/veriloga/veriloga.va
+Reading link:  /opt/cadence/IC618/tools
+Reading file: 
+        /opt/cadence/IC618/tools.lnx86/dfII/samples/artist/spectreHDL/Verilog-A/logic/not_gate.va
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.vams
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/discipline.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_frame_cal_890m_norm_noiseless_matched_cx/SWITCH_CAL_original.va
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_frame_cal_890m_norm_noiseless_matched_cx/DEC_CAL_PHY_FRAME_SYNC.va
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg
+Time for NDB Parsing: CPU = 317.573 ms, elapsed = 198.688 ms.
+Time accumulated: CPU = 365.414 ms, elapsed = 198.69 ms.
+Peak resident memory used = 121 Mbytes.
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_not_gate.so
+Created directory
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to directory
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/.
+The simulator has reused the existing Verilog-A libraries for this simulation
+        run. If you do not want to use these libraries, set the
+        'CDS_AHDL_REUSE_LIB' environment variable to 'NO' and rerun the
+        simulation.
+Existing shared object for module not_gate is up to date.
+Installed compiled interface for not_gate.
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_SWITCH_CAL.so
+Created directory
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to directory
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/.
+Existing shared object for module SWITCH_CAL is up to date.
+Installed compiled interface for SWITCH_CAL.
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_bypass_890m_norm_noiseless_matched_cx/full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB/6094918872f5e31f3f4a25bbc14f463c.DEC_CAL_PHY.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_DEC_CAL_PHY.so
+Created directory
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//6094918872f5e31f3f4a25bbc14f463c.DEC_CAL_PHY.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_bypass_890m_norm_noiseless_matched_cx/full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB/6094918872f5e31f3f4a25bbc14f463c.DEC_CAL_PHY.ahdlcmi/Linux-64/
+        to directory
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//6094918872f5e31f3f4a25bbc14f463c.DEC_CAL_PHY.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_bypass_890m_norm_noiseless_matched_cx/full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB/6094918872f5e31f3f4a25bbc14f463c.DEC_CAL_PHY.ahdlcmi/Linux-64/
+        to
+        ./full_adc_latest_frame_cal_890m_norm_noiseless.ahdlSimDB//6094918872f5e31f3f4a25bbc14f463c.DEC_CAL_PHY.ahdlcmi/Linux-64/.
+Existing shared object for module DEC_CAL_PHY is up to date.
+Installed compiled interface for DEC_CAL_PHY.
+
+
+Time for Elaboration: CPU = 86.981 ms, elapsed = 54.3292 ms.
+Time accumulated: CPU = 452.652 ms, elapsed = 253.147 ms.
+Peak resident memory used = 129 Mbytes.
+
+
+Notice from spectre during hierarchy flattening.
+    The value 'psf' specified for the 'checklimitdest' option will no longer be
+        supported in future releases. Use 'spectre -h' to see other recommended
+        values for the 'checklimitdest' option.
+
+
+Time for EDB Visiting: CPU = 38.745 ms, elapsed = 19.3729 ms.
+Time accumulated: CPU = 491.809 ms, elapsed = 272.724 ms.
+Peak resident memory used = 132 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to the following 18 nodes:
+        OUT
+        CAL_START
+        BN<13>
+        BN<12>
+        BN<11>
+        Further occurrences of this notice will be suppressed (except in log
+        file).
+    No DC path from node `I1.net4' to ground, Gmin installed to provide path.
+    No DC path from node `I1.net3' to ground, Gmin installed to provide path.
+
+
+Global user options:
+         psfversion = 1.4.0
+               temp = 27
+           homotopy = 5
+              limit = delta
+            gmethod = dev
+     dptran_gmethod = dev
+        try_fast_op = yes
+               gmin = 1e-12
+             rforce = 1
+           maxnotes = 5
+           maxwarns = 5
+             digits = 5
+               cols = 80
+             pivrel = 0.001
+           sensfile = ../psf/sens.output
+     checklimitdest = psf
+               save = selected
+           currents = selected
+               tnom = 27
+             scalem = 1
+              scale = 1
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 503
+            bsim3v3 594   
+          capacitor 37    
+        DEC_CAL_PHY 1     
+            isource 1     
+           not_gate 85    
+         SWITCH_CAL 1     
+               vcvs 12    
+            vsource 20    
+
+Analysis and control statement inventory:
+                 dc 1     
+               info 8     
+               tran 1     
+
+Output statements:
+             .probe 0     
+           .measure 0     
+               save 1     
+
+
+Notice from spectre during initial setup.
+    Spectre X preset=cx enabled.
+    1 notice suppressed.
+    4 warnings suppressed.
+
+Licensing Information:
+[01:44:32.440624] Periodic Lic check successful
+
+
+Notice from spectre.
+    Multithreading enabled: 8 threads in the system with 12 available
+        processors.
+
+Time for parsing: CPU = 144.847 ms, elapsed = 76.0579 ms.
+Time accumulated: CPU = 637.103 ms, elapsed = 349.004 ms.
+Peak resident memory used = 142 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+   -   (Spectre X) Multi-threading. The recommended number of threads is [2,
+        4], consider adding +mt=2 or +mt=4 on command line.
+~~~~~~~~~~~~~~~~~~~~~~
+
+******************
+DC Analysis `dcOp'
+******************
+
+Opening the PSF file psf/dcOp.dc ...
+Important parameter values:
+    reltol = 1e-03
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    gmindc = 1 pS
+    rabsshort = 1 mOhm
+Trying Fast DC 0.
+
+Notice from spectre during DC analysis `dcOp'.
+    Bad pivoting is found during DC analysis. Option dc_pivot_check=yes is
+        recommended for possible improvement of convergence.
+
+
+Maximum value achieved for any signal of each quantity: 
+V: V(I91.net3) = 1.8 V
+I: I(V34:p) = 12.89 uA
+Convergence achieved in 231 iterations.
+DC simulation time: CPU = 599.738 ms, elapsed = 94.0058 ms.
+Total time required for dc analysis `dcOp': CPU = 600.439 ms, elapsed = 94.1682
+        ms, util. = 638%.
+Time accumulated: CPU = 1.24569 s, elapsed = 446.993 ms.
+Peak resident memory used = 148 Mbytes.
+
+dcOpInfo: writing operating point information to rawfile.
+
+Opening the PSF file psf/dcOpInfo.info ...
+
+************************************************
+Transient Analysis `tran': time = (0 s -> 23 us)
+************************************************
+DC simulation time: CPU = 46.8 ms, elapsed = 8.63504 ms.
+
+Opening the PSFXL file psf/tran.tran.tran ...
+Important parameter values:
+    start = 0 s
+    outputstart = 0 s
+    stop = 23 us
+    step = 23 ns
+    maxstep = 230 ns
+    ic = all
+    useprevic = no
+    skipdc = no
+    reltol = 100e-06
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    errpreset = conservative_sigglobal
+    method = gear2only
+    lteratio = 10
+    relref = sigglobal
+    cmin = 1.23365 aF
+    gmin = 1 pS
+    rabsshort = 1 mOhm
+
+
+Output and IC/nodeset summary:
+                 save   9       (current)
+                 save   28      (voltage)
+
+DEC_CAL_PHY start t=3.015e-09
+DEC_CAL_PHY frame start target=5 side=0 pair=0 t=1.4115e-08
+    tran: time = 31.38 ns    (136 m%), step = 1.518 ps     (6.6 u%)
+    tran: time = 56.48 ns    (246 m%), step = 558.3 fs    (2.43 u%)
+    tran: time = 83.58 ns    (363 m%), step = 5.607 ps    (24.4 u%)
+DEC_CAL_PHY measure target=5 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=0 t=1.14115e-07
+    tran: time = 123.8 ns    (538 m%), step = 10.22 ps    (44.4 u%)
+    tran: time = 146.5 ns    (637 m%), step = 572.5 fs    (2.49 u%)
+    tran: time = 167.3 ns    (727 m%), step = 10.13 ps      (44 u%)
+    tran: time = 191.4 ns    (832 m%), step = 1.017 ps    (4.42 u%)
+DEC_CAL_PHY measure target=5 pair=0 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=5 side=0 pair=1 t=2.14115e-07
+    tran: time = 229.5 ns    (998 m%), step = 2.172 ps    (9.44 u%)
+    tran: time = 256.5 ns    (1.12 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 282 ns      (1.23 %), step = 1.336 ps    (5.81 u%)
+DEC_CAL_PHY measure target=5 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=1 t=3.14115e-07
+    tran: time = 320 ns      (1.39 %), step = 1.447 ps    (6.29 u%)
+    tran: time = 342 ns      (1.49 %), step = 730.1 fs    (3.17 u%)
+    tran: time = 365.6 ns    (1.59 %), step = 198.7 ps     (864 u%)
+    tran: time = 391.8 ns     (1.7 %), step = 27.59 ps     (120 u%)
+DEC_CAL_PHY measure target=5 pair=1 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=5 side=0 pair=2 t=4.14115e-07
+    tran: time = 430.2 ns    (1.87 %), step = 21.15 fs      (92 n%)
+    tran: time = 456.5 ns    (1.98 %), step = 4.667 ps    (20.3 u%)
+    tran: time = 483.8 ns     (2.1 %), step = 9.642 ps    (41.9 u%)
+DEC_CAL_PHY measure target=5 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=2 t=5.14115e-07
+    tran: time = 522.2 ns    (2.27 %), step = 2.524 ps      (11 u%)
+    tran: time = 548.6 ns    (2.39 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 575 ns       (2.5 %), step = 28.7 ps      (125 u%)
+DEC_CAL_PHY measure target=5 pair=2 side=U qD=0 qU=16
+    tran: time = 600.2 ns    (2.61 %), step = 7.545 ps    (32.8 u%)
+DEC_CAL_PHY frame start target=5 side=0 pair=3 t=6.14115e-07
+    tran: time = 642 ns      (2.79 %), step = 909.4 fs    (3.95 u%)
+    tran: time = 670.2 ns    (2.91 %), step = 28.35 fs     (123 n%)
+DEC_CAL_PHY measure target=5 pair=3 side=D q=0
+    tran: time = 696.7 ns    (3.03 %), step = 4.722 ps    (20.5 u%)
+DEC_CAL_PHY frame start target=5 side=1 pair=3 t=7.14115e-07
+    tran: time = 735.2 ns     (3.2 %), step = 31.94 fs     (139 n%)
+    tran: time = 761.4 ns    (3.31 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 788.6 ns    (3.43 %), step = 1.682 ps    (7.31 u%)
+DEC_CAL_PHY measure target=5 pair=3 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=5 side=0 pair=4 t=8.14115e-07
+    tran: time = 827.1 ns     (3.6 %), step = 2.873 ps    (12.5 u%)
+    tran: time = 854.1 ns    (3.71 %), step = 15.86 ps      (69 u%)
+    tran: time = 877.2 ns    (3.81 %), step = 12.4 ps     (53.9 u%)
+DEC_CAL_PHY measure target=5 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=4 t=9.14115e-07
+    tran: time = 915.2 ns    (3.98 %), step = 18.52 fs    (80.5 n%)
+    tran: time = 942.1 ns     (4.1 %), step = 2.001 ps     (8.7 u%)
+    tran: time = 969.2 ns    (4.21 %), step = 1.044 ps    (4.54 u%)
+    tran: time = 994.7 ns    (4.32 %), step = 5.603 ps    (24.4 u%)
+DEC_CAL_PHY measure target=5 pair=4 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=5 side=0 pair=5 t=1.01412e-06
+    tran: time = 1.034 us     (4.5 %), step = 16.11 ps      (70 u%)
+    tran: time = 1.061 us    (4.61 %), step = 2.147 ps    (9.34 u%)
+    tran: time = 1.089 us    (4.73 %), step = 6.283 ps    (27.3 u%)
+DEC_CAL_PHY measure target=5 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=5 t=1.11412e-06
+    tran: time = 1.129 us    (4.91 %), step = 3.726 ps    (16.2 u%)
+    tran: time = 1.155 us    (5.02 %), step = 20.31 fs    (88.3 n%)
+    tran: time = 1.184 us    (5.15 %), step = 10.83 ps    (47.1 u%)
+DEC_CAL_PHY measure target=5 pair=5 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=5 side=0 pair=6 t=1.21412e-06
+    tran: time = 1.224 us    (5.32 %), step = 2.112 ps    (9.18 u%)
+    tran: time = 1.25 us     (5.44 %), step = 552.5 fs     (2.4 u%)
+    tran: time = 1.279 us    (5.56 %), step = 4.052 ps    (17.6 u%)
+DEC_CAL_PHY measure target=5 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=6 t=1.31412e-06
+    tran: time = 1.319 us    (5.73 %), step = 22.66 ps    (98.5 u%)
+    tran: time = 1.347 us    (5.85 %), step = 4.498 ps    (19.6 u%)
+    tran: time = 1.374 us    (5.98 %), step = 3.14 ps     (13.7 u%)
+DEC_CAL_PHY measure target=5 pair=6 side=U qD=0 qU=16
+    tran: time = 1.4 us      (6.09 %), step = 152.9 fs     (665 n%)
+DEC_CAL_PHY frame start target=5 side=0 pair=7 t=1.41412e-06
+    tran: time = 1.442 us    (6.27 %), step = 1.345 ps    (5.85 u%)
+    tran: time = 1.469 us    (6.39 %), step = 2.469 ps    (10.7 u%)
+DEC_CAL_PHY measure target=5 pair=7 side=D q=0
+    tran: time = 1.497 us    (6.51 %), step = 16.59 ps    (72.1 u%)
+DEC_CAL_PHY frame start target=5 side=1 pair=7 t=1.51412e-06
+    tran: time = 1.538 us    (6.69 %), step = 67.87 ps     (295 u%)
+    tran: time = 1.565 us    (6.81 %), step = 1.875 ps    (8.15 u%)
+    tran: time = 1.594 us    (6.93 %), step = 350.6 fs    (1.52 u%)
+DEC_CAL_PHY measure target=5 pair=7 side=U qD=0 qU=16
+DEC_CAL_PHY weight target=5 wall=2016 measured_q=2048 value_q=2048 value=128
+        pairs=8 residual_sum=128 residual_avg=8 diversity=0 snap=0
+DEC_CAL_PHY frame start target=3 side=0 pair=0 t=1.61412e-06
+    tran: time = 1.631 us    (7.09 %), step = 2.771 ps      (12 u%)
+    tran: time = 1.659 us    (7.21 %), step = 1.053 ps    (4.58 u%)
+    tran: time = 1.687 us    (7.33 %), step = 485.8 fs    (2.11 u%)
+DEC_CAL_PHY measure target=3 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=0 t=1.71412e-06
+    tran: time = 1.725 us     (7.5 %), step = 41.16 ps     (179 u%)
+    tran: time = 1.752 us    (7.62 %), step = 2.5 ps      (10.9 u%)
+    tran: time = 1.779 us    (7.74 %), step = 238.2 fs    (1.04 u%)
+DEC_CAL_PHY measure target=3 pair=0 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=3 side=0 pair=1 t=1.81412e-06
+    tran: time = 1.82 us     (7.91 %), step = 872.8 fs    (3.79 u%)
+    tran: time = 1.847 us    (8.03 %), step = 3.05 ps     (13.3 u%)
+    tran: time = 1.874 us    (8.15 %), step = 3.335 ps    (14.5 u%)
+DEC_CAL_PHY measure target=3 pair=1 side=D q=0
+    tran: time = 1.9 us      (8.26 %), step = 5 ps        (21.7 u%)
+DEC_CAL_PHY frame start target=3 side=1 pair=1 t=1.91412e-06
+    tran: time = 1.942 us    (8.44 %), step = 8.214 ps    (35.7 u%)
+    tran: time = 1.969 us    (8.56 %), step = 5.264 ps    (22.9 u%)
+DEC_CAL_PHY measure target=3 pair=1 side=U qD=0 qU=16
+    tran: time = 1.997 us    (8.68 %), step = 1.99 ps     (8.65 u%)
+DEC_CAL_PHY frame start target=3 side=0 pair=2 t=2.01412e-06
+    tran: time = 2.037 us    (8.86 %), step = 12.48 ps    (54.3 u%)
+    tran: time = 2.065 us    (8.98 %), step = 3.75 ps     (16.3 u%)
+    tran: time = 2.092 us     (9.1 %), step = 8.226 ps    (35.8 u%)
+DEC_CAL_PHY measure target=3 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=2 t=2.11412e-06
+    tran: time = 2.134 us    (9.28 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 2.16 us     (9.39 %), step = 12.59 ps    (54.7 u%)
+    tran: time = 2.188 us    (9.51 %), step = 48.97 ps     (213 u%)
+DEC_CAL_PHY measure target=3 pair=2 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=3 side=0 pair=3 t=2.21412e-06
+    tran: time = 2.227 us    (9.68 %), step = 7.851 ps    (34.1 u%)
+    tran: time = 2.255 us     (9.8 %), step = 4.393 ps    (19.1 u%)
+    tran: time = 2.282 us    (9.92 %), step = 3.596 ps    (15.6 u%)
+DEC_CAL_PHY measure target=3 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=3 t=2.31412e-06
+    tran: time = 2.322 us    (10.1 %), step = 2.654 ps    (11.5 u%)
+    tran: time = 2.349 us    (10.2 %), step = 62.17 ps     (270 u%)
+    tran: time = 2.375 us    (10.3 %), step = 8.696 ps    (37.8 u%)
+DEC_CAL_PHY measure target=3 pair=3 side=U qD=0 qU=16
+    tran: time = 2.413 us    (10.5 %), step = 4.049 ps    (17.6 u%)
+DEC_CAL_PHY frame start target=3 side=0 pair=4 t=2.41412e-06
+    tran: time = 2.442 us    (10.6 %), step = 3.95 ps     (17.2 u%)
+    tran: time = 2.47 us     (10.7 %), step = 32.84 ps     (143 u%)
+DEC_CAL_PHY measure target=3 pair=4 side=D q=0
+    tran: time = 2.498 us    (10.9 %), step = 1.193 ps    (5.19 u%)
+DEC_CAL_PHY frame start target=3 side=1 pair=4 t=2.51412e-06
+    tran: time = 2.535 us      (11 %), step = 468.7 fs    (2.04 u%)
+    tran: time = 2.561 us    (11.1 %), step = 5.146 ps    (22.4 u%)
+    tran: time = 2.589 us    (11.3 %), step = 2.756 ps      (12 u%)
+DEC_CAL_PHY measure target=3 pair=4 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=3 side=0 pair=5 t=2.61412e-06
+    tran: time = 2.629 us    (11.4 %), step = 2.608 ps    (11.3 u%)
+    tran: time = 2.657 us    (11.6 %), step = 1.791 ps    (7.79 u%)
+    tran: time = 2.685 us    (11.7 %), step = 39.88 fs     (173 n%)
+DEC_CAL_PHY measure target=3 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=5 t=2.71412e-06
+    tran: time = 2.725 us    (11.8 %), step = 899.5 fs    (3.91 u%)
+    tran: time = 2.752 us      (12 %), step = 5.455 ps    (23.7 u%)
+    tran: time = 2.779 us    (12.1 %), step = 1.134 ps    (4.93 u%)
+DEC_CAL_PHY measure target=3 pair=5 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=3 side=0 pair=6 t=2.81412e-06
+    tran: time = 2.82 us     (12.3 %), step = 3.647 ps    (15.9 u%)
+    tran: time = 2.847 us    (12.4 %), step = 1.119 ps    (4.87 u%)
+    tran: time = 2.874 us    (12.5 %), step = 714 fs       (3.1 u%)
+    tran: time = 2.875 us    (12.5 %), step = 46.04 ps     (200 u%)
+DEC_CAL_PHY measure target=3 pair=6 side=D q=0
+    tran: time = 2.913 us    (12.7 %), step = 7.873 ps    (34.2 u%)
+DEC_CAL_PHY frame start target=3 side=1 pair=6 t=2.91412e-06
+    tran: time = 2.944 us    (12.8 %), step = 8.432 ps    (36.7 u%)
+    tran: time = 2.971 us    (12.9 %), step = 166 fs       (722 n%)
+DEC_CAL_PHY measure target=3 pair=6 side=U qD=0 qU=16
+    tran: time = 2.997 us      (13 %), step = 30.4 ps      (132 u%)
+DEC_CAL_PHY frame start target=3 side=0 pair=7 t=3.01412e-06
+    tran: time = 3.037 us    (13.2 %), step = 2.991 ps      (13 u%)
+    tran: time = 3.065 us    (13.3 %), step = 19.42 ps    (84.4 u%)
+    tran: time = 3.092 us    (13.4 %), step = 2.208 ps     (9.6 u%)
+DEC_CAL_PHY measure target=3 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=7 t=3.11412e-06
+    tran: time = 3.131 us    (13.6 %), step = 3.016 ps    (13.1 u%)
+    tran: time = 3.157 us    (13.7 %), step = 10.26 ps    (44.6 u%)
+    tran: time = 3.185 us    (13.8 %), step = 468.8 fs    (2.04 u%)
+DEC_CAL_PHY measure target=3 pair=7 side=U qD=0 qU=16
+DEC_CAL_PHY weight target=3 wall=4064 measured_q=4096 value_q=4096 value=256
+        pairs=8 residual_sum=128 residual_avg=8 diversity=0 snap=0
+DEC_CAL_PHY frame start target=4 side=0 pair=0 t=3.21412e-06
+    tran: time = 3.225 us      (14 %), step = 9.266 ps    (40.3 u%)
+    tran: time = 3.252 us    (14.1 %), step = 762 fs      (3.31 u%)
+    tran: time = 3.28 us     (14.3 %), step = 13.2 ps     (57.4 u%)
+DEC_CAL_PHY measure target=4 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=0 t=3.31412e-06
+    tran: time = 3.32 us     (14.4 %), step = 1.064 ps    (4.63 u%)
+    tran: time = 3.347 us    (14.6 %), step = 2.189 ps    (9.52 u%)
+    tran: time = 3.375 us    (14.7 %), step = 5.641 ps    (24.5 u%)
+DEC_CAL_PHY measure target=4 pair=0 side=U qD=0 qU=16
+    tran: time = 3.4 us      (14.8 %), step = 9.86 ps     (42.9 u%)
+DEC_CAL_PHY frame start target=4 side=0 pair=1 t=3.41412e-06
+    tran: time = 3.439 us      (15 %), step = 2.824 ps    (12.3 u%)
+    tran: time = 3.467 us    (15.1 %), step = 2.055 ps    (8.93 u%)
+DEC_CAL_PHY measure target=4 pair=1 side=D q=0
+    tran: time = 3.495 us    (15.2 %), step = 40.49 fs     (176 n%)
+DEC_CAL_PHY frame start target=4 side=1 pair=1 t=3.51412e-06
+    tran: time = 3.535 us    (15.4 %), step = 6.4 ps      (27.8 u%)
+    tran: time = 3.561 us    (15.5 %), step = 166 fs       (722 n%)
+    tran: time = 3.585 us    (15.6 %), step = 3.492 ps    (15.2 u%)
+DEC_CAL_PHY measure target=4 pair=1 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=4 side=0 pair=2 t=3.61412e-06
+    tran: time = 3.62 us     (15.7 %), step = 1.203 ps    (5.23 u%)
+    tran: time = 3.644 us    (15.8 %), step = 8.441 ps    (36.7 u%)
+    tran: time = 3.669 us      (16 %), step = 4.328 ps    (18.8 u%)
+    tran: time = 3.694 us    (16.1 %), step = 656 fs      (2.85 u%)
+DEC_CAL_PHY measure target=4 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=2 t=3.71412e-06
+    tran: time = 3.732 us    (16.2 %), step = 3.066 ps    (13.3 u%)
+    tran: time = 3.752 us    (16.3 %), step = 2.499 ps    (10.9 u%)
+    tran: time = 3.774 us    (16.4 %), step = 2.85 ps     (12.4 u%)
+DEC_CAL_PHY measure target=4 pair=2 side=U qD=0 qU=16
+    tran: time = 3.799 us    (16.5 %), step = 1.467 ps    (6.38 u%)
+DEC_CAL_PHY frame start target=4 side=0 pair=3 t=3.81412e-06
+    tran: time = 3.839 us    (16.7 %), step = 3.805 ps    (16.5 u%)
+    tran: time = 3.864 us    (16.8 %), step = 3.653 ps    (15.9 u%)
+    tran: time = 3.892 us    (16.9 %), step = 6.092 ps    (26.5 u%)
+DEC_CAL_PHY measure target=4 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=3 t=3.91412e-06
+    tran: time = 3.932 us    (17.1 %), step = 2.499 ps    (10.9 u%)
+    tran: time = 3.959 us    (17.2 %), step = 2.563 ps    (11.1 u%)
+    tran: time = 3.987 us    (17.3 %), step = 1.315 ps    (5.72 u%)
+DEC_CAL_PHY measure target=4 pair=3 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=4 side=0 pair=4 t=4.01412e-06
+    tran: time = 4.025 us    (17.5 %), step = 28.87 ps     (126 u%)
+    tran: time = 4.054 us    (17.6 %), step = 2.45 ps     (10.7 u%)
+    tran: time = 4.081 us    (17.7 %), step = 912.6 fs    (3.97 u%)
+DEC_CAL_PHY measure target=4 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=4 t=4.11412e-06
+    tran: time = 4.121 us    (17.9 %), step = 15.56 ps    (67.6 u%)
+    tran: time = 4.149 us      (18 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 4.175 us    (18.2 %), step = 28.71 fs     (125 n%)
+DEC_CAL_PHY measure target=4 pair=4 side=U qD=0 qU=16
+    tran: time = 4.213 us    (18.3 %), step = 2.705 ps    (11.8 u%)
+DEC_CAL_PHY frame start target=4 side=0 pair=5 t=4.21412e-06
+    tran: time = 4.242 us    (18.4 %), step = 5.748 ps      (25 u%)
+    tran: time = 4.27 us     (18.6 %), step = 19.8 fs     (86.1 n%)
+DEC_CAL_PHY measure target=4 pair=5 side=D q=0
+    tran: time = 4.298 us    (18.7 %), step = 2.16 ps     (9.39 u%)
+DEC_CAL_PHY frame start target=4 side=1 pair=5 t=4.31412e-06
+    tran: time = 4.339 us    (18.9 %), step = 3.422 ps    (14.9 u%)
+    tran: time = 4.365 us      (19 %), step = 22.68 fs    (98.6 n%)
+    tran: time = 4.394 us    (19.1 %), step = 259.1 fs    (1.13 u%)
+DEC_CAL_PHY measure target=4 pair=5 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=4 side=0 pair=6 t=4.41412e-06
+    tran: time = 4.434 us    (19.3 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 4.46 us     (19.4 %), step = 28.24 fs     (123 n%)
+    tran: time = 4.489 us    (19.5 %), step = 350.6 fs    (1.52 u%)
+DEC_CAL_PHY measure target=4 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=6 t=4.51412e-06
+    tran: time = 4.527 us    (19.7 %), step = 4.611 ps      (20 u%)
+    tran: time = 4.554 us    (19.8 %), step = 209.7 fs     (912 n%)
+    tran: time = 4.58 us     (19.9 %), step = 1.288 ps     (5.6 u%)
+DEC_CAL_PHY measure target=4 pair=6 side=U qD=0 qU=16
+DEC_CAL_PHY frame start target=4 side=0 pair=7 t=4.61412e-06
+    tran: time = 4.621 us    (20.1 %), step = 58.13 ps     (253 u%)
+    tran: time = 4.649 us    (20.2 %), step = 1.053 ps    (4.58 u%)
+    tran: time = 4.677 us    (20.3 %), step = 350.6 fs    (1.52 u%)
+DEC_CAL_PHY measure target=4 pair=7 side=D q=0
+    tran: time = 4.703 us    (20.4 %), step = 606.4 ps    (2.64 m%)
+DEC_CAL_PHY frame start target=4 side=1 pair=7 t=4.71412e-06
+    tran: time = 4.742 us    (20.6 %), step = 2.451 ps    (10.7 u%)
+    tran: time = 4.769 us    (20.7 %), step = 5.264 ps    (22.9 u%)
+DEC_CAL_PHY measure target=4 pair=7 side=U qD=0 qU=16
+DEC_CAL_PHY weight target=4 wall=4064 measured_q=4096 value_q=4096 value=256
+        pairs=8 residual_sum=128 residual_avg=8 diversity=0 snap=0
+    tran: time = 4.798 us    (20.9 %), step = 3.862 ps    (16.8 u%)
+DEC_CAL_PHY frame start target=2 side=0 pair=0 t=4.81412e-06
+    tran: time = 4.839 us      (21 %), step = 3.988 ps    (17.3 u%)
+    tran: time = 4.867 us    (21.2 %), step = 36.14 ps     (157 u%)
+DEC_CAL_PHY measure target=2 pair=0 side=D q=0
+    tran: time = 4.895 us    (21.3 %), step = 1.125 ps    (4.89 u%)
+DEC_CAL_PHY frame start target=2 side=1 pair=0 t=4.91412e-06
+    tran: time = 4.935 us    (21.5 %), step = 7.371 ps      (32 u%)
+    tran: time = 4.962 us    (21.6 %), step = 14.22 ps    (61.8 u%)
+    tran: time = 4.989 us    (21.7 %), step = 2.175 ps    (9.46 u%)
+DEC_CAL_PHY measure target=2 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=1 t=5.01412e-06
+    tran: time = 5.029 us    (21.9 %), step = 3.503 ps    (15.2 u%)
+    tran: time = 5.055 us      (22 %), step = 27.43 fs     (119 n%)
+    tran: time = 5.082 us    (22.1 %), step = 3.858 ps    (16.8 u%)
+DEC_CAL_PHY measure target=2 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=1 t=5.11412e-06
+    tran: time = 5.122 us    (22.3 %), step = 652.2 fs    (2.84 u%)
+    tran: time = 5.149 us    (22.4 %), step = 3.676 ps      (16 u%)
+    tran: time = 5.175 us    (22.5 %), step = 32.34 ps     (141 u%)
+DEC_CAL_PHY measure target=2 pair=1 side=U qD=0 qU=0
+    tran: time = 5.204 us    (22.6 %), step = 932.9 ps    (4.06 m%)
+DEC_CAL_PHY frame start target=2 side=0 pair=2 t=5.21412e-06
+    tran: time = 5.242 us    (22.8 %), step = 2.206 ps    (9.59 u%)
+    tran: time = 5.267 us    (22.9 %), step = 1.47 ps     (6.39 u%)
+    tran: time = 5.293 us      (23 %), step = 101.8 ps     (443 u%)
+DEC_CAL_PHY measure target=2 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=2 t=5.31412e-06
+    tran: time = 5.332 us    (23.2 %), step = 906 fs      (3.94 u%)
+    tran: time = 5.359 us    (23.3 %), step = 3.525 ps    (15.3 u%)
+    tran: time = 5.385 us    (23.4 %), step = 38.39 fs     (167 n%)
+DEC_CAL_PHY measure target=2 pair=2 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=3 t=5.41412e-06
+    tran: time = 5.425 us    (23.6 %), step = 6.403 ps    (27.8 u%)
+    tran: time = 5.452 us    (23.7 %), step = 1.474 ps    (6.41 u%)
+    tran: time = 5.481 us    (23.8 %), step = 1.051 ps    (4.57 u%)
+DEC_CAL_PHY measure target=2 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=3 t=5.51412e-06
+    tran: time = 5.52 us       (24 %), step = 265.5 fs    (1.15 u%)
+    tran: time = 5.547 us    (24.1 %), step = 16.55 ps      (72 u%)
+    tran: time = 5.574 us    (24.2 %), step = 4.934 ps    (21.5 u%)
+DEC_CAL_PHY measure target=2 pair=3 side=U qD=0 qU=0
+    tran: time = 5.6 us      (24.3 %), step = 833.8 fs    (3.63 u%)
+DEC_CAL_PHY frame start target=2 side=0 pair=4 t=5.61412e-06
+    tran: time = 5.63 us     (24.5 %), step = 6.395 ps    (27.8 u%)
+    tran: time = 5.657 us    (24.6 %), step = 4.253 ps    (18.5 u%)
+    tran: time = 5.687 us    (24.7 %), step = 5.594 ps    (24.3 u%)
+DEC_CAL_PHY measure target=2 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=4 t=5.71412e-06
+    tran: time = 5.729 us    (24.9 %), step = 4.405 ps    (19.2 u%)
+    tran: time = 5.757 us      (25 %), step = 4.363 ps      (19 u%)
+    tran: time = 5.784 us    (25.1 %), step = 3.921 ps      (17 u%)
+DEC_CAL_PHY measure target=2 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=5 t=5.81412e-06
+    tran: time = 5.822 us    (25.3 %), step = 2.033 ps    (8.84 u%)
+    tran: time = 5.85 us     (25.4 %), step = 47.92 ps     (208 u%)
+    tran: time = 5.877 us    (25.6 %), step = 5.106 ps    (22.2 u%)
+DEC_CAL_PHY measure target=2 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=5 t=5.91412e-06
+    tran: time = 5.915 us    (25.7 %), step = 2.503 ps    (10.9 u%)
+    tran: time = 5.944 us    (25.8 %), step = 3.852 ps    (16.7 u%)
+    tran: time = 5.972 us      (26 %), step = 1.267 ps    (5.51 u%)
+DEC_CAL_PHY measure target=2 pair=5 side=U qD=0 qU=0
+    tran: time = 5.998 us    (26.1 %), step = 11.71 ps    (50.9 u%)
+DEC_CAL_PHY frame start target=2 side=0 pair=6 t=6.01412e-06
+    tran: time = 6.039 us    (26.3 %), step = 3.154 ps    (13.7 u%)
+    tran: time = 6.067 us    (26.4 %), step = 3.517 ps    (15.3 u%)
+    tran: time = 6.095 us    (26.5 %), step = 2.331 ps    (10.1 u%)
+DEC_CAL_PHY measure target=2 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=6 t=6.11412e-06
+    tran: time = 6.135 us    (26.7 %), step = 7.601 ps      (33 u%)
+    tran: time = 6.162 us    (26.8 %), step = 5.551 ps    (24.1 u%)
+    tran: time = 6.19 us     (26.9 %), step = 504.7 fs    (2.19 u%)
+DEC_CAL_PHY measure target=2 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=7 t=6.21412e-06
+    tran: time = 6.23 us     (27.1 %), step = 1.319 ps    (5.74 u%)
+    tran: time = 6.259 us    (27.2 %), step = 3.726 ps    (16.2 u%)
+    tran: time = 6.287 us    (27.3 %), step = 1.899 ps    (8.26 u%)
+DEC_CAL_PHY measure target=2 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=7 t=6.31412e-06
+    tran: time = 6.325 us    (27.5 %), step = 35.21 ps     (153 u%)
+    tran: time = 6.354 us    (27.6 %), step = 1.15 ps        (5 u%)
+    tran: time = 6.382 us    (27.7 %), step = 2.223 ps    (9.66 u%)
+DEC_CAL_PHY measure target=2 pair=7 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=2 wall=8192 measured_q=8192 value_q=8192 value=512
+        pairs=8 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY frame start target=1 side=0 pair=0 t=6.41412e-06
+    tran: time = 6.422 us    (27.9 %), step = 1.605 ps    (6.98 u%)
+    tran: time = 6.449 us      (28 %), step = 4.423 ps    (19.2 u%)
+    tran: time = 6.475 us    (28.2 %), step = 61.13 fs     (266 n%)
+DEC_CAL_PHY measure target=1 pair=0 side=D q=16
+DEC_CAL_PHY frame start target=1 side=1 pair=0 t=6.51412e-06
+    tran: time = 6.515 us    (28.3 %), step = 1.218 ps     (5.3 u%)
+    tran: time = 6.545 us    (28.5 %), step = 47.16 fs     (205 n%)
+    tran: time = 6.575 us    (28.6 %), step = 468.7 fs    (2.04 u%)
+DEC_CAL_PHY measure target=1 pair=0 side=U qD=16 qU=16
+    tran: time = 6.614 us    (28.8 %), step = 2.786 ps    (12.1 u%)
+DEC_CAL_PHY frame start target=1 side=0 pair=1 t=6.61412e-06
+    tran: time = 6.644 us    (28.9 %), step = 8.495 ps    (36.9 u%)
+    tran: time = 6.672 us      (29 %), step = 1.455 ps    (6.33 u%)
+DEC_CAL_PHY measure target=1 pair=1 side=D q=16
+    tran: time = 6.699 us    (29.1 %), step = 457 fs      (1.99 u%)
+DEC_CAL_PHY frame start target=1 side=1 pair=1 t=6.71412e-06
+    tran: time = 6.74 us     (29.3 %), step = 30.92 fs     (134 n%)
+    tran: time = 6.767 us    (29.4 %), step = 4.138 ps      (18 u%)
+    tran: time = 6.794 us    (29.5 %), step = 4.667 ps    (20.3 u%)
+DEC_CAL_PHY measure target=1 pair=1 side=U qD=16 qU=16
+DEC_CAL_PHY frame start target=1 side=0 pair=2 t=6.81412e-06
+    tran: time = 6.832 us    (29.7 %), step = 2.835 ps    (12.3 u%)
+    tran: time = 6.859 us    (29.8 %), step = 4.07 ps     (17.7 u%)
+    tran: time = 6.887 us    (29.9 %), step = 13.17 ps    (57.2 u%)
+DEC_CAL_PHY measure target=1 pair=2 side=D q=16
+DEC_CAL_PHY frame start target=1 side=1 pair=2 t=6.91412e-06
+    tran: time = 6.929 us    (30.1 %), step = 242.1 fs    (1.05 u%)
+    tran: time = 6.955 us    (30.2 %), step = 124.7 fs     (542 n%)
+    tran: time = 6.984 us    (30.4 %), step = 2.971 ps    (12.9 u%)
+DEC_CAL_PHY measure target=1 pair=2 side=U qD=16 qU=16
+DEC_CAL_PHY frame start target=1 side=0 pair=3 t=7.01412e-06
+    tran: time = 7.024 us    (30.5 %), step = 3.745 ps    (16.3 u%)
+    tran: time = 7.052 us    (30.7 %), step = 4.648 ps    (20.2 u%)
+    tran: time = 7.08 us     (30.8 %), step = 10.15 ps    (44.1 u%)
+DEC_CAL_PHY measure target=1 pair=3 side=D q=16
+DEC_CAL_PHY frame start target=1 side=1 pair=3 t=7.11412e-06
+    tran: time = 7.12 us       (31 %), step = 38.5 fs      (167 n%)
+    tran: time = 7.149 us    (31.1 %), step = 242.1 fs    (1.05 u%)
+    tran: time = 7.177 us    (31.2 %), step = 3.409 ps    (14.8 u%)
+DEC_CAL_PHY measure target=1 pair=3 side=U qD=16 qU=16
+DEC_CAL_PHY frame start target=1 side=0 pair=4 t=7.21412e-06
+    tran: time = 7.215 us    (31.4 %), step = 1.218 ps     (5.3 u%)
+    tran: time = 7.24 us     (31.5 %), step = 2.023 ps     (8.8 u%)
+    tran: time = 7.267 us    (31.6 %), step = 3.959 ps    (17.2 u%)
+    tran: time = 7.294 us    (31.7 %), step = 4.275 ps    (18.6 u%)
+DEC_CAL_PHY measure target=1 pair=4 side=D q=16
+DEC_CAL_PHY frame start target=1 side=1 pair=4 t=7.31412e-06
+    tran: time = 7.332 us    (31.9 %), step = 23.44 ps     (102 u%)
+    tran: time = 7.357 us      (32 %), step = 4.486 ps    (19.5 u%)
+    tran: time = 7.382 us    (32.1 %), step = 3.254 ps    (14.1 u%)
+DEC_CAL_PHY measure target=1 pair=4 side=U qD=16 qU=16
+DEC_CAL_PHY frame start target=1 side=0 pair=5 t=7.41412e-06
+    tran: time = 7.422 us    (32.3 %), step = 3.401 ps    (14.8 u%)
+    tran: time = 7.449 us    (32.4 %), step = 3.347 ps    (14.6 u%)
+    tran: time = 7.472 us    (32.5 %), step = 717.6 fs    (3.12 u%)
+    tran: time = 7.475 us    (32.5 %), step = 43.37 ps     (189 u%)
+DEC_CAL_PHY measure target=1 pair=5 side=D q=16
+    tran: time = 7.497 us    (32.6 %), step = 8.84 ps     (38.4 u%)
+DEC_CAL_PHY frame start target=1 side=1 pair=5 t=7.51412e-06
+    tran: time = 7.534 us    (32.8 %), step = 524.4 fs    (2.28 u%)
+    tran: time = 7.555 us    (32.8 %), step = 3.877 ps    (16.9 u%)
+    tran: time = 7.579 us      (33 %), step = 10.72 ps    (46.6 u%)
+DEC_CAL_PHY measure target=1 pair=5 side=U qD=16 qU=16
+    tran: time = 7.613 us    (33.1 %), step = 1.36 ps     (5.91 u%)
+DEC_CAL_PHY frame start target=1 side=0 pair=6 t=7.61412e-06
+    tran: time = 7.637 us    (33.2 %), step = 605.1 fs    (2.63 u%)
+    tran: time = 7.664 us    (33.3 %), step = 10.71 ps    (46.5 u%)
+    tran: time = 7.69 us     (33.4 %), step = 8.333 ps    (36.2 u%)
+DEC_CAL_PHY measure target=1 pair=6 side=D q=16
+DEC_CAL_PHY frame start target=1 side=1 pair=6 t=7.71412e-06
+    tran: time = 7.731 us    (33.6 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 7.757 us    (33.7 %), step = 12.91 ps    (56.1 u%)
+    tran: time = 7.784 us    (33.8 %), step = 346.6 fs    (1.51 u%)
+DEC_CAL_PHY measure target=1 pair=6 side=U qD=16 qU=16
+DEC_CAL_PHY frame start target=1 side=0 pair=7 t=7.81412e-06
+    tran: time = 7.815 us      (34 %), step = 32 ps        (139 u%)
+    tran: time = 7.842 us    (34.1 %), step = 23.3 ps      (101 u%)
+    tran: time = 7.869 us    (34.2 %), step = 3.658 ps    (15.9 u%)
+DEC_CAL_PHY measure target=1 pair=7 side=D q=16
+    tran: time = 7.897 us    (34.3 %), step = 4.811 ps    (20.9 u%)
+DEC_CAL_PHY frame start target=1 side=1 pair=7 t=7.91412e-06
+    tran: time = 7.936 us    (34.5 %), step = 1.829 ps    (7.95 u%)
+    tran: time = 7.964 us    (34.6 %), step = 20.61 ps    (89.6 u%)
+    tran: time = 7.99 us     (34.7 %), step = 1.794 ps     (7.8 u%)
+DEC_CAL_PHY measure target=1 pair=7 side=U qD=16 qU=16
+DEC_CAL_PHY weight target=1 wall=16384 measured_q=16432 value_q=16432
+        value=1027 pairs=8 residual_sum=256 residual_avg=16 diversity=0 snap=0
+DEC_CAL_PHY frame start target=0 side=0 pair=0 t=8.01412e-06
+    tran: time = 8.03 us     (34.9 %), step = 43.04 fs     (187 n%)
+    tran: time = 8.059 us      (35 %), step = 3.507 ps    (15.2 u%)
+    tran: time = 8.085 us    (35.2 %), step = 633 fs      (2.75 u%)
+DEC_CAL_PHY measure target=0 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=0 t=8.11412e-06
+    tran: time = 8.125 us    (35.3 %), step = 19.39 ps    (84.3 u%)
+    tran: time = 8.152 us    (35.4 %), step = 590.9 fs    (2.57 u%)
+    tran: time = 8.177 us    (35.6 %), step = 4.558 ps    (19.8 u%)
+DEC_CAL_PHY measure target=0 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=1 t=8.21412e-06
+    tran: time = 8.215 us    (35.7 %), step = 164.5 ps     (715 u%)
+    tran: time = 8.244 us    (35.8 %), step = 558.6 fs    (2.43 u%)
+    tran: time = 8.27 us       (36 %), step = 8.285 ps      (36 u%)
+DEC_CAL_PHY measure target=0 pair=1 side=D q=0
+    tran: time = 8.297 us    (36.1 %), step = 1.457 ps    (6.34 u%)
+DEC_CAL_PHY frame start target=0 side=1 pair=1 t=8.31412e-06
+    tran: time = 8.337 us    (36.2 %), step = 47.94 ps     (208 u%)
+    tran: time = 8.365 us    (36.4 %), step = 7.871 ps    (34.2 u%)
+    tran: time = 8.392 us    (36.5 %), step = 7.197 ps    (31.3 u%)
+DEC_CAL_PHY measure target=0 pair=1 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=2 t=8.41412e-06
+    tran: time = 8.431 us    (36.7 %), step = 6.185 ps    (26.9 u%)
+    tran: time = 8.459 us    (36.8 %), step = 3.658 ps    (15.9 u%)
+    tran: time = 8.485 us    (36.9 %), step = 4.37 ps       (19 u%)
+DEC_CAL_PHY measure target=0 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=2 t=8.51412e-06
+    tran: time = 8.524 us    (37.1 %), step = 6.865 ps    (29.8 u%)
+    tran: time = 8.552 us    (37.2 %), step = 5.196 ps    (22.6 u%)
+    tran: time = 8.579 us    (37.3 %), step = 3.965 ps    (17.2 u%)
+DEC_CAL_PHY measure target=0 pair=2 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=3 t=8.61412e-06
+    tran: time = 8.62 us     (37.5 %), step = 251.8 fs    (1.09 u%)
+    tran: time = 8.625 us    (37.5 %), step = 14.87 ps    (64.7 u%)
+    tran: time = 8.652 us    (37.6 %), step = 2.144 ps    (9.32 u%)
+    tran: time = 8.68 us     (37.7 %), step = 5.122 ps    (22.3 u%)
+DEC_CAL_PHY measure target=0 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=3 t=8.71412e-06
+    tran: time = 8.72 us     (37.9 %), step = 4.134 ps      (18 u%)
+    tran: time = 8.747 us      (38 %), step = 4.332 ps    (18.8 u%)
+    tran: time = 8.775 us    (38.2 %), step = 27.79 ps     (121 u%)
+DEC_CAL_PHY measure target=0 pair=3 side=U qD=0 qU=0
+    tran: time = 8.81 us     (38.3 %), step = 5.003 ps    (21.8 u%)
+DEC_CAL_PHY frame start target=0 side=0 pair=4 t=8.81412e-06
+    tran: time = 8.842 us    (38.4 %), step = 7.748 ps    (33.7 u%)
+    tran: time = 8.87 us     (38.6 %), step = 11.84 ps    (51.5 u%)
+DEC_CAL_PHY measure target=0 pair=4 side=D q=0
+    tran: time = 8.897 us    (38.7 %), step = 4.997 ps    (21.7 u%)
+DEC_CAL_PHY frame start target=0 side=1 pair=4 t=8.91412e-06
+    tran: time = 8.935 us    (38.8 %), step = 242.2 fs    (1.05 u%)
+    tran: time = 8.964 us      (39 %), step = 3.639 ps    (15.8 u%)
+    tran: time = 8.994 us    (39.1 %), step = 6.208 ps      (27 u%)
+DEC_CAL_PHY measure target=0 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=5 t=9.01412e-06
+    tran: time = 9.035 us    (39.3 %), step = 4.343 ps    (18.9 u%)
+    tran: time = 9.062 us    (39.4 %), step = 5.988 ps      (26 u%)
+    tran: time = 9.09 us     (39.5 %), step = 114 fs       (496 n%)
+DEC_CAL_PHY measure target=0 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=5 t=9.11412e-06
+    tran: time = 9.13 us     (39.7 %), step = 62.52 ps     (272 u%)
+    tran: time = 9.157 us    (39.8 %), step = 8.86 ps     (38.5 u%)
+    tran: time = 9.185 us    (39.9 %), step = 19.45 ps    (84.6 u%)
+DEC_CAL_PHY measure target=0 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=6 t=9.21412e-06
+    tran: time = 9.225 us    (40.1 %), step = 2.232 ps     (9.7 u%)
+    tran: time = 9.252 us    (40.2 %), step = 6.286 ps    (27.3 u%)
+    tran: time = 9.28 us     (40.3 %), step = 88.26 fs     (384 n%)
+DEC_CAL_PHY measure target=0 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=6 t=9.31412e-06
+    tran: time = 9.32 us     (40.5 %), step = 713.6 fs     (3.1 u%)
+    tran: time = 9.347 us    (40.6 %), step = 5.447 ps    (23.7 u%)
+    tran: time = 9.375 us    (40.8 %), step = 8.584 ps    (37.3 u%)
+DEC_CAL_PHY measure target=0 pair=6 side=U qD=0 qU=0
+    tran: time = 9.401 us    (40.9 %), step = 206.4 ps     (897 u%)
+DEC_CAL_PHY frame start target=0 side=0 pair=7 t=9.41412e-06
+    tran: time = 9.442 us    (41.1 %), step = 7.291 ps    (31.7 u%)
+    tran: time = 9.47 us     (41.2 %), step = 89.57 fs     (389 n%)
+DEC_CAL_PHY measure target=0 pair=7 side=D q=0
+    tran: time = 9.498 us    (41.3 %), step = 1.867 ps    (8.12 u%)
+DEC_CAL_PHY frame start target=0 side=1 pair=7 t=9.51412e-06
+    tran: time = 9.537 us    (41.5 %), step = 4.35 ps     (18.9 u%)
+    tran: time = 9.565 us    (41.6 %), step = 1.875 ps    (8.15 u%)
+    tran: time = 9.592 us    (41.7 %), step = 7.618 ps    (33.1 u%)
+DEC_CAL_PHY measure target=0 pair=7 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=0 wall=32816 measured_q=32816 value_q=32816
+        value=2051 pairs=8 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY finish t=9.60011e-06 done=1 err=0
+DEC_CAL_PHY
+        weights_q={32816,16432,8192,4096,4096,2048,768,512,320,192,128,64,32,16}
+        Q=4 pairs=8
+    tran: time = 9.628 us    (41.9 %), step = 4.047 ps    (17.6 u%)
+    tran: time = 9.643 us    (41.9 %), step = 14.46 ps    (62.9 u%)
+    tran: time = 9.66 us       (42 %), step = 11.78 ps    (51.2 u%)
+    tran: time = 9.679 us    (42.1 %), step = 127.3 ps     (553 u%)
+    tran: time = 9.702 us    (42.2 %), step = 6.344 ps    (27.6 u%)
+    tran: time = 9.735 us    (42.3 %), step = 490.9 fs    (2.13 u%)
+    tran: time = 9.754 us    (42.4 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 9.772 us    (42.5 %), step = 724 fs      (3.15 u%)
+    tran: time = 9.775 us    (42.5 %), step = 27.88 ps     (121 u%)
+    tran: time = 9.8 us      (42.6 %), step = 735.3 fs     (3.2 u%)
+    tran: time = 9.832 us    (42.7 %), step = 2.315 ps    (10.1 u%)
+    tran: time = 9.849 us    (42.8 %), step = 1.282 ps    (5.57 u%)
+
+Warning from spectre at time = 9.86174 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<5>. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 9.867 us    (42.9 %), step = 320.1 fs    (1.39 u%)
+    tran: time = 9.884 us      (43 %), step = 3.325 ps    (14.5 u%)
+    tran: time = 9.924 us    (43.1 %), step = 4.309 ps    (18.7 u%)
+    tran: time = 9.942 us    (43.2 %), step = 5.589 ps    (24.3 u%)
+    tran: time = 9.96 us     (43.3 %), step = 2.103 ps    (9.15 u%)
+    tran: time = 9.976 us    (43.4 %), step = 7.533 ps    (32.8 u%)
+    tran: time = 10 us       (43.5 %), step = 9.223 ps    (40.1 u%)
+    tran: time = 10.03 us    (43.6 %), step = 3.861 ps    (16.8 u%)
+    tran: time = 10.05 us    (43.7 %), step = 5.534 ps    (24.1 u%)
+    tran: time = 10.07 us    (43.8 %), step = 546.3 fs    (2.38 u%)
+    tran: time = 10.09 us    (43.9 %), step = 4.115 ps    (17.9 u%)
+    tran: time = 10.13 us      (44 %), step = 17.64 ps    (76.7 u%)
+    tran: time = 10.14 us    (44.1 %), step = 1.442 ps    (6.27 u%)
+    tran: time = 10.16 us    (44.2 %), step = 11.96 ps      (52 u%)
+    tran: time = 10.18 us    (44.2 %), step = 4.115 ps    (17.9 u%)
+    tran: time = 10.2 us     (44.3 %), step = 228.6 fs     (994 n%)
+    tran: time = 10.23 us    (44.5 %), step = 514 fs      (2.23 u%)
+    tran: time = 10.25 us    (44.6 %), step = 3.171 ps    (13.8 u%)
+    tran: time = 10.27 us    (44.6 %), step = 1.725 ps     (7.5 u%)
+    tran: time = 10.28 us    (44.7 %), step = 1.117 ps    (4.86 u%)
+    tran: time = 10.32 us    (44.9 %), step = 2.122 ps    (9.23 u%)
+    tran: time = 10.34 us      (45 %), step = 3.532 ps    (15.4 u%)
+    tran: time = 10.36 us      (45 %), step = 174 fs       (757 n%)
+    tran: time = 10.37 us    (45.1 %), step = 4.825 ps      (21 u%)
+    tran: time = 10.39 us    (45.2 %), step = 5.526 ps      (24 u%)
+    tran: time = 10.43 us    (45.3 %), step = 8.96 ps       (39 u%)
+    tran: time = 10.44 us    (45.4 %), step = 9.146 ps    (39.8 u%)
+    tran: time = 10.46 us    (45.5 %), step = 5.855 ps    (25.5 u%)
+    tran: time = 10.48 us    (45.6 %), step = 603.5 fs    (2.62 u%)
+    tran: time = 10.52 us    (45.7 %), step = 308.7 fs    (1.34 u%)
+    tran: time = 10.54 us    (45.8 %), step = 5.772 ps    (25.1 u%)
+    tran: time = 10.55 us    (45.9 %), step = 210.2 fs     (914 n%)
+    tran: time = 10.57 us      (46 %), step = 5.006 ps    (21.8 u%)
+    tran: time = 10.59 us      (46 %), step = 13.14 ps    (57.1 u%)
+    tran: time = 10.63 us    (46.2 %), step = 4.395 ps    (19.1 u%)
+    tran: time = 10.64 us    (46.3 %), step = 5.967 ps    (25.9 u%)
+    tran: time = 10.66 us    (46.3 %), step = 5.133 ps    (22.3 u%)
+    tran: time = 10.67 us    (46.4 %), step = 1.477 ps    (6.42 u%)
+    tran: time = 10.68 us    (46.5 %), step = 535.3 fs    (2.33 u%)
+    tran: time = 10.72 us    (46.6 %), step = 10.39 ps    (45.2 u%)
+    tran: time = 10.74 us    (46.7 %), step = 910.8 fs    (3.96 u%)
+    tran: time = 10.76 us    (46.8 %), step = 3.966 ps    (17.2 u%)
+    tran: time = 10.77 us    (46.8 %), step = 1.57 ps     (6.82 u%)
+    tran: time = 10.8 us     (46.9 %), step = 1.264 ps     (5.5 u%)
+    tran: time = 10.83 us    (47.1 %), step = 9.519 ps    (41.4 u%)
+    tran: time = 10.84 us    (47.2 %), step = 2.876 ps    (12.5 u%)
+    tran: time = 10.86 us    (47.2 %), step = 1.033 ps    (4.49 u%)
+    tran: time = 10.88 us    (47.3 %), step = 6.941 ps    (30.2 u%)
+    tran: time = 10.9 us     (47.4 %), step = 1.024 ps    (4.45 u%)
+    tran: time = 10.93 us    (47.5 %), step = 3.472 ps    (15.1 u%)
+    tran: time = 10.94 us    (47.6 %), step = 1.605 ps    (6.98 u%)
+    tran: time = 10.96 us    (47.6 %), step = 526.7 fs    (2.29 u%)
+    tran: time = 10.97 us    (47.7 %), step = 2.107 ps    (9.16 u%)
+    tran: time = 11 us       (47.8 %), step = 2.32 ps     (10.1 u%)
+    tran: time = 11.03 us    (47.9 %), step = 96.59 fs     (420 n%)
+    tran: time = 11.04 us      (48 %), step = 13.63 ps    (59.3 u%)
+    tran: time = 11.06 us    (48.1 %), step = 183 fs       (796 n%)
+    tran: time = 11.08 us    (48.2 %), step = 2.506 ps    (10.9 u%)
+    tran: time = 11.1 us     (48.3 %), step = 515.6 fs    (2.24 u%)
+    tran: time = 11.13 us    (48.4 %), step = 6.925 ps    (30.1 u%)
+    tran: time = 11.15 us    (48.5 %), step = 7.003 ps    (30.4 u%)
+    tran: time = 11.16 us    (48.5 %), step = 1.91 ps      (8.3 u%)
+    tran: time = 11.18 us    (48.6 %), step = 4.911 ps    (21.4 u%)
+    tran: time = 11.2 us     (48.7 %), step = 2.281 ps    (9.92 u%)
+    tran: time = 11.23 us    (48.8 %), step = 346.6 fs    (1.51 u%)
+    tran: time = 11.25 us    (48.9 %), step = 5.535 ps    (24.1 u%)
+    tran: time = 11.27 us      (49 %), step = 4.232 ps    (18.4 u%)
+    tran: time = 11.28 us    (49.1 %), step = 148.4 fs     (645 n%)
+    tran: time = 11.32 us    (49.2 %), step = 474.5 fs    (2.06 u%)
+    tran: time = 11.34 us    (49.3 %), step = 2.339 ps    (10.2 u%)
+    tran: time = 11.35 us    (49.4 %), step = 237.4 fs    (1.03 u%)
+    tran: time = 11.37 us    (49.4 %), step = 1.834 ps    (7.98 u%)
+    tran: time = 11.38 us    (49.5 %), step = 2.066 ps    (8.98 u%)
+    tran: time = 11.42 us    (49.7 %), step = 3.93 ps     (17.1 u%)
+    tran: time = 11.44 us    (49.7 %), step = 3.207 ps    (13.9 u%)
+    tran: time = 11.45 us    (49.8 %), step = 2.662 ps    (11.6 u%)
+    tran: time = 11.47 us    (49.9 %), step = 1.885 ps     (8.2 u%)
+    tran: time = 11.49 us    (49.9 %), step = 210.5 fs     (915 n%)
+    tran: time = 11.53 us    (50.1 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 11.54 us    (50.2 %), step = 5.639 ps    (24.5 u%)
+    tran: time = 11.56 us    (50.2 %), step = 76.18 fs     (331 n%)
+    tran: time = 11.57 us    (50.3 %), step = 868.1 fs    (3.77 u%)
+    tran: time = 11.59 us    (50.4 %), step = 4.804 ps    (20.9 u%)
+    tran: time = 11.62 us    (50.5 %), step = 250.2 fs    (1.09 u%)
+    tran: time = 11.64 us    (50.6 %), step = 2.082 ps    (9.05 u%)
+    tran: time = 11.66 us    (50.7 %), step = 5.414 ps    (23.5 u%)
+    tran: time = 11.68 us    (50.8 %), step = 2.233 ps    (9.71 u%)
+    tran: time = 11.7 us     (50.9 %), step = 4.273 ps    (18.6 u%)
+    tran: time = 11.73 us      (51 %), step = 3.832 ps    (16.7 u%)
+    tran: time = 11.75 us    (51.1 %), step = 10.4 ps     (45.2 u%)
+    tran: time = 11.76 us    (51.1 %), step = 4.44 ps     (19.3 u%)
+    tran: time = 11.78 us    (51.2 %), step = 3.626 ps    (15.8 u%)
+    tran: time = 11.8 us     (51.3 %), step = 5.249 ps    (22.8 u%)
+    tran: time = 11.83 us    (51.4 %), step = 1.973 ps    (8.58 u%)
+    tran: time = 11.85 us    (51.5 %), step = 3.709 ps    (16.1 u%)
+    tran: time = 11.86 us    (51.6 %), step = 1.792 ps    (7.79 u%)
+    tran: time = 11.88 us    (51.7 %), step = 2.265 ps    (9.85 u%)
+    tran: time = 11.92 us    (51.8 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 11.94 us    (51.9 %), step = 1.954 ps     (8.5 u%)
+    tran: time = 11.95 us      (52 %), step = 5.206 ps    (22.6 u%)
+    tran: time = 11.97 us    (52.1 %), step = 3.301 ps    (14.4 u%)
+    tran: time = 12 us       (52.2 %), step = 928.7 fs    (4.04 u%)
+    tran: time = 12.03 us    (52.3 %), step = 3.484 ps    (15.1 u%)
+    tran: time = 12.04 us    (52.4 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 12.06 us    (52.4 %), step = 5.639 ps    (24.5 u%)
+    tran: time = 12.07 us    (52.5 %), step = 3.211 ps      (14 u%)
+    tran: time = 12.08 us    (52.5 %), step = 19.91 ps    (86.6 u%)
+    tran: time = 12.1 us     (52.6 %), step = 7.036 ps    (30.6 u%)
+    tran: time = 12.13 us    (52.7 %), step = 3.161 ps    (13.7 u%)
+    tran: time = 12.15 us    (52.8 %), step = 167.5 ps     (728 u%)
+    tran: time = 12.16 us    (52.9 %), step = 2.067 ps    (8.99 u%)
+
+Warning from spectre at time = 12.1667 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<4>. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 12.18 us      (53 %), step = 10.26 ps    (44.6 u%)
+    tran: time = 12.22 us    (53.1 %), step = 66.78 fs     (290 n%)
+    tran: time = 12.23 us    (53.2 %), step = 190.9 ps     (830 u%)
+    tran: time = 12.25 us    (53.2 %), step = 3.161 ps    (13.7 u%)
+    tran: time = 12.26 us    (53.3 %), step = 3.142 ps    (13.7 u%)
+    tran: time = 12.27 us    (53.4 %), step = 1.789 ps    (7.78 u%)
+    tran: time = 12.28 us    (53.4 %), step = 2.629 ps    (11.4 u%)
+    tran: time = 12.3 us     (53.5 %), step = 3.051 ps    (13.3 u%)
+    tran: time = 12.33 us    (53.6 %), step = 4.617 ps    (20.1 u%)
+    tran: time = 12.34 us    (53.7 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 12.36 us    (53.7 %), step = 3.248 ps    (14.1 u%)
+    tran: time = 12.37 us    (53.8 %), step = 1.5 ps      (6.52 u%)
+    tran: time = 12.4 us     (53.9 %), step = 3.89 ps     (16.9 u%)
+    tran: time = 12.43 us      (54 %), step = 555.1 fs    (2.41 u%)
+    tran: time = 12.44 us    (54.1 %), step = 4.938 ps    (21.5 u%)
+    tran: time = 12.45 us    (54.1 %), step = 8.699 ps    (37.8 u%)
+    tran: time = 12.47 us    (54.2 %), step = 1.606 ps    (6.98 u%)
+    tran: time = 12.48 us    (54.3 %), step = 2.382 ps    (10.4 u%)
+    tran: time = 12.52 us    (54.4 %), step = 4.993 ps    (21.7 u%)
+    tran: time = 12.54 us    (54.5 %), step = 13.42 ps    (58.4 u%)
+    tran: time = 12.55 us    (54.6 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 12.57 us    (54.6 %), step = 3.151 ps    (13.7 u%)
+    tran: time = 12.58 us    (54.7 %), step = 5.57 ps     (24.2 u%)
+    tran: time = 12.62 us    (54.9 %), step = 378.2 fs    (1.64 u%)
+    tran: time = 12.64 us      (55 %), step = 108.6 fs     (472 n%)
+    tran: time = 12.66 us      (55 %), step = 3.821 ps    (16.6 u%)
+    tran: time = 12.67 us    (55.1 %), step = 551.6 fs     (2.4 u%)
+    tran: time = 12.7 us     (55.2 %), step = 1.935 ps    (8.41 u%)
+    tran: time = 12.73 us    (55.3 %), step = 4.822 ps      (21 u%)
+    tran: time = 12.74 us    (55.4 %), step = 3.528 ps    (15.3 u%)
+    tran: time = 12.76 us    (55.5 %), step = 58.83 ps     (256 u%)
+    tran: time = 12.78 us    (55.6 %), step = 2.491 ps    (10.8 u%)
+    tran: time = 12.8 us     (55.7 %), step = 5.832 ps    (25.4 u%)
+    tran: time = 12.83 us    (55.8 %), step = 8.688 ps    (37.8 u%)
+    tran: time = 12.85 us    (55.9 %), step = 538 fs      (2.34 u%)
+    tran: time = 12.86 us    (55.9 %), step = 18.37 ps    (79.9 u%)
+    tran: time = 12.88 us      (56 %), step = 4.537 ps    (19.7 u%)
+    tran: time = 12.92 us    (56.2 %), step = 8.494 ps    (36.9 u%)
+    tran: time = 12.94 us    (56.3 %), step = 3.835 ps    (16.7 u%)
+    tran: time = 12.96 us    (56.3 %), step = 8.26 ps     (35.9 u%)
+    tran: time = 12.98 us    (56.4 %), step = 7.506 ps    (32.6 u%)
+    tran: time = 13 us       (56.5 %), step = 229.7 fs     (999 n%)
+    tran: time = 13.03 us    (56.7 %), step = 10.95 ps    (47.6 u%)
+    tran: time = 13.05 us    (56.7 %), step = 4.811 ps    (20.9 u%)
+    tran: time = 13.07 us    (56.8 %), step = 832.7 fs    (3.62 u%)
+    tran: time = 13.1 us     (56.9 %), step = 3.086 ps    (13.4 u%)
+    tran: time = 13.13 us    (57.1 %), step = 4.478 ps    (19.5 u%)
+    tran: time = 13.14 us    (57.1 %), step = 8.185 ps    (35.6 u%)
+    tran: time = 13.16 us    (57.2 %), step = 2.67 ps     (11.6 u%)
+    tran: time = 13.18 us    (57.3 %), step = 3.907 ps      (17 u%)
+    tran: time = 13.22 us    (57.5 %), step = 1 ps        (4.35 u%)
+    tran: time = 13.23 us    (57.5 %), step = 4.495 ps    (19.5 u%)
+    tran: time = 13.24 us    (57.6 %), step = 4.031 ps    (17.5 u%)
+    tran: time = 13.26 us    (57.7 %), step = 617.3 fs    (2.68 u%)
+    tran: time = 13.28 us    (57.7 %), step = 4.18 ps     (18.2 u%)
+    tran: time = 13.31 us    (57.9 %), step = 1.449 ps     (6.3 u%)
+    tran: time = 13.33 us      (58 %), step = 1.497 ps    (6.51 u%)
+    tran: time = 13.35 us    (58.1 %), step = 1.261 ps    (5.48 u%)
+    tran: time = 13.37 us    (58.1 %), step = 696.4 fs    (3.03 u%)
+    tran: time = 13.39 us    (58.2 %), step = 188.8 ps     (821 u%)
+    tran: time = 13.43 us    (58.4 %), step = 7.212 ps    (31.4 u%)
+    tran: time = 13.44 us    (58.4 %), step = 1.797 ps    (7.81 u%)
+    tran: time = 13.46 us    (58.5 %), step = 2.184 ps     (9.5 u%)
+    tran: time = 13.48 us    (58.6 %), step = 1.941 ps    (8.44 u%)
+    tran: time = 13.52 us    (58.8 %), step = 95.64 fs     (416 n%)
+    tran: time = 13.54 us    (58.9 %), step = 3.27 ps     (14.2 u%)
+    tran: time = 13.55 us    (58.9 %), step = 18.67 ps    (81.2 u%)
+    tran: time = 13.57 us      (59 %), step = 726.9 fs    (3.16 u%)
+    tran: time = 13.59 us    (59.1 %), step = 250.3 fs    (1.09 u%)
+    tran: time = 13.63 us    (59.3 %), step = 3.45 ps       (15 u%)
+    tran: time = 13.65 us    (59.3 %), step = 4.464 ps    (19.4 u%)
+    tran: time = 13.66 us    (59.4 %), step = 3.027 ps    (13.2 u%)
+    tran: time = 13.68 us    (59.5 %), step = 1.805 ps    (7.85 u%)
+    tran: time = 13.72 us    (59.7 %), step = 103.1 fs     (448 n%)
+    tran: time = 13.74 us    (59.7 %), step = 2.397 ps    (10.4 u%)
+    tran: time = 13.75 us    (59.8 %), step = 4.728 ps    (20.6 u%)
+    tran: time = 13.77 us    (59.9 %), step = 1.434 ps    (6.24 u%)
+    tran: time = 13.8 us       (60 %), step = 936 fs      (4.07 u%)
+    tran: time = 13.83 us    (60.1 %), step = 4.904 ps    (21.3 u%)
+    tran: time = 13.85 us    (60.2 %), step = 11.67 ps    (50.8 u%)
+    tran: time = 13.86 us    (60.3 %), step = 3.419 ps    (14.9 u%)
+    tran: time = 13.88 us    (60.4 %), step = 167 ps       (726 u%)
+    tran: time = 13.92 us    (60.5 %), step = 228.4 fs     (993 n%)
+    tran: time = 13.94 us    (60.6 %), step = 6.738 ps    (29.3 u%)
+    tran: time = 13.96 us    (60.7 %), step = 4.104 ps    (17.8 u%)
+    tran: time = 13.98 us    (60.8 %), step = 7.558 ps    (32.9 u%)
+    tran: time = 14 us       (60.9 %), step = 233.4 fs    (1.01 u%)
+    tran: time = 14.03 us      (61 %), step = 3.313 ps    (14.4 u%)
+    tran: time = 14.05 us    (61.1 %), step = 658.2 fs    (2.86 u%)
+    tran: time = 14.07 us    (61.2 %), step = 323.4 fs    (1.41 u%)
+    tran: time = 14.08 us    (61.2 %), step = 760.7 fs    (3.31 u%)
+    tran: time = 14.12 us    (61.4 %), step = 3.001 ps      (13 u%)
+    tran: time = 14.14 us    (61.5 %), step = 514.6 fs    (2.24 u%)
+    tran: time = 14.16 us    (61.6 %), step = 617.4 fs    (2.68 u%)
+    tran: time = 14.18 us    (61.6 %), step = 4.749 ps    (20.6 u%)
+    tran: time = 14.2 us     (61.7 %), step = 3.002 ps    (13.1 u%)
+    tran: time = 14.23 us    (61.9 %), step = 2.854 ps    (12.4 u%)
+    tran: time = 14.25 us      (62 %), step = 2.724 ps    (11.8 u%)
+    tran: time = 14.27 us      (62 %), step = 3.17 ps     (13.8 u%)
+    tran: time = 14.29 us    (62.1 %), step = 8.515 ps      (37 u%)
+    tran: time = 14.33 us    (62.3 %), step = 15.68 ps    (68.2 u%)
+    tran: time = 14.34 us    (62.4 %), step = 4.162 ps    (18.1 u%)
+    tran: time = 14.36 us    (62.4 %), step = 3.454 ps      (15 u%)
+    tran: time = 14.38 us    (62.5 %), step = 15.21 ps    (66.1 u%)
+    tran: time = 14.4 us     (62.6 %), step = 346.6 fs    (1.51 u%)
+    tran: time = 14.43 us    (62.8 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 14.45 us    (62.8 %), step = 3.559 ps    (15.5 u%)
+    tran: time = 14.47 us    (62.9 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 14.49 us      (63 %), step = 6.189 ps    (26.9 u%)
+    tran: time = 14.53 us    (63.2 %), step = 6.783 ps    (29.5 u%)
+    tran: time = 14.54 us    (63.2 %), step = 11.49 ps    (49.9 u%)
+    tran: time = 14.56 us    (63.3 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 14.58 us    (63.4 %), step = 2.832 ps    (12.3 u%)
+    tran: time = 14.62 us    (63.6 %), step = 2.115 ps    (9.19 u%)
+    tran: time = 14.63 us    (63.6 %), step = 717.2 fs    (3.12 u%)
+    tran: time = 14.65 us    (63.7 %), step = 171.4 ps     (745 u%)
+    tran: time = 14.67 us    (63.8 %), step = 205.1 fs     (892 n%)
+    tran: time = 14.68 us    (63.8 %), step = 8.681 ps    (37.7 u%)
+    tran: time = 14.71 us      (64 %), step = 7.39 ps     (32.1 u%)
+    tran: time = 14.73 us    (64.1 %), step = 2.627 ps    (11.4 u%)
+    tran: time = 14.75 us    (64.1 %), step = 10.35 ps      (45 u%)
+    tran: time = 14.77 us    (64.2 %), step = 1.651 ps    (7.18 u%)
+    tran: time = 14.8 us     (64.3 %), step = 2.975 ps    (12.9 u%)
+    tran: time = 14.83 us    (64.5 %), step = 574.8 fs     (2.5 u%)
+    tran: time = 14.85 us    (64.6 %), step = 3.052 ps    (13.3 u%)
+    tran: time = 14.86 us    (64.6 %), step = 11.09 ps    (48.2 u%)
+    tran: time = 14.88 us    (64.7 %), step = 5.948 ps    (25.9 u%)
+    tran: time = 14.91 us    (64.8 %), step = 3.318 ps    (14.4 u%)
+    tran: time = 14.94 us    (64.9 %), step = 4.59 ps       (20 u%)
+    tran: time = 14.95 us      (65 %), step = 4.52 ps     (19.7 u%)
+    tran: time = 14.97 us    (65.1 %), step = 1.023 ps    (4.45 u%)
+    tran: time = 14.99 us    (65.2 %), step = 1.131 ps    (4.92 u%)
+    tran: time = 15.03 us    (65.3 %), step = 1.942 ps    (8.44 u%)
+    tran: time = 15.04 us    (65.4 %), step = 1.46 ps     (6.35 u%)
+    tran: time = 15.06 us    (65.5 %), step = 938.4 fs    (4.08 u%)
+    tran: time = 15.07 us    (65.5 %), step = 8.094 ps    (35.2 u%)
+    tran: time = 15.09 us    (65.6 %), step = 7.693 ps    (33.4 u%)
+    tran: time = 15.13 us    (65.8 %), step = 7.249 ps    (31.5 u%)
+    tran: time = 15.14 us    (65.8 %), step = 4.782 ps    (20.8 u%)
+    tran: time = 15.16 us    (65.9 %), step = 2.662 ps    (11.6 u%)
+    tran: time = 15.18 us      (66 %), step = 63.21 ps     (275 u%)
+    tran: time = 15.2 us     (66.1 %), step = 645.2 fs    (2.81 u%)
+    tran: time = 15.23 us    (66.2 %), step = 2.501 ps    (10.9 u%)
+    tran: time = 15.24 us    (66.3 %), step = 3.858 ps    (16.8 u%)
+    tran: time = 15.26 us    (66.3 %), step = 91.19 ps     (396 u%)
+    tran: time = 15.28 us    (66.4 %), step = 130 fs       (565 n%)
+    tran: time = 15.3 us     (66.5 %), step = 3.839 ps    (16.7 u%)
+    tran: time = 15.33 us    (66.7 %), step = 2.307 ps      (10 u%)
+    tran: time = 15.35 us    (66.7 %), step = 2.923 ps    (12.7 u%)
+    tran: time = 15.36 us    (66.8 %), step = 462.1 fs    (2.01 u%)
+    tran: time = 15.38 us    (66.9 %), step = 7.862 ps    (34.2 u%)
+    tran: time = 15.42 us    (67.1 %), step = 5.533 ps    (24.1 u%)
+    tran: time = 15.44 us    (67.1 %), step = 80.47 fs     (350 n%)
+    tran: time = 15.46 us    (67.2 %), step = 3.335 ps    (14.5 u%)
+    tran: time = 15.48 us    (67.3 %), step = 191.6 fs     (833 n%)
+    tran: time = 15.5 us     (67.4 %), step = 2.789 ps    (12.1 u%)
+    tran: time = 15.53 us    (67.5 %), step = 3.474 ps    (15.1 u%)
+    tran: time = 15.54 us    (67.6 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 15.56 us    (67.6 %), step = 4.043 ps    (17.6 u%)
+    tran: time = 15.58 us    (67.7 %), step = 2.284 ps    (9.93 u%)
+    tran: time = 15.6 us     (67.8 %), step = 3.31 ps     (14.4 u%)
+    tran: time = 15.63 us      (68 %), step = 3.077 ps    (13.4 u%)
+    tran: time = 15.65 us    (68.1 %), step = 743.3 fs    (3.23 u%)
+    tran: time = 15.67 us    (68.1 %), step = 5.977 ps      (26 u%)
+    tran: time = 15.69 us    (68.2 %), step = 1.716 ps    (7.46 u%)
+    tran: time = 15.73 us    (68.4 %), step = 7.178 ps    (31.2 u%)
+    tran: time = 15.74 us    (68.4 %), step = 144 fs       (626 n%)
+    tran: time = 15.76 us    (68.5 %), step = 1.387 ps    (6.03 u%)
+    tran: time = 15.78 us    (68.6 %), step = 6.472 ps    (28.1 u%)
+    tran: time = 15.8 us     (68.7 %), step = 762.6 fs    (3.32 u%)
+    tran: time = 15.83 us    (68.8 %), step = 1.432 ps    (6.23 u%)
+    tran: time = 15.85 us    (68.9 %), step = 8.242 ps    (35.8 u%)
+    tran: time = 15.87 us      (69 %), step = 2.747 ps    (11.9 u%)
+    tran: time = 15.89 us    (69.1 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 15.93 us    (69.2 %), step = 2.053 ps    (8.93 u%)
+    tran: time = 15.94 us    (69.3 %), step = 3.411 ps    (14.8 u%)
+    tran: time = 15.96 us    (69.4 %), step = 1.341 ps    (5.83 u%)
+    tran: time = 15.98 us    (69.5 %), step = 819.8 fs    (3.56 u%)
+    tran: time = 16.02 us    (69.6 %), step = 838.3 fs    (3.64 u%)
+    tran: time = 16.04 us    (69.7 %), step = 6.341 ps    (27.6 u%)
+    tran: time = 16.05 us    (69.8 %), step = 2.35 ps     (10.2 u%)
+    tran: time = 16.07 us    (69.9 %), step = 3.954 ps    (17.2 u%)
+    tran: time = 16.1 us       (70 %), step = 2.981 ps      (13 u%)
+    tran: time = 16.13 us    (70.1 %), step = 5.1 ps      (22.2 u%)
+    tran: time = 16.15 us    (70.2 %), step = 5.624 ps    (24.5 u%)
+    tran: time = 16.16 us    (70.3 %), step = 934.6 fs    (4.06 u%)
+    tran: time = 16.18 us    (70.4 %), step = 216.8 fs     (943 n%)
+    tran: time = 16.22 us    (70.5 %), step = 211.2 fs     (918 n%)
+    tran: time = 16.24 us    (70.6 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 16.26 us    (70.7 %), step = 1.587 ps     (6.9 u%)
+    tran: time = 16.27 us    (70.8 %), step = 1.282 ps    (5.57 u%)
+    tran: time = 16.3 us     (70.9 %), step = 2.875 ps    (12.5 u%)
+    tran: time = 16.33 us      (71 %), step = 8.081 ps    (35.1 u%)
+    tran: time = 16.35 us    (71.1 %), step = 3.554 ps    (15.5 u%)
+    tran: time = 16.36 us    (71.2 %), step = 1.5 ps      (6.52 u%)
+    tran: time = 16.38 us    (71.2 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 16.42 us    (71.4 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 16.44 us    (71.5 %), step = 5.664 ps    (24.6 u%)
+    tran: time = 16.46 us    (71.6 %), step = 4.46 ps     (19.4 u%)
+    tran: time = 16.47 us    (71.6 %), step = 3.47 ps     (15.1 u%)
+    tran: time = 16.5 us     (71.7 %), step = 2.143 ps    (9.32 u%)
+    tran: time = 16.53 us    (71.9 %), step = 3.267 ps    (14.2 u%)
+    tran: time = 16.55 us      (72 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 16.57 us      (72 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 16.59 us    (72.1 %), step = 332.2 fs    (1.44 u%)
+    tran: time = 16.63 us    (72.3 %), step = 1.652 ps    (7.18 u%)
+    tran: time = 16.65 us    (72.4 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 16.66 us    (72.5 %), step = 5.44 ps     (23.7 u%)
+    tran: time = 16.68 us    (72.5 %), step = 16.42 ps    (71.4 u%)
+    tran: time = 16.7 us     (72.6 %), step = 4.556 ps    (19.8 u%)
+    tran: time = 16.73 us    (72.8 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 16.75 us    (72.8 %), step = 6.702 ps    (29.1 u%)
+    tran: time = 16.77 us    (72.9 %), step = 640.7 fs    (2.79 u%)
+    tran: time = 16.79 us      (73 %), step = 3.93 ps     (17.1 u%)
+    tran: time = 16.82 us    (73.2 %), step = 16.47 ps    (71.6 u%)
+    tran: time = 16.84 us    (73.2 %), step = 6.47 ps     (28.1 u%)
+    tran: time = 16.86 us    (73.3 %), step = 2.979 ps      (13 u%)
+    tran: time = 16.88 us    (73.4 %), step = 2.819 ps    (12.3 u%)
+    tran: time = 16.91 us    (73.5 %), step = 5.29 ps       (23 u%)
+    tran: time = 16.94 us    (73.6 %), step = 41.93 ps     (182 u%)
+    tran: time = 16.95 us    (73.7 %), step = 4.771 ps    (20.7 u%)
+    tran: time = 16.97 us    (73.8 %), step = 9.395 ps    (40.8 u%)
+    tran: time = 16.99 us    (73.9 %), step = 2.068 ps    (8.99 u%)
+    tran: time = 17.03 us      (74 %), step = 8.822 ps    (38.4 u%)
+    tran: time = 17.05 us    (74.1 %), step = 2.814 ps    (12.2 u%)
+    tran: time = 17.06 us    (74.2 %), step = 5.44 ps     (23.7 u%)
+    tran: time = 17.08 us    (74.3 %), step = 7.221 ps    (31.4 u%)
+    tran: time = 17.12 us    (74.4 %), step = 27.7 ps      (120 u%)
+    tran: time = 17.14 us    (74.5 %), step = 18.43 ps    (80.1 u%)
+    tran: time = 17.15 us    (74.6 %), step = 692 fs      (3.01 u%)
+    tran: time = 17.17 us    (74.6 %), step = 4.598 ps      (20 u%)
+    tran: time = 17.18 us    (74.7 %), step = 2.915 ps    (12.7 u%)
+    tran: time = 17.22 us    (74.9 %), step = 656.4 fs    (2.85 u%)
+    tran: time = 17.23 us    (74.9 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 17.25 us      (75 %), step = 210.8 fs     (917 n%)
+    tran: time = 17.27 us    (75.1 %), step = 5.598 ps    (24.3 u%)
+    tran: time = 17.29 us    (75.2 %), step = 209.4 fs     (910 n%)
+    tran: time = 17.32 us    (75.3 %), step = 212.2 fs     (923 n%)
+    tran: time = 17.34 us    (75.4 %), step = 4.61 ps       (20 u%)
+    tran: time = 17.36 us    (75.5 %), step = 4.276 ps    (18.6 u%)
+    tran: time = 17.37 us    (75.5 %), step = 7.721 ps    (33.6 u%)
+    tran: time = 17.4 us     (75.6 %), step = 4.415 ps    (19.2 u%)
+    tran: time = 17.43 us    (75.8 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 17.44 us    (75.8 %), step = 3.384 ps    (14.7 u%)
+    tran: time = 17.46 us    (75.9 %), step = 2.063 ps    (8.97 u%)
+    tran: time = 17.48 us      (76 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 17.51 us    (76.1 %), step = 2.963 ps    (12.9 u%)
+    tran: time = 17.53 us    (76.2 %), step = 1.376 ps    (5.98 u%)
+    tran: time = 17.55 us    (76.3 %), step = 2.499 ps    (10.9 u%)
+    tran: time = 17.57 us    (76.4 %), step = 2.914 ps    (12.7 u%)
+    tran: time = 17.59 us    (76.5 %), step = 5.668 ps    (24.6 u%)
+    tran: time = 17.63 us    (76.6 %), step = 7.403 ps    (32.2 u%)
+    tran: time = 17.64 us    (76.7 %), step = 187.5 fs     (815 n%)
+    tran: time = 17.66 us    (76.8 %), step = 1.826 ps    (7.94 u%)
+    tran: time = 17.68 us    (76.9 %), step = 2.987 ps      (13 u%)
+    tran: time = 17.71 us      (77 %), step = 675.8 fs    (2.94 u%)
+    tran: time = 17.73 us    (77.1 %), step = 2.553 ps    (11.1 u%)
+    tran: time = 17.75 us    (77.2 %), step = 4.576 ps    (19.9 u%)
+    tran: time = 17.77 us    (77.2 %), step = 2.656 ps    (11.5 u%)
+    tran: time = 17.78 us    (77.3 %), step = 5.199 ps    (22.6 u%)
+    tran: time = 17.82 us    (77.5 %), step = 4.523 ps    (19.7 u%)
+    tran: time = 17.83 us    (77.5 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 17.84 us    (77.6 %), step = 87.78 ps     (382 u%)
+    tran: time = 17.86 us    (77.6 %), step = 2.035 ps    (8.85 u%)
+    tran: time = 17.87 us    (77.7 %), step = 11.53 ps    (50.1 u%)
+    tran: time = 17.9 us     (77.8 %), step = 9.87 ps     (42.9 u%)
+    tran: time = 17.93 us      (78 %), step = 5.559 ps    (24.2 u%)
+    tran: time = 17.95 us      (78 %), step = 958.7 fs    (4.17 u%)
+    tran: time = 17.97 us    (78.1 %), step = 187.5 fs     (815 n%)
+    tran: time = 17.98 us    (78.2 %), step = 2.769 ps      (12 u%)
+    tran: time = 18.02 us    (78.4 %), step = 5.512 ps      (24 u%)
+    tran: time = 18.04 us    (78.4 %), step = 7.975 ps    (34.7 u%)
+    tran: time = 18.06 us    (78.5 %), step = 14.45 ps    (62.8 u%)
+    tran: time = 18.07 us    (78.6 %), step = 4.718 ps    (20.5 u%)
+    tran: time = 18.1 us     (78.7 %), step = 422.7 fs    (1.84 u%)
+    tran: time = 18.13 us    (78.8 %), step = 13.66 ps    (59.4 u%)
+    tran: time = 18.15 us    (78.9 %), step = 210.7 fs     (916 n%)
+    tran: time = 18.17 us      (79 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 18.19 us    (79.1 %), step = 1.885 ps    (8.19 u%)
+    tran: time = 18.22 us    (79.2 %), step = 4.607 ps      (20 u%)
+    tran: time = 18.24 us    (79.3 %), step = 4.043 ps    (17.6 u%)
+    tran: time = 18.25 us    (79.4 %), step = 8.756 ps    (38.1 u%)
+    tran: time = 18.27 us    (79.4 %), step = 5.39 ps     (23.4 u%)
+    tran: time = 18.3 us     (79.6 %), step = 2.288 ps    (9.95 u%)
+    tran: time = 18.33 us    (79.7 %), step = 561.4 fs    (2.44 u%)
+    tran: time = 18.35 us    (79.8 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 18.37 us    (79.9 %), step = 183.3 fs     (797 n%)
+    tran: time = 18.38 us    (79.9 %), step = 316.5 fs    (1.38 u%)
+    tran: time = 18.42 us    (80.1 %), step = 2.594 ps    (11.3 u%)
+    tran: time = 18.44 us    (80.2 %), step = 5.042 ps    (21.9 u%)
+    tran: time = 18.46 us    (80.2 %), step = 2.714 ps    (11.8 u%)
+    tran: time = 18.47 us    (80.3 %), step = 1.153 ps    (5.01 u%)
+    tran: time = 18.5 us     (80.4 %), step = 5.466 ps    (23.8 u%)
+    tran: time = 18.53 us    (80.6 %), step = 2.614 ps    (11.4 u%)
+    tran: time = 18.54 us    (80.6 %), step = 5.509 ps      (24 u%)
+    tran: time = 18.56 us    (80.7 %), step = 2.501 ps    (10.9 u%)
+    tran: time = 18.58 us    (80.8 %), step = 5.093 ps    (22.1 u%)
+    tran: time = 18.62 us    (80.9 %), step = 991.6 fs    (4.31 u%)
+    tran: time = 18.64 us      (81 %), step = 36.41 fs     (158 n%)
+    tran: time = 18.65 us    (81.1 %), step = 1.652 ps    (7.18 u%)
+    tran: time = 18.67 us    (81.2 %), step = 5.645 ps    (24.5 u%)
+    tran: time = 18.68 us    (81.2 %), step = 1.605 ps    (6.98 u%)
+
+Warning from spectre at time = 18.6817 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<1>. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 18.72 us    (81.4 %), step = 1.638 ps    (7.12 u%)
+    tran: time = 18.73 us    (81.5 %), step = 4.972 ps    (21.6 u%)
+    tran: time = 18.75 us    (81.5 %), step = 6.957 ps    (30.2 u%)
+    tran: time = 18.77 us    (81.6 %), step = 176.9 fs     (769 n%)
+    tran: time = 18.78 us    (81.7 %), step = 4.968 ps    (21.6 u%)
+    tran: time = 18.82 us    (81.8 %), step = 4.742 ps    (20.6 u%)
+    tran: time = 18.84 us    (81.9 %), step = 2.983 ps      (13 u%)
+    tran: time = 18.86 us      (82 %), step = 8.468 ps    (36.8 u%)
+    tran: time = 18.87 us    (82.1 %), step = 1.865 ps    (8.11 u%)
+    tran: time = 18.9 us     (82.2 %), step = 2.716 ps    (11.8 u%)
+    tran: time = 18.93 us    (82.3 %), step = 2.046 ps     (8.9 u%)
+    tran: time = 18.94 us    (82.4 %), step = 8.55 ps     (37.2 u%)
+    tran: time = 18.96 us    (82.4 %), step = 286.7 fs    (1.25 u%)
+    tran: time = 18.98 us    (82.5 %), step = 27.38 ps     (119 u%)
+    tran: time = 19 us       (82.6 %), step = 1.706 ps    (7.42 u%)
+    tran: time = 19.03 us    (82.7 %), step = 3.191 ps    (13.9 u%)
+    tran: time = 19.05 us    (82.8 %), step = 1.858 ps    (8.08 u%)
+    tran: time = 19.06 us    (82.9 %), step = 6.007 ps    (26.1 u%)
+    tran: time = 19.08 us      (83 %), step = 754 fs      (3.28 u%)
+    tran: time = 19.12 us    (83.1 %), step = 5.884 ps    (25.6 u%)
+    tran: time = 19.14 us    (83.2 %), step = 7.243 ps    (31.5 u%)
+    tran: time = 19.16 us    (83.3 %), step = 2.785 ps    (12.1 u%)
+    tran: time = 19.17 us    (83.4 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 19.2 us     (83.5 %), step = 577.4 fs    (2.51 u%)
+    tran: time = 19.23 us    (83.6 %), step = 42.08 fs     (183 n%)
+    tran: time = 19.25 us    (83.7 %), step = 5.212 ps    (22.7 u%)
+    tran: time = 19.26 us    (83.8 %), step = 12.34 ps    (53.6 u%)
+    tran: time = 19.28 us    (83.8 %), step = 838.6 fs    (3.65 u%)
+    tran: time = 19.32 us      (84 %), step = 58.69 ps     (255 u%)
+    tran: time = 19.34 us    (84.1 %), step = 3.602 ps    (15.7 u%)
+    tran: time = 19.35 us    (84.1 %), step = 3.158 ps    (13.7 u%)
+    tran: time = 19.37 us    (84.2 %), step = 7.131 ps      (31 u%)
+    tran: time = 19.38 us    (84.3 %), step = 3.548 ps    (15.4 u%)
+    tran: time = 19.42 us    (84.4 %), step = 7.019 ps    (30.5 u%)
+    tran: time = 19.44 us    (84.5 %), step = 340.1 fs    (1.48 u%)
+    tran: time = 19.46 us    (84.6 %), step = 1.978 ps     (8.6 u%)
+    tran: time = 19.48 us    (84.7 %), step = 6.738 ps    (29.3 u%)
+    tran: time = 19.52 us    (84.9 %), step = 734.7 fs    (3.19 u%)
+    tran: time = 19.54 us    (84.9 %), step = 357.2 fs    (1.55 u%)
+    tran: time = 19.55 us      (85 %), step = 2.351 ps    (10.2 u%)
+    tran: time = 19.57 us    (85.1 %), step = 7.287 ps    (31.7 u%)
+    tran: time = 19.6 us     (85.2 %), step = 67.12 fs     (292 n%)
+    tran: time = 19.63 us    (85.3 %), step = 9.525 ps    (41.4 u%)
+    tran: time = 19.65 us    (85.4 %), step = 31.27 ps     (136 u%)
+    tran: time = 19.66 us    (85.5 %), step = 2.955 ps    (12.8 u%)
+    tran: time = 19.68 us    (85.6 %), step = 5.094 ps    (22.1 u%)
+    tran: time = 19.72 us    (85.8 %), step = 1.752 ps    (7.62 u%)
+    tran: time = 19.74 us    (85.8 %), step = 1.497 ps    (6.51 u%)
+    tran: time = 19.75 us    (85.9 %), step = 191.3 fs     (832 n%)
+    tran: time = 19.77 us      (86 %), step = 3.469 ps    (15.1 u%)
+    tran: time = 19.79 us      (86 %), step = 1.821 ps    (7.92 u%)
+    tran: time = 19.82 us    (86.2 %), step = 7.41 ps     (32.2 u%)
+    tran: time = 19.84 us    (86.3 %), step = 12.93 ps    (56.2 u%)
+    tran: time = 19.86 us    (86.3 %), step = 7.647 ps    (33.2 u%)
+    tran: time = 19.87 us    (86.4 %), step = 307.7 fs    (1.34 u%)
+    tran: time = 19.89 us    (86.5 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 19.93 us    (86.6 %), step = 4.848 ps    (21.1 u%)
+    tran: time = 19.94 us    (86.7 %), step = 89.93 fs     (391 n%)
+    tran: time = 19.96 us    (86.8 %), step = 3.663 ps    (15.9 u%)
+    tran: time = 19.98 us    (86.9 %), step = 3.633 ps    (15.8 u%)
+    tran: time = 20 us         (87 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 20.03 us    (87.1 %), step = 2.499 ps    (10.9 u%)
+    tran: time = 20.05 us    (87.2 %), step = 5.597 ps    (24.3 u%)
+    tran: time = 20.07 us    (87.2 %), step = 1.455 ps    (6.33 u%)
+    tran: time = 20.08 us    (87.3 %), step = 1.483 ps    (6.45 u%)
+    tran: time = 20.12 us    (87.5 %), step = 20.99 ps    (91.3 u%)
+    tran: time = 20.13 us    (87.5 %), step = 4.495 ps    (19.5 u%)
+    tran: time = 20.14 us    (87.6 %), step = 44.9 fs      (195 n%)
+    tran: time = 20.16 us    (87.7 %), step = 6.078 ps    (26.4 u%)
+    tran: time = 20.18 us    (87.7 %), step = 4.537 ps    (19.7 u%)
+    tran: time = 20.21 us    (87.9 %), step = 1.393 ps    (6.06 u%)
+    tran: time = 20.23 us      (88 %), step = 3.36 ps     (14.6 u%)
+    tran: time = 20.25 us    (88.1 %), step = 226.1 fs     (983 n%)
+    tran: time = 20.27 us    (88.1 %), step = 3.929 ps    (17.1 u%)
+    tran: time = 20.29 us    (88.2 %), step = 7.862 ps    (34.2 u%)
+    tran: time = 20.33 us    (88.4 %), step = 5.601 ps    (24.4 u%)
+    tran: time = 20.35 us    (88.5 %), step = 4.192 ps    (18.2 u%)
+    tran: time = 20.36 us    (88.5 %), step = 6.655 ps    (28.9 u%)
+    tran: time = 20.38 us    (88.6 %), step = 3.671 ps      (16 u%)
+    tran: time = 20.4 us     (88.7 %), step = 3.812 ps    (16.6 u%)
+    tran: time = 20.43 us    (88.8 %), step = 223.2 fs     (970 n%)
+    tran: time = 20.44 us    (88.9 %), step = 1.496 ps     (6.5 u%)
+    tran: time = 20.46 us      (89 %), step = 1.992 ps    (8.66 u%)
+    tran: time = 20.48 us      (89 %), step = 4.229 ps    (18.4 u%)
+    tran: time = 20.5 us     (89.1 %), step = 10.02 ps    (43.6 u%)
+    tran: time = 20.53 us    (89.3 %), step = 904 fs      (3.93 u%)
+    tran: time = 20.55 us    (89.3 %), step = 2.966 ps    (12.9 u%)
+    tran: time = 20.56 us    (89.4 %), step = 3.916 ps      (17 u%)
+    tran: time = 20.58 us    (89.5 %), step = 221.5 fs     (963 n%)
+    tran: time = 20.6 us     (89.6 %), step = 8.837 ps    (38.4 u%)
+    tran: time = 20.63 us    (89.7 %), step = 4.603 ps      (20 u%)
+    tran: time = 20.64 us    (89.8 %), step = 1.784 ps    (7.76 u%)
+    tran: time = 20.66 us    (89.8 %), step = 202.3 fs     (880 n%)
+    tran: time = 20.68 us    (89.9 %), step = 3.467 ps    (15.1 u%)
+    tran: time = 20.72 us    (90.1 %), step = 1.02 ps     (4.43 u%)
+    tran: time = 20.74 us    (90.2 %), step = 410 fs      (1.78 u%)
+    tran: time = 20.75 us    (90.2 %), step = 112.5 fs     (489 n%)
+    tran: time = 20.77 us    (90.3 %), step = 4.77 ps     (20.7 u%)
+    tran: time = 20.79 us    (90.4 %), step = 15.32 ps    (66.6 u%)
+    tran: time = 20.82 us    (90.5 %), step = 148.8 ps     (647 u%)
+    tran: time = 20.84 us    (90.6 %), step = 530 fs       (2.3 u%)
+    tran: time = 20.86 us    (90.7 %), step = 548.8 fs    (2.39 u%)
+    tran: time = 20.88 us    (90.8 %), step = 5.247 ps    (22.8 u%)
+    tran: time = 20.9 us     (90.9 %), step = 4.429 ps    (19.3 u%)
+    tran: time = 20.93 us      (91 %), step = 2.88 ps     (12.5 u%)
+    tran: time = 20.95 us    (91.1 %), step = 4.452 ps    (19.4 u%)
+    tran: time = 20.96 us    (91.1 %), step = 4.602 ps      (20 u%)
+    tran: time = 20.98 us    (91.2 %), step = 20.4 ps     (88.7 u%)
+    tran: time = 21.02 us    (91.4 %), step = 26.66 ps     (116 u%)
+    tran: time = 21.04 us    (91.5 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 21.06 us    (91.6 %), step = 20.14 ps    (87.6 u%)
+    tran: time = 21.08 us    (91.6 %), step = 3.947 ps    (17.2 u%)
+    tran: time = 21.1 us     (91.7 %), step = 2.31 ps       (10 u%)
+    tran: time = 21.13 us    (91.9 %), step = 5.589 ps    (24.3 u%)
+    tran: time = 21.15 us    (91.9 %), step = 5.377 ps    (23.4 u%)
+    tran: time = 21.16 us      (92 %), step = 5.156 ps    (22.4 u%)
+    tran: time = 21.18 us    (92.1 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 21.21 us    (92.2 %), step = 3.678 ps      (16 u%)
+    tran: time = 21.24 us    (92.3 %), step = 6.282 ps    (27.3 u%)
+    tran: time = 21.25 us    (92.4 %), step = 165.4 ps     (719 u%)
+    tran: time = 21.27 us    (92.5 %), step = 214.6 fs     (933 n%)
+    tran: time = 21.28 us    (92.5 %), step = 26.14 ps     (114 u%)
+    tran: time = 21.3 us     (92.6 %), step = 1.703 ps     (7.4 u%)
+    tran: time = 21.33 us    (92.7 %), step = 5.534 ps    (24.1 u%)
+    tran: time = 21.35 us    (92.8 %), step = 1.549 ps    (6.74 u%)
+    tran: time = 21.36 us    (92.9 %), step = 3.329 ps    (14.5 u%)
+    tran: time = 21.38 us      (93 %), step = 2.037 ps    (8.86 u%)
+    tran: time = 21.42 us    (93.1 %), step = 1.512 ps    (6.58 u%)
+    tran: time = 21.44 us    (93.2 %), step = 2.073 ps    (9.01 u%)
+    tran: time = 21.46 us    (93.3 %), step = 8.249 ps    (35.9 u%)
+    tran: time = 21.47 us    (93.4 %), step = 2.509 ps    (10.9 u%)
+    tran: time = 21.5 us     (93.5 %), step = 5.513 ps      (24 u%)
+    tran: time = 21.53 us    (93.6 %), step = 6.893 ps      (30 u%)
+    tran: time = 21.54 us    (93.7 %), step = 531.3 fs    (2.31 u%)
+    tran: time = 21.56 us    (93.7 %), step = 9.221 ps    (40.1 u%)
+    tran: time = 21.58 us    (93.8 %), step = 13.93 ps    (60.6 u%)
+    tran: time = 21.6 us     (93.9 %), step = 7.732 ps    (33.6 u%)
+    tran: time = 21.63 us    (94.1 %), step = 3.561 ps    (15.5 u%)
+    tran: time = 21.65 us    (94.1 %), step = 1.185 ps    (5.15 u%)
+    tran: time = 21.66 us    (94.2 %), step = 6.318 ps    (27.5 u%)
+    tran: time = 21.68 us    (94.3 %), step = 3.578 ps    (15.6 u%)
+    tran: time = 21.72 us    (94.4 %), step = 3.479 ps    (15.1 u%)
+    tran: time = 21.74 us    (94.5 %), step = 11.18 ps    (48.6 u%)
+    tran: time = 21.76 us    (94.6 %), step = 19.97 ps    (86.8 u%)
+    tran: time = 21.77 us    (94.7 %), step = 8.433 ps    (36.7 u%)
+    tran: time = 21.79 us    (94.7 %), step = 5.973 ps      (26 u%)
+    tran: time = 21.83 us    (94.9 %), step = 2.31 ps       (10 u%)
+    tran: time = 21.84 us      (95 %), step = 2.284 ps    (9.93 u%)
+    tran: time = 21.86 us      (95 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 21.88 us    (95.1 %), step = 288.5 fs    (1.25 u%)
+    tran: time = 21.9 us     (95.2 %), step = 230.5 fs       (1 u%)
+    tran: time = 21.94 us    (95.4 %), step = 213.9 fs     (930 n%)
+    tran: time = 21.95 us    (95.5 %), step = 3.323 ps    (14.4 u%)
+    tran: time = 21.97 us    (95.5 %), step = 1.462 ps    (6.36 u%)
+    tran: time = 22 us       (95.6 %), step = 742 fs      (3.23 u%)
+    tran: time = 22.03 us    (95.8 %), step = 4.16 ps     (18.1 u%)
+    tran: time = 22.05 us    (95.9 %), step = 12.1 ps     (52.6 u%)
+    tran: time = 22.07 us    (95.9 %), step = 2.919 ps    (12.7 u%)
+    tran: time = 22.08 us      (96 %), step = 3.836 ps    (16.7 u%)
+    tran: time = 22.12 us    (96.2 %), step = 5.076 ps    (22.1 u%)
+    tran: time = 22.14 us    (96.3 %), step = 14.01 ps    (60.9 u%)
+    tran: time = 22.16 us    (96.3 %), step = 2.563 ps    (11.1 u%)
+    tran: time = 22.18 us    (96.4 %), step = 362.9 fs    (1.58 u%)
+    tran: time = 22.2 us     (96.5 %), step = 4.244 ps    (18.5 u%)
+    tran: time = 22.23 us    (96.7 %), step = 2.438 ps    (10.6 u%)
+    tran: time = 22.25 us    (96.7 %), step = 3.613 ps    (15.7 u%)
+    tran: time = 22.27 us    (96.8 %), step = 288.2 fs    (1.25 u%)
+    tran: time = 22.29 us    (96.9 %), step = 5.3 ps        (23 u%)
+    tran: time = 22.33 us    (97.1 %), step = 1.317 ps    (5.73 u%)
+    tran: time = 22.34 us    (97.2 %), step = 2.419 ps    (10.5 u%)
+    tran: time = 22.36 us    (97.2 %), step = 379.5 fs    (1.65 u%)
+    tran: time = 22.38 us    (97.3 %), step = 2.501 ps    (10.9 u%)
+    tran: time = 22.42 us    (97.5 %), step = 76.73 ps     (334 u%)
+    tran: time = 22.43 us    (97.5 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 22.44 us    (97.6 %), step = 7.45 ps     (32.4 u%)
+    tran: time = 22.46 us    (97.6 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 22.47 us    (97.7 %), step = 156.6 fs     (681 n%)
+    tran: time = 22.5 us     (97.8 %), step = 84 fs        (365 n%)
+    tran: time = 22.53 us      (98 %), step = 4.521 ps    (19.7 u%)
+    tran: time = 22.55 us      (98 %), step = 3.423 ps    (14.9 u%)
+    tran: time = 22.57 us    (98.1 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 22.58 us    (98.2 %), step = 18 ps       (78.2 u%)
+    tran: time = 22.62 us    (98.4 %), step = 4.313 ps    (18.8 u%)
+    tran: time = 22.64 us    (98.4 %), step = 4.009 ps    (17.4 u%)
+    tran: time = 22.66 us    (98.5 %), step = 514.4 fs    (2.24 u%)
+
+Warning from spectre at time = 22.6617 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<5>. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 22.67 us    (98.6 %), step = 1.14 ps     (4.96 u%)
+    tran: time = 22.7 us     (98.7 %), step = 2.222 ps    (9.66 u%)
+    tran: time = 22.73 us    (98.8 %), step = 4.659 ps    (20.3 u%)
+    tran: time = 22.75 us    (98.9 %), step = 613.6 fs    (2.67 u%)
+    tran: time = 22.76 us      (99 %), step = 13.06 ps    (56.8 u%)
+    tran: time = 22.78 us    (99.1 %), step = 3.177 ps    (13.8 u%)
+    tran: time = 22.82 us    (99.2 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 22.84 us    (99.3 %), step = 21.51 ps    (93.5 u%)
+    tran: time = 22.85 us    (99.4 %), step = 320.3 fs    (1.39 u%)
+    tran: time = 22.87 us    (99.4 %), step = 188.2 fs     (818 n%)
+    tran: time = 22.89 us    (99.5 %), step = 4.159 ps    (18.1 u%)
+    tran: time = 22.93 us    (99.7 %), step = 6.945 ps    (30.2 u%)
+    tran: time = 22.94 us    (99.8 %), step = 9.6 ps      (41.7 u%)
+    tran: time = 22.96 us    (99.8 %), step = 911.5 fs    (3.96 u%)
+    tran: time = 22.98 us    (99.9 %), step = 45.42 fs     (197 n%)
+    tran: time = 23 us        (100 %), step = 17.61 ps    (76.6 u%)
+Number of accepted tran steps =             2248508
+
+Maximum value achieved for any signal of each quantity: 
+V: V(OUT) = 3.576 V
+I: I(V30:p) = 244.5 mA
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Post-Transient Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   -   Non-default settings that could significantly slow down simulation
+          errpreset = conservative_sigglobal, default moderate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+During simulation, the CPU load for active processors is :
+         0 (19.7 %)      1 (32.3 %)      2 (19.2 %)      3 (33.4 %)
+         4 (37.7 %)      5 (82.6 %)      6 (15.1 %)      7 (30.4 %)
+         8 (20.2 %)      9 (70.7 %)     10 (30.8 %)     11 (36.2 %)
+        Total: 428.4%
+Initial condition solution time: CPU = 47.283 ms, elapsed = 8.78406 ms.
+Intrinsic tran analysis time:    CPU = 9.32623 ks, elapsed = 1.1801 ks.
+Total time required for tran analysis `tran': CPU = 9.32629 ks (2h 35m 26s),
+        elapsed = 1.18011 ks (19m  40.1s), util. = 790%.
+Time accumulated: CPU = 9.32812 ks (2h 35m 28s), elapsed = 1.18064 ks (19m 
+        40.6s).
+Peak resident memory used = 489 Mbytes.
+
+finalTimeOP: writing operating point information to rawfile.
+
+Opening the PSF file psf/finalTimeOP.info ...
+modelParameter: writing model parameter values to rawfile.
+
+Opening the PSF file psf/modelParameter.info ...
+element: writing instance parameter values to rawfile.
+
+Opening the PSF file psf/element.info ...
+outputParameter: writing output parameter values to rawfile.
+
+Opening the PSF file psf/outputParameter.info ...
+designParamVals: writing netlist parameters to rawfile.
+
+Opening the PSFASCII file psf/designParamVals.info ...
+primitives: writing primitives to rawfile.
+
+Opening the PSFASCII file psf/primitives.info.primitives ...
+subckts: writing subcircuits to rawfile.
+
+Opening the PSFASCII file psf/subckts.info.subckts ...
+Licensing Information:
+Lic Summary:
+[02:04:13.001120] cdslmd servers: /opt/cadence/IC618/share/license/license.dat
+[02:04:13.001120] Feature usage summary:
+[02:04:13.016464]  Spectre_X_MMSIM_Lk  
+[02:04:13.496711]   Virtuoso_Multi_mode_Simulation  
+
+
+Aggregate audit (2:04:13 AM, Sat Jul 18, 2026):
+Time used: CPU = 9.33 ks (2h 35m 30s), elapsed = 1.18 ks (19m  40.9s), util. =
+        790%.
+Time spent in licensing: elapsed = 296 ms.
+Peak memory used = 489 Mbytes.
+Simulation started at: 1:44:32 AM, Sat Jul 18, 2026, ended at: 2:04:13 AM, Sat
+        Jul 18, 2026, with elapsed time (wall clock): 1.18 ks (19m  40.9s).
+spectre completes with 0 errors, 9 warnings, and 12 notices.

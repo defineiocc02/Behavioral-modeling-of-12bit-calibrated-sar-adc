@@ -1,0 +1,1234 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper,fontset=none]{ctexart}
+
+% ---------- 页面布局 ----------
+\usepackage[top=2cm,bottom=2cm,left=2cm,right=2cm]{geometry}
+
+% ---------- 表格 ----------
+\usepackage{longtable,booktabs,array,tabularx,multirow}
+\usepackage{float}          % [H] 强制表格位置
+
+% ---------- 颜色与着色 ----------
+\usepackage{xcolor}
+\usepackage{colortbl}
+
+% ---------- 列表与页眉页脚 ----------
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+
+% ---------- 数学 ----------
+\usepackage{amsmath,amssymb}
+
+% ---------- 脚注 ----------
+\usepackage[perpage]{footmisc}
+
+% ---------- 字体（ctexart 已加载 fontspec，此处仅设字体） ----------
+\setmainfont{Times New Roman}
+\setCJKmainfont{SimSun}[AutoFakeBold=true,ItalicFont=SimSun]
+\setCJKsansfont{SimHei}
+\setCJKmonofont{FangSong}
+
+% ---------- 超链接（须最后加载） ----------
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\definecolor{tabhead}{HTML}{1A3A5C}
+\definecolor{mygreen}{HTML}{D4EDDA}
+\definecolor{myred}{HTML}{F8D7DA}
+\definecolor{myblue}{HTML}{D6E4F0}
+
+\setlength{\headheight}{14.5pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 12-bit 10MS/s SAR ADC · 流片就绪度检查清单}
+\fancyhead[R]{\small 内部 · 2026-05}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ---------- 表格通用行高 ----------
+\renewcommand{\arraystretch}{1.4}
+
+% ---------- 防止标题孤悬页底 ----------
+\usepackage{needspace}
+\newcommand{\needtable}{\needspace{6cm}}   % 标题+表头至少需要 6cm
+
+% ---------- longtable + colortbl 兼容补丁 ----------
+\makeatletter
+\let\oldLT@array\LT@array
+\def\LT@array[#1]#2{%
+  \oldLT@array[#1]{#2}%
+  \ifnum\rownum=\@ne
+    \global\let\LT@startpbox\@startpboxhook
+  \fi}
+\makeatother
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+
+{\Huge\bfseries 12-bit 10\,MS/s SAR ADC\par}
+\vspace{0.5cm}
+{\huge\bfseries 流片就绪度检查清单\par}
+\vspace{1cm}
+{\Large Tapeout Readiness Checklist\par}
+
+\vspace{2cm}
+
+{\large\bfseries 文档信息\par}
+\vspace{0.5cm}
+\begin{tabular}{@{}r@{\quad}l@{}}
+\toprule
+\textbf{项目} & CAAZ SAR ADC（电流域 kT/C 噪声消除） \\
+\textbf{工艺} & TSMC 180nm CMOS (1P6M) \\
+\textbf{电源} & AVDD = DVDD = 1.8\,V，V$_{\text{REF}}$ = 1.8\,V \\
+\textbf{目标} & 12-bit, 10\,MS/s, TT 角 ENOB $\ge$ 10.5\,bit \\
+\textbf{网表} & \texttt{test\_12bit50MSAR\_AMS\_final}（"50M"为历史命名，实际目标 10\,MS/s） \\
+\textbf{版本} & v1.0 / 2026-05-06 \\
+\textbf{密级} & 内部 \\
+\bottomrule
+\end{tabular}
+
+\vspace{2cm}
+{\large\bfseries 华中科技大学 集成电路学院\par}
+\vfill
+\end{titlepage}
+
+%========================================================================
+\newpage
+\tableofcontents
+\newpage
+%========================================================================
+
+\needtable
+\section{电路模块设计 \& 版图}
+
+\begin{longtable}{@{}cL{4.0cm}L{4.0cm}L{3.8cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{设计工作}} &
+\textcolor{white}{\textbf{版图工作}} &
+\textcolor{white}{\textbf{签核标准}} \\
+\midrule
+\endhead
+\midrule \multicolumn{4}{r}{\small 续下页} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+1 & CDAC 电容阵列：12-bit 权重分配（$C=5$\,fF），温度计码/二进制混合，失配$\le0.01\%$ &
+共质心/CCM，MIM电容层，金属寄生补偿，top metal shielding &
+PEX后ENOB退化$\le0.3$\,bit \\
+
+2 & CAAZ比较器：pMOS差分对gm/Id定W/L，$C_{\mathrm{AZ}}\!=\!5$\,fF MIM，AZ开关电荷注入最小化，StrongARM latch &
+4$\times$2共质心，AZ电容就近，Guard ring(P$^+$/N$^+$双环)，防latch-up &
+仅比较器ENOB$\ge$11.5\,bit，offset$\le$5\,mV(3$\sigma$) \\
+
+3 & 开关矩阵：12组CMOS传输门($R_{\mathrm{on}}\!\le\!200\,\Omega$)，自举开关栅氧可靠，dummy时钟对齐 &
+对称走线，时钟线GND屏蔽，自举电容就近 &
+电荷注入$\le$1/4\,LSB，feedthrough$\le$1/2\,LSB \\
+
+4 & SAR逻辑：13级异步DFF链，三级NAND亚稳态防护，全corner hold time分析 &
+标准单元APR$+$CTS，max trans 200\,ps，fanout 8 &
+全corner建立/保持时间满足 \\
+
+5 & 时钟同步：$t_{\mathrm{del}}\!=\!4.5$\,ns延迟链，PCLK buffer级联 &
+匹配走线，等长绕线 &
+全corner $t_{\mathrm{del}}$偏差$\le\pm15\%$ \\
+
+6 & 输出解码：full\_adder树逻辑，DFF链时序对齐 &
+标准单元自动布局 &
+输出无毛刺，解码$\le$1\,CLK \\
+
+7 & 输出缓冲：级联buffer($\ge$4\,mA)，slew$\ge$0.5\,V/ns &
+驱动管$\ge$100$\mu$m/0.35$\mu$m，内建ESD &
+10\,pF下$t_r/t_f\!\le\!2$\,ns \\
+
+\caption{电路模块设计 \& 版图}
+\label{tab:modules}
+\end{longtable}
+
+%========================================================================
+\newpage
+\needtable
+\section{延迟链制作方案设计}
+%========================================================================
+
+\textbf{设计目标：}为 CAAZ SAR ADC 提供采样$\to$自动调零$\to$比较三阶段非重叠时钟，
+目标延迟 $t_{\mathrm{del}}\approx4.5$\,ns，全 PVT 偏差$\le\pm15\%$。
+
+\needtable
+\subsection{方案对比总览}
+
+\begin{table}[H]
+\centering
+\caption{方案对比总览}
+\scriptsize
+\begin{tabular}{@{}cL{2.0cm}L{1.8cm}cL{1.6cm}L{3.4cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{方案}} &
+\textcolor{white}{\textbf{电路拓扑}} &
+\textcolor{white}{\textbf{调节方式}} &
+\textcolor{white}{\textbf{PVT偏差}} &
+\textcolor{white}{\textbf{面积·功耗}} &
+\textcolor{white}{\textbf{优·缺}} \\
+\midrule
+A &
+电流饥饿型反相器链：N级反相器上下各加电流源管，偏置电压控制充放电电流 &
+$V_{\mathrm{bias}}$连续调节，$t_d\!=\!N C_L V_{\mathrm{DD}}/I_{\mathrm{bias}}$ &
+$\pm$20--30\%（裸）；$\le\!\pm$10\%（加偏置反馈） &
+$\sim$0.01\,mm$^2$\newline$\sim$50--200\,$\mu$W &
+\textcolor{green!50!black}{\textbf{+}} 面积小、延迟连续可调、设计成熟\newline
+\textcolor{red}{\textbf{--}} PVT敏感需校准、偏置噪声耦合 \\
+\midrule
+B &
+RC延迟线：MIM电容$+$P$^+$poly电阻构成RC梯形，MOS开关选通抽头 &
+开关选通不同抽头，离散调节，$t_d\!\approx\!0.7RC$ &
+$\pm$10--15\%（R/C同向变化部分抵消） &
+$\sim$0.02--0.05\,mm$^2$\newline$\sim$10--50\,$\mu$W（静态$\approx$0） &
+\textcolor{green!50!black}{\textbf{+}} PVT稳定性好、静态功耗极低、结构简单\newline
+\textcolor{red}{\textbf{--}} 面积偏大、离散调节粒度受限、RC匹配要求 \\
+\midrule
+C &
+数字延迟锁定环（DLL）：VCDL$+$鉴相器$+$电荷泵$+$环路滤波器，闭环锁定至参考时钟 &
+闭环自动锁定，$t_d\!=\!T_{\mathrm{CLK}}/N$，PVT自适应 &
+$\le\!\pm$1--3\%（闭环跟踪） &
+$\sim$0.05--0.1\,mm$^2$\newline$\sim$0.5--2\,mW &
+\textcolor{green!50!black}{\textbf{+}} 精度最高、PVT自跟踪、数字化可控\newline
+\textcolor{red}{\textbf{--}} 面积大、功耗高、设计复杂、需锁定时间 \\
+\midrule
+D &
+缓冲器链$+$数字校准：N级缓冲器并联可切换dummy负载（MOS cap），寄存器控制 &
+数字码切换dummy负载，离散可调；上电/出厂校准 &
+$\le\!\pm$5\%（校准后） &
+$\sim$0.02--0.03\,mm$^2$\newline$\sim$100--300\,$\mu$W &
+\textcolor{green!50!black}{\textbf{+}} 数字可控、可测试性好、校准后精度高\newline
+\textcolor{red}{\textbf{--}} 需校准流程、寄存器开销、未校准偏差大 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{各方案关键设计参数}
+
+\begin{table}[H]
+\centering
+\caption{各方案关键设计参数}
+\scriptsize
+\begin{tabular}{@{}cL{1.4cm}L{2.6cm}L{2.8cm}L{3.4cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{方案}} &
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{关键参数}} &
+\textcolor{white}{\textbf{版图要求}} &
+\textcolor{white}{\textbf{签核标准}} \\
+\midrule
+A & 级数确定 & $N\!\approx\!30$--50级；$I_{\mathrm{bias}}\!\approx\!5$--20\,$\mu$A；
+$V_{\mathrm{bias}}$范围0.4--1.2\,V & 等长走线、电源decap就近、偏置线屏蔽 &
+TT $t_d\!=\!4.5$\,ns；全corner $t_d$偏差$\le\pm$15\% \\
+A & 偏置反馈 & 外接偏置电压或片内带隙$+$电阻分压；
+可选复制偏置$+$比较器自动校准 & 偏置走线远离开关区 &
+偏置PSRR$\ge$40\,dB；偏置噪声$\le$1\,mV$_{\mathrm{rms}}$ \\
+\midrule
+B & RC常数 & $R\!\approx\!5$--20\,k$\Omega$（poly或metal）；
+$C\!\approx\!200$--500\,fF（MIM）；$N\!\approx\!8$--16节 &
+电阻共质心、电容MIM、RC单元紧凑排布 &
+$RC$偏差$\le\pm$10\%；$t_d$偏差$\le\pm$15\% \\
+B & 抽头开关 & MOS传输门$R_{\mathrm{on}}\!\le\!500\,\Omega$；
+dummy开关对齐；4--8档离散调节 & 对称走线、开关管靠近RC节点 &
+开关电荷注入$\le$1/2\,LSB等效 \\
+\midrule
+C & VCDL & $N\!\approx\!32$--64级压控延迟单元；
+控制电压$V_c$范围0.4--1.4\,V & 等长走线、VCDL中心对称、电源隔离 &
+VCDL增益$K_{\mathrm{VCDL}}\!\le\!200$\,ps/mV \\
+C & 环路 & 鉴相器死区$\le$10\,ps；电荷泵失配$\le$1\%；
+环路带宽$\sim$1\,MHz；锁定时间$\le$100个时钟周期 &
+CP/LF远离VCDL、模拟/数字地隔离 &
+锁定后jitter$\le$50\,ps$_{\mathrm{rms}}$；无谐波锁定 \\
+\midrule
+D & 级数与负载 & $N\!\approx\!30$--50级缓冲器；
+每级并联3--5位MOS cap dummy负载；控制寄存器4--6位/级 &
+等长走线、寄存器靠近负载、电源decap &
+未校准$t_d$偏差$\le\pm$25\%；校准后$\le\pm$5\% \\
+D & 校准逻辑 & 上电自校准：比较器检测过零点$\to$逐次逼近调码；
+或出厂一次校准写入eFuse/OTP &
+数字逻辑旁置模拟区、校准走线屏蔽 &
+校准收敛$\le$2$^N$步；校准后全PVT保持$\le\pm$5\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{推荐与选型建议}
+
+\begin{table}[H]
+\centering
+\caption{推荐与选型建议}
+\scriptsize
+\begin{tabular}{@{}ccL{3.2cm}L{4.8cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{方案}} &
+\textcolor{white}{\textbf{推荐度}} &
+\textcolor{white}{\textbf{适用场景}} &
+\textcolor{white}{\textbf{选型理由}} \\
+\midrule
+A & \textcolor{green!50!black}{\textbf{$\bigstar\bigstar\bigstar$}} &
+面积受限、工期紧、延迟需连续微调 &
+最成熟方案，180nm工艺验证充分；加偏置反馈后PVT偏差可接受；
+Phase 2设计周期最短 \\
+\midrule
+D & \textcolor{green!50!black}{\textbf{$\bigstar\bigstar$}} &
+需要数字可控/可测试性、有校准条件 &
+校准后精度高，与SPI寄存器集成方便；
+适合流片后调试阶段灵活调整时序 \\
+\midrule
+B & \textcolor{orange}{$\bigstar\bigstar$} &
+对PVT稳定性要求优先、面积预算宽裕 &
+PVT最稳定，但面积偏大、离散调节；适合对延迟精度要求极高但调节频率低的场景 \\
+\midrule
+C & \textcolor{red}{$\bigstar$} &
+多相位高精度时钟系统、PVT全覆盖 &
+精度最高但设计复杂度、面积、功耗代价均最大；
+仅当其他方案无法满足PVT要求时考虑 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{初步选型：}建议以\textbf{方案A（电流饥饿型反相器链$+$偏置反馈）}为主方案推进，
+同时保留\textbf{方案D（缓冲器链$+$数字校准）}作为备选，版图预留dummy负载位置。
+
+%========================================================================
+\newpage
+\needtable
+\section{偏置与关键外围电路方案设计}
+%========================================================================
+
+\textbf{设计策略：}学术芯片以\textbf{片外方案为主选}，同时片内引入低成本的\textbf{Beta-multiplier 自偏置冗余}，
+大幅简化片上设计的同时保留芯片独立工作能力。片外方案需增加专用 Pin，PCB 端提供低噪声驱动。
+
+%---------- 片外/片内选型总览 ----------
+\needtable
+\subsection{片外与片内方案选型总览}
+
+\begin{table}[H]
+\centering
+\caption{片外与片内方案选型总览}
+\scriptsize
+\begin{tabular}{@{}ccL{2.4cm}L{3.0cm}L{4.0cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{模块}} &
+\textcolor{white}{\textbf{主选}} &
+\textcolor{white}{\textbf{片外方案}} &
+\textcolor{white}{\textbf{片内备选（产品化升级）}} &
+\textcolor{white}{\textbf{选型理由（学术芯片）}} \\
+\midrule
+基准电压 &
+\textcolor{green!50!black}{\textbf{片外}} &
+PCB低噪声LDO直供$V_{\mathrm{REF}}$引脚 &
+BJT带隙$+$电阻分压 &
+省去BG设计/仿真/PVT验证；LDO精度远超片内BG \\
+\midrule
+偏置电流 &
+\textcolor{green!50!black}{\textbf{片外}} &
+片外高精度电阻$I\!=\!V_{\mathrm{DD}}/R_{\mathrm{ext}}$，Pin引入$+$片内Cascode镜像 &
+Cascode电流镜$+$BG/电阻 &
+片外电阻精度0.1\%即可；省去启动电路设计 \\
+\midrule
+延迟链偏置 &
+\textcolor{green!50!black}{\textbf{片外}} &
+PCB DAC/电位器提供$V_{\mathrm{bias}}$，Pin引入$+$片内RC滤波 &
+片内复制偏置$+$闭环反馈 &
+调试阶段可实时调节延迟；省去片内反馈环路 \\
+\midrule
+VREFP Buffer &
+\textcolor{green!50!black}{\textbf{片外}} &
+PCB运放(如OPA2356)直驱$V_{\mathrm{REF}}$引脚$+$1\,$\mu$F MLCC &
+片内Class-AB两级运放 &
+省去片内200\,MHz运放设计；PCB运放GBW$>$100\,MHz，驱动能力充足 \\
+\midrule
+VCM Buffer &
+\textcolor{green!50!black}{\textbf{片外}} &
+PCB电阻分压$+$运放缓冲直驱$V_{\mathrm{CM}}$引脚 &
+片内源极跟随器$+$误差放大器 &
+$V_{\mathrm{CM}}$无切换瞬态电流，PCB缓冲绰绰有余 \\
+\midrule
+偏置冗余 &
+\textcolor{orange}{\textbf{片内}} &
+片外精密电阻$+$Cascode镜像（主偏置轨，Pin引入）&
+Beta-multiplier自偏置$+$2:1电流MUX，SPI寄存器切换 &
+片内Beta-multiplier调用2--3天设计量即获得PTAT电流冗余；\newline
+兼得片外调试灵活性与芯片独立工作能力 \\
+\midrule
+POR &
+\textcolor{orange}{\textbf{片内}} &
+— &
+电阻分压$+$Schmitt$+$RC展宽 &
+POR必须片内——上电时PCB无法干预；电路简单（$\sim$20管），设计量小 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{片外方案代价：}需新增5个专用Pin（$V_{\mathrm{REF}}$、$V_{\mathrm{CM}}$、$I_{\mathrm{bias}}$、$V_{\mathrm{bias,del}}$、GND-sense），
+Pin总数从$\approx$30增至$\approx$35，QFN40封装仍可容纳。
+
+%---------- 片外方案详细设计 ----------
+\needtable
+\subsection{片外方案详细设计}
+
+\begin{table}[H]
+\centering
+\caption{片外方案详细设计}
+\scriptsize
+\begin{tabular}{@{}cL{1.8cm}L{3.2cm}L{3.2cm}L{3.2cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{模块}} &
+\textcolor{white}{\textbf{PCB端实现}} &
+\textcolor{white}{\textbf{片上接口}} &
+\textcolor{white}{\textbf{关键注意事项}} &
+\textcolor{white}{\textbf{签核标准}} \\
+\midrule
+\textbf{$V_{\mathrm{REF}}$} &
+低噪声LDO (ADP7118)：\newline
+输出1.8\,V，噪声$\le$15\,$\mu$V$_{\mathrm{rms}}$\newline
+串联1\,$\Omega$$+$1\,$\mu$F MLCC就近去耦 &
+专用Pin引入，片内仅做ESD保护$+$decap$\ge$50\,pF &
+bond wire电感$\sim$2\,nH与1\,$\mu$F形成$\sim$3\,MHz谐振，需串联1\,$\Omega$阻尼；\newline
+CDAC切换瞬态由片外1\,$\mu$F供给 &
+$V_{\mathrm{REF}}$纹波$\le$1/4\,LSB (440\,$\mu$V)\newline
+建立时间由PCB决定，片内无要求 \\
+\midrule
+\textbf{$V_{\mathrm{CM}}$} &
+电阻分压$+$运放缓冲：\newline
+两颗10\,k$\Omega$分压得0.9\,V\newline
+OPA2356 (GBW 200\,MHz) 单位增益缓冲 &
+专用Pin引入，片内ESD$+$decap$\ge$20\,pF &
+$V_{\mathrm{CM}}$负载极轻（仅比较器/开关直流），PCB缓冲驱动绰绰有余 &
+$V_{\mathrm{CM}}$精度$\le\pm$5\,mV\newline
+噪声$\le$50\,nV/$\!\sqrt{\mathrm{Hz}}$ \\
+\midrule
+\textbf{$I_{\mathrm{bias}}$} &
+精密电阻设定：\newline
+$R_{\mathrm{ext}}\!=\!V_{\mathrm{DD}}/I_{\mathrm{ref}}\!=\!180$\,k$\Omega$ (0.1\%)\newline
+或DAC可调电流源 &
+Pin引入，片内Cascode镜像1--4$\times$复制 &
+片内镜像管$V_{\mathrm{GS}}$匹配是关键；\newline
+PCB电阻温漂$\le$25\,ppm/$^\circ$C远优于片内 &
+$I_{\mathrm{ref}}$偏差$\le\pm$5\%\newline
+镜像精度$\ge$99.5\% \\
+\midrule
+\textbf{$V_{\mathrm{bias,del}}$} &
+DAC/电位器：\newline
+10-turn精密电位器或16-bit DAC\newline
+输出0.4--1.2\,V可调 &
+Pin引入$+$片内RC滤波\newline
+$R\!=\!10$\,k$\Omega$ (poly)$+$$C\!=\!10$\,pF (MIM)\newline
+$-$3\,dB$\approx$1.6\,MHz &
+RC滤波截止频率需$>$信号带宽但$<$时钟频率；\newline
+调试时可实时调延迟观察性能 &
+延迟偏差$\le\pm$15\%全PVT\newline
+偏置噪声$\le$1\,mV$_{\mathrm{rms}}$ \\
+\midrule
+\textbf{POR} &
+\textit{片内实现}（PCB无法干预上电过程） &
+电阻分压$+$Schmitt$+$RC展宽\newline
+上升阈值1.4\,V，迟滞$\ge$100\,mV &
+POR电路仅$\sim$20管，面积$<$0.005\,mm$^2$；\newline
+必须确保偏置$+$VREF建立后再释放SAR逻辑 &
+0$\to$1.8V复位可靠\newline
+全角阈值1.3--1.5\,V \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%---------- PCB设计要求 ----------
+\needtable
+\subsection{PCB 配套设计要求}
+
+\begin{table}[H]
+\centering
+\caption{PCB 配套设计要求}
+\scriptsize
+\begin{tabular}{@{}cL{2.4cm}L{4.0cm}L{5.0cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{器件/方案}} &
+\textcolor{white}{\textbf{关键规格}} &
+\textcolor{white}{\textbf{PCB 布局要点}} \\
+\midrule
+$V_{\mathrm{REF}}$电源 &
+ADP7118 (低噪声LDO) &
+输出1.8\,V，噪声15\,$\mu$V$_{\mathrm{rms}}$\newline
+PSRR$\ge$60\,dB @1\,kHz &
+输出1\,$\Omega$$+$1\,$\mu$F MLCC紧贴Pin脚\newline
+LDO输出至Pin走线$<$5\,mm \\
+\midrule
+$V_{\mathrm{CM}}$缓冲 &
+OPA2356 (双运放) &
+GBW 200\,MHz，SR 375\,V/$\mu$s\newline
+噪声6\,nV/$\!\sqrt{\mathrm{Hz}}$ &
+单位增益缓冲，输出10\,nF去耦\newline
+运放$+$分压电阻靠近Pin \\
+\midrule
+$I_{\mathrm{bias}}$电阻 &
+0.1\%精密贴片电阻 &
+180\,k$\Omega$ (或DAC可调)\newline
+TC$\le$25\,ppm/$^\circ$C &
+远离发热元件；\newline
+四端Kelvin接法减少接触电阻 \\
+\midrule
+$V_{\mathrm{bias,del}}$ &
+10-turn电位器/DAC &
+0.4--1.2\,V可调，分辨率$\le$10\,mV &
+输出RC滤波紧贴Pin；\newline
+走线屏蔽（上下GND plane） \\
+\midrule
+PCB基板 &
+4层FR-4 &
+L1信号，L2 GND plane，L3电源plane，L4信号 &
+模拟/数字地单点连接；\newline
+电源plane分割AVDD/DVDD \\
+\midrule
+去耦电容 &
+MLCC (0402) &
+每电源Pin: 100\,nF$+$10\,$\mu$F\newline
+$V_{\mathrm{REF}}$额外1\,$\mu$F &
+紧贴Pin脚，过孔直接连plane \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%---------- 片内备选方案 ----------
+\needtable
+\subsection{片内备选方案（产品化升级用）}
+
+\begin{table}[H]
+\centering
+\caption{片内备选方案（产品化升级用）}
+\scriptsize
+\begin{tabular}{@{}cL{2.0cm}L{3.0cm}L{3.2cm}L{3.2cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{模块}} &
+\textcolor{white}{\textbf{片内拓扑}} &
+\textcolor{white}{\textbf{关键指标}} &
+\textcolor{white}{\textbf{版图要求}} &
+\textcolor{white}{\textbf{设计周期}} \\
+\midrule
+基准电压 &
+BJT带隙：pnp纵向BJT$+$运放$+$电阻分压，$V_{\mathrm{BG}}\!\approx\!1.2$\,V &
+TC$\le$50\,ppm/$^\circ$C，PSRR$\ge$60\,dB &
+BJT共质心，电阻高阻值poly，decap$\ge$10\,pF &
+$\sim$2周（含PVT仿真） \\
+\midrule
+偏置电流 &
+Cascode电流镜$+$启动电路，$V_{\mathrm{BG}}/R$生成$I_{\mathrm{ref}}$ &
+PSRR$\ge$60\,dB，$I_{\mathrm{ref}}$偏差$\le\pm$10\% &
+电流镜共质心，栅极等长匹配，Guard ring &
+$\sim$1周（含启动验证） \\
+\midrule
+VREFP Buffer &
+Class-AB两级运放：折叠Cascode$+$推挽输出$+$嵌套Miller &
+GBW$\ge$200\,MHz，建立$\le$2\,ns，$R_{\mathrm{out}}\!\le\!10\,\Omega$ &
+输入对共质心，Miller电容MIM，decap$\ge$200\,pF &
+$\sim$3周（最复杂，含稳定性调试） \\
+\midrule
+VCM Buffer &
+源极跟随器$+$误差放大器，深nWell隔离 &
+噪声$\le$15\,nV/$\!\sqrt{\mathrm{Hz}}$，建立$\le$1\,ns &
+源跟随器大尺寸，Guard ring &
+$\sim$1.5周 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{片内备选总设计周期：}$\sim$7.5周，适用于产品化升级阶段。本流片阶段不采用。
+
+%---------- 片内冗余偏置 ----------
+\needtable
+\subsection{片内冗余偏置方案（Beta-multiplier + 2:1 MUX）}
+
+\textbf{设计动机：}主偏置来自片外精密电阻$+$Cascode镜像，调试灵活。
+为赋予芯片独立工作能力（论文审稿考量）并作为片外偏置失效后的冗余方案，
+在片内增加\textbf{Beta-multiplier 自偏置}$+$\textbf{2:1 电流 MUX}，由 SPI 寄存器切换。
+
+\begin{table}[H]
+\centering
+\caption{Beta-multiplier + 2:1 MUX 设计参数}
+\scriptsize
+\begin{tabular}{@{}cL{2.2cm}L{3.6cm}L{3.6cm}L{2.8cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{模块}} &
+\textcolor{white}{\textbf{电路拓扑}} &
+\textcolor{white}{\textbf{关键参数}} &
+\textcolor{white}{\textbf{版图要求}} &
+\textcolor{white}{\textbf{设计周期}} \\
+\midrule
+Beta-multiplier &
+NMOS对管（W/L比$n$:1）堆叠PMOS Cascode负载，
+源端接poly电阻$R$ \newline
+启动电路：大L PMOS弱上拉 &
+$I_{\mathrm{ref}} = V_T \ln(n) / R$\newline
+$n=4$--8，$R\approx10$--20\,k$\Omega$ (poly)\newline
+$I_{\mathrm{ref}}\approx5$--20\,$\mu$A，PTAT温度特性 &
+对管共质心，$R$匹配走线，启动管弱上拉远离开关区 &
+$\sim$2.5天（含PVT仿真） \\
+\midrule
+2:1 电流 MUX &
+传输门型：互补CMOS传输门$\times$2路，
+一路接Beta-multiplier输出，一路接外部Ibias Pin，
+共用输出至Cascode镜像主干，
+SPI寄存器1 bit 控制 &
+导通电阻$R_{\mathrm{on}}\le1$\,k$\Omega$\newline
+控制位：SPI reg[0]\newline
+0 = 片内Beta-multiplier\newline
+1 = 片外Ibias Pin &
+MUX靠Cascode镜像摆放，控制走线屏蔽 &
+$\sim$0.5天 \\
+\midrule
+连接关系 &
+片内流：Beta-multiplier $\to$ MUX A $\to$ Cascode主干\newline
+片外流：Ibias\_ext Pin $\to$ MUX B $\to$ Cascode主干\newline
+SPI 写 reg[0] 切换 &
+$I_{\mathrm{bias}}$全程$\pm5$\%精度（任一路） &
+Cascode镜像管共质心，栅极等长 & — \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{片内冗余方案代价：}
+\begin{itemize}[leftmargin=*,nosep]
+    \item 增加约30个MOS管 + 1个poly电阻，面积$<0.005$\,mm$^2$
+    \item 新增1个SPI控制位（reg[0]），无需额外Pin
+    \item 设计周期$\sim$3天，Phase 2工期从1周增至\textbf{$\sim$1.5周}
+\end{itemize}
+
+\textbf{冗余方案收益：}
+\begin{itemize}[leftmargin=*,nosep]
+    \item 芯片具备独立工作能力，不依赖外部偏置即可启动ADC
+    \item 论文审稿时展示完整的片上偏置架构
+    \item 流片后若片内Beta-multiplier表现理想，可直接省去外部Ibias电阻
+\end{itemize}
+
+%========================================================================
+\newpage
+\section{仿真验证}
+%========================================================================
+
+\needtable
+\subsection{全噪声瞬态仿真}
+
+\begin{table}[H]
+\centering
+\caption{全噪声瞬态仿真}
+\footnotesize
+\begin{tabular}{@{}cclcc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{Testbench}} &
+\textcolor{white}{\textbf{判据}} &
+\textcolor{white}{\textbf{状态}} \\
+\midrule
+8 & 全噪声TT角 & \texttt{noiseon=ALL}瞬态，128点FFT，$f_{\mathrm{in}}\!=\!488.28$\,kHz & ENOB$\ge$10.5, SNR$\ge$67\,dB & \cellcolor{mygreen}$\checkmark$ \\
+9 & 噪声分离 & \texttt{noiseon=[I1]}仅采样开关噪声 & ENOB$\ge$11.5 & \cellcolor{mygreen}$\checkmark$ \\
+10 & 噪声折叠 & PSS+PNOISE，Phase2扫频1\,Hz--100\,MHz & NF$_{\mathrm{in}}\!-\!$NF$_{\mathrm{bb}}\!\le\!3$\,dB & \cellcolor{myred}\# \\
+11 & 比较器噪声 & 比较器独立PNOISE，Phase2/3分别 & 贡献$\le$总噪声30\% & \cellcolor{myred}\# \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{PVT 全覆盖}
+
+\begin{table}[H]
+\centering
+\caption{PVT 全覆盖}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{工艺角}} &
+\textcolor{white}{\textbf{温度点}} &
+\textcolor{white}{\textbf{次数}} &
+\textcolor{white}{\textbf{状态}} \\
+\midrule
+TT & 27$^\circ$C & 1 & \cellcolor{mygreen}$\checkmark$ \\
+FF & $-40$/27/85$^\circ$C & 3 & \cellcolor{myred}\# \\
+SS & $-40$/27/85$^\circ$C & 3 & \cellcolor{myred}\# \\
+SF & $-40$/27$^\circ$C (85选做) & 2--3 & \cellcolor{myred}\# \\
+FS & $-40$/27$^\circ$C (85选做) & 2--3 & \cellcolor{myred}\# \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5cm}
+
+\begin{tabular}{@{}ccc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{电压扫描}} &
+\textcolor{white}{\textbf{条件}} &
+\textcolor{white}{\textbf{必要性}} \\
+\midrule
+$\pm$5\%  & 1.71\,V / 1.89\,V (TT, 27$^\circ$C) & \textbf{必须} \\
+$\pm$10\% & 1.62\,V / 1.98\,V (TT, 27$^\circ$C) & \textbf{推荐} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{Monte Carlo 失配分析}
+
+\begin{table}[H]
+\centering
+\caption{Monte Carlo 失配分析}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{维度}} &
+\textcolor{white}{\textbf{次数}} &
+\textcolor{white}{\textbf{判据}} \\
+\midrule
+12 & MC mismatch (仅失配) & 200 (TT, 27$^\circ$C) & ENOB $\mu\!-\!3\sigma\!\ge\!10.0$\,bit \\
+13 & MC process+mismatch & 100 (TT, 27$^\circ$C) & ENOB yield $\ge$95\% @ 10.0\,bit \\
+14 & 关键参数分布 & CDAC DNL, offset, gain error & $3\sigma\!\le$设计裕量 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{系统级性能仿真}
+
+\begin{table}[H]
+\centering
+\caption{系统级性能仿真}
+\footnotesize
+\begin{tabular}{@{}ccL{4.2cm}c@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{Testbench}} &
+\textcolor{white}{\textbf{判据}} \\
+\midrule
+15 & PSRR (AVDD) & AVDD叠加100\,mVpp 100\,kHz纹波 & SFDR退化$\le$3\,dB \\
+16 & PSRR (DVDD) & DVDD叠加100\,mVpp 100\,kHz & 输出码字无毛刺 \\
+17 & CMRR & VCM偏差$\pm$100\,mV & offset变化$\le$2\,LSB \\
+18 & INL/DNL & 全量程斜坡输入（200点）瞬态 & INL$\le\pm$0.8\,LSB, DNL$\le\pm$0.5\,LSB \\
+19 & 功耗分解 & PVT各角分项记录 & 确认主要功耗来源 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{版图后仿真}
+
+\begin{table}[H]
+\centering
+\caption{版图后仿真}
+\footnotesize
+\begin{tabular}{@{}ccL{4.2cm}c@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{工具/流程}} &
+\textcolor{white}{\textbf{判据}} \\
+\midrule
+24 & 全芯片PEX & Calibre xRC (R+C+CC) & 节点数与原理图一致 \\
+25 & 后仿真(TT) & PEX网表$+$全噪声瞬态 & ENOB退化$\le$0.5\,bit \\
+26 & 后仿真(FF/SS) & PEX网表$+$全噪声瞬态 & ENOB$\ge$10.0\,bit \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%========================================================================
+\newpage
+\needtable
+\section{外围电路设计}
+%========================================================================
+
+\begin{table}[H]
+\centering
+\caption{外围电路设计}
+\footnotesize
+\begin{tabular}{@{}ccL{3.8cm}L{3.3cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{模块}} &
+\textcolor{white}{\textbf{设计规格}} &
+\textcolor{white}{\textbf{版图要求}} \\
+\midrule
+20 & Cascode镜像接口 & Ibias\_ext Pin引入，Cascode镜像1--4$\times$复制，PSRR$\ge$60\,dB & 共质心，远离开关区 \\
+21 & Beta-multiplier & $I_{\mathrm{ref}}\!=\!V_T\ln(n)/R$，PTAT电流5--20\,$\mu$A，TC$\le$5000\,ppm/$^\circ$C & 对管共质心，poly电阻匹配走线 \\
+22 & 2:1电流MUX & 互补CMOS传输门，SPI reg[0]切换片内/片外，$R_{\mathrm{on}}\!\le\!1$\,k$\Omega$ & MUX靠Cascode摆放，控制线屏蔽 \\
+23 & POR & 阈值1.4--1.5\,V，迟滞$\ge$100\,mV，脉宽50\,$\mu$s & 数字逻辑旁置 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{片外方案已移出本表：}VREF Buffer、VCM Buffer、延迟链偏置均由PCB提供，详见第3节片外方案详细设计。
+
+%========================================================================
+\newpage
+\section{支撑工作}
+%========================================================================
+
+\needtable
+\subsection{PDK \& 工具链}
+
+\begin{table}[H]
+\centering
+\caption{PDK \& 工具链}
+\footnotesize
+\begin{tabular}{@{}ccL{5.8cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{支撑项}} &
+\textcolor{white}{\textbf{关键内容}} \\
+\midrule
+27 & PDK版本确认 & TSMC 180nm RF PDK (1P6M)；MIM电容密度、3.3V器件mask option确认 \\
+28 & 仿真器License & Spectre APS/APS$+$ (trans noise)，Spectre RF (PSS/PNOISE)，Assembler \\
+29 & MC/工艺角平台 & Cadence ADE Assembler批量PVT$+$MC任务Job策略 \\
+30 & Calibre License & 全芯片PEX提取性能预估（$>$24h需多核支持） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{芯片级规划}
+
+\begin{table}[H]
+\centering
+\caption{芯片级规划}
+\footnotesize
+\begin{tabular}{@{}ccL{5.6cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{支撑项}} &
+\textcolor{white}{\textbf{关键内容}} \\
+\midrule
+31 & Pinout定义 & 电源$\times$7，地$\times$4，模拟输入$\times$2，数字输出$\times$12，时钟$\times$1，SPI$\times$4，$\approx$30\,PAD \\
+32 & 封装方案 & QFN 32/40或QFP 44；bonding diagram草图 \\
+33 & ESD设计 & 所有PAD: HBM 2\,kV, CDM 500\,V；信号: 双二极管$+$电阻；电源: 主动clamp$+$RC \\
+34 & PCB测试板 & 4层板，低噪声LDO (ADP7118$\times$2)，SMA接口，COAX屏蔽 \\
+35 & 去耦电容 & AVDD: 100\,pF on-chip $+$ 100\,nF off；DVDD: 50\,pF $+$ 100\,nF；VREF: 200\,pF $+$ 1\,$\mu$F \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{数字与测试}
+
+\begin{table}[H]
+\centering
+\caption{数字与测试}
+\footnotesize
+\begin{tabular}{@{}ccL{5.4cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{支撑项}} &
+\textcolor{white}{\textbf{关键内容}} \\
+\midrule
+36 & SPI从机 & 读写ADC输出寄存器$+$配置寄存器，与模拟接口时序协商 \\
+37 & 数字电平 & DVDD 1.8V $\to$ FPGA LVCMOS 1.8V；若需3.3V则加level shifter \\
+38 & 测试模式 & bypass mode：CDAC直出（跳过SAR），用于INL/DNL校准标定 \\
+39 & 扫描链/DFT & 可选，便于debug \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{物理验证}
+
+\begin{table}[H]
+\centering
+\caption{物理验证}
+\footnotesize
+\begin{tabular}{@{}cccL{3.6cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{工具}} &
+\textcolor{white}{\textbf{判据}} \\
+\midrule
+40 & DRC & Calibre nmDRC & 0错误（含天线规则） \\
+41 & LVS & Calibre nmLVS & 器件、节点、参数全匹配 \\
+42 & ERC & Calibre PERC & 浮空节点、软连接、latch-up \\
+43 & 天线效应 & Calibre DRC (antenna) & 栅极节点天线比$<$规范值 \\
+44 & DFM & Calibre YieldEnhancer & CMP密度20--80\%，通孔覆盖$\ge$1 \\
+45 & EM/IR drop & Voltus/RedHawk & AVDD IR drop $\le$50\,mV \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{文档与签核}
+
+\begin{table}[H]
+\centering
+\caption{文档与签核}
+\footnotesize
+\begin{tabular}{@{}ccL{5.8cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{内容}} \\
+\midrule
+46 & 设计规范书 & 全部corner目标，功耗/面积/噪声预算表 \\
+47 & 仿真签核报告 & 全部PVT$+$MC汇总表，ENOB/SNR/SFDR histogram \\
+48 & 版图Review & 模拟lead$+$版图lead正式评审纪要 \\
+49 & Tapeout sign-off & DRC/LVS/ERC/DFM全通过截图$+$仿真数据附表 \\
+50 & GDSII提交 & GDSII $+$ LVS报告 $+$ DRC报告 $+$ Design Note \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%========================================================================
+\newpage
+\needtable
+\section{统计}
+%========================================================================
+
+\begin{table}[H]
+\centering
+\caption{统计}
+\begin{tabular}{@{}lcccr@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{分类}} &
+\textcolor{white}{\textbf{已完成}} &
+\textcolor{white}{\textbf{部分完成}} &
+\textcolor{white}{\textbf{未开始}} &
+\textcolor{white}{\textbf{完成率}} \\
+\midrule
+一、电路模块 (7) & 0 & 2 (SAR逻辑, 开关) & 5 & $\sim$10\% \\
+二、仿真验证 (15) & 2 (TT全噪, KTC隔离) & 0 & 13 & $\sim$13\% \\
+三、外围电路 (4) & 0 & 0 & 4 & 0\% \\
+四、工具链 (4) & 1 (仿真器可用) & 1 (PDK待确认) & 2 & $\sim$30\% \\
+五、芯片规划 (5) & 0 & 0 & 5 & 0\% \\
+六、数字测试 (4) & 0 & 1 (输出接口) & 3 & $\sim$10\% \\
+七、物理验证 (6) & 0 & 0 & 6 & 0\% \\
+八、文档签核 (5) & 0 & 3 (MOC$+$报告$+$本清单) & 2 & $\sim$30\% \\
+\midrule
+\textbf{总计 (50)} & \textbf{3} & \textbf{7} & \textbf{40} & \textbf{$\sim$13\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%========================================================================
+\newpage
+\section{执行计划}
+%========================================================================
+
+\needtable
+\subsection{Phase 1：仿真扫尾（2 周）}
+
+\textbf{目标：完成全部 PVT、MC、系统级仿真，锁定 Pre-Layout 性能指标。}
+
+\begin{table}[H]
+\centering
+\caption{Phase 1：仿真扫尾（2 周）}
+\footnotesize
+\begin{tabular}{@{}cL{1.6cm}L{3.6cm}L{2.8cm}cc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{任务}} &
+\textcolor{white}{\textbf{具体工作}} &
+\textcolor{white}{\textbf{交付物}} &
+\textcolor{white}{\textbf{负责}} &
+\textcolor{white}{\textbf{工时}} \\
+\midrule
+1.1 & TT全噪瞬态 & $\checkmark$已完成：128点FFT，ENOB 10.94\,bit & CSV数据 & 模拟 & 0d \\
+1.2 & PVT全覆盖 & FF/SS/SF/FS$\times$3温度，10--12次批量提交 & PVT汇总表 & 模拟 & 3d \\
+1.3 & 电压扫描 & $\pm$5\% (1.71/1.89\,V) @TT 27$^\circ$C & 敏感性报告 & 模拟 & 1d \\
+1.4 & MC mismatch & $\times$200 (TT)，ENOB/DNL/offset统计 & MC报告 $\mu\!\pm\!3\sigma$ & 模拟 & 2d \\
+1.5 & MC process & $\times$100 (TT)，yield估算 & yield报告 & 模拟 & 1d \\
+1.6 & PSRR & AVDD/DVDD 100\,mVpp 100\,kHz纹波 & PSRR报告 & 模拟 & 0.5d \\
+1.7 & INL/DNL & 全量程斜坡200点瞬态 & INL/DNL曲线 & 模拟 & 1d \\
+1.8 & CMRR & VCM偏差$\pm$100\,mV & CMRR数值 & 模拟 & 0.5d \\
+1.9 & 噪声分解 & PSS+PNOISE折叠 $+$ 比较器PNOISE & 噪声预算表 & 模拟 & 1.5d \\
+1.10 & 阶段报告 & 汇总全部仿真，Pre-Layout Sign-off & 签核报告初稿 & 模拟 & 1d \\
+\midrule
+\multicolumn{5}{l}{\textbf{Phase 1 小计}} & \textbf{2 周（10 工作日）} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{Phase 2：外围电路设计（1--1.5 周）}
+
+\textbf{目标：完成片内 Cascode 镜像、Beta-multiplier 自偏置、POR 原理图及前仿；VREF/VCM/延迟链偏置采用片外方案。}
+
+\begin{table}[H]
+\centering
+\caption{Phase 2：外围电路设计（1--1.5 周）}
+\footnotesize
+\begin{tabular}{@{}cL{1.6cm}L{3.6cm}L{2.8cm}cc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{任务}} &
+\textcolor{white}{\textbf{具体工作}} &
+\textcolor{white}{\textbf{交付物}} &
+\textcolor{white}{\textbf{负责}} &
+\textcolor{white}{\textbf{工时}} \\
+\midrule
+2.1 & Cascode镜像接口 & 片内Cascode电流镜（1--4$\times$复制），
+Ibias\_ext Pin引入ESD+保护 &
+原理图$+$仿真 & 模拟 & 1d \\
+2.2 & Beta-multiplier & NMOS对管$+$poly电阻$+$启动电路，
+PTAT电流验证，PVT角 &
+原理图$+$PVT仿真 & 模拟 & 2.5d \\
+2.3 & 2:1 MUX & 互补CMOS传输门$\times$2，SPI reg[0]控制，
+MUX输出至Cascode主干 &
+原理图$+$仿真 & 模拟 & 0.5d \\
+2.4 & POR & VDD 0$\to$1.8V，阈值1.4--1.5\,V，
+迟滞$\ge$100\,mV，脉宽50\,$\mu$s &
+原理图$+$瞬态 & 模拟 & 2d \\
+2.5 & 外围集成 & Beta-multiplier $+$ MUX + POR与ADC联仿，
+两路偏置（片内/片外）均验证 &
+全系统前仿报告 & 模拟 & 2d \\
+\midrule
+\multicolumn{5}{l}{\textbf{Phase 2 小计}} & \textbf{1--1.5 周（8 工作日）} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{Phase 3：版图（5--6 周）}
+
+\textbf{目标：完成全芯片版图设计、PEX 提取及前/后仿真比对。}
+
+\begin{table}[H]
+\centering
+\caption{Phase 3：版图（5--6 周）}
+\footnotesize
+\begin{tabular}{@{}cL{1.6cm}L{3.6cm}L{2.8cm}cc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{任务}} &
+\textcolor{white}{\textbf{具体工作}} &
+\textcolor{white}{\textbf{交付物}} &
+\textcolor{white}{\textbf{负责}} &
+\textcolor{white}{\textbf{工时}} \\
+\midrule
+3.1 & CDAC版图 & 共质心+CCM，12-bit温度计码+二进制，MIM识别，top metal shield & CDAC GDS$+$PEX & 版图 & 8d \\
+3.2 & 比较器版图 & 4$\times$2共质心，AZ电容就近，Guard ring双环，防latch-up & 比较器 GDS$+$PEX & 版图 & 5d \\
+3.3 & 开关版图 & 12组CMOS传输门对称走线，时钟线GND屏蔽 & 开关 GDS$+$PEX & 版图 & 5d \\
+3.4 & 数字版图 & SAR+DEC+SYNC APR+CTS，max trans 200\,ps & 数字 GDS$+$timing & 版图/数字 & 5d \\
+3.5 & 外围版图 & 偏置/Buffer/POR版图，Guard ring，decap & 外围 GDS & 版图 & 5d \\
+3.6 & Top拼接 & 模拟/数字隔离，电源/地区划分，decap & Top GDS & 版图 & 4d \\
+3.7 & CDAC PEX & R+C+CC提取，后仿真DNL$\le$0.5\,LSB & CDAC后仿报告 & 模拟 & 2d \\
+3.8 & 全芯片PEX & Calibre xRC全芯片R+C+CC (24--48h) & PEX网表 & 模拟/版图 & 2d \\
+3.9 & 后仿真TT & PEX全噪声TT角，ENOB退化$\le$0.5\,bit & 后仿报告 & 模拟 & 2d \\
+3.10 & 后仿真FF/SS & PEX全噪声FF/SS，ENOB$\ge$10.0\,bit & 后仿报告 & 模拟 & 2d \\
+\midrule
+\multicolumn{5}{l}{\textbf{Phase 3 小计}} & \textbf{5--6 周} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{Phase 4：后仿真补充 \& 物理验证（2--3 周）}
+
+\textbf{目标：完成后仿真 MC、全 PVT 补充，物理验证全通过。}
+
+\begin{table}[H]
+\centering
+\caption{Phase 4：后仿真补充 \& 物理验证（2--3 周）}
+\footnotesize
+\begin{tabular}{@{}cL{1.6cm}L{3.6cm}L{2.8cm}cc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{任务}} &
+\textcolor{white}{\textbf{具体工作}} &
+\textcolor{white}{\textbf{交付物}} &
+\textcolor{white}{\textbf{负责}} &
+\textcolor{white}{\textbf{工时}} \\
+\midrule
+4.1 & PEX MC & mismatch$\times$50采样，ENOB yield估算 & MC后仿报告 & 模拟 & 2d \\
+4.2 & PEX电压扫描 & $\pm$5\% 后仿真验证 & 敏感性报告 & 模拟 & 1d \\
+4.3 & DRC & Calibre nmDRC全芯片，0错误 & DRC report & 版图 & 3d \\
+4.4 & LVS & Calibre nmLVS全芯片 & LVS report & 版图 & 2d \\
+4.5 & ERC & Calibre PERC：浮空/软连接/latch-up & ERC report & 版图 & 1d \\
+4.6 & 天线效应 & Calibre antenna rules修正 & antenna report & 版图 & 1d \\
+4.7 & DFM & CMP密度20--80\%，通孔覆盖$\ge$1 & DFM report & 版图 & 1d \\
+4.8 & EM/IR drop & Voltus AVDD IR$\le$50\,mV（选做） & IR analysis & 模拟 & 1d \\
+4.9 & ESD定稿 & HBM 2\,kV/CDM 500\,V方案定稿 & ESD方案文档 & 模拟 & 2d \\
+4.10 & 阶段报告 & 汇总后仿$+$物理验证数据 & Post-Layout Sign-off & 模拟 & 1d \\
+\midrule
+\multicolumn{5}{l}{\textbf{Phase 4 小计}} & \textbf{2--3 周} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{Phase 5：签核交付（1 周）}
+
+\textbf{目标：完成全部文档签核、GDSII 导出及提交。}
+
+\begin{table}[H]
+\centering
+\caption{Phase 5：签核交付（1 周）}
+\footnotesize
+\begin{tabular}{@{}cL{1.6cm}L{3.6cm}L{2.8cm}cc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{\#}} &
+\textcolor{white}{\textbf{任务}} &
+\textcolor{white}{\textbf{具体工作}} &
+\textcolor{white}{\textbf{交付物}} &
+\textcolor{white}{\textbf{负责}} &
+\textcolor{white}{\textbf{工时}} \\
+\midrule
+5.1 & 设计规范书 & 全部corner目标、预算表、引脚定义 & 设计规范书 PDF & 模拟 & 1d \\
+5.2 & 仿真签核报告 & PVT+MC汇总，ENOB/SNR/SFDR histogram & 签核报告 PDF & 模拟 & 2d \\
+5.3 & 版图Review & 模拟+版图lead正式评审 & 评审纪要 & 全体 & 0.5d \\
+5.4 & Checklist完结 & DRC/LVS/ERC/DFM截图$+$数据附表签字 & checklist PDF & PM & 1d \\
+5.5 & GDSII导出 & 最终GDSII导出，与LVS/DRC报告打包 & GDSII+报告包 & 版图 & 0.5d \\
+5.6 & 提交Foundry & 确认MPW日期，上传至代工厂平台 & 提交确认 & PM & 0.5d \\
+\midrule
+\multicolumn{5}{l}{\textbf{Phase 5 小计}} & \textbf{1 周（5 工作日）} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%========================================================================
+\newpage
+\needtable
+\section{甘特图与关键路径}
+%========================================================================
+
+\begin{table}[H]
+\centering
+\caption{甘特图与关键路径}
+\footnotesize
+\begin{tabular}{@{}cccccccc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{阶段}} &
+\textcolor{white}{\textbf{W1-2}} &
+\textcolor{white}{\textbf{W3-4}} &
+\textcolor{white}{\textbf{W5-6}} &
+\textcolor{white}{\textbf{W7-8}} &
+\textcolor{white}{\textbf{W9-10}} &
+\textcolor{white}{\textbf{W11-12}} &
+\textcolor{white}{\textbf{W13-14}} \\
+\midrule
+Phase 1 仿真扫尾 & \cellcolor{mygreen}$\blacksquare$ & & & & & & \\
+Phase 2 外围电路 & & \cellcolor{mygreen}$\blacksquare$ & & & & & \\
+Phase 3 版图 & & \cellcolor{myblue}$\blacksquare$ & \cellcolor{myblue}$\blacksquare$ & \cellcolor{myblue}$\blacksquare$ & \cellcolor{myblue}$\blacksquare$ & & \\
+Phase 4 后仿\&PV & & & & & \cellcolor{mygreen}$\blacksquare$ & \cellcolor{mygreen}$\blacksquare$ & \\
+Phase 5 签核 & & & & & & \cellcolor{mygreen}$\blacksquare$ & \cellcolor{mygreen}$\blacksquare$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+\textbf{关键里程碑：}
+\begin{itemize}[leftmargin=*,nosep]
+    \item W2: Pre-Layout Sign-off \quad W3: 外围电路冻结 \quad W6: 模块版图完成
+    \item W8: 数字版图交付 \quad W9: 全芯片PEX完成 \quad W11: DRC/LVS/ERC/DFM全通过 \quad W13: GDSII提交
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{周次分解：}
+
+\begin{itemize}[leftmargin=*,nosep]
+    \item \textbf{W1--W2：} Phase 1——全部PVT/MC/系统级仿真。模拟$\times$1。\textbf{里程碑：Pre-Layout Sign-off Report。}
+    \item \textbf{W3：} Phase 2——Cascode镜像+Beta-multiplier+MUX+POR原理图$+$前仿。模拟$\times$1。\textbf{里程碑：外围电路冻结。}
+    \item \textbf{W4--W9：} Phase 3——CDAC $\to$ 比较器 $\to$ 开关 $\to$ 数字 $\to$ Top拼接推进。版图$\times$1 $+$ 模拟$\times$1并行。\textbf{里程碑：W6模块版图完成；W8数字交付；W9全芯片PEX完成。}
+    \item \textbf{W10--W11：} Phase 4——后仿真补充$+$物理验证(DRC/LVS/ERC/天线/DFM)。模拟$\times$1 $+$ 版图$\times$1。\textbf{里程碑：DRC/LVS/ERC/DFM全通过。}
+    \item \textbf{W12--W13：} Phase 5——文档定稿$+$Review$\to$GDSII导出$\to$提交。
+    \item \textbf{W13：\ \ 最终里程碑——GDSII提交代工厂，Tapeout完成。}
+\end{itemize}
+
+%========================================================================
+\newpage
+\section{风险与资源}
+%========================================================================
+
+\needtable
+\subsection{关键风险}
+
+\begin{table}[H]
+\centering
+\caption{关键风险}
+\footnotesize
+\begin{tabular}{@{}ccL{6.8cm}@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{风险}} &
+\textcolor{white}{\textbf{等级}} &
+\textcolor{white}{\textbf{缓解措施}} \\
+\midrule
+MC仿真机时不足 & \textcolor{red}{\textbf{高}} & 提前申请Spectre APS$+$ License独占时段 \\
+PEX后ENOB大幅退化 & \textcolor{orange}{\textbf{中}} & 版图阶段边做边提PEX迭代，不做完再仿真 \\
+自举开关3.3V器件不可用 & \textcolor{orange}{\textbf{中}} & 立即确认PDK中3.3V器件可用性；备选NMOS-only自举或时钟倍压 \\
+CDAC匹配不满足 & \textcolor{green!50!black}{\textbf{低}} & 共质心+dummy+温度计码一般可$\le$0.01\% \\
+流片档期冲突 & \textcolor{green!50!black}{\textbf{低}} & 提前确认MPW日期（通常1--2次/年） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\needtable
+\subsection{资源预估}
+
+\begin{table}[H]
+\centering
+\caption{资源预估}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\rowcolor{tabhead}
+\textcolor{white}{\textbf{项目}} &
+\textcolor{white}{\textbf{预估}} \\
+\midrule
+仿真机时 & $\sim$100 核$\cdot$天 (PVT + MC + PEX后仿) \\
+模拟工程师 & 1 人 (全程) \\
+版图工程师 & 1 人 (Phase 3 峰值) \\
+数字工程师 & 0.5 人 (SPI + 数字后端) \\
+\midrule
+\textbf{总工期} & \textbf{12--14 周 ($\sim$3--3.5 个月)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{1cm}
+\begin{center}
+\rule{0.4\textwidth}{0.5pt}
+
+{\large 本清单经确认后作为流片进度跟踪依据，各负责人签字生效。}
+
+\vspace{1cm}
+
+\begin{tabular}{p{3cm}p{3cm}p{3cm}p{3cm}}
+模拟工程师： & \underline{\hspace{2.5cm}} & 项目经理： & \underline{\hspace{2.5cm}} \\[1cm]
+版图工程师： & \underline{\hspace{2.5cm}} & 日期：     & \underline{\hspace{2.5cm}} \\
+\end{tabular}
+\end{center}
+
+\end{document}

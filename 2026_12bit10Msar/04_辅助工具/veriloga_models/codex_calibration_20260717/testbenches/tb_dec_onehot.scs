@@ -1,0 +1,64 @@
+simulator lang=spectre
+global 0
+parameters vdd=1.8
+
+VSS (DGND 0) vsource dc=0 type=dc
+VDD (DVDD DGND) vsource dc=vdd type=dc
+
+VSOUT (SOUT DGND) vsource type=pulse val0=0 val1=vdd delay=50n \
+    rise=10p fall=10p width=10n period=100n
+VCOMP (COMP DGND) vsource dc=vdd type=dc
+VCOMN (COMN DGND) vsource dc=0 type=dc
+VRST1 (RST1 DGND) vsource dc=0 type=dc
+VCALRST (CAL_RST DGND) vsource dc=vdd type=dc
+VCLKSAR (CLK_SAR DGND) vsource dc=0 type=dc
+VCLK00 (CLK00 DGND) vsource dc=0 type=dc
+VCALCLK (CAL_CLK DGND) vsource dc=0 type=dc
+
+// One physical/SAR BP bit is high during each 100 ns observation slot.
+VBP13 (BP13 DGND) vsource type=pulse val0=0 val1=vdd delay=0.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP12 (BP12 DGND) vsource type=pulse val0=0 val1=vdd delay=100.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP11 (BP11 DGND) vsource type=pulse val0=0 val1=vdd delay=200.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP10 (BP10 DGND) vsource type=pulse val0=0 val1=vdd delay=300.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP9 (BP9 DGND) vsource type=pulse val0=0 val1=vdd delay=400.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP8 (BP8 DGND) vsource type=pulse val0=0 val1=vdd delay=500.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP7 (BP7 DGND) vsource type=pulse val0=0 val1=vdd delay=600.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP6 (BP6 DGND) vsource type=pulse val0=0 val1=vdd delay=700.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP5 (BP5 DGND) vsource type=pulse val0=0 val1=vdd delay=800.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP4 (BP4 DGND) vsource type=pulse val0=0 val1=vdd delay=900.1n \
+    rise=10p fall=10p width=99.8n period=2u
+VBP3 (BP3 DGND) vsource type=pulse val0=0 val1=vdd delay=1.0001u \
+    rise=10p fall=10p width=99.8n period=2u
+VBP2 (BP2 DGND) vsource type=pulse val0=0 val1=vdd delay=1.1001u \
+    rise=10p fall=10p width=99.8n period=2u
+VBP1 (BP1 DGND) vsource type=pulse val0=0 val1=vdd delay=1.2001u \
+    rise=10p fall=10p width=99.8n period=2u
+VBP0 (BP0 DGND) vsource type=pulse val0=0 val1=vdd delay=1.3001u \
+    rise=10p fall=10p width=99.8n period=2u
+
+XDEC (B11 B10 B9 B8 B7 B6 B5 B4 B3 B2 B1 B0 \
+    BP0 BP1 BP2 BP3 BP4 BP5 BP6 BP7 BP8 BP9 BP10 BP11 BP12 BP13 \
+    DGND DVDD SOUT COMP COMN RST1 CAL_RST CLK_SAR CLK00 CLK_OUT \
+    D0 D1 D2 D3 D4 D5 D6 D7 D8 D9 D10 D11 D12 \
+    U0 U1 U2 U3 U4 U5 U6 U7 U8 U9 U10 U11 U12 \
+    CAL DONE ERR CAL_CLK) DEC_CAL_PHY \
+    CAL_BYPASS=1 DEBUG=1 FRAC_BITS=4 APPLY_BIN_MIDPOINT=0 \
+    NORMALIZE_REDUNDANT_RANGE=0 REMOVE_REDUNDANCY_OFFSET=0
+
+XMON (SOUT B11 B10 B9 B8 B7 B6 B5 B4 B3 B2 B1 B0 DGND DVDD) DEC_MON
+
+tran tran stop=1.41u maxstep=1n annotate=status
+save B11 B10 B9 B8 B7 B6 B5 B4 B3 B2 B1 B0 SOUT DONE ERR
+saveOptions options save=selected
+
+ahdl_include "DEC.va"
+ahdl_include "DEC_MON.va"

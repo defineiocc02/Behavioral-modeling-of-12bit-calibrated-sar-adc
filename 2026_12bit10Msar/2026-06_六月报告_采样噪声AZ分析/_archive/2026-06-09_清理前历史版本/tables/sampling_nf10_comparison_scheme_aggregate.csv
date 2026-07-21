@@ -1,0 +1,2 @@
+﻿case,td,AZ_time_ns_equiv,corner_count,ENOB_min,ENOB_avg,ENOB_max,ENOB_worst_corner,ENOB_best_corner,SNR_min,SNR_avg,SNR_max,SNR_worst_corner,SNR_best_corner,SFDR_min,SFDR_avg,SFDR_max,SFDR_worst_corner,SFDR_best_corner,Power_uW_min,Power_uW_avg,Power_uW_max,Power_uW_max_corner,COMPOWER_uW_avg,SYNCPOWER_uW_avg
+2026-06-09_sampling_only_NOISEFACTOR10_comparison_scheme,28n,4.0000,5,9.8994,10.3476,10.8302,ss,ff,61.2752,64.2697,67.1753,ss,ff,73.6704,75.9646,78.5854,ss,ff,337.7542,348.7930,367.2157,ff,145.1649,25.1427

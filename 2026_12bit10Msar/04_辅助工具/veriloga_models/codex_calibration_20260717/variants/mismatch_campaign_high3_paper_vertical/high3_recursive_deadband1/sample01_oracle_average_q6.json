@@ -1,0 +1,25 @@
+{
+  "complete": true,
+  "diagnostic_only": true,
+  "method": "P/N arithmetic-average capacitor weights rounded to Q6",
+  "weights": {
+    "frac_bits": 6,
+    "pairs": 0,
+    "values_q": [
+      131082,
+      65530,
+      32756,
+      16384,
+      16384,
+      8192,
+      3072,
+      2048,
+      1280,
+      768,
+      512,
+      256,
+      128,
+      64
+    ]
+  }
+}

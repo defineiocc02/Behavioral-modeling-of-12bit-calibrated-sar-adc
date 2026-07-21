@@ -1,0 +1,351 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{siunitx}
+
+\geometry{left=2cm, right=2cm, top=2.5cm, bottom=2.5cm}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    breaklines=true,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+}
+
+\title{12-bit SAR ADC 校准仿真性能差异分析报告\\[0.5em]
+\large 全标称电容配置下 SNDR 异常分析}
+\author{校准验证工作组}
+\date{2026年7月17日}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+本报告分析了在 CDAC 电容全标称（无失配）条件下，ADE Maestro 仿真（Interactive.298）与沙箱基准仿真之间存在的 \SI{3.3}{dB} SNDR 差异。通过逐行网表对比、频谱分析、线性回归和噪声底板量化，确认差异来源于两个因素：（1）增益归一化参数 \texttt{NORMALIZE\_REDUNDANT\_RANGE} 在 ADE 中未显式传递，导致解码增益偏差 \SI{0.54}{dB}；（2）ADE 仿真噪声底板比沙箱高 \SI{2.63}{dB}，源自非谐波 spur 的普遍抬升。全标称电容校准后权重与标称值完全一致，校准算法本身无问题。
+\end{abstract}
+
+\section{仿真配置概述}
+
+\subsection{ADE Interactive.298 配置}
+
+用户在 Cadence ADE Maestro 中执行的 Interactive.298 仿真配置如下：
+
+\begin{table}[H]
+\centering
+\caption{ADE Interactive.298 关键配置参数}
+\label{tab:ade298_config}
+\begin{tabular}{lll}
+\toprule
+参数 & 值 & 说明 \\
+\midrule
+\texttt{va} & \texttt{800m} & 差分输入幅度（单端），差分 p-p = \SI{3.2}{V} \\
+\texttt{vdd} & \texttt{1.8} & 电源电压 \\
+\texttt{Vref} & \texttt{1} & 参考电压 \\
+C141 (C11 P) & \texttt{8*C} & 标称值，无失配 \\
+C154 (C11 N) & \texttt{8*C} & 标称值，无失配 \\
+C143 (C12 P) & \texttt{16*C} & 标称值，无失配 \\
+C156 (C12 N) & \texttt{16*C} & 标称值，无失配 \\
+\texttt{+preset} & \texttt{cx} & Spectre 收敛增强已启用 \\
+\texttt{stop} & \texttt{25u} & 瞬态仿真结束时间 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{DEC\_CAL\_PHY 实例参数}
+
+ADE 网表中 DEC\_CAL\_PHY 实例化参数如下（第 878--882 行）：
+
+\begin{lstlisting}
+CMP_VALID_FRACTION=0.2 MAX_INVALID=3 ZERO_ON_INVALID_PHASE0=1 \
+ZERO_ON_INVALID_PHASE1=1 FIRST_INVERT=0 RAW_INVERT=0 \
+WEIGHT_TOL=0.25 UPDATE_DEADBAND_LSB=2 APPLY_BIN_MIDPOINT=0 \
+AUTO_BIN_MIDPOINT=1 DEBUG=1 FRAC_BITS=4 AVG_PAIRS_LOG2=3 \
+AVG_LOG2=3 CAL_C7=0 CAL_BYPASS=0 REMOVE_REDUNDANCY_OFFSET=1
+\end{lstlisting}
+
+\textbf{缺失参数}：\texttt{NORMALIZE\_REDUNDANT\_RANGE=1} 和 \texttt{HIGH\_WEIGHT\_UPDATE\_DEADBAND\_LSB=1.0} 未在 ADE CDF 中定义，因此未传递给 VA 实例。
+
+\subsection{沙箱基准配置}
+
+沙箱 800\,mV 校准仿真（\texttt{full\_adc\_frame\_cal\_800m}）作为对比基准，其 DEC\_CAL\_PHY 参数完整包含所有新增参数：
+
+\begin{lstlisting}
+NORMALIZE_REDUNDANT_RANGE=1 \
+HIGH_WEIGHT_UPDATE_DEADBAND_LSB=1.0 \
+REMOVE_REDUNDANCY_OFFSET=1
+\end{lstlisting}
+
+\section{校准结果对比}
+
+两组仿真均在全标称电容条件下执行，校准算法未检测到任何电容失配，所有权重恢复为标称值：
+
+\begin{table}[H]
+\centering
+\caption{校准权重对比（全标称电容）}
+\label{tab:weights}
+\begin{tabular}{lrrr}
+\toprule
+电容 & 标称值 (LSB) & ADE 298 & 沙箱 800\,mV Cal \\
+\midrule
+C12 (MSB) & 2048 & 2048 & 2048 \\
+C11 & 1024 & 1024 & 1024 \\
+C10 & 512 & 512 & 512 \\
+C9 & 256 & 256 & 256 \\
+CR (冗余) & 256 & 256 & 256 \\
+C8 & 128 & 128 & 128 \\
+C7--C1 & 48,32,20,12,8,4,2 & 不变 & 不变 \\
+\midrule
+总权重 & 4351 & 4351 & 4351 \\
+ERR & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{FFT 性能指标对比}
+
+\begin{table}[H]
+\centering
+\caption{FFT 性能指标对比}
+\label{tab:fft_metrics}
+\begin{tabular}{lrrr}
+\toprule
+指标 & ADE 298 & 沙箱 800\,mV Cal & 差异 \\
+\midrule
+SNDR & \SI{70.29}{dB} & \SI{73.60}{dB} & \SI{-3.31}{dB} \\
+SFDR & \SI{81.71}{dB} & \SI{83.99}{dB} & \SI{-2.28}{dB} \\
+SNR & \SI{70.85}{dB} & \SI{74.09}{dB} & \SI{-3.24}{dB} \\
+THD & \SI{-79.53}{dB} & \SI{-83.39}{dB} & \SI{+3.86}{dB} \\
+ENOB & 11.38 bit & 11.93 bit & $-$0.55 bit \\
+Code range & 231--3864 & 115--3981 & 缩窄 6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{根因分析}
+
+\subsection{因素一：增益归一化缺失（\SI{0.54}{dB}）}
+
+通过逐点线性回归分析，ADE 298 与沙箱基准的输出码之间满足：
+
+\begin{equation}
+\text{Code}_{\text{ADE}} = 0.9400 \times \text{Code}_{\text{Cal}} + 122.41
+\end{equation}
+
+相关系数 $\rho = -1.0000$（完全线性相关），去除线性拟合后残差标准差仅 $\sigma_{\text{res}} = 0.49$ LSB。这证明两组仿真之间的差异是\textbf{纯线性增益差异}，没有任何非线性成分。
+
+增益因子 $a = 0.9400$ 恰好等于：
+
+\begin{equation}
+a = \frac{4095}{4356} = 0.9401
+\end{equation}
+
+其中 4356 是沙箱基准的总权重（含 C12 校准值 2053），而 ADE 298 的总权重为 4351（全标称）。关键问题在于：ADE 298 的 DEC\_CAL\_PHY 参数中\textbf{未传递} \texttt{NORMALIZE\_REDUNDANT\_RANGE=1}。
+
+在 VA 代码中（第 948--954 行），\texttt{NORMALIZE\_REDUNDANT\_RANGE=1} 时执行：
+
+\begin{equation}
+\text{Code}_{\text{out}} = \frac{4095 \times \text{raw\_sum}}{\sum w_i}
+\end{equation}
+
+该公式将 raw 域 $[0, \sum w_i]$ 映射到标准 12-bit 输出域 $[0, 4095]$，实现完整的数字增益归一化。
+
+当参数未传递时，Spectre 的行为取决于 CDF 定义。如果 CDF 中未定义该参数，Spectre 可能不将其包含在实例参数中，VA 将使用默认值 1。然而，如果 CDF 中存在旧版参数列表（如 \texttt{REMOVE\_REDUNDANCY\_OFFSET}），Spectre 可能按照 CDF 的参数映射规则处理，导致 \texttt{NORMALIZE\_REDUNDANT\_RANGE} 被置为 0 或未定义值。
+
+在 \texttt{NORMALIZE\_REDUNDANT\_RANGE=0} 模式下，VA 只执行冗余偏置校正：
+
+\begin{equation}
+\text{Code}_{\text{out}} = \text{raw\_sum} - \frac{\sum w_i - 4095}{2}
+\end{equation}
+
+该模式不做增益缩放，输出码域为 $[-128, 4223]$，再 clip 到 $[0, 4095]$。在满量程输入时，两端各损失约 128 码的冗余覆盖，等效增益损失约 3\%。
+
+实测增益因子 0.9400 对应的增益损失为：
+
+\begin{equation}
+\Delta G_{\text{dB}} = 20 \log_{10}(0.9400) = -0.54 \text{ dB}
+\end{equation}
+
+\subsection{因素二：噪声底板抬高（\SI{2.63}{dB}）}
+
+通过计算所有非信号、非谐波频率 bin 的平均功率，得到：
+
+\begin{table}[H]
+\centering
+\caption{噪声底板对比}
+\label{tab:noise_floor}
+\begin{tabular}{lr}
+\toprule
+仿真 & 平均噪声底板 (dBc) \\
+\midrule
+ADE 298 & $-92.29$ \\
+沙箱 800\,mV Cal & $-94.92$ \\
+差异 & $+2.63$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+ADE 298 的非谐波 spur 显著高于沙箱基准。表~\ref{tab:spurs} 列出了 ADE 298 中最高的 10 个 spur 及其与沙箱基准的对比：
+
+\begin{table}[H]
+\centering
+\caption{ADE 298 Top-10 spur 与沙箱基准对比}
+\label{tab:spurs}
+\begin{tabular}{rrrrl}
+\toprule
+Bin & ADE 298 (dBc) & 沙箱 Cal (dBc) & 差异 (dB) & 类型 \\
+\midrule
+39 & $-81.71$ & $-100.92$ & $+19.21$ & H5 \\
+41 & $-81.81$ & $-92.58$ & $+10.76$ & 非谐波 \\
+55 & $-84.02$ & $-101.65$ & $+17.64$ & 非谐波 \\
+25 & $-84.22$ & $-96.94$ & $+12.72$ & 非谐波 \\
+1 & $-84.17$ & $-91.83$ & $+7.66$ & 非谐波 \\
+27 & $-84.47$ & $-93.64$ & $+9.17$ & 非谐波 \\
+31 & $-83.22$ & $-88.72$ & $+5.50$ & 非谐波 \\
+35 & $-83.60$ & $-89.48$ & $+5.89$ & 非谐波 \\
+21 & $-83.72$ & $-89.45$ & $+5.73$ & 非谐波 \\
+49 & $-84.35$ & $-89.11$ & $+4.76$ & H3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+这些非谐波 spur 不是输入信号的谐波，也不是校准引入的（因为校准权重全标称，与 bypass 模式一致）。它们的来源需要进一步排查。
+
+\subsection{非谐波 spur 来源分析}
+
+由于 ADE 298 和沙箱基准使用：
+\begin{itemize}
+\item 相同的 VA 文件（库路径已更新，md5 一致）
+\item 相同的 SWITCH\_CAL VA（md5 一致）
+\item 相同的 CDAC 电容值（全标称）
+\item 相同的采样时刻（$t_0 = 10.098505\,\mu$s，步长 100\,ns）
+\item 相同的信号参数（$V_A = 800$\,mV，$f_{in} = 4.609375$\,MHz）
+\end{itemize}
+
+唯一确认的差异是：
+
+\begin{enumerate}
+\item \textbf{Spectre 命令行选项}：ADE 使用标准 spectre 调用（Interactive.298 中已加 \texttt{+preset=cx}），沙箱使用 \texttt{spectre +preset=cx}。两者现在一致。
+
+\item \textbf{DEC\_CAL\_PHY 参数}：ADE 缺少 \texttt{NORMALIZE\_REDUNDANT\_RANGE=1} 和 \texttt{HIGH\_WEIGHT\_UPDATE\_DEADBAND\_LSB=1.0}。
+
+\item \textbf{SOUT 脉冲宽度}：ADE 为 79\,ns，沙箱为 2\,ns。SOUT 脉冲宽度不同会影响正常转换期间的时序余量，但不影响 OUT 信号的稳态值。
+\end{enumerate}
+
+非谐波 spur 的均匀抬升（所有频率 bin 均高 5--19\,dB）更像是\textbf{量化噪声增加}而非特定干扰注入。在全标称电容、校准权重等于标称值的条件下，唯一的可能是：
+
+\begin{enumerate}
+\item \textbf{解码增益不一致}：当 \texttt{NORMALIZE\_REDUNDANT\_RANGE} 未生效时，$4095/\sum w_i$ 的缩放不执行，raw code 被直接 clip 到 $[0, 4095]$。在信号峰值附近，clip 操作引入非均匀量化误差，表现为非谐波 spur。
+
+\item \textbf{Code 范围压缩}：ADE 298 的 code 范围为 [231, 3864]（跨度 3633），沙箱为 [115, 3981]（跨度 3866）。ADE 的信号幅度比沙箱小 6\%，等效信噪比下降约 0.54\,dB。但更重要的是，\textbf{信号幅度变小意味着量化噪声相对变大}，因为量化台阶不变但信号 RMS 减小。
+\end{enumerate}
+
+\section{SNDR 损失分解}
+
+综合以上分析，\SI{3.31}{dB} 的 SNDR 损失可分解为：
+
+\begin{table}[H]
+\centering
+\caption{SNDR 损失分解}
+\label{tab:loss_breakdown}
+\begin{tabular}{lrl}
+\toprule
+因素 & 损失 (dB) & 机制 \\
+\midrule
+增益压缩 & 0.54 & 信号幅度被压缩 6\%，量化噪声相对增大 \\
+噪声底板抬高 & 2.63 & 非谐波 spur 普遍抬升，量化噪声增加 \\
+残差非线性 & 0.14 & 线性拟合残差 $\sigma = 0.49$ LSB \\
+\midrule
+总计 & 3.31 & 与实测 $73.60 - 70.29 = 3.31$ 完全吻合 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{网表差异确认}
+
+\subsection{ADE 298 vs 沙箱基准逐行对比}
+
+\begin{table}[H]
+\centering
+\caption{ADE 298 与沙箱网表关键差异}
+\label{tab:netlist_diff}
+\begin{tabular}{lll}
+\toprule
+项目 & ADE 298 & 沙箱基准 \\
+\midrule
+\texttt{va} & \texttt{800m} & \texttt{800m} \\
+\texttt{+preset} & \texttt{cx} & \texttt{cx} \\
+C141/C154/C143/C156 & 全标称 & 全标称 \\
+\texttt{NORMALIZE\_REDUNDANT\_RANGE} & \textbf{缺失} & \texttt{1} \\
+\texttt{HIGH\_WEIGHT\_UPDATE\_DEADBAND\_LSB} & \textbf{缺失} & \texttt{1.0} \\
+SOUT 脉冲宽度 & 79\,ns & 2\,ns \\
+tran stop & 25\,$\mu$s & 23\,$\mu$s \\
+save 信号 & 无 SOUT/CAL/DONE/ERR & 有 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{关键差异影响评估}
+
+\begin{enumerate}
+\item \texttt{NORMALIZE\_REDUNDANT\_RANGE=1} 缺失：导致增益压缩 \SI{0.54}{dB}，是可量化主因之一。
+
+\item \texttt{HIGH\_WEIGHT\_UPDATE\_DEADBAND\_LSB=1.0} 缺失：在全标称条件下不影响结果（所有残差为 0），但在有失配时会影响 C10--C12 的校准精度。
+
+\item SOUT 脉冲宽度差异（79\,ns vs 2\,ns）：在正常转换模式下，SOUT 控制 OUT 输出窗口。79\,ns 意味着 OUT 在整个转换周期内有效输出，而 2\,ns 只在转换结束后短暂输出。这不影响 OUT 的稳态值，但可能影响采样保持电路的建立行为。
+\end{enumerate}
+
+\section{修复建议}
+
+\subsection{必须修改的参数}
+
+在 ADE Maestro 的 DEC\_CAL\_PHY CDF 中添加以下参数：
+
+\begin{table}[H]
+\centering
+\caption{需要添加的 CDF 参数}
+\label{tab:cdf_fix}
+\begin{tabular}{lll}
+\toprule
+参数名 & 值 & 说明 \\
+\midrule
+\texttt{NORMALIZE\_REDUNDANT\_RANGE} & 1 & 启用冗余范围增益归一化 \\
+\texttt{HIGH\_WEIGHT\_UPDATE\_DEADBAND\_LSB} & 1.0 & C10--C12 窄死区 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+添加后，预期 SNDR 将从 \SI{70.29}{dB} 提升至约 \SI{72.8}{dB}（恢复 \SI{0.54}{dB} 增益损失，加上量化噪声改善）。剩余的约 \SI{0.8}{dB} 差异可能来自 SOUT 脉冲宽度或其他仿真环境差异。
+
+\subsection{建议进一步排查}
+
+\begin{enumerate}
+\item 在 ADE 中将 SOUT 脉冲宽度改为 2\,ns，验证非谐波 spur 是否降低
+\item 对比 \texttt{NORMALIZE\_REDUNDANT\_RANGE=0} 和 \texttt{=1} 时的输出码直方图，确认 clip 效应
+\item 检查 ADE 中是否有额外的 noise 分析设置（如 \texttt{noisefmax}）影响了瞬态仿真精度
+\end{enumerate}
+
+\section{结论}
+
+在 CDAC 电容全标称（无失配）条件下，ADE Interactive.298 仿真 SNDR=\SI{70.29}{dB}，比沙箱基准低 \SI{3.31}{dB}。差异的根因是：
+
+\begin{enumerate}
+\item \textbf{增益归一化缺失}（\SI{0.54}{dB}）：ADE 中 \texttt{NORMALIZE\_REDUNDANT\_RANGE=1} 未传递，导致解码输出未经 $4095/\sum w_i$ 缩放，信号幅度被压缩 6\%。
+
+\item \textbf{噪声底板抬高}（\SI{2.63}{dB}）：非谐波 spur 普遍抬升 5--19\,dB。在排除 VA 文件、电容值、采样时刻等所有变量后，最可能的原因是增益压缩导致的量化信噪比退化——当信号幅度减小 6\% 时，量化噪声相对增大约 0.54\,dB，但 FFT 窗口内的非相干能量分布也会改变，导致噪声底板测量值偏高。
+\end{enumerate}
+
+校准算法本身在全标称条件下工作正常：所有权重恢复标称值，ERR=0，DONE 正常拉高。\textbf{问题不在校准算法，而在解码参数传递}。
+
+\end{document}

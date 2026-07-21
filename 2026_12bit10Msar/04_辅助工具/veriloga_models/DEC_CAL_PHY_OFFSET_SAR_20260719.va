@@ -1,0 +1,664 @@
+// offset-binary foreground calibration and calibrated decoder for
+// test_12bit50MSAR_AMS_final_0716.
+//
+// CORRECT Huang 2024 algorithm implementation:
+//   * wall residual: R = W_target - W_wall
+//   * offset-binary SAR: calDAC starts all-10 (+126), switches to 01
+//   * V_calDAC = 126 - 2*S  (S = switched_sum)
+//   * F+ = R + 126 - 2*S, decreases as S increases
+//   * keep rule: F>0 (cmp_p_gt_n!=0) => standard SAR convergence
+//   * D+ and D- are complete offset-binary codes (0..127)
+//   * R = D+ - D-  (comparator offset cancels)
+//   * Q-format averaging preserves sub-LSB info
+//   * terminal bit is REAL comparator decision
+//
+// SWITCH_CAL encoding:
+//   10 -> +contribution, 01 -> -contribution, 00 -> VCM
+//
+// Normal decoder (SOUT-latched, NOT continuous):
+//   BP bus: BP[13]=MSB(w=2048), BP[0]=terminal(w=1).
+//   Latched ONLY at SOUT rising edge; Bit<11:0> held between conversions.
+//
+// offset-binary SAR (INVERTED polarity from v1/v2):
+//   Initial: all calDAC at 10 -> calDAC_out = +126
+//   Switch cap from 10 to 01 -> calDAC_out -= 2*weight
+//   F+ = R + calDAC_out, F>0(keep), F<0(undo)
+//   D = sum(switched_weights) + b_T
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module DEC_CAL_PHY (
+    Bit, BP, DGND, DVDD, SOUT,
+    COMP, COMN, RST1, CAL_RST,
+    CLK_SAR, CLK00, CLK,
+    BITD_CAL, BITU_CAL,
+    CAL, DONE, ERR, CAL_CLK
+);
+
+    output [11:0] Bit;
+    input  [0:13] BP;
+    inout  DGND, DVDD;
+    input  SOUT;
+    input  COMP, COMN;
+    input  RST1, CAL_RST;
+    input  CLK_SAR, CLK00;
+    input  CAL_CLK;
+    output CLK;
+    output [0:12] BITD_CAL, BITU_CAL;
+    output CAL, DONE, ERR;
+
+    electrical [11:0] Bit;
+    electrical [0:13] BP;
+    electrical DGND, DVDD;
+    electrical SOUT;
+    electrical COMP, COMN;
+    electrical RST1, CAL_RST, CAL_CLK;
+    electrical CLK_SAR, CLK00, CLK;
+    electrical [0:12] BITD_CAL, BITU_CAL;
+    electrical CAL, DONE, ERR;
+
+    parameter real VTH_FRACTION = 0.5 from (0.0:1.0);
+    parameter real TD = 0.0 from [0.0:inf);
+    parameter real TR = 20p from (0.0:inf);
+    parameter real TF = 20p from (0.0:inf);
+    parameter real TD_CAL = 200p from [0.0:inf);
+    parameter real TD_CMP_CAL = 2n from [0.0:inf);
+    parameter integer CMP_SWAP = 1 from [0:1];
+    parameter real CMP_VALID_FRACTION = 0.20 from (0.0:1.0);
+    parameter integer MAX_INVALID = 3 from [0:inf);
+    parameter integer FIRST_INVERT = 0 from [0:1];
+    parameter integer RAW_INVERT = 0 from [0:1];
+    parameter real WEIGHT_TOL = 0.35 from (0.0:1.0);
+    parameter integer DEBUG = 1 from [0:1];
+    parameter integer FRAC_BITS = 6 from [0:8];
+    parameter integer AVG_PAIRS_LOG2 = 0 from [0:8];
+    parameter integer CAL_BYPASS = 1 from [0:1];
+    parameter integer APPLY_CAL_WEIGHT = 1 from [0:1];
+    parameter integer REMOVE_REDUNDANCY_OFFSET = 1 from [0:1];
+    parameter integer WARN_ON_OUTPUT_CLIP = 1 from [0:1];
+    parameter integer ZERO_ON_INVALID_PHASE0 = 1 from [0:1];
+    parameter integer ZERO_ON_INVALID_PHASE1 = 1 from [0:1];
+    parameter real UPDATE_DEADBAND_LSB = 0.0 from [0.0:inf);
+    parameter real HIGH_WEIGHT_UPDATE_DEADBAND_LSB = 0.0 from [0.0:inf);
+    parameter integer APPLY_BIN_MIDPOINT = 0 from [0:1];
+    parameter integer AUTO_BIN_MIDPOINT = 0 from [0:1];
+    parameter integer SINGLE_PAIR_NOMINAL_GUARD = 0 from [0:1];
+    parameter real SINGLE_PAIR_AMBIGUITY_LSB = 0.0 from [0.0:inf);
+    parameter integer AVG_LOG2 = 3 from [0:8];
+    parameter integer CAL_C7 = 0 from [0:1];
+    parameter integer NORMALIZE_REDUNDANT_RANGE = 0 from [0:1];
+
+    integer w0, w1, w2, w3, w4, w5, w6;
+    integer w7, w8, w9, w10, w11, w12, w13;
+    integer q_scale;
+    integer weight_frac_bits;
+    integer avg_pairs;
+
+    integer cal_state;
+    localparam CAL_IDLE       = 0;
+    localparam CAL_PRECHARGE  = 1;
+    localparam CAL_SAR_TRIAL  = 2;
+    localparam CAL_TERMINAL   = 3;
+    localparam CAL_FINISH_DIR = 4;
+
+    integer sar_step;
+    integer trial_mask;
+    integer switched_mask;
+    integer switched_sum;
+    integer d_plus_code;
+    integer d_minus_code;
+    integer direction;
+    integer target_idx;
+    integer target_mask;
+    integer wall_mask;
+    integer caldac_mask;
+    integer d_mask, u_mask;
+
+    integer repeat_idx;
+    integer accum_d_plus;
+    integer accum_d_minus;
+
+    integer cal_mode_i;
+    integer cal_done_i;
+    integer cal_error_i;
+    integer cal_armed_i;
+    integer cal_started_i;
+    integer finish_pending_i;
+    integer frame_active_i;
+    integer invalid_count;
+    integer zero_force_i;
+
+    integer measured_weight_q;
+    integer wall_weight_q;
+    integer residual_q;
+    integer rounding_term;
+
+    integer clk_sar_i;
+    integer clk_cal_i;
+    integer clk00_i;
+
+    integer r0, r1, r2, r3, r4, r5, r6;
+    integer r7, r8, r9, r10, r11, r12, r13;
+    integer raw_sum;
+    integer total_weight_q;
+    integer redundancy_offset_q;
+    integer centered_sum;
+    integer adc_code;
+    integer b0, b1, b2, b3, b4, b5;
+    integer b6, b7, b8, b9, b10, b11;
+
+    integer cmp_p_gt_n;
+    integer cmp_valid;
+    integer code_value;
+    integer trial_w;
+
+    real vlogic;
+    real vth;
+    real cmp_delta;
+    real cmp_valid_min;
+    real scaled_code;
+
+    genvar g;
+
+    analog begin
+        vlogic = V(DVDD, DGND);
+        vth = VTH_FRACTION * vlogic;
+        cmp_valid_min = CMP_VALID_FRACTION * vlogic;
+
+        @(initial_step) begin
+            weight_frac_bits = (FRAC_BITS < 6) ? 6 : FRAC_BITS;
+            q_scale = 1 << weight_frac_bits;
+            avg_pairs = 1 << AVG_PAIRS_LOG2;
+            caldac_mask = 8128;
+
+            cal_state = CAL_IDLE;
+            sar_step = 0;
+            trial_mask = 0;
+            switched_mask = 0;
+            switched_sum = 0;
+            d_plus_code = 0;
+            d_minus_code = 0;
+            direction = 0;
+            target_idx = 2;
+            target_mask = 4;
+            wall_mask = 24;
+            d_mask = 0;
+            u_mask = 0;
+            repeat_idx = 0;
+            accum_d_plus = 0;
+            accum_d_minus = 0;
+
+            cal_mode_i = 0;
+            cal_done_i = 0;
+            cal_error_i = 0;
+            cal_armed_i = 0;
+            cal_started_i = 0;
+            finish_pending_i = 0;
+            frame_active_i = 0;
+            invalid_count = 0;
+            zero_force_i = 0;
+
+            w0 = 2048*q_scale; w1 = 1024*q_scale; w2 = 512*q_scale;
+            w3 = 256*q_scale; w4 = 256*q_scale; w5 = 128*q_scale;
+            w6 = 48*q_scale; w7 = 32*q_scale; w8 = 20*q_scale;
+            w9 = 12*q_scale; w10 = 8*q_scale; w11 = 4*q_scale;
+            w12 = 2*q_scale; w13 = q_scale;
+
+            measured_weight_q = 0;
+            wall_weight_q = 0;
+            residual_q = 0;
+            adc_code = 0;
+            b0 = 0; b1 = 0; b2 = 0; b3 = 0; b4 = 0; b5 = 0;
+            b6 = 0; b7 = 0; b8 = 0; b9 = 0; b10 = 0; b11 = 0;
+
+            if (CAL_BYPASS != 0) begin
+                cal_mode_i = 0;
+                cal_done_i = 1;
+            end else if (V(CAL_RST, DGND) < vth) begin
+                cal_mode_i = 1;
+                cal_armed_i = 1;
+            end
+        end
+
+        @(cross(V(CAL_RST, DGND) - vth, +1)) begin
+            weight_frac_bits = (FRAC_BITS < 6) ? 6 : FRAC_BITS;
+            q_scale = 1 << weight_frac_bits;
+            avg_pairs = 1 << AVG_PAIRS_LOG2;
+            caldac_mask = 8128;
+
+            cal_state = CAL_IDLE;
+            sar_step = 0; trial_mask = 0; switched_mask = 0; switched_sum = 0;
+            d_plus_code = 0; d_minus_code = 0; direction = 0;
+            target_idx = 2; target_mask = 4; wall_mask = 24;
+            d_mask = 0; u_mask = 0;
+            repeat_idx = 0; accum_d_plus = 0; accum_d_minus = 0;
+
+            cal_mode_i = 0;
+            cal_done_i = (CAL_BYPASS != 0) ? 1 : 0;
+            cal_error_i = 0; cal_armed_i = 0; cal_started_i = 0;
+            finish_pending_i = 0; frame_active_i = 0;
+            invalid_count = 0; zero_force_i = 0;
+
+            w0 = 2048*q_scale; w1 = 1024*q_scale; w2 = 512*q_scale;
+            w3 = 256*q_scale; w4 = 256*q_scale; w5 = 128*q_scale;
+            w6 = 48*q_scale; w7 = 32*q_scale; w8 = 20*q_scale;
+            w9 = 12*q_scale; w10 = 8*q_scale; w11 = 4*q_scale;
+            w12 = 2*q_scale; w13 = q_scale;
+            adc_code = 0;
+        end
+
+        @(cross(V(CAL_RST, DGND) - vth, -1)) begin
+            if (CAL_BYPASS == 0) begin
+                cal_state = CAL_IDLE;
+                sar_step = 0; trial_mask = 0; switched_mask = 0; switched_sum = 0;
+                d_plus_code = 0; d_minus_code = 0; direction = 0;
+                target_idx = 2; target_mask = 4; wall_mask = 24;
+                d_mask = 0; u_mask = 0;
+                repeat_idx = 0; accum_d_plus = 0; accum_d_minus = 0;
+
+                cal_mode_i = 1; cal_done_i = 0; cal_error_i = 0;
+                cal_armed_i = 1; cal_started_i = 0;
+                finish_pending_i = 0; frame_active_i = 0;
+                invalid_count = 0; zero_force_i = 0;
+
+                wall_weight_q = w3 + w4;
+                if (DEBUG != 0)
+                    $strobe("OFFSAR start t=%g", $abstime);
+            end
+        end
+
+        @(cross(V(RST1, DGND) - vth, +1)) begin
+            frame_active_i = 0;
+            cal_started_i = 0;
+            d_mask = 0; u_mask = 0;
+            if ((cal_mode_i != 0) && (finish_pending_i != 0)) begin
+                cal_mode_i = 0; cal_armed_i = 0; cal_started_i = 0;
+                d_mask = 0; u_mask = 0;
+                if (cal_error_i != 0) begin
+                    w0 = 2048*q_scale; w1 = 1024*q_scale; w2 = 512*q_scale;
+                    w3 = 256*q_scale; w4 = 256*q_scale; w5 = 128*q_scale;
+                    w6 = 48*q_scale; w7 = 32*q_scale; w8 = 20*q_scale;
+                    w9 = 12*q_scale; w10 = 8*q_scale; w11 = 4*q_scale;
+                    w12 = 2*q_scale; w13 = q_scale;
+                end
+                cal_done_i = 1;
+                if (DEBUG != 0) begin
+                    $strobe("OFFSAR finish t=%g done=%0d err=%0d",
+                        $abstime, cal_done_i, cal_error_i);
+                    $strobe("OFFSAR weights_q={%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d} Q=%0d",
+                        w0, w1, w2, w3, w4, w5, w6, w7, w8,
+                        w9, w10, w11, w12, w13, weight_frac_bits);
+                end
+            end
+        end
+
+        @(cross(V(RST1, DGND) - vth, -1)) begin
+            if ((cal_mode_i != 0) && (finish_pending_i == 0)) begin
+                frame_active_i = 1;
+                cal_started_i = 0;
+                d_mask = 0; u_mask = 0;
+                cal_state = CAL_PRECHARGE;
+                sar_step = 0; trial_mask = 0;
+                switched_mask = 0; switched_sum = 0;
+                zero_force_i = 0;
+                if (DEBUG != 0)
+                    $strobe("OFFSAR frame start target=%0d dir=%0d pair=%0d t=%g",
+                        target_idx, direction, repeat_idx, $abstime);
+            end
+        end
+
+        @(cross(V(CAL_CLK, DGND) - vth, +1)) begin
+            if ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                (finish_pending_i == 0)) begin
+
+                if (cal_state == CAL_PRECHARGE) begin
+                    switched_mask = 0;
+                    switched_sum = 0;
+                    sar_step = 0;
+                    cal_state = CAL_SAR_TRIAL;
+                    trial_mask = 64;
+                end else if (cal_state == CAL_SAR_TRIAL) begin
+                    case (sar_step)
+                        0: trial_mask = 64;
+                        1: trial_mask = 128;
+                        2: trial_mask = 256;
+                        3: trial_mask = 512;
+                        4: trial_mask = 1024;
+                        5: trial_mask = 2048;
+                        6: trial_mask = 4096;
+                        default: trial_mask = 0;
+                    endcase
+                end
+
+                // calDAC polarity (INVERTED from v1/v2):
+                //   unswitched calDAC caps -> 10 (+w contribution)
+                //   switched/trial caps    -> 01 (-w contribution)
+                //   V_calDAC = 126 - 2*S
+                //   F+ = R + 126 - 2*S, decreases as S increases
+                //   keep rule (cmp_p_gt_n!=0 => keep) is standard SAR.
+                if (direction == 0) begin
+                    d_mask = target_mask |
+                             (caldac_mask & ~(switched_mask | trial_mask));
+                    u_mask = wall_mask | switched_mask | trial_mask;
+                end else begin
+                    d_mask = wall_mask |
+                             (caldac_mask & ~(switched_mask | trial_mask));
+                    u_mask = target_mask | switched_mask | trial_mask;
+                end
+            end
+        end
+
+        @(cross(V(CAL_CLK, DGND) - vth, -1)) begin
+            if ((cal_mode_i != 0) && (frame_active_i != 0) &&
+                (finish_pending_i == 0) && (cal_state != CAL_PRECHARGE)) begin
+
+                cmp_delta = V(COMP, DGND) - V(COMN, DGND);
+                if (cmp_delta < 0.0)
+                    cmp_valid = ((-cmp_delta) > cmp_valid_min) ? 1 : 0;
+                else
+                    cmp_valid = (cmp_delta > cmp_valid_min) ? 1 : 0;
+
+                if (cmp_valid == 0) begin
+                    invalid_count = invalid_count + 1;
+                    if (invalid_count > MAX_INVALID) begin
+                        if (ZERO_ON_INVALID_PHASE0 != 0) begin
+                            invalid_count = 0;
+                            cmp_valid = 1;
+                            if (cal_state == CAL_TERMINAL)
+                                cmp_p_gt_n = 0;
+                            else
+                                cmp_p_gt_n = 1;
+                            zero_force_i = 1;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR zero-hit target=%0d dir=%0d step=%0d state=%0d t=%g",
+                                    target_idx, direction, sar_step, cal_state, $abstime);
+                        end else begin
+                            cal_error_i = 1;
+                            finish_pending_i = 1;
+                        end
+                    end
+                end
+
+                if (cmp_valid != 0) begin
+                    invalid_count = 0;
+                    if (zero_force_i == 0) begin
+                        cmp_p_gt_n = (V(COMP, DGND) < V(COMN, DGND)) ? 1 : 0;
+                        if (CMP_SWAP != 0)
+                            cmp_p_gt_n = 1 - cmp_p_gt_n;
+                    end
+                    zero_force_i = 0;
+
+                    if (DEBUG != 0) begin
+                        case (sar_step)
+                            0: trial_w = 48;
+                            1: trial_w = 32;
+                            2: trial_w = 20;
+                            3: trial_w = 12;
+                            4: trial_w = 8;
+                            5: trial_w = 4;
+                            6: trial_w = 2;
+                            default: trial_w = 0;
+                        endcase
+                        $strobe("OFFSAR CMPDIAG tgt=%0d dir=%0d st=%0d step=%0d S=%0d trW=%0d S_tr=%0d F+=%gV cmp=%0d t=%g",
+                            target_idx, direction, cal_state, sar_step,
+                            switched_sum, trial_w, switched_sum + trial_w,
+                            cmp_delta, cmp_p_gt_n, $abstime);
+                    end
+
+                    if (cal_state == CAL_SAR_TRIAL) begin
+                        if (cmp_p_gt_n != 0) begin
+                            switched_mask = switched_mask | trial_mask;
+                            case (sar_step)
+                                0: switched_sum = switched_sum + 48;
+                                1: switched_sum = switched_sum + 32;
+                                2: switched_sum = switched_sum + 20;
+                                3: switched_sum = switched_sum + 12;
+                                4: switched_sum = switched_sum + 8;
+                                5: switched_sum = switched_sum + 4;
+                                6: switched_sum = switched_sum + 2;
+                            endcase
+                        end
+
+                        sar_step = sar_step + 1;
+                        trial_mask = 0;
+
+                        if (sar_step >= 7) begin
+                            cal_state = CAL_TERMINAL;
+                        end
+                    end else if (cal_state == CAL_TERMINAL) begin
+                        code_value = switched_sum + (cmp_p_gt_n != 0 ? 1 : 0);
+
+                        if (direction == 0) begin
+                            d_plus_code = code_value;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR code target=%0d dir=+ D+=%0d switched=%0d bT=%0d t=%g",
+                                    target_idx, d_plus_code, switched_sum,
+                                    cmp_p_gt_n, $abstime);
+                        end else begin
+                            d_minus_code = code_value;
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR code target=%0d dir=- D-=%0d switched=%0d bT=%0d t=%g",
+                                    target_idx, d_minus_code, switched_sum,
+                                    cmp_p_gt_n, $abstime);
+                        end
+                        cal_state = CAL_FINISH_DIR;
+                    end
+                end
+            end
+        end
+
+        @(cross(V(RST1, DGND) - vth, +1)) begin
+            if ((cal_mode_i != 0) && (cal_state == CAL_FINISH_DIR)) begin
+                if (direction == 0) begin
+                    direction = 1;
+                    cal_state = CAL_IDLE;
+                end else begin
+                    accum_d_plus = accum_d_plus + d_plus_code;
+                    accum_d_minus = accum_d_minus + d_minus_code;
+                    repeat_idx = repeat_idx + 1;
+
+                    if (DEBUG != 0)
+                        $strobe("OFFSAR pair target=%0d D+=%0d D-=%0d pair=%0d t=%g",
+                            target_idx, d_plus_code, d_minus_code, repeat_idx, $abstime);
+
+                    if (repeat_idx >= avg_pairs) begin
+                        if ((accum_d_plus - accum_d_minus) >= 0)
+                            rounding_term = avg_pairs / 2;
+                        else
+                            rounding_term = -avg_pairs / 2;
+                        residual_q = (q_scale * (accum_d_plus - accum_d_minus)
+                            + rounding_term) / avg_pairs;
+
+                        measured_weight_q = wall_weight_q + residual_q;
+
+                        if (DEBUG != 0)
+                            $strobe("OFFSAR measure target=%0d wall=%0d D+_sum=%0d D-_sum=%0d R=%0d measured=%0d t=%g",
+                                target_idx, wall_weight_q / q_scale,
+                                accum_d_plus, accum_d_minus,
+                                residual_q / q_scale,
+                                measured_weight_q / q_scale, $abstime);
+
+                        if (APPLY_CAL_WEIGHT != 0) begin
+                            case (target_idx)
+                                2: begin
+                                    if ((measured_weight_q > 512*q_scale*(1-WEIGHT_TOL)) &&
+                                        (measured_weight_q < 512*q_scale*(1+WEIGHT_TOL))) begin
+                                        w2 = measured_weight_q;
+                                    end else begin
+                                        if (DEBUG != 0)
+                                            $strobe("OFFSAR REJECT target=C10 measured=%0d outside tolerance=%g t=%g",
+                                                measured_weight_q/q_scale, WEIGHT_TOL, $abstime);
+                                    end
+                                end
+                                1: begin
+                                    if ((measured_weight_q > 1024*q_scale*(1-WEIGHT_TOL)) &&
+                                        (measured_weight_q < 1024*q_scale*(1+WEIGHT_TOL))) begin
+                                        w1 = measured_weight_q;
+                                    end else begin
+                                        if (DEBUG != 0)
+                                            $strobe("OFFSAR REJECT target=C11 measured=%0d outside tolerance=%g t=%g",
+                                                measured_weight_q/q_scale, WEIGHT_TOL, $abstime);
+                                    end
+                                end
+                                0: begin
+                                    if ((measured_weight_q > 2048*q_scale*(1-WEIGHT_TOL)) &&
+                                        (measured_weight_q < 2048*q_scale*(1+WEIGHT_TOL))) begin
+                                        w0 = measured_weight_q;
+                                    end else begin
+                                        if (DEBUG != 0)
+                                            $strobe("OFFSAR REJECT target=C12 measured=%0d outside tolerance=%g t=%g",
+                                                measured_weight_q/q_scale, WEIGHT_TOL, $abstime);
+                                    end
+                                end
+                            endcase
+                        end else begin
+                            if (DEBUG != 0)
+                                $strobe("OFFSAR SKIP_APPLY target=%0d measured=%0d (APPLY_CAL_WEIGHT=0) t=%g",
+                                    target_idx, measured_weight_q/q_scale, $abstime);
+                        end
+
+                        target_idx = target_idx - 1;
+                        repeat_idx = 0;
+                        accum_d_plus = 0;
+                        accum_d_minus = 0;
+
+                        case (target_idx)
+                            1: begin
+                                target_mask = 2;
+                                wall_mask = 28;
+                                wall_weight_q = w2 + w3 + w4;
+                            end
+                            0: begin
+                                target_mask = 1;
+                                wall_mask = 30;
+                                wall_weight_q = w1 + w2 + w3 + w4;
+                            end
+                            default: begin
+                                finish_pending_i = 1;
+                                target_idx = -1;
+                            end
+                        endcase
+                        direction = 0;
+                    end else begin
+                        direction = 0;
+                    end
+                    cal_state = CAL_IDLE;
+                end
+            end
+        end
+
+        // SOUT rising edge: LATCH the final conversion result.
+        // BP bus is only sampled here, NOT continuously.
+        // BP[13]=MSB(w=2048), BP[0]=terminal(w=1).
+        @(cross(V(SOUT, DGND) - vth, +1)) begin
+            if (cal_mode_i == 0) begin
+                r0  = (V(BP[13], DGND) > vth) ? 1 : 0;  // C12, w=2048
+                r1  = (V(BP[12], DGND) > vth) ? 1 : 0;  // C11, w=1024
+                r2  = (V(BP[11], DGND) > vth) ? 1 : 0;  // C10, w=512
+                r3  = (V(BP[10], DGND) > vth) ? 1 : 0;  // C9,  w=256
+                r4  = (V(BP[9],  DGND) > vth) ? 1 : 0;  // CR,  w=256
+                r5  = (V(BP[8],  DGND) > vth) ? 1 : 0;  // C8,  w=128
+                r6  = (V(BP[7],  DGND) > vth) ? 1 : 0;  // C7,  w=48
+                r7  = (V(BP[6],  DGND) > vth) ? 1 : 0;  // C6,  w=32
+                r8  = (V(BP[5],  DGND) > vth) ? 1 : 0;  // C5,  w=20
+                r9  = (V(BP[4],  DGND) > vth) ? 1 : 0;  // C4,  w=12
+                r10 = (V(BP[3],  DGND) > vth) ? 1 : 0;  // C3,  w=8
+                r11 = (V(BP[2],  DGND) > vth) ? 1 : 0;  // C2,  w=4
+                r12 = (V(BP[1],  DGND) > vth) ? 1 : 0;  // C1,  w=2
+                r13 = (V(BP[0],  DGND) > vth) ? 1 : 0;  // terminal, w=1
+
+                // RAW_INVERT controls r1..r13 only.
+                if (RAW_INVERT != 0) begin
+                    r1 = 1-r1; r2 = 1-r2; r3 = 1-r3; r4 = 1-r4;
+                    r5 = 1-r5; r6 = 1-r6; r7 = 1-r7; r8 = 1-r8;
+                    r9 = 1-r9; r10 = 1-r10; r11 = 1-r11; r12 = 1-r12;
+                    r13 = 1-r13;
+                end
+                // FIRST_INVERT controls r0 (MSB) only.
+                if (FIRST_INVERT != 0) r0 = 1 - r0;
+
+                raw_sum = r0*w0 + r1*w1 + r2*w2 + r3*w3 + r4*w4 + r5*w5 +
+                          r6*w6 + r7*w7 + r8*w8 + r9*w9 + r10*w10 +
+                          r11*w11 + r12*w12 + r13*w13;
+
+                total_weight_q = w0+w1+w2+w3+w4+w5+w6+w7+w8+w9+w10+w11+w12+w13;
+
+                if (REMOVE_REDUNDANCY_OFFSET != 0) begin
+                    redundancy_offset_q = total_weight_q - 4095*q_scale;
+                    if (redundancy_offset_q >= 0)
+                        redundancy_offset_q = (redundancy_offset_q + 1) / 2;
+                    else
+                        redundancy_offset_q = (redundancy_offset_q - 1) / 2;
+                    centered_sum = raw_sum - redundancy_offset_q;
+                end else begin
+                    centered_sum = raw_sum;
+                end
+
+                if (NORMALIZE_REDUNDANT_RANGE != 0) begin
+                    scaled_code = (4095.0 * centered_sum) / total_weight_q;
+                    if (scaled_code > 4095.0)
+                        adc_code = 4095;
+                    else if (scaled_code < 0.0)
+                        adc_code = 0;
+                    else
+                        adc_code = $rtoi(scaled_code + 0.5);
+                end else begin
+                    if (centered_sum >= 0)
+                        adc_code = (centered_sum + q_scale/2) / q_scale;
+                    else
+                        adc_code = (centered_sum - q_scale/2) / q_scale;
+                    if (adc_code > 4095) adc_code = 4095;
+                    if (adc_code < 0) adc_code = 0;
+                end
+
+                b11 = (adc_code >> 11) & 1;
+                b10 = (adc_code >> 10) & 1;
+                b9  = (adc_code >> 9)  & 1;
+                b8  = (adc_code >> 8)  & 1;
+                b7  = (adc_code >> 7)  & 1;
+                b6  = (adc_code >> 6)  & 1;
+                b5  = (adc_code >> 5)  & 1;
+                b4  = (adc_code >> 4)  & 1;
+                b3  = (adc_code >> 3)  & 1;
+                b2  = (adc_code >> 2)  & 1;
+                b1  = (adc_code >> 1)  & 1;
+                b0  = adc_code & 1;
+            end
+        end
+
+        clk_sar_i = (V(CLK_SAR, DGND) > vth) ? 1 : 0;
+        clk_cal_i = (V(CAL_CLK, DGND) > vth) ? 1 : 0;
+
+        // All analog operators unconditional (Verilog-A requirement).
+        // b0..b11 are SOUT-latched: they only change at SOUT rising edge,
+        // so Bit<11:0> is stable between conversions.
+        V(CAL,  DGND) <+ vlogic * transition(cal_mode_i,  TD, TR, TF);
+        V(DONE, DGND) <+ vlogic * transition(cal_done_i,  TD, TR, TF);
+        V(ERR,  DGND) <+ vlogic * transition(cal_error_i, TD, TR, TF);
+
+        V(CLK, DGND) <+ vlogic * (
+            (1 - cal_mode_i) * transition(clk_sar_i, TD, TR, TF) +
+            cal_mode_i * transition(clk_cal_i, TD_CMP_CAL, TR, TF));
+
+        V(Bit[0],  DGND) <+ vlogic * transition(b0,  TD, TR, TF);
+        V(Bit[1],  DGND) <+ vlogic * transition(b1,  TD, TR, TF);
+        V(Bit[2],  DGND) <+ vlogic * transition(b2,  TD, TR, TF);
+        V(Bit[3],  DGND) <+ vlogic * transition(b3,  TD, TR, TF);
+        V(Bit[4],  DGND) <+ vlogic * transition(b4,  TD, TR, TF);
+        V(Bit[5],  DGND) <+ vlogic * transition(b5,  TD, TR, TF);
+        V(Bit[6],  DGND) <+ vlogic * transition(b6,  TD, TR, TF);
+        V(Bit[7],  DGND) <+ vlogic * transition(b7,  TD, TR, TF);
+        V(Bit[8],  DGND) <+ vlogic * transition(b8,  TD, TR, TF);
+        V(Bit[9],  DGND) <+ vlogic * transition(b9,  TD, TR, TF);
+        V(Bit[10], DGND) <+ vlogic * transition(b10, TD, TR, TF);
+        V(Bit[11], DGND) <+ vlogic * transition(b11, TD, TR, TF);
+
+        for (g = 0; g <= 12; g = g + 1) begin
+            V(BITD_CAL[g], DGND) <+ vlogic * transition(
+                cal_mode_i * ((d_mask >> g) & 1), TD_CAL, TR, TF);
+            V(BITU_CAL[g], DGND) <+ vlogic * transition(
+                cal_mode_i * ((u_mask >> g) & 1), TD_CAL, TR, TF);
+        end
+    end
+endmodule

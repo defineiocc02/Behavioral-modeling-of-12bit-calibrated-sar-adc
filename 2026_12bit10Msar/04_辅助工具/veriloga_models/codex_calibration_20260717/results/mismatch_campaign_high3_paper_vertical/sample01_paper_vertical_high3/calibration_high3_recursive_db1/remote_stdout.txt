@@ -1,0 +1,346 @@
+
+Spectre (R) Circuit Simulator
+Version 23.1.0.242.isr1 64bit -- 7 Sep 2023
+Copyright (C) 1989-2023 Cadence Design Systems, Inc. All rights reserved
+        worldwide. Cadence and Spectre are registered trademarks of Cadence
+        Design Systems, Inc. All others are the property of their respective
+        holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA
+        Security, Inc.
+
+User: meow   Host: meowu   HostID: 7F0101   PID: 68710
+Memory  available: 17.7888 GB  physical: 22.0406 GB
+Linux   : CentOS Linux release 7 (Core)
+CPU Type: AMD Ryzen 7 8845H w/ Radeon 780M Graphics
+All processors running at 3792.6 MHz
+        Socket: Processors
+        0:       0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+                10, 11
+        
+System load averages (1min, 5min, 15min) : 9.6 %, 9.9 %, 17.8 %
+HPC is enabled
+This is a virtual machine
+
+
+Simulating `sample01_paper_vertical_high3_cal_avg1_db1.scs' on meowu at 6:33:14
+        AM, Sat Jul 18, 2026 (process id: 68710).
+Current working directory:
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/sample01_paper_vertical_high3_cal_db1
+Command line:
+    /opt/cadence/SPECTRE231/tools.lnx86/bin/spectre -64  \
+        sample01_paper_vertical_high3_cal_avg1_db1.scs +log spectre.out  \
+        -format psfxl -raw psf +mt +preset=cx
+Licensing Information:
+[06:33:14.406921] Configured Lic search path (22.01-s002):
+        /opt/cadence/IC618/share/license/license.dat
+
+Licensing Information:
+[06:33:14.521179] Periodic Lic check successful
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/sample01_paper_vertical_high3_cal_db1/sample01_paper_vertical_high3_cal_avg1_db1.scs
+
+Notice from spectre during circuit read-in.
+    Pre_Configuration file used:
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+    Configuration file used:
+        `/opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg'.
+
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+Reading file:  /usr/include/stdc-predef.h
+Reading file:  /home/meow/Desktop/TSMC18RF/models/spectre/rf018.scs
+
+Warning from spectre in `ndio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16006: The inline subckt definition `ndio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16023: The inline subckt definition `pdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `nwdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16040: The inline subckt definition `nwdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `ndio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16067: The inline subckt definition `ndio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16084: The inline subckt definition `pdio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+        Further occurrences of this warning will be suppressed.
+
+Reading link: 
+        /opt/cadence/IC618/tools/dfII/samples/artist/ahdlLib/not_gate/veriloga/veriloga.va
+Reading link:  /opt/cadence/IC618/tools
+Reading file: 
+        /opt/cadence/IC618/tools.lnx86/dfII/samples/artist/spectreHDL/Verilog-A/logic/not_gate.va
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.vams
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/discipline.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/sample01_paper_vertical_high3_cal_db1/SWITCH_CAL_original.va
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/sample01_paper_vertical_high3_cal_db1/DEC_CAL_PHY_FRAME_SYNC.va
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg
+Time for NDB Parsing: CPU = 384.886 ms, elapsed = 643.825 ms.
+Time accumulated: CPU = 435.881 ms, elapsed = 643.827 ms.
+Peak resident memory used = 117 Mbytes.
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_SWITCH_CAL.so
+Created directory
+        ./sample01_paper_vertical_high3_cal_avg1_db1.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to directory
+        ./sample01_paper_vertical_high3_cal_avg1_db1.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to
+        ./sample01_paper_vertical_high3_cal_avg1_db1.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/.
+The simulator has reused the existing Verilog-A libraries for this simulation
+        run. If you do not want to use these libraries, set the
+        'CDS_AHDL_REUSE_LIB' environment variable to 'NO' and rerun the
+        simulation.
+Existing shared object for module SWITCH_CAL is up to date.
+Installed compiled interface for SWITCH_CAL.
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_not_gate.so
+Created directory
+        ./sample01_paper_vertical_high3_cal_avg1_db1.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to directory
+        ./sample01_paper_vertical_high3_cal_avg1_db1.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to
+        ./sample01_paper_vertical_high3_cal_avg1_db1.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/.
+Existing shared object for module not_gate is up to date.
+Installed compiled interface for not_gate.
+Compiling ahdlcmi module library for DEC_CAL_PHY.
+Finished compilation in 881 ms (elapsed) for DEC_CAL_PHY.
+Installed compiled interface for DEC_CAL_PHY.
+
+
+Time for Elaboration: CPU = 1.39177 s, elapsed = 1.15075 s.
+Time accumulated: CPU = 1.82793 s, elapsed = 1.79472 s.
+Peak resident memory used = 169 Mbytes.
+
+
+Time for EDB Visiting: CPU = 9.741 ms, elapsed = 4.96006 ms.
+Time accumulated: CPU = 1.83823 s, elapsed = 1.79995 s.
+Peak resident memory used = 170 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to the following 14 nodes:
+        Bit11
+        Bit10
+        Bit9
+        Bit8
+        Bit7
+        Further occurrences of this notice will be suppressed (except in log
+        file).
+    No DC path from node `XCDAC.net4' to ground, Gmin installed to provide
+        path.
+    No DC path from node `XCDAC.net3' to ground, Gmin installed to provide
+        path.
+Notice from spectre during initial setup.
+    Multithreading is disabled due to the size of the design being too small.
+
+
+Global user options:
+               save = selected
+           currents = selected
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 182
+            bsim3v3 68    
+          capacitor 33    
+        DEC_CAL_PHY 1     
+            isource 1     
+           not_gate 2     
+         SWITCH_CAL 1     
+            vsource 73    
+
+Analysis and control statement inventory:
+               tran 1     
+
+Output statements:
+             .probe 0     
+           .measure 0     
+               save 1     
+
+
+Notice from spectre during initial setup.
+    61 vsources are shorted because their absolute value is less than or equal
+        to 'vabsshort'.
+    Spectre X preset=cx enabled.
+    1 notice suppressed.
+    4 warnings suppressed.
+
+Time for parsing: CPU = 10.4 ms, elapsed = 5.5449 ms.
+Time accumulated: CPU = 1.84893 s, elapsed = 1.80565 s.
+Peak resident memory used = 172 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+   -   (Spectre X) Multi-threading. The recommended number of threads is 1,
+        consider adding +mt=1 on command line.
+~~~~~~~~~~~~~~~~~~~~~~
+
+***********************************************
+Transient Analysis `tran': time = (0 s -> 1 us)
+***********************************************
+
+Notice from spectre during IC analysis, during transient analysis `tran'.
+    GminDC = 1 pS is large enough to noticeably affect the DC solution.
+        dV(XCOM.net11) = -12.9699 mV
+        Use the `gmin_check' option to eliminate or expand this report.
+    Bad pivoting is found during DC analysis. Option dc_pivot_check=yes is
+        recommended for possible improvement of convergence.
+
+DC simulation time: CPU = 9.629 ms, elapsed = 4.81486 ms.
+
+Opening the PSFXL file psf/tran.tran.tran ...
+Important parameter values:
+    start = 0 s
+    outputstart = 0 s
+    stop = 1 us
+    step = 1 ns
+    maxstep = 10 ns
+    ic = all
+    useprevic = no
+    skipdc = no
+    reltol = 100e-06
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    errpreset = conservative_sigglobal
+    method = gear2only
+    lteratio = 10
+    relref = sigglobal
+    cmin = 1.23365 aF
+    gmin = 1 pS
+    rabsshort = 1 mOhm
+
+
+Notice from spectre during transient analysis `tran'.
+    Multithreading is disabled due to the size of the design being too small.
+
+
+Output and IC/nodeset summary:
+                 save   3       (voltage)
+
+DEC_CAL_PHY start t=3.015e-09
+DEC_CAL_PHY frame start target=2 side=0 pair=0 t=1.4115e-08
+    tran: time = 25.02 ns     (2.5 %), step = 163.3 ps    (16.3 m%)
+    tran: time = 75.02 ns     (7.5 %), step = 211.5 ps    (21.2 m%)
+DEC_CAL_PHY measure target=2 pair=0 side=D q=-64
+DEC_CAL_PHY frame start target=2 side=1 pair=0 t=1.14115e-07
+    tran: time = 125 ns      (12.5 %), step = 244.6 ps    (24.5 m%)
+    tran: time = 175 ns      (17.5 %), step = 212 ps      (21.2 m%)
+DEC_CAL_PHY measure target=2 pair=0 side=U qD=-64 qU=-64
+DEC_CAL_PHY weight target=2 wall=32768 measured_q=32704 value_q=32768 value=512
+        pairs=1 residual_sum=-128 residual_avg=-64 diversity=0 snap=1
+DEC_CAL_PHY frame start target=1 side=0 pair=0 t=2.14115e-07
+    tran: time = 225 ns      (22.5 %), step = 230.2 ps      (23 m%)
+    tran: time = 275 ns      (27.5 %), step = 212.2 ps    (21.2 m%)
+DEC_CAL_PHY measure target=1 pair=0 side=D q=-64
+DEC_CAL_PHY frame start target=1 side=1 pair=0 t=3.14115e-07
+    tran: time = 325 ns      (32.5 %), step = 254.5 ps    (25.4 m%)
+    tran: time = 375 ns      (37.5 %), step = 212.1 ps    (21.2 m%)
+DEC_CAL_PHY measure target=1 pair=0 side=U qD=-64 qU=64
+DEC_CAL_PHY weight target=1 wall=65536 measured_q=65536 value_q=65536
+        value=1024 pairs=1 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY frame start target=0 side=0 pair=0 t=4.14115e-07
+    tran: time = 425 ns      (42.5 %), step = 209.6 ps      (21 m%)
+    tran: time = 475 ns      (47.5 %), step = 211.9 ps    (21.2 m%)
+DEC_CAL_PHY measure target=0 pair=0 side=D q=64
+DEC_CAL_PHY frame start target=0 side=1 pair=0 t=5.14115e-07
+    tran: time = 525 ns      (52.5 %), step = 194.7 ps    (19.5 m%)
+    tran: time = 575 ns      (57.5 %), step = 211.3 ps    (21.1 m%)
+DEC_CAL_PHY measure target=0 pair=0 side=U qD=64 qU=64
+DEC_CAL_PHY weight target=0 wall=131072 measured_q=131136 value_q=131072
+        value=2048 pairs=1 residual_sum=128 residual_avg=64 diversity=0 snap=1
+DEC_CAL_PHY finish t=6.00105e-07 done=1 err=0
+DEC_CAL_PHY
+        weights_q={131072,65536,32768,16384,16384,8192,3072,2048,1280,768,512,256,128,64}
+        Q=6 pairs=1
+    tran: time = 625 ns      (62.5 %), step = 740.1 ps      (74 m%)
+    tran: time = 675 ns      (67.5 %), step = 1.864 ns     (186 m%)
+    tran: time = 725 ns      (72.5 %), step = 740.3 ps      (74 m%)
+    tran: time = 775 ns      (77.5 %), step = 1.864 ns     (186 m%)
+    tran: time = 825 ns      (82.5 %), step = 740.3 ps      (74 m%)
+    tran: time = 875 ns      (87.5 %), step = 1.864 ns     (186 m%)
+    tran: time = 925 ns      (92.5 %), step = 740.3 ps      (74 m%)
+    tran: time = 975 ns      (97.5 %), step = 1.864 ns     (186 m%)
+Number of accepted tran steps =             27673
+
+Maximum value achieved for any signal of each quantity: 
+V: V(XCOM.I287.net8) = 1.975 V
+I: I(VREFP_SRC:p) = 170.5 mA
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Post-Transient Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   -   Non-default settings that could significantly slow down simulation
+          errpreset = conservative_sigglobal, default moderate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+During simulation, the CPU load for active processors is :
+         0 (29.6 %)      1 (100.0 %)     2 (14.0 %)      3 (11.5 %)
+         4 (4.1 %)       5 (12.2 %)      6 (1.3 %)       7 (77.8 %)
+         8 (7.6 %)       9 (1.0 %)      10 (2.9 %)      11 (8.4 %)
+        Total: 270.4%
+Initial condition solution time: CPU = 9.722 ms, elapsed = 4.86279 ms.
+Intrinsic tran analysis time:    CPU = 5.71335 s, elapsed = 5.02445 s.
+Total time required for tran analysis `tran': CPU = 5.72691 s, elapsed =
+        5.03129 s, util. = 114%.
+Time accumulated: CPU = 7.60781 s, elapsed = 6.86037 s.
+Peak resident memory used = 172 Mbytes.
+
+Licensing Information:
+Lic Summary:
+[06:33:20.001152] cdslmd servers: /opt/cadence/IC618/share/license/license.dat
+[06:33:20.001152] Feature usage summary:
+[06:33:20.016496]  Spectre_X_MMSIM_Lk  
+[06:33:20.496743]   Virtuoso_Multi_mode_Simulation  
+
+
+Aggregate audit (6:33:20 AM, Sat Jul 18, 2026):
+Time used: CPU = 7.61 s, elapsed = 6.86 s, util. = 111%.
+Time spent in licensing: elapsed = 861 ms, percentage of total = 12.6%.
+Peak memory used = 172 Mbytes.
+Simulation started at: 6:33:14 AM, Sat Jul 18, 2026, ended at: 6:33:20 AM, Sat
+        Jul 18, 2026, with elapsed time (wall clock): 6.86 s.
+spectre completes with 0 errors, 5 warnings, and 14 notices.

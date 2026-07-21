@@ -1,0 +1,4 @@
+openResults("/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/mismatch_case00_latest_fixed_full_avg1_fftmin/psf")
+selectResult('tran)
+ocnPrint(v("OUT") ?numberNotation (quote scientific) ?from 1.298505u ?to 13.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/mismatch_case00_latest_fixed_full_avg1_fftmin/exports/OUT.txt")
+exit()

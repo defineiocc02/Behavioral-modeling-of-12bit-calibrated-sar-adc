@@ -1,0 +1,259 @@
+\documentclass[12pt,a4paper]{ctexart}
+
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{enumitem}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  pdftitle={NF10 仅采样噪声条件下三方案 KT/C 对比报告},
+  pdfauthor={Codex}
+}
+
+\captionsetup{font=small,labelfont=bf}
+\setstretch{1.18}
+\setlength{\emergencystretch}{3em}
+\setlist[itemize]{nosep,leftmargin=2em}
+\sisetup{
+  round-mode=places,
+  round-precision=4,
+  group-separator={,}
+}
+
+\title{\textbf{NF10 仅采样噪声条件下}\\[4pt]\textbf{三方案 KT/C 消除对比报告}}
+\author{项目整理日期：2026-06-09}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{报告目的}
+
+本报告将当前确认后的三组有效数据统一整理到同一个口径下。
+
+重点分析 \texttt{NOISEFACTOR=10}、仅打开采样噪声时，各方案对采样噪声功率的消除效果。
+
+本报告采用以下命名，不再沿用已经舍弃或混乱的旧称：
+
+\begin{itemize}
+  \item 方案 A：FIA 基础上的电流失调 KT/C 消除方案，也就是昨天的 FIA sweep 数据。
+  \item 方案 B：电压失调 KT/C 消除方案，也就是今天后面确认的正式电压型对比数据。
+  \item 方案 C：电流型 KT/C 无 FIA 对照方案，也就是本次最新读取的数据；它也是电流噪声消除技术，但没有 FIA。
+\end{itemize}
+
+今天最早那组电压型数据因设置较差，已经舍弃并归档；它不参与本报告的正式结论。
+
+\section{测量口径}
+
+\subsection{噪声设置}
+
+\begin{itemize}
+  \item 测试条件：仅打开采样噪声。
+  \item \texttt{NOISEFACTOR=10}：采样噪声电压提高 10 倍，因此采样噪声功率提高 100 倍。
+  \item 该设置使采样噪声成为主导噪声分量，因此 SNR 的变化可以主要解释为采样噪声消除效果。
+  \item corner 覆盖：\texttt{tt}、\texttt{ff}、\texttt{ss}、\texttt{sf}、\texttt{fs}。
+  \item 主要观测指标：ENOB、SNR、SFDR、Power、COMPOWER。
+\end{itemize}
+
+\subsection{基准定义}
+
+将方案 A 中 \texttt{td=24.05n} 作为“原本基准”。该点 AZ 时间约为 \SI{0.05}{ns}，时间极短，可近似视为没有充分经过采样噪声消除处理。该基准平均 SNR 为 \SI{54.3396}{dB}。
+
+三方案正式比较点统一采用约 \SI{4}{ns} AZ 的结果：
+
+\begin{itemize}
+  \item 方案 A：FIA sweep 中的 \texttt{td=28n}。
+  \item 方案 B：电压型 KT/C 正式对比数据。
+  \item 方案 C：电流型 KT/C 无 FIA 对照数据。
+\end{itemize}
+
+\subsection{新增 C 组读取状态}
+
+新增 C 组读取自 VM 中最新的 \texttt{ExplorerRun.0.rdb}，已归档到：
+
+\begin{center}
+\small
+\texttt{raw\_data/2026-06-09\_NF10\_仅采样噪声\_电流型KT\_C\_无FIA\_正式对比}
+\end{center}
+
+读取时 VM 中仍可见 Virtuoso/Spectre 相关进程，因此本次只做只读下载与归档，不对 VM 仿真状态做任何修改。RDB 内部 \texttt{testStatus} 显示 5 个 corner 均完成。与前面几组仅采样噪声测试一致，\texttt{SRPOWER} 字段为 evaluation error；因此本报告功耗统计采用有效的 \texttt{Power}、\texttt{COMPOWER}、\texttt{SWITCHESPOWER}、\texttt{LOGICPOWER} 和 \texttt{SYNCPOWER}。
+
+\section{计算方法}
+
+以原本基准平均 SNR 为起点，定义：
+
+\begin{equation}
+\Delta SNR = SNR_{\text{after}} - SNR_{\text{baseline}}
+\end{equation}
+
+采样噪声功率剩余百分比按下式折算：
+
+\begin{equation}
+P_{\text{remain}}(\%) = 100 \times 10^{-\Delta SNR / 10}
+\end{equation}
+
+采样噪声功率消除百分比为：
+
+\begin{equation}
+P_{\text{cancel}}(\%) = 100 - P_{\text{remain}}(\%)
+\end{equation}
+
+这个计算建立在 NF10 仅采样噪声测试的前提上。由于采样噪声已被放大为主导噪声分量，SNR 提升可以近似反映采样噪声功率被压低的幅度。
+
+\section{三方案汇总结果}
+
+\begin{table}[H]
+\centering
+\caption{三方案核心指标汇总}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lrrrrrrr}
+\toprule
+方案 & ENOB avg & SNR avg / dB & SFDR avg / dB & Power avg / uW & COMPOWER avg / uW & 噪声剩余 & 噪声降低 \\
+\midrule
+A：FIA 基础电流失调 KT/C & 10.3484 & 63.9574 & 75.6688 & 307.8167 & 176.2009 & 10.92\% & 89.08\% \\
+C：电流型 KT/C 无 FIA & 10.2750 & 64.0150 & 75.7346 & 351.5700 & 148.0453 & 10.78\% & 89.22\% \\
+B：电压失调 KT/C & 10.6807 & 66.1743 & 77.9141 & 439.8245 & 236.2862 & 6.55\% & 93.45\% \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+从平均 SNR 和采样噪声剩余百分比看，C 组与 A 组几乎重合；B 组的采样噪声压低能力最强。
+
+\section{新增 C 组原始数据}
+
+\begin{table}[H]
+\centering
+\caption{C 组：电流型 KT/C 无 FIA 对照方案逐 corner 原始指标}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lrrrrr}
+\toprule
+corner & ENOB & SNR / dB & SFDR / dB & Power / uW & COMPOWER / uW \\
+\midrule
+tt & 10.1820 & 63.3285 & 74.1442 & 342.9640 & 140.7359 \\
+ff & 10.3095 & 64.1136 & 77.1952 & 369.9755 & 154.4497 \\
+ss & 10.1541 & 63.3537 & 76.4062 & 341.5053 & 148.3041 \\
+sf & 10.2987 & 64.1105 & 75.0133 & 359.7290 & 158.0856 \\
+fs & 10.4307 & 65.1685 & 75.9139 & 343.6761 & 138.6511 \\
+avg & 10.2750 & 64.0150 & 75.7346 & 351.5700 & 148.0453 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+C 组平均 SNR 相对原本基准提升：
+
+\begin{equation}
+64.0150 - 54.3396 = 9.6754 \text{ dB}
+\end{equation}
+
+因此：
+
+\begin{equation}
+P_{\text{remain}} = 100 \times 10^{-9.6754/10} \approx 10.78\%
+\end{equation}
+
+\begin{equation}
+P_{\text{cancel}} \approx 89.22\%
+\end{equation}
+
+\section{逐 corner SNR 对比}
+
+\begin{table}[H]
+\centering
+\caption{三方案逐 corner SNR 对比}
+\begin{tabular}{lrrrr}
+\toprule
+corner & A：FIA / dB & C：电流无 FIA / dB & B：电压型 / dB & B-C / dB \\
+\midrule
+tt & 65.9413 & 63.3285 & 66.1321 & 2.8036 \\
+ff & 63.5149 & 64.1136 & 68.1704 & 4.0568 \\
+ss & 63.2268 & 63.3537 & 64.0304 & 0.6767 \\
+sf & 63.9569 & 64.1105 & 65.7646 & 1.6541 \\
+fs & 63.1473 & 65.1685 & 66.7739 & 1.6054 \\
+avg & 63.9574 & 64.0150 & 66.1743 & 2.1593 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+C 组相对 A 组平均 SNR 只高 \SI{0.0576}{dB}，属于非常接近。B 组相对 C 组平均 SNR 高 \SI{2.1593}{dB}，优势主要来自 \texttt{ff}、\texttt{tt}、\texttt{sf} 和 \texttt{fs} 等 corner。
+
+\section{功耗取舍}
+
+\begin{table}[H]
+\centering
+\caption{平均功耗对比}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lrrr}
+\toprule
+比较项 & Power 差值 / uW & COMPOWER 差值 / uW & 说明 \\
+\midrule
+C - A & +43.7533 & -28.1556 & C 总功耗高于 A，但比较器功耗低于 A \\
+B - C & +88.2545 & +88.2409 & B 性能更强，但功耗明显更高 \\
+B - A & +132.0078 & +60.0853 & B 相对 A 的性能提升伴随总功耗增加 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+因此，如果只看采样噪声压低，B 组最好；如果看功耗，C 组低于 B 组但仍高于 A 组。C 组的核心价值是提供“没有 FIA 时的电流型 KT/C 对照”，而不是证明其相对 A 组有明显性能优势。
+
+\section{可视化结果}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../figures/2026-06-09_nf10_three_scheme_noise_power_reduction.png}
+\caption{三方案相对原本基准的采样噪声功率消除百分比}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../figures/2026-06-09_nf10_three_scheme_snr_corner_compare.png}
+\caption{三方案逐 corner SNR 对比}
+\end{figure}
+
+\section{结论}
+
+\begin{enumerate}
+  \item A 组仍是昨天 FIA 基础上的电流失调 KT/C 消除方案，是当前正式基准。其采样噪声功率约剩余 10.92\%，即降低约 89.08\%。
+  \item 最新 C 组是电流型 KT/C 无 FIA 对照方案。其平均 SNR 为 \SI{64.0150}{dB}，采样噪声功率约剩余 10.78\%，即降低约 89.22\%。它与 A 组非常接近。
+  \item B 组是电压失调 KT/C 消除方案。其平均 SNR 为 \SI{66.1743}{dB}，采样噪声功率约剩余 6.55\%，即降低约 93.45\%，三组中噪声压低最强。
+  \item 从设计表述上，C 组应写为“电流型 KT/C 无 FIA 对照方案”，用于说明无 FIA 时电流型消除路线的表现；不应把它写成新正式方案，也不应替代 A/B 的身份。
+  \item 最终取舍需要同时报告噪声消除与功耗：B 组性能最好但功耗最高；C 组功耗低于 B，但相对 A 没有实质 SNR 优势。
+\end{enumerate}
+
+\section{文件索引}
+
+主要数据文件如下，完整说明见 \texttt{tables/README.md}。
+
+\begin{table}[H]
+\centering
+\caption{关键 CSV 文件索引}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{ll}
+\toprule
+用途 & 文件 \\
+\midrule
+三方案总表 & \texttt{tables/sampling\_nf10\_scheme\_summary.csv} \\
+C 组原始表 & \texttt{tables/sampling\_nf10\_current\_offset\_KT\_C\_no\_FIA\_metrics.csv} \\
+C 组消除百分比 & \texttt{tables/sampling\_nf10\_current\_offset\_KT\_C\_no\_FIA\_cancellation\_using\_yesterday\_baseline.csv} \\
+C 组 vs A & \texttt{tables/sampling\_nf10\_current\_offset\_KT\_C\_no\_FIA\_vs\_FIA\_td28\_comparison.csv} \\
+C 组 vs B & \texttt{tables/sampling\_nf10\_current\_offset\_KT\_C\_no\_FIA\_vs\_voltage\_offset\_KT\_C\_td28\_comparison.csv} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\end{document}

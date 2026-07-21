@@ -1,0 +1,27 @@
+`include "constants.vams"
+`include "disciplines.vams"
+
+module IDEAL_COMP (CLK, P, N, COMP, COMN, DGND, DVDD);
+    input CLK, P, N;
+    output COMP, COMN;
+    inout DGND, DVDD;
+    electrical CLK, P, N, COMP, COMN, DGND, DVDD;
+
+    parameter real TD = 100p from [0:inf);
+    parameter real TR = 20p from (0:inf);
+    parameter real TF = 20p from (0:inf);
+
+    integer decision;
+    real vlogic;
+
+    analog begin
+        vlogic = V(DVDD, DGND);
+        decision = (V(P, N) > 0.0) ? 1 : 0;
+        V(COMP, DGND) <+ vlogic * transition(
+            ((V(CLK, DGND) > 0.5*vlogic) && (decision != 0)) ? 1 : 0,
+            TD, TR, TF);
+        V(COMN, DGND) <+ vlogic * transition(
+            ((V(CLK, DGND) > 0.5*vlogic) && (decision == 0)) ? 1 : 0,
+            TD, TR, TF);
+    end
+endmodule

@@ -1,0 +1,198 @@
+// Calibration-aware behavioral replacement for the existing SWITCH cell.
+//
+// Normal mode (CAL=0) preserves the existing external interface and functional
+// switching convention:
+//   RST=1              -> BITD samples VIP, BITU samples VIN
+//   RST=0, SET=0       -> the corresponding bottom plate is held at VCM
+//   RST=0, SET=1       -> BITN/BITP select VREFN/VREFP
+//
+// Calibration mode (CAL=1) disables the input-sampling and normal SAR-control
+// paths.  The existing BITD_CAL/BITU_CAL pair encodes a differential ternary
+// state without adding a third bus:
+//     10 -> D/P side VREFP, U/N side VREFN
+//     01 -> D/P side VREFN, U/N side VREFP
+//     00 -> both bottom plates VCM (inactive)
+//     11 -> both bottom plates VCM (safe/guard state)
+// P and N continue to use RST1 for top-plate VCM precharge.
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module SWITCH_CAL (
+    AGND, AVDD,
+    BITD, BITN, BITP, BITU,
+    N, P,
+    RST, RST1, SET,
+    VCM, VIN, VIP, VREFN, VREFP,
+    BITD_CAL, BITU_CAL, CAL
+);
+
+    inout AGND, AVDD;
+    inout [1:12] BITD;
+    input [1:12] BITN;
+    input [1:12] BITP;
+    inout [1:12] BITU;
+    inout N, P;
+    input RST, RST1;
+    // Keep the original SWITCH symbol/netlist ordering SET<0> ... SET<11>.
+    input [0:11] SET;
+    inout VCM, VIN, VIP, VREFN, VREFP;
+    input [11:0] BITD_CAL, BITU_CAL;
+    input CAL;
+
+    electrical AGND, AVDD;
+    electrical [1:12] BITD;
+    electrical [1:12] BITN;
+    electrical [1:12] BITP;
+    electrical [1:12] BITU;
+    electrical N, P;
+    electrical RST, RST1;
+    electrical [0:11] SET;
+    electrical VCM, VIN, VIP, VREFN, VREFP;
+    electrical [11:0] BITD_CAL, BITU_CAL;
+    electrical CAL;
+
+    parameter real RON_SAMPLE = 5.0 from (0.0:inf);
+    parameter real RON_REF = 10.0 from (0.0:inf);
+    parameter real RON_TOP = 5.0 from (0.0:inf);
+    parameter real ROFF = 1.0e15 from (0.0:inf);
+    // Smooth logic-control transition used by the conductance model.
+    parameter real VSMOOTH = 10m from (0.0:inf);
+
+    real vth;
+    real s_cal;
+    real s_rst;
+    real s_rst1;
+    real s_norm;
+    real gon_sample;
+    real gon_ref;
+    real gon_top;
+    real goff;
+    genvar k;
+
+    analog function real logic_level;
+        input x;
+        real x;
+        begin
+            logic_level = 0.5 + 0.5 * tanh(x / VSMOOTH);
+        end
+    endfunction
+
+    analog function real pair_pos;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_pos = ld * (1.0 - lu);
+        end
+    endfunction
+
+    analog function real pair_neg;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_neg = (1.0 - ld) * lu;
+        end
+    endfunction
+
+    analog function real pair_cm;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_cm = 1.0 - ld * (1.0 - lu) -
+                (1.0 - ld) * lu;
+        end
+    endfunction
+
+    analog begin
+        vth = 0.5 * V(AVDD, AGND);
+        s_cal = logic_level(V(CAL, AGND) - vth);
+        s_norm = 1.0 - s_cal;
+        s_rst = logic_level(V(RST, AGND) - vth);
+        s_rst1 = logic_level(V(RST1, AGND) - vth);
+
+        gon_sample = 1.0 / RON_SAMPLE;
+        gon_ref = 1.0 / RON_REF;
+        gon_top = 1.0 / RON_TOP;
+        goff = 1.0 / ROFF;
+
+        // Existing top-plate sampling/precharge function remains active in
+        // both normal and calibration modes.
+        I(P, VCM) <+ V(P, VCM) *
+            (goff + (gon_top - goff) * s_rst1);
+        I(N, VCM) <+ V(N, VCM) *
+            (goff + (gon_top - goff) * s_rst1);
+
+        for (k = 1; k <= 12; k = k + 1) begin
+            // Normal sampling path.  It is fully disabled when CAL=1.
+            I(BITD[k], VIP) <+ V(BITD[k], VIP) *
+                (goff + (gon_sample - goff) * s_norm * s_rst);
+            I(BITU[k], VIN) <+ V(BITU[k], VIN) *
+                (goff + (gon_sample - goff) * s_norm * s_rst);
+
+            // Before the corresponding SET becomes active, the original SW8
+            // holds each bottom plate at VCM during normal conversion.
+            I(BITD[k], VCM) <+ V(BITD[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                s_norm * (1.0 - s_rst) *
+                (1.0 - logic_level(V(SET[12-k], AGND) - vth)) +
+                s_cal * pair_cm(
+                    V(BITD_CAL[k-1], AGND) - vth,
+                    V(BITU_CAL[k-1], AGND) - vth)));
+            I(BITU[k], VCM) <+ V(BITU[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                s_norm * (1.0 - s_rst) *
+                (1.0 - logic_level(V(SET[12-k], AGND) - vth)) +
+                s_cal * pair_cm(
+                    V(BITD_CAL[k-1], AGND) - vth,
+                    V(BITU_CAL[k-1], AGND) - vth)));
+
+            // BITD/P-side reference selection.  Normal mode is unchanged;
+            // calibration uses only the complementary 10/01 pair states.
+            I(BITD[k], VREFP) <+ V(BITD[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rst) *
+                    logic_level(V(SET[12-k], AGND) - vth) *
+                    logic_level(V(BITN[k], AGND) - vth) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[k-1], AGND) - vth,
+                        V(BITU_CAL[k-1], AGND) - vth)));
+
+            I(BITD[k], VREFN) <+ V(BITD[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rst) *
+                    logic_level(V(SET[12-k], AGND) - vth) *
+                    logic_level(V(BITP[k], AGND) - vth) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[k-1], AGND) - vth,
+                        V(BITU_CAL[k-1], AGND) - vth)));
+
+            // BITU/N-side calibration selection is the exact complement.
+            I(BITU[k], VREFP) <+ V(BITU[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rst) *
+                    logic_level(V(SET[12-k], AGND) - vth) *
+                    logic_level(V(BITP[k], AGND) - vth) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[k-1], AGND) - vth,
+                        V(BITU_CAL[k-1], AGND) - vth)));
+
+            I(BITU[k], VREFN) <+ V(BITU[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rst) *
+                    logic_level(V(SET[12-k], AGND) - vth) *
+                    logic_level(V(BITN[k], AGND) - vth) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[k-1], AGND) - vth,
+                        V(BITU_CAL[k-1], AGND) - vth)));
+        end
+    end
+endmodule

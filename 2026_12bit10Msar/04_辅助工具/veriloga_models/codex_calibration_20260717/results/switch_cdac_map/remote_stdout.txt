@@ -1,0 +1,251 @@
+
+Spectre (R) Circuit Simulator
+Version 23.1.0.242.isr1 64bit -- 7 Sep 2023
+Copyright (C) 1989-2023 Cadence Design Systems, Inc. All rights reserved
+        worldwide. Cadence and Spectre are registered trademarks of Cadence
+        Design Systems, Inc. All others are the property of their respective
+        holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA
+        Security, Inc.
+
+User: meow   Host: meowu   HostID: 7F0101   PID: 35945
+Memory  available: 19.1271 GB  physical: 22.0406 GB
+Linux   : CentOS Linux release 7 (Core)
+CPU Type: AMD Ryzen 7 8845H w/ Radeon 780M Graphics
+All processors running at 3792.6 MHz
+        Socket: Processors
+        0:       0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+                10, 11
+        
+System load averages (1min, 5min, 15min) : 0.0 %, 0.1 %, 1.2 %
+This is a virtual machine
+
+
+Simulating `tb_switch_cdac_map.scs' on meowu at 1:42:05 PM, Thur Jul 16, 2026
+        (process id: 35945).
+Current working directory:
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/switch_cdac_map
+Command line:
+    /opt/cadence/SPECTRE231/tools.lnx86/bin/spectre -64  \
+        tb_switch_cdac_map.scs +log spectre.out -format psfxl -raw psf
+Licensing Information:
+[13:42:05.406905] Configured Lic search path (22.01-s002):
+        /opt/cadence/IC618/share/license/license.dat
+
+Licensing Information:
+[13:42:05.456136] Periodic Lic check successful
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/switch_cdac_map/tb_switch_cdac_map.scs
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file:  /usr/include/stdc-predef.h
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/switch_cdac_map/SWITCH_CAL_original.va
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.vams
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/switch_cdac_map/SW_MON.va
+Time for NDB Parsing: CPU = 173.458 ms, elapsed = 121.092 ms.
+Time accumulated: CPU = 212.907 ms, elapsed = 121.094 ms.
+Peak resident memory used = 111 Mbytes.
+
+Compiling ahdlcmi module library for SWITCH_CAL.
+Finished compilation in 32.1 s (elapsed) for SWITCH_CAL.
+Installed compiled interface for SWITCH_CAL.
+Compiling ahdlcmi module library for SW_MON.
+Finished compilation in 933 ms (elapsed) for SW_MON.
+Installed compiled interface for SW_MON.
+Time for Elaboration: CPU = 2.56181 s, elapsed = 33.8888 s.
+Time accumulated: CPU = 2.77514 s, elapsed = 34.0101 s.
+Peak resident memory used = 306 Mbytes.
+
+
+Time for EDB Visiting: CPU = 1.305 ms, elapsed = 1.30486 ms.
+Time accumulated: CPU = 2.77658 s, elapsed = 34.0116 s.
+Peak resident memory used = 307 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to node `0'.
+    No DC path from node `XCDAC.net4' to ground, Gmin installed to provide
+        path.
+    No DC path from node `XCDAC.net3' to ground, Gmin installed to provide
+        path.
+
+
+Global user options:
+               save = selected
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 109
+          capacitor 28    
+             SW_MON 1     
+         SWITCH_CAL 1     
+            vsource 79    
+
+Analysis and control statement inventory:
+               tran 1     
+
+Output statements:
+             .probe 0     
+           .measure 0     
+               save 1     
+
+Time for parsing: CPU = 4.694 ms, elapsed = 12.7869 ms.
+Time accumulated: CPU = 2.78132 s, elapsed = 34.0244 s.
+Peak resident memory used = 309 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+
+**************************************************
+Transient Analysis `tran': time = (0 s -> 1.31 us)
+**************************************************
+DC simulation time: CPU = 1.312 ms, elapsed = 1.31321 ms.
+
+Opening the PSFXL file psf/tran.tran.tran ...
+Important parameter values:
+    start = 0 s
+    outputstart = 0 s
+    stop = 1.31 us
+    step = 1.31 ns
+    maxstep = 1 ns
+    ic = all
+    useprevic = no
+    skipdc = no
+    reltol = 1e-03
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    errpreset = moderate
+    method = traponly
+    lteratio = 3.5
+    relref = sigglobal
+    cmin = 0 F
+    gmin = 1 pS
+
+
+Output and IC/nodeset summary:
+                 save   15      (voltage)
+
+
+Notice from spectre at time = 1.19141 ns during transient analysis `tran'.
+    Found trapezoidal ringing on node BITU13.
+Notice from spectre at time = 1.3688 ns during transient analysis `tran'.
+    Found trapezoidal ringing on node BITU13.
+Notice from spectre at time = 1.72358 ns during transient analysis `tran'.
+    Found trapezoidal ringing on node BITU13.
+Notice from spectre at time = 2.43313 ns during transient analysis `tran'.
+    Found trapezoidal ringing on node BITU13.
+Notice from spectre at time = 3.43313 ns during transient analysis `tran'.
+    Found trapezoidal ringing on node BITU13.
+        Further occurrences of this notice will be suppressed (except in log
+        file).
+
+    tran: time = 33.43 ns    (2.55 %), step = 1 ns        (76.3 m%)
+SW_MON sample=0 dmask=4096 umask=0
+    tran: time = 98.44 ns    (7.51 %), step = 1 ns        (76.3 m%)
+SW_MON sample=1 dmask=2048 umask=0
+    tran: time = 164.3 ns    (12.5 %), step = 1 ns        (76.3 m%)
+    tran: time = 229.7 ns    (17.5 %), step = 1 ns        (76.3 m%)
+SW_MON sample=2 dmask=1024 umask=0
+    tran: time = 295.7 ns    (22.6 %), step = 1 ns        (76.3 m%)
+SW_MON sample=3 dmask=512 umask=0
+    tran: time = 360.3 ns    (27.5 %), step = 159.9 ps    (12.2 m%)
+    tran: time = 426.7 ns    (32.6 %), step = 1 ns        (76.3 m%)
+SW_MON sample=4 dmask=256 umask=0
+    tran: time = 491.7 ns    (37.5 %), step = 1 ns        (76.3 m%)
+    tran: time = 557.3 ns    (42.5 %), step = 1 ns        (76.3 m%)
+SW_MON sample=5 dmask=128 umask=0
+    tran: time = 623.1 ns    (47.6 %), step = 1 ns        (76.3 m%)
+SW_MON sample=6 dmask=64 umask=0
+    tran: time = 688.1 ns    (52.5 %), step = 1 ns        (76.3 m%)
+    tran: time = 753.3 ns    (57.5 %), step = 1 ns        (76.3 m%)
+SW_MON sample=7 dmask=32 umask=0
+    tran: time = 819.4 ns    (62.5 %), step = 1 ns        (76.3 m%)
+SW_MON sample=8 dmask=16 umask=0
+    tran: time = 884.4 ns    (67.5 %), step = 1 ns        (76.3 m%)
+    tran: time = 950 ns      (72.5 %), step = 674.1 ps    (51.5 m%)
+SW_MON sample=9 dmask=8 umask=0
+    tran: time = 1.015 us    (77.5 %), step = 1 ns        (76.3 m%)
+SW_MON sample=10 dmask=4 umask=0
+    tran: time = 1.081 us    (82.5 %), step = 720.6 ps      (55 m%)
+    tran: time = 1.147 us    (87.5 %), step = 1 ns        (76.3 m%)
+SW_MON sample=11 dmask=2 umask=0
+    tran: time = 1.212 us    (92.6 %), step = 1 ns        (76.3 m%)
+SW_MON sample=12 dmask=1 umask=0
+    tran: time = 1.277 us    (97.5 %), step = 1 ns        (76.3 m%)
+Number of accepted tran steps =             2223
+
+Notice from spectre during transient analysis `tran'.
+    Trapezoidal ringing is detected during tran analysis.
+        Please use method=trap for better results and performance.
+
+
+Maximum value achieved for any signal of each quantity: 
+V: V(BITD8) = 1.822 V
+I: I(VREFP_SRC:p) = 35.29 mA
+Maximum value of each quantity, excluding Verilog-A modules or dangling current
+        sources:
+V: V(XCDAC.net3) = 1 V
+I: I(VREFP_SRC:p) = 35.29 mA
+If your circuit contains signals of the same quantity that are vastly different
+        in size (such as high voltage circuitry combined with low voltage
+        control circuitry), you should consider specifying global option
+        `bin_relref=yes'.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Post-Transient Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   -   To further speed up simulation, consider
+          add ++aps on command line
+   -   Non-default settings that could significantly slow down simulation
+          maxstep = 1 ns, default 26.2 ns
+   -   Since 17.1ISR10, the option ignorevaref is enabled by default. This will
+        remove Verilog-A signals from the computation of references
+       for convergence tolerances. This improves accuracy, but may increase
+        transient runtime. To revert to ISR10 behavior, set the option
+        ignorevaref=no.
+ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+During simulation, the CPU load for active processors is :
+         2 (13.6 %)      5 (2.4 %)       6 (6.8 %)       7 (34.5 %)
+         8 (32.2 %)      9 (15.4 %)     
+        Total: 106.3%
+Initial condition solution time: CPU = 1.462 ms, elapsed = 1.46294 ms.
+Intrinsic tran analysis time:    CPU = 217.805 ms, elapsed = 218.213 ms.
+Total time required for tran analysis `tran': CPU = 221.005 ms, elapsed =
+        221.409 ms, util. = 99.8%.
+Time accumulated: CPU = 3.01261 s, elapsed = 34.2563 s.
+Peak resident memory used = 309 Mbytes.
+
+
+Notice from spectre.
+    171 notices suppressed.
+
+Licensing Information:
+Lic Summary:
+[13:42:40.001152] cdslmd servers: /opt/cadence/IC618/share/license/license.dat
+[13:42:40.016496] Feature usage summary:
+[13:42:40.355647]   Virtuoso_Spectre  
+
+
+Aggregate audit (1:42:40 PM, Thur Jul 16, 2026):
+Time used: CPU = 3.02 s, elapsed = 34.5 s, util. = 8.75%.
+Time spent in licensing: elapsed = 222 ms.
+Peak memory used = 310 Mbytes.
+Simulation started at: 1:42:05 PM, Thur Jul 16, 2026, ended at: 1:42:40 PM,
+        Thur Jul 16, 2026, with elapsed time (wall clock): 34.5 s.
+spectre completes with 0 errors, 0 warnings, and 11 notices.

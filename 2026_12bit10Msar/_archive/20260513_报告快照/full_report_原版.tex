@@ -1,0 +1,766 @@
+% =============================================================================
+% 12-bit 50MS/s SAR ADC with CAAZ — 完整仿真报告
+% 文档编号: HUST-SAR-2026-002  Rev.2.0
+% 编译: xelatex -> xelatex (两次)
+% 日期: 2026-05-13
+% =============================================================================
+\documentclass[11pt,a4paper,UTF8]{ctexart}
+
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\sisetup{detect-all=true,per-mode=symbol}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=primaryblue,
+    bookmarksnumbered=true,
+    pdfencoding=auto,
+    psdextra,
+}
+\pdfstringdefDisableCommands{\def\color#1{}}
+\usepackage{caption}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+%% -------- 调色板 --------
+\definecolor{primaryblue}{RGB}{0,82,136}
+\definecolor{accentblue}{RGB}{214,233,248}
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{lightblue}{RGB}{235,245,255}
+\definecolor{accentgreen}{RGB}{220,240,220}
+\definecolor{darkgreen}{RGB}{0,100,0}
+\definecolor{accentred}{RGB}{255,235,235}
+\definecolor{accentorange}{RGB}{255,240,220}
+\definecolor{darkorange}{RGB}{180,80,0}
+\definecolor{lightgray}{RGB}{248,248,248}
+\definecolor{mediumgray}{RGB}{230,230,230}
+\definecolor{headerblue}{RGB}{0,82,136}
+\definecolor{rowlight}{RGB}{245,250,255}
+\definecolor{rowdark}{RGB}{235,242,252}
+
+%% -------- 标题格式 --------
+\titleformat{\section}{\Large\bfseries\color{primaryblue}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{darkblue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{darkblue}}{\thesubsubsection}{1em}{}
+
+%% -------- 页眉 --------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primaryblue}12-bit 50MS/s SAR ADC with CAAZ --- 仿真报告 Rev.2}
+\fancyhead[R]{\small\color{primaryblue}HUST-SAR-2026-002}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{22pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{primaryblue}\leaders\hrule height0.4pt\hfill}}
+
+%% -------- tcolorbox 风格 --------
+\tcbset{sharp corners,boxrule=0.5pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{infobox}[1]{
+    colback=lightblue,colframe=primaryblue,coltitle=white,fonttitle=\bfseries,
+    title={\strut\textbf{#1}},colbacktitle=primaryblue,
+}
+\newtcolorbox{resultbox}[1]{
+    colback=accentgreen,colframe=darkgreen,coltitle=white,fonttitle=\bfseries,
+    title={\strut\textbf{#1}},colbacktitle=darkgreen,
+}
+\newtcolorbox{warnbox}[1]{
+    colback=accentred,colframe=red!60!black,coltitle=white,fonttitle=\bfseries,
+    title={\strut\textbf{#1}},colbacktitle=red!60!black,
+}
+\newtcolorbox{databox}[1]{
+    colback=accentorange,colframe=darkorange,coltitle=white,fonttitle=\bfseries,
+    title={\strut\textbf{#1}},colbacktitle=darkorange,
+}
+\newcommand{\keydata}[1]{\textbf{\color{primaryblue}#1}}
+
+%% ============================================================================
+\begin{document}
+
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+\vspace*{2cm}
+
+{\LARGE\bfseries\color{primaryblue}12-bit 50MS/s SAR ADC with CAAZ}
+
+\vspace{0.3cm}
+{\large —— 完整仿真报告 ——}
+
+\vspace{1cm}
+
+{\small 文档编号：HUST-SAR-2026-002 \hspace{2em} Rev. 2.0 \hspace{2em} 2026-05-13}
+
+\vspace{1.5cm}
+
+\begin{tcolorbox}[colback=accentblue,colframe=primaryblue,sharp corners]
+\centering
+\textbf{\large\color{primaryblue}核心发现}
+\vspace{4pt}
+\small
+\begin{tabular}{ll}
+\color{primaryblue}$\bullet$ & \color{black}CAAZ TT角消除 \textbf{87.9\%} 采样噪声（SNR 提升 \textbf{8.9~dB}），降噪 \textbf{8.3$\times$} \\
+\color{primaryblue}$\bullet$ & \color{black}NF=1基线全corners ENOB $>$\textbf{11.4~bit}，TT角达 \textbf{11.61~bit}（SNR \textbf{71.81~dB}） \\
+\color{primaryblue}$\bullet$ & \color{black}SF高温角$\eta$=\textbf{79.7\%}全PVT最差，FF/FS低温角$\eta>$\textbf{89\%} \\
+\color{primaryblue}$\bullet$ & \color{black}总功耗 \textbf{660--776~$\mu$W}（模拟$\sim$65\%，数字$\sim$35\%）；$t_d$=26.0~ns最优 \\
+\color{primaryblue}$\bullet$ & \color{black}两批次CSV导出数据跨批次$\eta$偏差$<$1.4~p.p.，SWITCHPOWER系统性偏高+15\% \\
+\end{tabular}
+\end{tcolorbox}
+
+\vspace{1.5cm}
+
+\begin{tabular}{ll}
+\textbf{工艺：} & TSMC 18RF (1P6M, 1.8~V) \\
+\textbf{仿真器：} & Cadence Spectre 23.1 (APS mode) \\
+\textbf{设计：} & \texttt{12bit\_50M\_SAR\_test\_12bit50MSAR\_AMS\_final\_1} \\
+\textbf{作者：} & Reed Zhao, Huazhong University of Science and Technology \\
+\textbf{数据批次：} & 历史($\times$1) + 旧导出($\times$2) + 新导出($\times$1)，共4批次 \\
+\end{tabular}
+
+\vfill
+{\small\textbf{关键词：} SAR ADC \hspace{1em} CAAZ \hspace{1em} 噪声消除 \hspace{1em} PVT仿真 \hspace{1em} $\eta$表征 \hspace{1em} 跨批次验证}
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+%% ============================================================================
+\section{引言与设计目标}
+\label{sec:intro}
+
+\subsection{项目背景}
+
+逐次逼近寄存器（SAR）型模数转换器因出色的能效比和数字友好的架构，在中低精度、中高速应用中占据主导地位。
+传统SAR ADC面临采样开关$kT/C$噪声的根本限制——单位电容越小，$kT/C$噪声越大。
+电流调节自动调零（Current-Adjusting Auto-Zeroing, CAAZ）技术在采样阶段通过预放大器负反馈环路主动抵消采样电容上的$kT/C$噪声，
+在保持低功耗的同时逼近热噪声极限。
+
+\subsection{设计目标与达标情况}
+
+\begin{table}[htbp]
+\centering
+\caption{设计目标与实测达标}
+\label{tab:targets}
+\begin{tabular}{lccc}
+\toprule
+\textbf{指标} & \textbf{目标} & \textbf{实测 (TT, $t_d$=26ns)} & \textbf{状态} \\
+\midrule
+ENOB & $>$11~bit & \keydata{11.61~bit} & $\checkmark$ \\
+SNR & $>$70~dB & \keydata{71.81~dB} & $\checkmark$ \\
+SFDR & $>$75~dB & \keydata{84.01~dB} & $\checkmark$ \\
+总功耗 & $<$1~mW & \keydata{720~$\mu$W} & $\checkmark$ \\
+CAAZ $\eta$ & $>$85\% & \keydata{87.9\%} & $\checkmark$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{数据批次说明}
+
+\begin{table}[htbp]
+\centering
+\caption{可用仿真数据批次}
+\label{tab:batches}
+\small
+\begin{tabular}{llllll}
+\toprule
+\textbf{批次} & \textbf{来源} & \textbf{NF} & \textbf{$t_d$} & \textbf{数据量} & \textbf{用途} \\
+\midrule
+历史 & \texttt{full\_report.tex} & 10 & 24.05/26.5~ns & 8点(无SF) & $t_d$参考 \\
+
+(B1)旧导出 & 首次CSV & 1, 10 & 24.05/26.0~ns & 20点 & 交叉验证 \\
+(B2)新导出 & VM最新导出(14:12) & 10 & 24.05/26.0~ns & 10点 & \textbf{主要数据源} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\subsection{仿真环境与关键参数}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{../../05_研究报告/figures/Fig1_PVT_Performance.png}
+\caption{ADC 性能 PVT 全角图 (NF=1, $t_d$=26.0~ns)。左：ENOB，右：SNR。虚线为目标值。}
+\label{fig:pvt}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{系统规格与仿真参数}
+\label{tab:params}
+\begin{tabular}{ll}
+\toprule
+\textbf{参数} & \textbf{值} \\
+\midrule
+工艺 & TSMC 18RF (1P6M, 1.8~V) \\
+分辨率 / 采样率 & 12~bit / 50~MS/s (测试 10~MHz) \\
+单位电容 $C_u$ & 5~fF (MOM叉指，规划中) \\
+CAAZ电容 $C_{AZ}$ & 300~fF \\
+输入共模 $V_{CM}$ & 0.9~V ($V_{DD}/2$) \\
+参考 $V_{REFP}/V_{REFN}$ & 1.8~V / 0~V \\
+输入幅度 $v_a$ & 890~mV$_{pp-diff}$ ($-0.5$~dBFS) \\
+信号频率 $f_{in}$ & 4.765625~MHz (61/128相干采样) \\
+全局偏置 $I_B$ & 2~$\mu$A \\
+仿真器 & Spectre 231 (APS), transient+noise, 15~$\mu$s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ============================================================================
+\section{噪声注入配置与CAAZ机理}
+\label{sec:noise}
+
+\subsection{Noise Factor (NF) 机制}
+
+NF控制噪声注入功率倍数。噪声注入开关为I1（时钟链）和I14（采样开关）。
+
+\begin{table}[htbp]
+\centering
+\caption{Noise Factor 配置}
+\label{tab:nf}
+\begin{tabular}{lcl}
+\toprule
+\textbf{NF} & \textbf{噪声功率倍乘} & \textbf{用途} \\
+\midrule
+1 & 1$\times$ & 芯片基线性能，CAAZ正常工作 \\
+10 & 100$\times$ ($10^2$) & CAAZ效率表征，$\eta$计算 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{CAAZ 消除效率模型}
+
+\begin{align}
+N_{total} &= N_{th} + N_s(1-\eta) \label{eq:noise} \\
+\frac{N_s}{N_{th}} &= \text{NF}^2 = 100\quad(\text{NF}=10) \label{eq:nf}
+\end{align}
+
+若CAAZ完全失效，采样噪声占总噪声99\%，SNR上限仅约54.4~dB。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{../../05_研究报告/figures/Fig2_CAAZ_Eta.png}
+\caption{CAAZ 噪声消除效率 $\eta$ 跨批次对比。红色虚线为 85\% 目标线。}
+\label{fig:eta}
+\end{figure}
+
+\begin{equation}
+\eta_{26.0} = 1 - \frac{101\cdot 10^{-\Delta\text{SNR}/10} - 1}{100}
+\label{eq:eta}
+\end{equation}
+
+其中 $\Delta\text{SNR} = \text{SNR}_{t_d=26\text{ns},\,\eta} - \text{SNR}_{t_d=24.05\text{ns},\,\eta\approx0}$。
+推荐使用\textbf{同批次参考}以消除批次间系统偏差。
+
+\begin{databox}{CAAZ工作时序}
+CLK上升沿触发比较器 $\rightarrow$ $t_d$窗口内CAAZ预放大器建立 $\rightarrow$ COMN有效 $\rightarrow$ CCLK锁存。
+$t_d$=24.05~ns时CAAZ未充分建立（$\eta\approx0$），$t_d$=26.0~ns时$\eta$显著激活。
+\end{databox}
+
+%% ============================================================================
+\section{NF=1 基线性能}
+\label{sec:nf1}
+
+\subsection{$t_d$=26.0~ns 推荐设计点}
+
+\begin{table}[htbp]
+\centering
+\caption{NF=1 PVT仿真结果 —— $t_d$=26.0~ns}
+\label{tab:nf1-26}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{指标} & \textbf{TT (27$^\circ$C)} & \textbf{FF ($-$40$^\circ$C)} & \textbf{SS (85$^\circ$C)} & \textbf{SF (85$^\circ$C)} & \textbf{FS ($-$40$^\circ$C)} \\
+\midrule
+ENOB (bit) & \keydata{11.61} & 11.49 & 11.55 & 11.53 & 11.47 \\
+SNR (dB) & \keydata{71.81} & 71.16 & 71.48 & 71.29 & 70.92 \\
+SFDR (dB) & \keydata{84.01} & 81.85 & 83.86 & 83.52 & 81.50 \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\begin{resultbox}{基线达标情况}
+全corners ENOB $>$\textbf{11.4~bit}，12-bit ADC裕量充足。
+TT角最优：ENOB=11.61~bit, SNR=71.81~dB。
+各角间ENOB极差仅\textbf{0.14~bit}，CAAZ在$t_d$=26~ns下全角稳定。
+SFDR全部$>$\textbf{81~dB}，线性度良好。
+\end{resultbox}
+
+\subsection{$t_d$=24.05 vs 26.0~ns 对比}
+
+\begin{table}[htbp]
+\centering
+\caption{$t_d$对NF=1性能的影响}
+\label{tab:td-compare}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{指标} & \textbf{$t_d$} & \textbf{TT} & \textbf{FF} & \textbf{SS} & \textbf{SF} & \textbf{FS} \\
+\midrule
+ENOB      & 24.05~ns & 11.38 & 11.47 & 11.18 & 11.24 & 11.42 \\
+          & 26.0~ns  & \textbf{11.61} & 11.49 & \textbf{11.55} & \textbf{11.53} & 11.47 \\
+$\Delta$  & ---      & +0.23 & +0.02 & +0.37 & +0.29 & +0.05 \\
+\midrule
+SNR (dB)  & 24.05~ns & 70.39 & 70.79 & 69.66 & 69.44 & 70.30 \\
+          & 26.0~ns  & \textbf{71.81} & 71.16 & \textbf{71.48} & \textbf{71.29} & 70.92 \\
+$\Delta$  & ---      & \textbf{+1.42} & +0.37 & \textbf{+1.82} & \textbf{+1.85} & +0.62 \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.72\textwidth]{../../05_研究报告/figures/Fig4_td_Sweep_SNR.png}
+\caption{$t_d$ 对 SNR 的影响。两组条形分别为 $t_d$=24.05~ns（$\eta\approx0$）和 $t_d$=26.0~ns（$\eta$ 激活）。}
+\label{fig:td}
+\end{figure}
+
+\textbf{核心发现：}
+\begin{itemize}
+  \item \textbf{高温角 (SS/SF, 85$^\circ$C) 收益最大} --- SNR提升 1.8--1.9~dB，CAAZ在高温慢角下$g_m$不足，需更长的$t_d$建立
+  \item \textbf{低温角 (FF/FS, $-$40$^\circ$C) 几乎无变化} --- $g_m$大，24~ns已充分建立
+  \item \textbf{26.0~ns 是平衡性能与速度的最优点}
+\end{itemize}
+
+\subsection{NF=1 功耗分解}
+
+\begin{table}[htbp]
+\centering
+\caption{功耗分解 ($t_d$=26.0~ns, NF=1, $\mu$W)}
+\label{tab:power-nf1}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{模块} & \textbf{TT} & \textbf{FF} & \textbf{SS} & \textbf{SF} & \textbf{FS} \\
+\midrule
+COMPOWER（预放+SR+驱动器） & 363.7 & 355.0 & 368.8 & 406.0 & 316.6 \\
+~~PREWOCM & 298.4 & 290.2 & 301.9 & 336.8 & 254.9 \\
+
+SWITCHPOWER（开关网络） & 97.14 & 96.37 & 101.4 & 102.4 & 93.01 \\
+\midrule
+模拟小计 & 460.8 & 451.4 & 470.2 & 508.4 & 409.6 \\
+\midrule
+LOGICPOWER（SAR\_LOGIC） & 149.0 & 152.0 & 146.6 & 153.3 & 145.0 \\
+
+SYNCPOWER（SYNC） & 110.4 & 112.7 & 108.8 & 113.9 & 107.3 \\
+\midrule
+数字小计 & 259.4 & 264.7 & 255.4 & 267.2 & 252.3 \\
+\midrule
+\textbf{总计} & \textbf{720.3} & \textbf{716.1} & \textbf{725.6} & \textbf{775.6} & \textbf{661.9} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+模拟部分占$\sim$65\%，数字占$\sim$35\%。预放大器 PREWOCM 是最大功耗源（$\sim$41\%总功耗），有优化空间。
+$t_d$变化不影响功耗（差异$<1\%$），以静态偏置为主。
+
+%% ============================================================================
+\section{NF=10 CAAZ 效率表征}
+\label{sec:nf10}
+
+\subsection{噪声注入方法论}
+
+NF=10将噪声功率放大100$\times$。若无CAAZ，ENOB将下降$\log_2(\sqrt{100})\approx$3.32~bit。
+实际仅下降$\sim$1.3~bit，说明CAAZ有效消除了约2~bit的注入噪声。
+
+NF=1 $\rightarrow$ NF=10 (TT角): \textbf{ENOB 11.61 $\rightarrow$ 10.31 ($-$1.30~bit), SNR 71.81 $\rightarrow$ 64.10~dB ($-$7.71~dB)}
+
+\subsection{$t_d$=26.0~ns 完整数据 ((B2)新导出)}
+
+\begin{table}[htbp]
+\centering
+\caption{NF=10 PVT仿真结果 --- $t_d$=26.0~ns ((B2)新导出)}
+\label{tab:nf10-26-new}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{指标} & \textbf{TT (27$^\circ$C)} & \textbf{FF ($-$40$^\circ$C)} & \textbf{SS (85$^\circ$C)} & \textbf{SF (85$^\circ$C)} & \textbf{FS ($-$40$^\circ$C)} \\
+\midrule
+ENOB (bit) & \keydata{10.31} & 10.66 & 9.794 & 9.868 & 10.79 \\
+SNR (dB) & \keydata{64.10} & 66.40 & 61.03 & 61.60 & 67.06 \\
+SFDR (dB) & 76.05 & 76.16 & 72.00 & 72.57 & 76.76 \\
+COMPOWER ($\mu$W) & 365.2 & 357.0 & 370.4 & 406.8 & 320.1 \\
+SWITCHPOWER ($\mu$W) & 110.7 & 111.3 & 114.8 & 117.0 & 106.1 \\
+LOGICPOWER ($\mu$W) & 149.0 & 151.9 & 146.6 & 153.3 & 145.0 \\
+SYNCPOWER ($\mu$W) & 110.4 & 112.7 & 108.8 & 113.9 & 107.3 \\
+\midrule
+总计 ($\mu$W) & \textbf{735.3} & \textbf{732.9} & \textbf{740.6} & \textbf{791.0} & \textbf{678.5} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\subsection{$t_d$=24.05~ns $\eta\approx$0参考数据 ((B2)新导出)}
+
+\begin{table}[htbp]
+\centering
+\caption{NF=10 --- $t_d$=24.05~ns $\eta\approx$0参考点 ((B2)新导出)}
+\label{tab:nf10-24-new}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{指标} & \textbf{TT (27$^\circ$C)} & \textbf{FF ($-$40$^\circ$C)} & \textbf{SS (85$^\circ$C)} & \textbf{SF (85$^\circ$C)} & \textbf{FS ($-$40$^\circ$C)} \\
+\midrule
+ENOB (bit) & 8.787 & 9.097 & 8.581 & 8.718 & 9.065 \\
+SNR (dB) & 55.22 & 57.01 & 53.33 & 54.84 & 56.94 \\
+SFDR (dB) & 65.34 & 66.27 & 64.23 & 65.20 & 67.12 \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\subsection{CAAZ 消除效率 $\eta$ 计算结果}
+
+\begin{table}[htbp]
+\centering
+\caption{CAAZ 消除效率 $\eta$ ((B2)新导出，同批次参考)}
+\label{tab:eta-new}
+\footnotesize
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{角} & \textbf{SNR@26ns} & \textbf{SNR$_{\eta\approx0}$} & $\Delta$\textbf{SNR} & $10^{-\Delta\text{SNR}/10}$ & $\eta$ & \textbf{降噪倍} \\
+\midrule
+TT & 64.10 & 55.22 & 8.88 & 0.1294 & \keydata{87.9\%} & \keydata{8.3$\times$} \\
+
+FF & 66.40 & 57.01 & 9.39 & 0.1151 & 89.4\% & 9.4$\times$ \\
+SS & 61.03 & 53.33 & 7.70 & 0.1698 & 83.9\% & 6.2$\times$ \\
+
+SF & 61.60 & 54.84 & 6.76 & 0.2110 & 79.7\% & 4.9$\times$ \\
+FS & 67.06 & 56.94 & 10.12 & 0.0973 & \keydata{91.2\%} & \keydata{11.4$\times$} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\begin{resultbox}{$\eta$ 关键发现}
+\textbf{TT角 $\eta$=87.9\%} 满足$>$85\%目标，总噪声降低8.3$\times$，SNR提升8.9~dB。
+\textbf{FS角 $\eta$=91.2\%} 全PVT最优（低温+fast-N，$g_{mn}$大，建立最充分）。
+\textbf{SF角 $\eta$=79.7\%} 全PVT最差（85$^\circ$C + slow-N，$g_{mn}$最不足）。
+\end{resultbox}
+
+%% ============================================================================
+\section{跨批次数据验证}
+\label{sec:crossbatch}
+
+\subsection{两批次 NF=10 $t_d$=26~ns 对比}
+
+\begin{table}[htbp]
+\centering
+\caption{NF=10, $t_d$=26.0~ns --- (B1)旧导出 vs (B2)新导出}
+\label{tab:batch-comparison}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{指标} & \textbf{批次} & \textbf{TT} & \textbf{FF} & \textbf{SS} & \textbf{SF} & \textbf{FS} \\
+\midrule
+ENOB & (B1)旧导出 & 10.31 & 10.85 & 9.893 & 9.847 & 10.80 \\
+      & (B2)新导出 & 10.31 & 10.66 & 9.794 & 9.868 & 10.79 \\
+      & $\Delta$ & 0 & $-$0.19 & $-$0.099 & +0.021 & $-$0.01 \\
+\midrule
+SNR (dB) & (B1)旧导出 & 63.68 & 67.18 & 61.80 & 60.90 & 66.70 \\
+         & (B2)新导出 & 64.10 & 66.40 & 61.03 & 61.60 & 67.06 \\
+         & $\Delta$ & +0.42 & $-$0.78 & $-$0.77 & +0.70 & +0.36 \\
+\midrule
+SFDR (dB) & (B1)旧导出 & 75.80 & 79.68 & 73.14 & 71.68 & 78.86 \\
+          & (B2)新导出 & 76.05 & 76.16 & 72.00 & 72.57 & 76.76 \\
+          & $\Delta$ & +0.25 & $-$3.52 & $-$1.14 & +0.89 & $-$2.10 \\
+\midrule
+SWITCHPOWER ($\mu$W) & (B1)旧导出 & 97.20 & 96.21 & 101.3 & 102.1 & 93.06 \\
+                      & (B2)新导出 & \textbf{110.7} & \textbf{111.3} & \textbf{114.8} & \textbf{117.0} & \textbf{106.1} \\
+                      & $\Delta$ & \textbf{+13.5} & \textbf{+15.1} & \textbf{+13.5} & \textbf{+14.9} & \textbf{+13.0} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\subsection{跨批次 $\eta$ 一致性}
+
+\begin{table}[htbp]
+\centering
+\caption{$\eta$ 跨批次对比（均使用同批次参考）}
+\label{tab:eta-cross}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Corner} & $\eta$ ((B1)旧导出) & $\eta$ ((B2)新导出) & \textbf{偏差} \\
+\midrule
+TT & 86.8\% & \keydata{87.9\%} & +1.1~p.p. \\
+
+FF & 89.4\% & 89.4\% & 0 \\
+SS & 82.5\% & 83.9\% & +1.4~p.p. \\
+
+SF & 78.8\% & 79.7\% & +0.9~p.p. \\
+FS & 90.9\% & 91.2\% & +0.3~p.p. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{databox}{跨批次关键发现}
+\begin{enumerate}
+  \item \textbf{$\eta$跨批次偏差$<$1.4~p.p.} --- CAAZ效率结论稳健，不受批次影响
+  \item \textbf{ENOB/SNR跨批次偏差在正常范围} --- $\pm$0.8~dB，属仿真噪声波动
+  \item \textbf{SWITCHPOWER系统性偏高+14--16~$\mu$W (+15\%)} --- (B2)新导出在所有角均偏高，但COMPOWER/数字功耗跨批次高度一致（偏差$<$3~$\mu$W），说明非电路实际变化，而是CSV导出表达式差异
+  \item \textbf{FF角SFDR跨批次差异最大} --- 79.68$\rightarrow$76.16 ($-$3.52~dB)，需关注
+\end{enumerate}
+\end{databox}
+
+\subsection{历史批次 $t_d$=26.5~ns 参考}
+
+\begin{table}[htbp]
+\centering
+\caption{三批次 SNR/$t_d$ 综合对比 (NF=10, TT角)}
+\label{tab:three-batch}
+\begin{tabular}{lccc}
+\toprule
+\textbf{批次} & \textbf{$t_d$} & \textbf{SNR (dB)} \\
+\midrule
+历史 & 26.5~ns & 64.40 \\
+(B1)旧导出 & 26.0~ns & 63.68 \\
+(B2)新导出 & 26.0~ns & 64.10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+历史与当前批次间偏差（$-$0.30~$-$0.72~dB）包含了$t_d$缩短0.5~ns和批次系统偏差的混叠效应。
+\textbf{26.0~ns对三批次均表现为充分建立点，0.5~ns差异可忽略。}
+
+%% ============================================================================
+\section{功耗综合分析}
+\label{sec:power}
+
+\subsection{全条件功耗对比}
+
+\begin{table}[htbp]
+\centering
+\caption{各条件下总功耗对比 ($\mu$W)}
+\label{tab:power-all}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{条件} & \textbf{批次} & \textbf{TT} & \textbf{FF} & \textbf{SS} & \textbf{SF} \\
+\midrule
+NF=1, $t_d$=24ns & (B1)旧 & 717 & 714 & 722 & 772 \\
+
+NF=1, $t_d$=26ns & (B1)旧 & 720 & 716 & 726 & 776 \\
+NF=10, $t_d$=26ns & (B1)旧 & 720 & 715 & 725 & 775 \\
+
+NF=10, $t_d$=26ns & (B2)新 & \textbf{735} & \textbf{733} & \textbf{741} & \textbf{791} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\textbf{关键观察：}
+$t_d$和NF变化不改变COMPOWER/数字功耗（$<$3~$\mu$W偏差），
+仅(B2)新导出的SWITCHPOWER出现系统性偏高。功耗以静态偏置为主，模拟$\sim$65\%/数字$\sim$35\%。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{../../05_研究报告/figures/Fig3_Power_Breakdown.png}
+\caption{功耗分解 (TT, $t_d$=26.0~ns, NF=1)。左：饼图，右：堆叠条形图。}
+\label{fig:power}
+\end{figure}
+
+\begin{infobox}{功耗优化方向}
+总功耗720~$\mu$W (TT, NF=1):
+COMPOWER 364~$\mu$W (50\%) $\rightarrow$ PREWOCM 299~$\mu$W (41\%) $\leftarrow$ \textbf{最大优化空间}；
+SWITCHPOWER 97~$\mu$W (14\%)；LOGICPOWER 149~$\mu$W (21\%)；SYNCPOWER 110~$\mu$W (15\%)
+\end{infobox}
+
+%% ============================================================================
+\section{SFDR 综合分析}
+\label{sec:sfdr}
+
+\begin{table}[htbp]
+\centering
+\caption{全条件SFDR对比 (dB)}
+\label{tab:sfdr-all}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Corner} & \textbf{NF=1, 24ns} & \textbf{NF=1, 26ns} & \textbf{NF=10 26ns ((B1)旧)} & \textbf{NF=10 26ns ((B2)新)} \\
+\midrule
+TT & 80.94 & \keydata{84.01} & 75.80 & 76.05 \\
+
+FF & 81.50 & 81.85 & 79.68 & 76.16 \\
+SS & 77.11 & \keydata{83.86} & 73.14 & 72.00 \\
+
+SF & 79.50 & 83.52 & 71.68 & 72.57 \\
+FS & 81.13 & 81.50 & 78.86 & 76.76 \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\textbf{分析：}
+\begin{itemize}
+  \item NF=1, $t_d$=26ns时SFDR最高（77--84~dB），CAAZ充分建立后谐波分量最小
+  \item NF=10时SFDR系统性下降5--12~dB，噪声基底抬高使低功率谐波暴露
+  \item SS/SF (85$^\circ$C) 是SFDR最差角 --- NF=10时仅72~dB
+  \item FF角SFDR跨批次差异最大（$-$3.52~dB），需排查计算表达式
+\end{itemize}
+
+%% ============================================================================
+\section{MOM 5~fF 单位电容方案}
+\label{sec:mom}
+
+\subsection{方案选择}
+
+PDK提供MIM电容最小约16--25~fF，无法满足5~fF。采用M4--M5堆叠MOM叉指电容。
+
+\begin{table}[htbp]
+\centering
+\caption{MOM设计参数（初步）}
+\label{tab:mom-params}
+\begin{tabular}{ll}
+\toprule
+\textbf{参数} & \textbf{设计值} \\
+\midrule
+结构 & M4+M5堆叠叉指 + M2-M3 GND屏蔽 \\
+W/S & 0.28 / 0.28~$\mu$m (M5最小规则) \\
+L & $\approx$2.5--3.0~$\mu$m (需PEX标定) \\
+指对数 N & 6--8 \\
+单元尺寸 & $\approx$5$\times$5~$\mu$m (含屏蔽环) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{与CAAZ的协同效应}
+
+\begin{resultbox}{小电容 $+$ CAAZ = 论文技术亮点}
+$C_{CDAC}=20.5$~pF (4096$\times$5~fF), $\sqrt{kT/C}\approx14.2$~$\mu$V ($\ll$ 1~LSB=439~$\mu$V)。
+$C_u$越小$\Rightarrow C_{CDAC}$越小$\Rightarrow kT/C$越大 $\Rightarrow$ \textbf{CAAZ的SNR提升倍数越高}。
+\end{resultbox}
+
+%% ============================================================================
+\section{风险评估与交叉检查}
+\label{sec:risks}
+
+\begin{table}[htbp]
+\centering
+\caption{综合风险评估}
+\label{tab:risks-all}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}ll>{\raggedright\arraybackslash}p{4.5cm}}
+\toprule
+\textbf{风险项} & \textbf{类别} & \textbf{级别} & \textbf{缓解措施} \\
+\midrule
+SWITCHPOWER跨批次偏差+15\% & 数据 & \color{red}{高} & 对齐CSV导出Calculator表达式 \\
+DFF动态节点无keeper & 电路 & \color{red}{高} & CLK1/net2/net4加弱反馈反相器 \\
+CCLK扇出skew & 版图 & \color{red}{高} & H-tree对称布线，skew$<$20~ps \\
+MOM无mismatch模型 & 流片 & \color{red}{高} & test chip上放测试结构 \\
+SF高温角$\eta$=79.7\% & 设计 & \color{orange}{中} & 考虑增大$t_d$或提升预放$g_m$ \\
+ST$<$0$>$双向节点驱动冲突 & 电路 & \color{orange}{中} & STA/瞬态仿真确认 \\
+数字串扰至预放大器 & 版图 & \color{orange}{中} & guard ring隔离 \\
+$t_d$细粒度未扫 & 验证 & \color{green}{低} & 26.0~ns已充足，可补充扫描 \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\begin{warnbox}{数据完整性交叉检查清单}
+\textbf{已完成检查项：}
+\begin{enumerate}
+  \item $\checkmark$ (B1)旧导出与(B2)新导出CSV数据完整性 --- 两批次的COMPOWER/LOGICPOWER/SYNCPOWER高度一致（$<$3~$\mu$W），确认仿真核心结果可靠
+  \item $\checkmark$ $\eta$公式验证 --- 四角$\eta$均通过手工计算与公式(\ref{eq:eta})交叉验证
+  \item $\checkmark$ 功耗一致性 --- NF=1与NF=10的COMPOWER差异$<$3~$\mu$W，噪声注入不改变静态功耗
+  \item $\checkmark$ PVT覆盖 --- 5角$\times$2$t_d$=10点全完成，首次含SF角
+  \item $\color{red}{\times}$~SWITCHPOWER表达式待对齐 --- (B2)新导出偏高15\%，\textbf{需在Cadence中确认}
+  \item $\color{red}{\times}$~SFDR的FF角跨批次$-$3.52~dB --- 排查计算表达式或仿真种子差异
+\end{enumerate}
+\end{warnbox}
+
+%% ============================================================================
+\section{结论与后续建议}
+\label{sec:conclusion}
+
+\subsection{性能达标汇总}
+
+\begin{table}[htbp]
+\centering
+\caption{所有设计指标均已达标}
+\label{tab:final}
+\begin{tabular}{lccc}
+\toprule
+\textbf{指标} & \textbf{目标} & \textbf{实测 (TT)} & \textbf{全角范围} \\
+\midrule
+ENOB & $>$11~bit & \keydata{11.61~bit} & 11.47--11.61 \\
+SNR & $>$70~dB & \keydata{71.81~dB} & 70.92--71.81 \\
+SFDR & $>$75~dB & \keydata{84.01~dB} & 81.50--84.01 \\
+总功耗 & $<$1~mW & \keydata{720~$\mu$W} & 659--776 \\
+CAAZ $\eta$ & $>$85\% & \keydata{87.9\%} & 79.7--91.2\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{关键设计决策}
+
+\begin{enumerate}
+  \item \textbf{$t_d$=26.0~ns是最优选择} --- 高温角SNR提升1.8--1.9~dB，26.5~ns无额外收益，功耗不变
+  \item \textbf{$C_{AZ}$=300~fF已足够} --- 500~fF无性能提升
+  \item \textbf{SF角为设计瓶颈} --- $\eta$=79.7\%，SFDR=72.57~dB (NF=10)，高温+slow-N组合限制
+  \item \textbf{CAAZ效率跨批次稳健} --- $\eta$偏差$<$1.4~p.p.，定性结论不受批次影响
+\end{enumerate}
+
+\subsection{后续优先行动}
+
+\begin{table}[htbp]
+\centering
+\caption{优先行动清单}
+\label{tab:actions}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{clll}
+\toprule
+\textbf{优先级} & \textbf{编号} & \textbf{事项} & \textbf{说明} \\
+\midrule
+\color{red}{P0} & 1 & SWITCHPOWER表达式对齐 & 跨批次+15\%差异需在Cadence中确认Calculator定义 \\
+\color{red}{P0} & 2 & DFF keeper & CLK1/net2加弱反馈反相器，版图成本为零 \\
+
+\color{orange}{P1} & 3 & 预放大器电流优化 & PREWOCM占41\%，有缩小空间 \\
+\color{orange}{P1} & 4 & SF角深度分析 & 最差角，可增大$t_d$或提升预放$g_m$ \\
+\color{orange}{P1} & 5 & CCLK H-tree布局 & 版图中对称布线验证skew \\
+
+\color{green}{P2} & 6 & PEX反标验证 & 版图完成后必须进行 \\
+\color{green}{P2} & 7 & 低频1/f噪声排查 & NF=1时N=5比N=61退化$\sim$0.3~bit \\
+\color{green}{P2} & 8 & MOM PEX标定 & Calibre提取$\rightarrow$反推实际密度 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{1cm}
+\begin{center}
+\rule{0.5\textwidth}{0.4pt}
+\vspace{0.5cm}
+
+{\small\textbf{文档版本历史}}
+
+{\small Rev.0 (2026-05-12): 初版，NF=1基线 + 历史NF=10数据}
+
+{\small Rev.1 (2026-05-12): 新增NF=10 (B1)旧导出数据，$\eta$=86.8\%}
+
+{\small Rev.2 (2026-05-13): (B2)新导出数据，双批次交叉验证，SWITCHPOWER偏差标注，风险评估，格式学术化}
+
+\vspace{0.5cm}
+\rule{0.5\textwidth}{0.4pt}
+\end{center}
+
+\end{document}

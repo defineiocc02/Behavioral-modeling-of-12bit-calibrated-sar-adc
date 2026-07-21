@@ -1,0 +1,650 @@
+
+Spectre (R) Circuit Simulator
+Version 23.1.0.242.isr1 64bit -- 7 Sep 2023
+Copyright (C) 1989-2023 Cadence Design Systems, Inc. All rights reserved
+        worldwide. Cadence and Spectre are registered trademarks of Cadence
+        Design Systems, Inc. All others are the property of their respective
+        holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA
+        Security, Inc.
+
+User: meow   Host: meowu   HostID: 7F0101   PID: 27183
+Memory  available: 17.8094 GB  physical: 22.0406 GB
+Linux   : CentOS Linux release 7 (Core)
+CPU Type: AMD Ryzen 7 8845H w/ Radeon 780M Graphics
+All processors running at 3792.6 MHz
+        Socket: Processors
+        0:       0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+                10, 11
+        
+System load averages (1min, 5min, 15min) : 9.2 %, 12.5 %, 14.8 %
+HPC is enabled
+This is a virtual machine
+
+
+Simulating `tb_huang_realcomp_noise64.scs' on meowu at 2:31:45 AM, Sat Jul 18,
+        2026 (process id: 27183).
+Current working directory:
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/huang_realcomp_noise64_nf100k_cx_v2
+Command line:
+    /opt/cadence/SPECTRE231/tools.lnx86/bin/spectre -64  \
+        tb_huang_realcomp_noise64.scs +log spectre.out -format psfxl  \
+        -raw psf +mt +preset=cx
+Licensing Information:
+[02:31:46.406913] Configured Lic search path (22.01-s002):
+        /opt/cadence/IC618/share/license/license.dat
+
+Licensing Information:
+[02:31:46.480139] Periodic Lic check successful
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/huang_realcomp_noise64_nf100k_cx_v2/tb_huang_realcomp_noise64.scs
+
+Notice from spectre during circuit read-in.
+    Pre_Configuration file used:
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+    Configuration file used:
+        `/opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg'.
+
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+Reading file:  /usr/include/stdc-predef.h
+Reading file:  /home/meow/Desktop/TSMC18RF/models/spectre/rf018.scs
+
+Warning from spectre in `ndio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16006: The inline subckt definition `ndio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16023: The inline subckt definition `pdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `nwdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16040: The inline subckt definition `nwdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `ndio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16067: The inline subckt definition `ndio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16084: The inline subckt definition `pdio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+        Further occurrences of this warning will be suppressed.
+
+Reading link: 
+        /opt/cadence/IC618/tools/dfII/samples/artist/ahdlLib/not_gate/veriloga/veriloga.va
+Reading link:  /opt/cadence/IC618/tools
+Reading file: 
+        /opt/cadence/IC618/tools.lnx86/dfII/samples/artist/spectreHDL/Verilog-A/logic/not_gate.va
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.vams
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/discipline.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/huang_realcomp_noise64_nf100k_cx_v2/SWITCH_CAL_original.va
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/huang_realcomp_noise64_nf100k_cx_v2/DEC_CAL_PHY_FRAME_SYNC.va
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg
+Time for NDB Parsing: CPU = 320.239 ms, elapsed = 600.663 ms.
+Time accumulated: CPU = 364.116 ms, elapsed = 600.665 ms.
+Peak resident memory used = 117 Mbytes.
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_SWITCH_CAL.so
+Created directory
+        ./tb_huang_realcomp_noise64.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to directory
+        ./tb_huang_realcomp_noise64.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to
+        ./tb_huang_realcomp_noise64.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/.
+The simulator has reused the existing Verilog-A libraries for this simulation
+        run. If you do not want to use these libraries, set the
+        'CDS_AHDL_REUSE_LIB' environment variable to 'NO' and rerun the
+        simulation.
+Existing shared object for module SWITCH_CAL is up to date.
+Installed compiled interface for SWITCH_CAL.
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_not_gate.so
+Created directory
+        ./tb_huang_realcomp_noise64.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to directory
+        ./tb_huang_realcomp_noise64.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to
+        ./tb_huang_realcomp_noise64.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/.
+Existing shared object for module not_gate is up to date.
+Installed compiled interface for not_gate.
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal/tb_calibration_cdac_huang_ideal.ahdlSimDB/ab2330a1b020652b45a6edcf7b7040d1.DEC_CAL_PHY.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_DEC_CAL_PHY.so
+Created directory
+        ./tb_huang_realcomp_noise64.ahdlSimDB//ab2330a1b020652b45a6edcf7b7040d1.DEC_CAL_PHY.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal/tb_calibration_cdac_huang_ideal.ahdlSimDB/ab2330a1b020652b45a6edcf7b7040d1.DEC_CAL_PHY.ahdlcmi/Linux-64/
+        to directory
+        ./tb_huang_realcomp_noise64.ahdlSimDB//ab2330a1b020652b45a6edcf7b7040d1.DEC_CAL_PHY.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal/tb_calibration_cdac_huang_ideal.ahdlSimDB/ab2330a1b020652b45a6edcf7b7040d1.DEC_CAL_PHY.ahdlcmi/Linux-64/
+        to
+        ./tb_huang_realcomp_noise64.ahdlSimDB//ab2330a1b020652b45a6edcf7b7040d1.DEC_CAL_PHY.ahdlcmi/Linux-64/.
+Existing shared object for module DEC_CAL_PHY is up to date.
+Installed compiled interface for DEC_CAL_PHY.
+
+
+Time for Elaboration: CPU = 83.131 ms, elapsed = 52.0191 ms.
+Time accumulated: CPU = 447.568 ms, elapsed = 652.843 ms.
+Peak resident memory used = 125 Mbytes.
+
+
+Time for EDB Visiting: CPU = 7.931 ms, elapsed = 3.96585 ms.
+Time accumulated: CPU = 455.87 ms, elapsed = 656.994 ms.
+Peak resident memory used = 126 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to the following 14 nodes:
+        Bit11
+        Bit10
+        Bit9
+        Bit8
+        Bit7
+        Further occurrences of this notice will be suppressed (except in log
+        file).
+    No DC path from node `XCDAC.net4' to ground, Gmin installed to provide
+        path.
+    No DC path from node `XCDAC.net3' to ground, Gmin installed to provide
+        path.
+Notice from spectre during initial setup.
+    Multithreading is disabled due to the size of the design being too small.
+
+
+Global user options:
+               save = selected
+           currents = selected
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 182
+            bsim3v3 68    
+          capacitor 33    
+        DEC_CAL_PHY 1     
+            isource 1     
+           not_gate 2     
+         SWITCH_CAL 1     
+            vsource 73    
+
+Analysis and control statement inventory:
+               tran 1     
+
+Output statements:
+             .probe 0     
+           .measure 0     
+               save 1     
+
+
+Notice from spectre during initial setup.
+    61 vsources are shorted because their absolute value is less than or equal
+        to 'vabsshort'.
+    Spectre X preset=cx enabled.
+    1 notice suppressed.
+    4 warnings suppressed.
+
+Time for parsing: CPU = 11.817 ms, elapsed = 6.16598 ms.
+Time accumulated: CPU = 467.933 ms, elapsed = 663.282 ms.
+Peak resident memory used = 129 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+   -   (Spectre X) Multi-threading. The recommended number of threads is 1,
+        consider adding +mt=1 on command line.
+~~~~~~~~~~~~~~~~~~~~~~
+
+************************************************
+Transient Analysis `tran': time = (0 s -> 39 us)
+************************************************
+
+Notice from spectre during IC analysis, during transient analysis `tran'.
+    GminDC = 1 pS is large enough to noticeably affect the DC solution.
+        dV(XCOM.net11) = -12.9699 mV
+        Use the `gmin_check' option to eliminate or expand this report.
+    Bad pivoting is found during DC analysis. Option dc_pivot_check=yes is
+        recommended for possible improvement of convergence.
+
+DC simulation time: CPU = 9.166 ms, elapsed = 4.58407 ms.
+
+Opening the PSFXL file psf/tran.tran.tran ...
+Important parameter values:
+    start = 0 s
+    outputstart = 0 s
+    stop = 39 us
+    step = 39 ns
+    maxstep = 390 ns
+    ic = all
+    useprevic = no
+    skipdc = no
+    reltol = 100e-06
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    errpreset = conservative_sigglobal
+    method = gear2only
+    lteratio = 10
+    relref = sigglobal
+    cmin = 1.23365 aF
+    gmin = 1 pS
+    rabsshort = 1 mOhm
+    trannoisemethod = default
+    noisefmax = 10 GHz
+    noisefmin = 100 kHz
+    noiseseed = 2147483647
+
+
+Notice from spectre during transient analysis `tran'.
+    Multithreading is disabled due to the size of the design being too small.
+
+
+Output and IC/nodeset summary:
+                 save   9       (voltage)
+
+DEC_CAL_PHY start t=3.015e-09
+DEC_CAL_PHY frame start target=5 side=0 pair=0 t=1.4115e-08
+DEC_CAL_PHY measure target=5 pair=0 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=0 t=1.14115e-07
+DEC_CAL_PHY measure target=5 pair=0 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=1 t=2.14115e-07
+DEC_CAL_PHY measure target=5 pair=1 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=1 t=3.14115e-07
+DEC_CAL_PHY measure target=5 pair=1 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=2 t=4.14115e-07
+DEC_CAL_PHY measure target=5 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=2 t=5.14115e-07
+DEC_CAL_PHY measure target=5 pair=2 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=3 t=6.14115e-07
+    tran: time = 621.6 ns    (1.59 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=5 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=3 t=7.14115e-07
+DEC_CAL_PHY measure target=5 pair=3 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=4 t=8.14115e-07
+DEC_CAL_PHY measure target=5 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=4 t=9.14115e-07
+    tran: time = 975 ns       (2.5 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=5 pair=4 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=5 t=1.01412e-06
+DEC_CAL_PHY measure target=5 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=5 t=1.11412e-06
+DEC_CAL_PHY measure target=5 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=6 t=1.21412e-06
+DEC_CAL_PHY measure target=5 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=6 t=1.31412e-06
+DEC_CAL_PHY measure target=5 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=7 t=1.41412e-06
+DEC_CAL_PHY measure target=5 pair=7 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=7 t=1.51412e-06
+DEC_CAL_PHY measure target=5 pair=7 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=8 t=1.61412e-06
+DEC_CAL_PHY measure target=5 pair=8 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=8 t=1.71412e-06
+    tran: time = 1.732 us    (4.44 %), step = 8.658 ps    (22.2 u%)
+DEC_CAL_PHY measure target=5 pair=8 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=9 t=1.81412e-06
+DEC_CAL_PHY measure target=5 pair=9 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=9 t=1.91412e-06
+DEC_CAL_PHY measure target=5 pair=9 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=10 t=2.01412e-06
+DEC_CAL_PHY measure target=5 pair=10 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=10 t=2.11412e-06
+DEC_CAL_PHY measure target=5 pair=10 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=11 t=2.21412e-06
+DEC_CAL_PHY measure target=5 pair=11 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=11 t=2.31412e-06
+DEC_CAL_PHY measure target=5 pair=11 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=12 t=2.41412e-06
+    tran: time = 2.47 us     (6.33 %), step = 5 ps        (12.8 u%)
+DEC_CAL_PHY measure target=5 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=12 t=2.51412e-06
+DEC_CAL_PHY measure target=5 pair=12 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=13 t=2.61412e-06
+DEC_CAL_PHY measure target=5 pair=13 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=13 t=2.71412e-06
+DEC_CAL_PHY measure target=5 pair=13 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=14 t=2.81412e-06
+DEC_CAL_PHY measure target=5 pair=14 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=14 t=2.91412e-06
+    tran: time = 2.925 us     (7.5 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=5 pair=14 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=15 t=3.01412e-06
+DEC_CAL_PHY measure target=5 pair=15 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=15 t=3.11412e-06
+DEC_CAL_PHY measure target=5 pair=15 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=16 t=3.21412e-06
+DEC_CAL_PHY measure target=5 pair=16 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=16 t=3.31412e-06
+DEC_CAL_PHY measure target=5 pair=16 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=17 t=3.41412e-06
+DEC_CAL_PHY measure target=5 pair=17 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=17 t=3.51412e-06
+DEC_CAL_PHY measure target=5 pair=17 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=18 t=3.61412e-06
+    tran: time = 3.679 us    (9.43 %), step = 3.065 ps    (7.86 u%)
+DEC_CAL_PHY measure target=5 pair=18 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=18 t=3.71412e-06
+DEC_CAL_PHY measure target=5 pair=18 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=19 t=3.81412e-06
+DEC_CAL_PHY measure target=5 pair=19 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=19 t=3.91412e-06
+DEC_CAL_PHY measure target=5 pair=19 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=20 t=4.01412e-06
+DEC_CAL_PHY measure target=5 pair=20 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=20 t=4.11412e-06
+DEC_CAL_PHY measure target=5 pair=20 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=21 t=4.21412e-06
+DEC_CAL_PHY measure target=5 pair=21 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=21 t=4.31412e-06
+DEC_CAL_PHY measure target=5 pair=21 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=22 t=4.41412e-06
+    tran: time = 4.457 us    (11.4 %), step = 9.408 ps    (24.1 u%)
+DEC_CAL_PHY measure target=5 pair=22 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=22 t=4.51412e-06
+DEC_CAL_PHY measure target=5 pair=22 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=23 t=4.61412e-06
+DEC_CAL_PHY measure target=5 pair=23 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=23 t=4.71412e-06
+DEC_CAL_PHY measure target=5 pair=23 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=24 t=4.81412e-06
+    tran: time = 4.875 us    (12.5 %), step = 50 ps        (128 u%)
+DEC_CAL_PHY measure target=5 pair=24 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=24 t=4.91412e-06
+DEC_CAL_PHY measure target=5 pair=24 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=25 t=5.01412e-06
+DEC_CAL_PHY measure target=5 pair=25 side=D q=64
+DEC_CAL_PHY frame start target=5 side=1 pair=25 t=5.11412e-06
+DEC_CAL_PHY measure target=5 pair=25 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=26 t=5.21412e-06
+DEC_CAL_PHY measure target=5 pair=26 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=26 t=5.31412e-06
+DEC_CAL_PHY measure target=5 pair=26 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=27 t=5.41412e-06
+DEC_CAL_PHY measure target=5 pair=27 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=27 t=5.51412e-06
+DEC_CAL_PHY measure target=5 pair=27 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=28 t=5.61412e-06
+    tran: time = 5.653 us    (14.5 %), step = 50 ps        (128 u%)
+DEC_CAL_PHY measure target=5 pair=28 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=28 t=5.71412e-06
+DEC_CAL_PHY measure target=5 pair=28 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=29 t=5.81412e-06
+DEC_CAL_PHY measure target=5 pair=29 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=29 t=5.91412e-06
+DEC_CAL_PHY measure target=5 pair=29 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=30 t=6.01412e-06
+DEC_CAL_PHY measure target=5 pair=30 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=30 t=6.11412e-06
+DEC_CAL_PHY measure target=5 pair=30 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=5 side=0 pair=31 t=6.21412e-06
+DEC_CAL_PHY measure target=5 pair=31 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=31 t=6.31412e-06
+DEC_CAL_PHY measure target=5 pair=31 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=5 wall=8064 measured_q=8126 value_q=8126
+        value=126.969 pairs=32 residual_sum=1984 residual_avg=31 diversity=1
+        snap=0
+DEC_CAL_PHY frame start target=3 side=0 pair=0 t=6.41412e-06
+    tran: time = 6.442 us    (16.5 %), step = 15.93 ps    (40.8 u%)
+DEC_CAL_PHY measure target=3 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=0 t=6.51412e-06
+DEC_CAL_PHY measure target=3 pair=0 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=1 t=6.61412e-06
+DEC_CAL_PHY measure target=3 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=1 t=6.71412e-06
+DEC_CAL_PHY measure target=3 pair=1 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=2 t=6.81412e-06
+    tran: time = 6.825 us    (17.5 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=3 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=2 t=6.91412e-06
+DEC_CAL_PHY measure target=3 pair=2 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=3 t=7.01412e-06
+DEC_CAL_PHY measure target=3 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=3 t=7.11412e-06
+DEC_CAL_PHY measure target=3 pair=3 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=4 t=7.21412e-06
+DEC_CAL_PHY measure target=3 pair=4 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=4 t=7.31412e-06
+DEC_CAL_PHY measure target=3 pair=4 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=5 t=7.41412e-06
+DEC_CAL_PHY measure target=3 pair=5 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=5 t=7.51412e-06
+DEC_CAL_PHY measure target=3 pair=5 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=6 t=7.61412e-06
+    tran: time = 7.615 us    (19.5 %), step = 2.21 ps     (5.67 u%)
+DEC_CAL_PHY measure target=3 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=6 t=7.71412e-06
+DEC_CAL_PHY measure target=3 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=7 t=7.81412e-06
+DEC_CAL_PHY measure target=3 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=7 t=7.91412e-06
+DEC_CAL_PHY measure target=3 pair=7 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=8 t=8.01412e-06
+DEC_CAL_PHY measure target=3 pair=8 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=8 t=8.11412e-06
+DEC_CAL_PHY measure target=3 pair=8 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=9 t=8.21412e-06
+DEC_CAL_PHY measure target=3 pair=9 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=9 t=8.31412e-06
+    tran: time = 8.384 us    (21.5 %), step = 14.88 ps    (38.1 u%)
+DEC_CAL_PHY measure target=3 pair=9 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=10 t=8.41412e-06
+DEC_CAL_PHY measure target=3 pair=10 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=10 t=8.51412e-06
+DEC_CAL_PHY measure target=3 pair=10 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=11 t=8.61412e-06
+DEC_CAL_PHY measure target=3 pair=11 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=11 t=8.71412e-06
+    tran: time = 8.775 us    (22.5 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=3 pair=11 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=12 t=8.81412e-06
+DEC_CAL_PHY measure target=3 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=12 t=8.91412e-06
+DEC_CAL_PHY measure target=3 pair=12 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=13 t=9.01412e-06
+DEC_CAL_PHY measure target=3 pair=13 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=13 t=9.11412e-06
+DEC_CAL_PHY measure target=3 pair=13 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=14 t=9.21412e-06
+DEC_CAL_PHY measure target=3 pair=14 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=14 t=9.31412e-06
+DEC_CAL_PHY measure target=3 pair=14 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=15 t=9.41412e-06
+DEC_CAL_PHY measure target=3 pair=15 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=15 t=9.51412e-06
+    tran: time = 9.557 us    (24.5 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=3 pair=15 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=16 t=9.61412e-06
+DEC_CAL_PHY measure target=3 pair=16 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=16 t=9.71412e-06
+DEC_CAL_PHY measure target=3 pair=16 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=17 t=9.81412e-06
+DEC_CAL_PHY measure target=3 pair=17 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=17 t=9.91412e-06
+DEC_CAL_PHY measure target=3 pair=17 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=18 t=1.00141e-05
+DEC_CAL_PHY measure target=3 pair=18 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=18 t=1.01141e-05
+DEC_CAL_PHY measure target=3 pair=18 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=19 t=1.02141e-05
+DEC_CAL_PHY measure target=3 pair=19 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=19 t=1.03141e-05
+    tran: time = 10.34 us    (26.5 %), step = 1.734 ps    (4.45 u%)
+DEC_CAL_PHY measure target=3 pair=19 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=20 t=1.04141e-05
+DEC_CAL_PHY measure target=3 pair=20 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=20 t=1.05141e-05
+DEC_CAL_PHY measure target=3 pair=20 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=21 t=1.06141e-05
+DEC_CAL_PHY measure target=3 pair=21 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=21 t=1.07141e-05
+    tran: time = 10.73 us    (27.5 %), step = 50 ps        (128 u%)
+DEC_CAL_PHY measure target=3 pair=21 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=22 t=1.08141e-05
+DEC_CAL_PHY measure target=3 pair=22 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=22 t=1.09141e-05
+DEC_CAL_PHY measure target=3 pair=22 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=23 t=1.10141e-05
+DEC_CAL_PHY measure target=3 pair=23 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=23 t=1.11141e-05
+DEC_CAL_PHY measure target=3 pair=23 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=24 t=1.12141e-05
+DEC_CAL_PHY measure target=3 pair=24 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=24 t=1.13141e-05
+DEC_CAL_PHY measure target=3 pair=24 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=25 t=1.14141e-05
+    tran: time = 11.49 us    (29.5 %), step = 4.076 ps    (10.5 u%)
+DEC_CAL_PHY measure target=3 pair=25 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=25 t=1.15141e-05
+DEC_CAL_PHY measure target=3 pair=25 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=26 t=1.16141e-05
+DEC_CAL_PHY measure target=3 pair=26 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=26 t=1.17141e-05
+DEC_CAL_PHY measure target=3 pair=26 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=27 t=1.18141e-05
+DEC_CAL_PHY measure target=3 pair=27 side=D q=64
+DEC_CAL_PHY frame start target=3 side=1 pair=27 t=1.19141e-05
+DEC_CAL_PHY measure target=3 pair=27 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=28 t=1.20141e-05
+DEC_CAL_PHY measure target=3 pair=28 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=28 t=1.21141e-05
+DEC_CAL_PHY measure target=3 pair=28 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=29 t=1.22141e-05
+    tran: time = 12.26 us    (31.4 %), step = 16.07 fs    (41.2 n%)
+DEC_CAL_PHY measure target=3 pair=29 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=29 t=1.23141e-05
+DEC_CAL_PHY measure target=3 pair=29 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=3 side=0 pair=30 t=1.24141e-05
+DEC_CAL_PHY measure target=3 pair=30 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=30 t=1.25141e-05
+DEC_CAL_PHY measure target=3 pair=30 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=31 t=1.26141e-05
+    tran: time = 12.68 us    (32.5 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=3 pair=31 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=31 t=1.27141e-05
+DEC_CAL_PHY measure target=3 pair=31 side=U qD=0 qU=64
+DEC_CAL_PHY weight target=3 wall=16190 measured_q=16254 value_q=16254
+        value=253.969 pairs=32 residual_sum=2048 residual_avg=32 diversity=1
+        snap=0
+DEC_CAL_PHY frame start target=4 side=0 pair=0 t=1.28141e-05
+DEC_CAL_PHY measure target=4 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=0 t=1.29141e-05
+DEC_CAL_PHY measure target=4 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=1 t=1.30141e-05
+DEC_CAL_PHY measure target=4 pair=1 side=D q=64
+DEC_CAL_PHY frame start target=4 side=1 pair=1 t=1.31141e-05
+DEC_CAL_PHY measure target=4 pair=1 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=2 t=1.32141e-05
+DEC_CAL_PHY measure target=4 pair=2 side=D q=64
+DEC_CAL_PHY frame start target=4 side=1 pair=2 t=1.33141e-05
+DEC_CAL_PHY measure target=4 pair=2 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=4 side=0 pair=3 t=1.34141e-05
+    tran: time = 13.46 us    (34.5 %), step = 6.89 ps     (17.7 u%)
+DEC_CAL_PHY measure target=4 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=3 t=1.35141e-05
+DEC_CAL_PHY measure target=4 pair=3 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=4 side=0 pair=4 t=1.36141e-05
+DEC_CAL_PHY measure target=4 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=4 t=1.37141e-05
+DEC_CAL_PHY measure target=4 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=5 t=1.38141e-05
+DEC_CAL_PHY measure target=4 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=5 t=1.39141e-05
+DEC_CAL_PHY measure target=4 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=6 t=1.40141e-05
+DEC_CAL_PHY measure target=4 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=6 t=1.41141e-05
+DEC_CAL_PHY measure target=4 pair=6 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=4 side=0 pair=7 t=1.42141e-05
+    tran: time = 14.22 us    (36.5 %), step = 3.347 ps    (8.58 u%)
+DEC_CAL_PHY measure target=4 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=7 t=1.43141e-05
+DEC_CAL_PHY measure target=4 pair=7 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=4 side=0 pair=8 t=1.44141e-05
+DEC_CAL_PHY measure target=4 pair=8 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=8 t=1.45141e-05
+DEC_CAL_PHY measure target=4 pair=8 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=9 t=1.46141e-05
+    tran: time = 14.63 us    (37.5 %), step = 25 ps       (64.1 u%)
+DEC_CAL_PHY measure target=4 pair=9 side=D q=64
+DEC_CAL_PHY frame start target=4 side=1 pair=9 t=1.47141e-05
+DEC_CAL_PHY measure target=4 pair=9 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=4 side=0 pair=10 t=1.48141e-05
+DEC_CAL_PHY measure target=4 pair=10 side=D q=64
+DEC_CAL_PHY frame start target=4 side=1 pair=10 t=1.49141e-05
+DEC_CAL_PHY measure target=4 pair=10 side=U qD=64 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=11 t=1.50141e-05
+DEC_CAL_PHY measure target=4 pair=11 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=11 t=1.51141e-05
+DEC_CAL_PHY measure target=4 pair=11 side=U qD=0 qU=64
+DEC_CAL_PHY frame start target=4 side=0 pair=12 t=1.52141e-05
+DEC_CAL_PHY measure target=4 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=12 t=1.53141e-05
+
+Spectre received SIGTERM sent from PID: 27663 with UID: 1000.
+Process hierarchy of PID 27663 :
+    PID        COMMAND
+    27663      
+    27661      sshd: meow@notty     
+    27647      sshd: meow [priv]    
+    1265       /usr/sbin/sshd -D 
+About to end simulation, please wait for a moment...
+
+Error found by spectre at time = 15.3472 us during transient analysis `tran'.
+    ERROR (SPECTRE-25): The simulation is stopped either by the user or the
+        farm.
+
+
+Saving the states into file at t=15.3472 us...
+State File: ./tb_huang_realcomp_noise64.scs.tran.srf.
+Licensing Information:
+Lic Summary:
+[02:35:06.001168] cdslmd servers: /opt/cadence/IC618/share/license/license.dat
+[02:35:06.001168] Feature usage summary:
+[02:35:06.016512]  Spectre_X_MMSIM_Lk  
+[02:35:06.496759]   Virtuoso_Multi_mode_Simulation  
+
+
+Killed by user.
+
+Aggregate audit (2:35:06 AM, Sat Jul 18, 2026):
+Time used: CPU = 202 s (3m  22.0s), elapsed = 201 s (3m  20.8s), util. = 101%.
+Time spent in licensing: elapsed = 1.37 s.
+Peak memory used = 332 Mbytes.
+Simulation started at: 2:31:45 AM, Sat Jul 18, 2026, ended at: 2:35:06 AM, Sat
+        Jul 18, 2026, with elapsed time (wall clock): 201 s (3m  20.8s).
+spectre completes with 1 error, 5 warnings, and 14 notices.

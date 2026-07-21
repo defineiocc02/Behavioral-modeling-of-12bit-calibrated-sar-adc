@@ -1,0 +1,759 @@
+% =============================================================================
+% CAAZ SAR ADC 研究工作总结报告
+% 编译: xelatex -> xelatex (两次)
+% 忠实转换自 研究报告.md，仅更新数据，保留全部原始框架
+% =============================================================================
+\documentclass[11pt,a4paper,UTF8]{ctexart}
+\usepackage{geometry}\geometry{left=2.4cm,right=2.4cm,top=2.5cm,bottom=2.5cm}
+\usepackage{amsmath,amssymb,graphicx,booktabs,array,hyperref,caption,titlesec,fancyhdr}
+\usepackage[most]{tcolorbox}
+\graphicspath{{figures/}}
+
+\newtcolorbox{prinbox}[1]{enhanced,breakable,
+  colback=blue!4!white,colframe=blue!50!black,fonttitle=\bfseries,
+  borderline west={3pt}{0pt}{blue!60!black},title={\strut #1}}
+\newtcolorbox{findbox}[1]{enhanced,breakable,
+  colback=green!3!white,colframe=green!50!black,fonttitle=\bfseries,
+  borderline west={3pt}{0pt}{green!60!black},title={\strut #1}}
+\newtcolorbox{warnbox}[1]{enhanced,breakable,
+  colback=orange!3!white,colframe=orange!60!black,fonttitle=\bfseries,
+  borderline west={3pt}{0pt}{orange!80!black},title={\strut #1}}
+\newtcolorbox{impbox}[1]{enhanced,breakable,
+  colback=red!3!white,colframe=red!60!black,fonttitle=\bfseries,
+  borderline west={3pt}{0pt}{red!70!black},title={\strut #1}}
+
+\definecolor{pb}{RGB}{0,82,136}\definecolor{db}{RGB}{0,51,102}
+\titleformat{\section}{\Large\bfseries\color{pb}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{db}}{\thesubsection}{1em}{}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{pb}CAAZ SAR ADC 研究工作总结报告}
+\fancyhead[R]{\small\color{pb}HUST-SAR-2026-004}
+\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0.4pt}\setlength{\headheight}{22pt}
+
+\begin{document}
+\begin{titlepage}\thispagestyle{empty}
+\begin{center}\vspace*{2cm}
+{\LARGE\bfseries\color{pb}CAAZ SAR ADC 研究工作总结报告}\\[0.3cm]
+{\large --- 电流域 $kT/C$ 噪声消除技术 ---}\\[1cm]
+{\small HUST-SAR-2026-004 \hspace{2em} Rev.4.0 \hspace{2em} 2026-05-13}\\[1.5cm]
+\begin{tcolorbox}[colback=blue!5!white,colframe=pb,sharp corners,title=\textbf{\large\color{pb}核心发现}]
+\small\begin{tabular}{ll}
+$\bullet$ & 架构突破：CAAZ 将噪声存储电容置于低阻抗节点，增益与饱和解耦，$A<10\rightarrow A>50$ \\
+$\bullet$ & 基线性能：NF=1 全五角 ENOB $>$11.4 bit，TT 角 ENOB=\textbf{11.61 bit}，SNR=\textbf{71.81 dB}，SFDR=\textbf{84.01 dB} \\
+$\bullet$ & CAAZ 效率：NF=10 双-$t_d$ 法，TT $\eta$=\textbf{87.9\%}（降噪 8.3$\times$），全角 79.7\%--91.2\% \\
+$\bullet$ & 跨批次验证：$\eta$ 偏差 $<$1.4 p.p.，COMPOWER $<$3 $\mu$W，结论稳健 \\
+$\bullet$ & 功耗 720 $\mu$W（模拟 65\%，数字 35\%），$C_{AZ}=300$ fF，$t_d=26$ ns 最优 \\
+$\bullet$ & 早期 10-MS/s 基线：KT/C 噪声功率压缩 5.53$\times$，SNR 提升 $+$1.21 dB \\
+\end{tabular}\end{tcolorbox}
+\vspace{1.5cm}
+\begin{tabular}{ll}
+\textbf{工艺：}TSMC 18RF (1P6M, 1.8 V) & \textbf{仿真器：}Cadence Spectre 23.1 (APS)\\
+\textbf{作者：}赵诣, 华中科技大学 集成电路学院 & \textbf{时间跨度：}2026年3月--5月\\
+\end{tabular}
+\end{center}
+\end{titlepage}
+\tableofcontents\newpage
+
+% ===== 摘要 =====
+\section{摘要}
+\label{sec:abstract}
+
+\begin{findbox}{核心发现摘要（2026年5月更新）}
+\begin{itemize}
+  \item \textbf{架构突破}：CAAZ 电流域架构将噪声存储电容置于低阻抗节点，实现增益与饱和解耦，可用增益从 $A<10$ 提升至 $A>50$
+  \item \textbf{10-MS/s 基线性能}：NF=1 条件下，全五角 PVT ENOB 均 $>$11.4 bit，TT 角最佳 ENOB=\textbf{11.61 bit}，SNR=\textbf{71.81 dB}，SFDR=\textbf{84.01 dB}
+  \item \textbf{CAAZ 效率量化}：通过 NF=10（100$\times$噪声注入）双 $t_d$ 方法，TT 角消除效率 $\eta$=\textbf{87.9\%}，噪声功率压缩 \textbf{8.3$\times$}
+  \item \textbf{PVT 全角覆盖}：$\eta$ 范围 79.7\%--91.2\%，SF 角（85$^\circ$C，slow-N fast-P）为最差设计瓶颈
+  \item \textbf{跨批次验证}：双批次 CSV 导出数据 $\eta$ 偏差 $<$1.4 p.p.，COMPOWER 一致性 $<$3 $\mu$W，CAAZ 定性结论稳健
+  \item \textbf{功耗 720 $\mu$W}（模拟 65\%，数字 35\%），预放大器 PREWOCM 占 41\% 为最大优化空间
+  \item \textbf{失调鲁棒性}：注入失调从 0 mV 增至 5 mV 时，ENOB 仅下降约 0.2 bit
+  \item \textbf{早期 10-MS/s 基线}：KT/C 噪声功率压缩 5.53$\times$（81.93\% 能量削减），整机 SNR 从 69.59 dB 提升至 70.80 dB（$+$1.21 dB）
+\end{itemize}
+\end{findbox}
+
+本报告系统梳理了 2026 年 3 月至 5 月期间，基于电流调整自动调零（CAAZ）技术的 SAR ADC 研究工作。报告从研究背景出发，深入分析 CAAZ 技术核心原理，详细介绍了仿真平台搭建过程，总结了关键仿真发现。研究包含两个阶段：\textbf{Phase I}（3--4月）完成 10-MS/s 方案验证与噪声分解；\textbf{Phase II}（4--5月）推进至 10-MS/s 全面表征，完成了涵盖 TT/FF/SS/SF/FS 五工艺角的 PVT 全面仿真与 NF=10 CAAZ 效率定量表征，并进行了双批次跨验证。
+
+\section{研究背景与动机}
+\label{sec:background}
+
+\begin{findbox}{核心亮点}
+SAR ADC 在高精度应用中面临 $kT/C$ 噪声限制。传统增大采样电容方案导致驱动功耗居高不下。噪声消除技术虽可突破此限制，但存在\textbf{增益--饱和矛盾}这一核心瓶颈。电流域架构为突破传统 OOS 技术限制提供了新路径。
+\end{findbox}
+
+\subsection{问题陈述与研究前沿分析}
+
+逐次逼近型模数转换器（SAR ADC）在高精度应用中面临严峻的采样噪声限制。在典型设计场景下，采样噪声往往占据整体 ADC 噪声预算的主导地位。传统抑制方法采用增大采样电容的策略——文献 [1] 即采用了高达 15 pF 的采样电容——但这导致前端驱动电路功耗居高不下，严重制约系统能效。
+
+\textbf{噪声消除技术的演进脉络}
+
+2020 年，清华大学孙楠教授团队提出了面向 SAR ADC 的 $kT/C$ 噪声消除技术 [2]。该技术源于 ADI 团队 2014 年的采样保持电路方案 [3]，核心洞察在于：当采样电容底极板开关断开后，时变的采样噪声即转化为固定电压，行为特性与常规失调电压高度相似。文献 [2] 利用 SAR ADC 固有的环路反馈特性，构建了采样噪声消除机制，在最终输出数字码中实现噪声的有效剥离。
+
+然而，文献 [2] 和 [3] 均指出该技术存在关键失效因素——\textbf{饱和问题}。在高增益条件下，噪声采样时间窗口受到严格限制；而在低增益条件下，对后级电容噪声及比较器噪声的抑制效果显著减弱。这一\textbf{增益--时间窗口权衡}问题成为制约技术性能的核心瓶颈。
+
+针对上述局限，后续研究提出了多种改进方案：
+
+\begin{table}[htbp]\centering\caption{改进方案对比}\label{tab:improve}\small
+\begin{tabular}{lll}\toprule
+\textbf{改进方案} & \textbf{特点} & \textbf{局限性} \\\midrule
+带宽耦合分析 [4] & 与跨导参数耦合缓解饱和 & 仍存在设计约束 \\
+反馈放大器噪声消除 [5] & 改善能效 & 缺失预放大级对后级噪声与失调的抑制功能 \\
+预采样电容技术 [7], [8] & 缓解饱和问题 & 电路复杂度显著上升；Split-sampling 存在电荷泄露 \\\bottomrule
+\end{tabular}
+\end{table}
+
+深入分析可知，上述技术瓶颈的根源在于\textbf{输出失调存储（OOS）技术的固有局限性}：失调存储电容置于信号链路中，限制了高增益放大器的应用，且易导致 SNR 下降及输出饱和。
+
+\textbf{电流域技术的突破}
+
+为突破传统 OOS 技术的限制，UC Irvine 团队提出了基于电流域失调消除的新型架构 [6]。该技术在 180 nm CMOS 工艺下验证了其优越性：
+\begin{itemize}
+  \item 失调电压存储电容未置于信号链路，高增益放大器使用不受限
+  \item 失调探测阶段呈现低增益特性，对饱和具有更强鲁棒性
+  \item 建立时间更短，饱和问题通常不构成主要设计约束
+\end{itemize}
+
+本研究基于上述技术背景，系统阐述电流域失调消除技术的核心原理，完成与传统电压域架构的对比仿真验证，并在 PVT 及瞬态噪声仿真环境下进行全面的性能评估。\textbf{Phase II 阶段进一步推进至 10-MS/s 全面表征，采用 NF=10 噪声注入双 $t_d$ 方法完成了 CAAZ 消除效率 $\eta$ 的全 PVT 定量表征，并通过双批次独立 CSV 导出实现了跨批次验证。}
+
+\subsection{传统电压域技术的局限性}
+
+\begin{prinbox}{原理解析}
+OOS 架构的核心矛盾：预放大器增益 $A$ 扮演双重角色——高增益抑制后级噪声，但导致输出摆幅增大引发饱和；低增益避免饱和，但对次级噪声衰减不足。文献被迫采用 $A \approx 6$ 的折中设计。
+\end{prinbox}
+
+传统电压域噪声消除技术采用级联输出失调存储（OOS）架构，其核心思想是将失调和噪声信息存储在输出端电容上，随后在转换阶段予以抵消。然而，该架构存在根本性的\textbf{增益--饱和死循环}，严重制约其性能上限。
+
+\textbf{增益-饱和矛盾的理论分析}
+
+\begin{table}[htbp]\centering\caption{增益条件对比}\label{tab:gain}\small
+\begin{tabular}{llll}\toprule
+\textbf{增益条件} & \textbf{优势} & \textbf{劣势} & \textbf{设计约束} \\\midrule
+高增益 ($A > 10$) & 后级噪声抑制能力强 & 输出摆幅易超电源轨 & 饱和风险显著增加 \\
+低增益 ($A < 6$) & 饱和裕度充足 & 次级噪声衰减不足 & 难以满足高精度需求 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{典型妥协方案}：文献 [2] 被迫采用 $A \approx 6$ 的折中设计，试图在饱和裕度和噪声抑制之间寻求平衡。然而，该增益值对次级噪声和失调的衰减程度有限（约 15.6 dB），难以满足高精度应用需求。
+
+\textbf{残余噪声公式推导}
+
+传统 OOS 架构的等效输入残余噪声可表示为：
+\begin{equation}
+v_{ns,res} = v_{ns1} e^{-2\Delta t/\tau} + \frac{v_{ns,AZ}}{A} + \frac{v_{ns,comp}}{A}
+\label{eq:oos}
+\end{equation}
+
+\begin{table}[htbp]\centering\caption{残余噪声分量释义}\label{tab:noisecomp}\small
+\begin{tabular}{lll}\toprule
+\textbf{噪声项} & \textbf{表达式} & \textbf{物理意义} \\\midrule
+主采样噪声残余 & $v_{ns1} e^{-2\Delta t/\tau}$ & 衰减依赖于建立时间常数 $\tau$ 和时间窗口 $\Delta t$ \\
+自归零电容噪声 & $v_{ns,AZ} / A$ & 衰减因子为 $1/A$ \\
+比较器噪声 & $v_{ns,comp} / A$ & 受增益 $A$ 抑制 \\\bottomrule
+\end{tabular}
+\end{table}
+
+该公式表明，传统架构需要在建立时间和增益之间进行精细权衡，设计空间极为受限。
+
+\textbf{时间窗口约束}
+
+除增益约束外，时间窗口 $\Delta T_{az}$ 的选择同样面临两难境地。时间窗口过短会导致噪声混叠问题加剧，削弱噪声消除效果；时间窗口过长则增加饱和风险，同时降低整体转换速度。文献 [3] 详细分析了时间窗口与噪声混叠的关系，指出当 $\Delta T_{az} < 3\tau$ 时，噪声混叠将显著恶化信噪比。
+
+\subsection{研究目标}
+
+\begin{findbox}{核心亮点}
+\textbf{三大核心目标}：① 在 180nm 工艺下实现 12-bit SAR ADC；② 系统验证电流域架构的抗饱和与噪声抑制优势；③ 实现系统级功耗优化并完成跨批次验证。
+\end{findbox}
+
+\textbf{Phase I（3--4月）：10-MS/s 方案验证}
+
+\begin{table}[htbp]\centering\caption{Phase I 目标}\label{tab:phase1-goal}\small
+\begin{tabular}{lll}\toprule
+\textbf{指标} & \textbf{目标值} & \textbf{说明} \\\midrule
+分辨率 & 12-bit & 理想信噪比 74 dB \\
+采样率 & 10 MS/s & 奈奎斯特带宽 5 MHz \\
+工艺 & 180 nm CMOS & 成熟工艺，成本效益高 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Phase II（4--5月）：10-MS/s 全面表征}
+
+\begin{table}[htbp]\centering\caption{Phase II 目标与达成}\label{tab:phase2-goal}\small
+\begin{tabular}{llll}\toprule
+\textbf{指标} & \textbf{目标值} & \textbf{仿真结果 (TT)} & \textbf{结论} \\\midrule
+ENOB (NF=1) & $>$11 bit & \textbf{11.61 bit} & $\checkmark$ 超额 \\
+SNR (NF=1) & $>$70 dB & \textbf{71.81 dB} & $\checkmark$ \\
+SFDR & $>$75 dB & \textbf{84.01 dB} & $\checkmark$ 超额 \\
+CAAZ $\eta$ (TT) & $>$85\% & \textbf{87.9\%} & $\checkmark$ \\
+总功耗 & $<$1 mW & \textbf{720 $\mu$W} & $\checkmark$ \\
+PVT 覆盖 & 5 角 & TT/FF/SS/SF/FS & $\checkmark$ \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{电流域架构优势验证}
+\begin{itemize}
+  \item \textbf{抗饱和验证}：Phase I 通过对比仿真验证 CAAZ 在高增益条件下的稳定性优势，可用增益 $A > 50$
+  \item \textbf{噪声抑制验证}：Phase I 完成噪声分解（KT/C 压缩 5.53$\times$）；Phase II 通过 NF=10 双 $t_d$ 方法定量表征 $\eta$
+  \item \textbf{PVT 鲁棒性验证}：两阶段均在 TT、FF、SS、SF、FS 全工艺角及全温度范围内验证
+\end{itemize}
+
+\textbf{系统级功耗优化}
+
+Phase II 实现了全芯片功耗 720 $\mu$W（模拟 65\%/数字 35\%），预放大器 PREWOCM 占 41\%，为当前最大优化空间。通过噪声消除技术，显著降低了对采样电容的要求，从而减轻外部驱动负担，实现整体系统能效的提升。
+
+\subsection{创新点预览}
+
+\begin{findbox}{核心亮点}
+\textbf{四大创新点}：① 电容负担转移——从高阻抗外部节点转移到低阻抗内部节点；② 电流域自动调零——打破增益--饱和耦合；③ 成熟工艺高能效实现——降低制造成本；④ \textbf{NF=10 $\eta$ 定量表征}——通过噪声注入方法系统量化 CAAZ 消除效率。
+\end{findbox}
+
+\textbf{电容负担转移机制}：将大电容从高阻抗外部节点转移到低阻抗内部节点。CAAZ 架构将噪声存储电容 $C_{AZ}$（300 fF）置于内部低阻抗节点（$1/g_{mn}$），建立时间常数显著降低两个数量级，从根本上缓解了饱和问题。
+
+\textbf{电流域自动调零技术}：
+\begin{itemize}
+  \item 噪声采样阶段采用低增益配置（$A_{samp} < 10$）以避免饱和
+  \item SAR 转换阶段释放高增益（$A > 50$）以抑制后级噪声
+  \item 实现了增益与饱和的解耦
+\end{itemize}
+
+\textbf{NF=10 $\eta$ 定量表征（Phase II 新增）}：
+\begin{itemize}
+  \item 100$\times$噪声注入（NF=10），双 $t_d$ 差分方法
+  \item 完成五角 PVT CAAZ $\eta$ 全面覆盖：$\eta$=79.7\%--91.2\%
+  \item 双批次跨验证确保结论稳健（偏差 $<$1.4 p.p.）
+\end{itemize}
+
+\textbf{成熟工艺高能效实现}：在 180 nm 成熟工艺下实现 10-MS/s 设计。全芯片功耗仅 720 $\mu$W。
+
+\section{CAAZ 技术原理深度解析}
+\label{sec:principle}
+
+\begin{findbox}{核心亮点}
+CAAZ 架构通过\textbf{三相工作时序}实现噪声提取与转换：采样阶段低增益避免饱和，转换阶段释放高增益抑制后级噪声。核心创新在于将噪声存储电容置于低阻抗节点，实现增益与饱和的解耦。
+\end{findbox}
+
+\subsection{CAAZ 电流域架构原理}
+
+CAAZ 架构通过三相工作时序，将噪声提取转移到电流域，从根本上解决了增益--饱和矛盾 [6]。
+
+\textbf{三相工作时序}
+
+\begin{table}[htbp]\centering\caption{三相工作时序}\label{tab:phases}\small
+\begin{tabular}{llll}\toprule
+\textbf{阶段} & \textbf{工作状态} & \textbf{增益} & \textbf{说明} \\\midrule
+主采样 & $V_{in}$ 与 $kT/C$ 噪声被冻结在 $C_1$ & — & 采样开关断开 \\
+电流域噪声采样 & 负载管二极管连接 & $A_{samp} < 10$ & 低增益避免饱和 \\
+SAR 转换 & 负载管切换为电流源 & $A > 50$ & 高增益抑制噪声 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.55\textwidth]{Fig6_Preamplifier.png}
+\caption{电流域噪声消除架构}\label{fig:preamp}
+\end{figure}
+
+\textbf{电流域噪声消除原理推导}
+
+\textbf{关键节点电压}
+
+\begin{table}[htbp]\centering\caption{CDS 操作关键节点电压}\label{tab:cds}\small
+\begin{tabular}{lp{7.5cm}}\toprule
+\textbf{相位} & \textbf{节点电压表达式} \\\midrule
+采样相位 ($t_1$) & $V_{C1} = V_{in}(t_1) + v_{ns1}$ \\
+放大相位 ($t_2$) & $V_{C2} = g_{mp}R_{out}[V_{in}(t_2) - V_{in}(t_1) - v_{ns1} - v_{os}] + v_{ns2}$ \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{电流域噪声消除机制}
+
+1. \textbf{差分电流产生}：输入管的跨导 $g_{mp}$ 将电压差转换为电流
+   $$I_{diff} = g_{mp} [V_{in}(t_2) - V_{in}(t_1) - v_{ns1} - v_{os}]$$
+
+2. \textbf{噪声电流注入}：负载管跨导 $g_{mn}$ 将 $t_2$ 时刻噪声转换为电流
+   $$I_{ns} = g_{mn} v_{ns2}$$
+
+3. \textbf{总电流变化}：
+   $$\Delta I = g_{mp}[g_{mn}R_{out} - 1][V_{in}(t_2) - V_{in}(t_1) - v_{ns1} - v_{os}] + g_{mn}v_{ns2}$$
+
+\begin{impbox}{噪声消除原理}
+该表达式清晰地表明，输出电压与 $t_1$ 时刻采样的噪声 $v_{ns1}$ 相关。在理想情况下，如果 $v_{ns1}$ 和 $v_{ns2}$ 是相关的，通过巧妙的设计可使它们在输出端被抵消，从而实现噪声消除。
+\end{impbox}
+
+\textbf{等效输入噪声转换}
+
+通过输出阻抗 $R_{out}$ 将电流转换回电压：
+$$\Delta V = R_{out} \Delta I = g_{mp}R_{out}[g_{mn}R_{out} - 1][V_{in}(t_2) - V_{in}(t_1) - v_{ns1} - v_{os}] + g_{mn}R_{out}v_{ns2}$$
+
+等效输入噪声可简化为：
+$$v_{ns,eq} \approx \frac{v_{ns1}}{g_{mp}R_{OA}} + \frac{v_{ns2}}{g_{mp}R_{OA}} \cdot \frac{g_{mn}}{g_{mp}}$$
+
+该式表明，主噪声 $v_{ns1}$ 和次级噪声 $v_{ns2}$ 均被增益 $g_{mp}R_{OA}$ 衰减。
+
+\begin{prinbox}{关键公式推导}
+\textbf{残余主噪声}：$v_{ns1,res} = v_{ns1}/(g_{mp}R_{OA})$，主衰减由晶体管本征参数决定，不直接由外部高阻节点建立时间主导。\textbf{次级噪声}：$v_{ns,AZ\_in} \approx \sqrt{kT/C_{AZ}}$，无法被增益抑制，需通过增大 $C_{AZ}$ 降低。
+\end{prinbox}
+
+\textbf{残余主噪声}：
+$$v_{ns1,res} = \frac{v_{ns1}}{g_{mp}R_{OA}}$$
+
+与传统架构的 $e^{-2\Delta t/\tau}$ 相比，该衰减主要由晶体管本征参数决定，不直接由外部高阻节点建立时间主导。180-nm CMOS 中 $g_{mp}R_{OA} > 50$，衰减超过 34 dB。
+
+\textbf{次级噪声}：
+$$v_{ns,AZ\_in} = \sqrt{\frac{kT}{C_{AZ}}} \cdot \frac{g_{mn}}{g_{mp}} \approx \sqrt{\frac{kT}{C_{AZ}}}$$
+
+由于 Phase 2 时 $g_{mn} \approx g_{mp}$，次级噪声无法被增益抑制，必须通过增大 $C_{AZ}$ 直接降低。\textbf{Phase II 优化结果}：$C_{AZ}=300$ fF 已满足需求，500 fF 无额外收益。
+
+\subsection{电容负担转移机制}
+
+\begin{prinbox}{核心创新}
+传统架构电容置于高阻抗输出端（$\tau \sim 100\,\mathrm{k\Omega} \cdot C$），CAAZ 将 $C_{AZ}$ 置于低阻抗节点（$\tau \sim 1/g_{mn} \cdot C_{AZ}$），时间常数降低两个数量级。
+\end{prinbox}
+
+\begin{table}[htbp]\centering\caption{电容位置对比}\label{tab:cap}\small
+\begin{tabular}{llll}\toprule
+\textbf{架构} & \textbf{电容位置} & \textbf{节点阻抗} & \textbf{特性} \\\midrule
+传统 OOS & 预放大器输出端 & $\sim$100 k$\Omega$ & 易导致输出饱和 \\
+CAAZ & 内部电流节点 & $\sim$1 k$\Omega$ & 增益与饱和解耦 \\\bottomrule
+\end{tabular}
+\end{table}
+
+驱动时间常数对比：
+$$\tau_{external} = R_{driver} C_1 \gg \tau_{internal} = \frac{C_{AZ}}{g_{mn}}$$
+
+\textbf{Phase II 验证}：$C_{AZ}=300$ fF 在 $t_d=26$ ns 窗口内充分建立（$\eta_{TT}=87.9\%$）；$t_d=24.05$ ns 时 $\eta\approx0$。
+
+\section{仿真平台搭建}
+\label{sec:platform}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.95\textwidth]{Fig0_System_Architecture.pdf}
+\caption{系统架构总图：模拟域（蓝）、数字域（橙）、时钟域（绿）、测试表征域（红）。}\label{fig:arch}
+\end{figure}
+
+\begin{findbox}{核心亮点}
+基于 TSMC 180nm CMOS 工艺，核心模块包括：CDAC（$C_{unit}=5$ fF）、CAAZ 预放大器（$g_{mp}R_{OA}>50$）、自举开关、StrongARM 锁存器。Phase II 推进至 10-MS/s 全面表征，扩展 PVT 至五角全覆盖。
+\end{findbox}
+
+\subsection{工艺与设计环境}
+
+\begin{table}[htbp]\centering\caption{设计环境}\label{tab:env}\small
+\begin{tabular}{lll}\toprule
+\textbf{项目} & \textbf{配置} & \textbf{说明} \\\midrule
+工艺节点 & 180 nm CMOS & 成熟工艺，成本效益高 \\
+电源电压 & 1.8 V & 标准数字电源电压 \\
+EDA 工具 & Cadence Virtuoso + Spectre 23.1 (APS) & 业界标准模拟设计流程 \\
+仿真类型 & Transient + Noise, 15 $\mu$s & 瞬态噪声仿真 \\
+分析工具 & MATLAB R2024b / Python ADCToolbox & FFT 后处理与数据分析 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{核心电路模块}
+
+\begin{table}[htbp]\centering\caption{核心电路模块演进}\label{tab:blocks}\small
+\begin{tabular}{lp{2.2cm}p{2.2cm}p{3cm}}\toprule
+\textbf{模块} & \textbf{Phase I} & \textbf{Phase II} & \textbf{设计要点} \\\midrule
+CDAC & $C_{unit}=5$ fF & 同 Phase I & Split-DAC 结构，冗余位设计 \\
+CAAZ 预放大器 & $g_{mp}R_{OA}>20$ & $g_{mp}R_{OA}>50$ & pMOS 输入对，nMOS 有源负载 \\
+CAAZ 电容 & $C_{AZ}=500$ fF & $\mathbf{300}$ \textbf{fF} & Phase II 优化：300 fF 已足够 \\
+$t_d$ 优化 & 24.1--25 ns & \textbf{26 ns（最优）} & Phase II 通过扫参确定 \\
+自举开关 & $R_{on}<400\,\Omega$ & 同 Phase I & 电荷注入补偿，底极板采样 \\
+StrongARM 锁存器 & 再生时间 $<$0.3 ns & 同 Phase I & Kickback 噪声隔离 \\
+异步时钟生成 & 26.6--35 ns 可调 & 26 ns 固定 & PRST/RST 相位控制 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{仿真测试平台}
+
+\textbf{Phase I：瞬态噪声仿真配置（10-MS/s）}
+
+\begin{table}[htbp]\centering\caption{Phase I 仿真配置}\label{tab:sim1}\small
+\begin{tabular}{lll}\toprule
+\textbf{参数} & \textbf{设置值} & \textbf{说明} \\\midrule
+仿真时长 & 15 $\mu$s & 覆盖足够多采样周期 \\
+瞬态噪声带宽 & $f_s/2 = 5$ MHz & 奈奎斯特带宽 \\
+工艺角 & TT/FF/SS/SF/FS & 全工艺角覆盖 \\
+温度范围 & $-40^\circ$C 至 $125^\circ$C & 典型工作范围 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Phase II：CAAZ 效率表征（10-MS/s）}
+
+\begin{table}[htbp]\centering\caption{Phase II 仿真配置}\label{tab:sim2}\small
+\begin{tabular}{lll}\toprule
+\textbf{参数} & \textbf{设置值} & \textbf{说明} \\\midrule
+仿真时长 & 15 $\mu$s & 瞬态噪声 \\
+信号频率 & 4.765625 MHz & 61/128 相干采样 \\
+输入幅度 & 890 mV$_{pp-diff}$ & $-0.5$ dBFS \\
+NF 配置 & 1（基线）/ 10（100$\times$注入） & CAAZ 效率表征 \\
+$t_d$ 扫描 & 24.05 / 26.0 ns & 双 $t_d$ $\eta$ 计算 \\
+工艺角 & TT/FF/SS/SF/FS & 五角全覆盖 \\
+噪声注入开关 & I1（时钟链），I14（采样开关） & — \\
+批次验证 & 旧导出 / 新导出 & 跨批次交叉验证 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\section{核心仿真发现与验证}
+\label{sec:results}
+
+\begin{findbox}{核心亮点}
+Phase I（10-MS/s）：KT/C 噪声功率压缩 5.53$\times$，噪声占比从 31.40\% 降至 7.60\%。Phase II（10-MS/s 全面表征）：ENOB=11.61 bit（TT），$\eta$=87.9\%，全五角 PVT 覆盖，双批次交叉验证。
+\end{findbox}
+
+\subsection{Phase I：噪声分解与 KT/C 抑制量化（10-MS/s）}
+
+仿真聚焦于瞬态噪声开启下的频谱分析。通过 FFT 后处理提取各工艺角动态性能。下述数据基于 $C_{AZ}=500$ fF，$t_d=25$ ns。
+
+\textbf{各工艺角性能汇总}
+
+\begin{table}[htbp]\centering\caption{PVT 瞬态噪声仿真结果 ($t_d=25$ ns)}\label{tab:pvt1}\small
+\begin{tabular}{lcccc}\toprule
+\textbf{工艺角} & \textbf{温度} & \textbf{SNDR (dB)} & \textbf{ENOB (bit)} & \textbf{备注} \\\midrule
+TT & 27$^\circ$C & 69.29 & 10.94 & 典型情况 \\
+FF & 25$^\circ$C & 68.90 & 10.76 & 快工艺角 \\
+SS & 0$^\circ$C & 68.28 & 11.01 & 慢工艺角 \\
+SF$_{-40}$ & $-40^\circ$C & 69.36 & 10.99 & 慢N快P（低温） \\
+SF$_{35}$ & 35$^\circ$C & 68.12 & 10.97 & 慢N快P（常温） \\
+FS & $-13^\circ$C & 68.62 & 10.98 & 快NMOS慢PMOS \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{噪声抑制效果对比（$t_d = 24.1$ ns）}
+
+\begin{table}[htbp]\centering\caption{有/无 CAAZ 抑制效果对比}\label{tab:supp}\small
+\begin{tabular}{lccc}\toprule
+\textbf{工艺角} & \textbf{有抑制 ENOB (bit)} & \textbf{无抑制 ENOB (bit)} & \textbf{抑制增益 (bit)} \\\midrule
+TT & 10.78 & 10.35 & $+$0.43 \\
+FF & 10.64 & 10.36 & $+$0.28 \\
+SS & 10.68 & 10.50 & $+$0.18 \\
+SF$_{-40}$ & 10.92 & 10.51 & $+$0.41 \\
+SF$_{35}$ & 10.59 & 10.12 & $+$0.47 \\
+FS & 10.77 & 10.37 & $+$0.40 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.48\textwidth]{Fig4_Noise_Suppression.pdf}\hfill
+\includegraphics[width=0.48\textwidth]{Fig5_Noise_Waterfall.pdf}
+\caption{噪声抑制效果对比（左）与噪声源剥离瀑布图（右）}\label{fig:noise}
+\end{figure}
+
+\subsection{Phase I：噪声抑制效果定量分析}
+
+基于 12-bit SAR ADC 的瞬态噪声仿真，对 KT/C 采样噪声抑制效果进行 100\% 复核无误的绝对功率域定量分析。
+
+\textbf{固定已知条件（按统一仿真数据口径）}
+
+\begin{table}[htbp]\centering\caption{四工况仿真条件}\label{tab:conditions}\small
+\begin{tabular}{clcl}\toprule
+\textbf{工况} & \textbf{工况描述} & \textbf{仿真 SNR} & \textbf{核心说明} \\\midrule
+1 & 仅紧量化噪声 & 74.0 dB & 仅量化噪声，无其他任何噪声源 \\
+2 & 量化 + 原始无抑制 KTC 噪声 & 71.4 dB & 仅量化$+$原始 KTC 噪声 \\
+3 & 量化 + KTC Cancellation 抑制技术 & 73.4 dB & 仅量化$+$抑制后残余 KTC 噪声 \\
+4 & 整机全链路仿真 & 70.8 dB & 完整系统开 KTC 抑制的仿真结果 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{核心公式}（归一化信号功率 $S=1$，行业通用标准）：
+$$\text{SNR(dB)} = 10\lg(S/P_{noise}) \implies P_{noise} = 10^{-\text{SNR(dB)}/10}$$
+
+非相关噪声总功率 = 各独立噪声功率\textbf{线性直接叠加}（非 dB 叠加）。
+
+\textbf{步骤 1：基础噪声功率精确计算}
+
+\begin{table}[htbp]\centering\caption{噪声功率基础值}\label{tab:pnoise}\small
+\begin{tabular}{lll}\toprule
+\textbf{噪声项} & \textbf{精确功率值} & \textbf{计算依据} \\\midrule
+纯量化噪声 $P_Q$ & $\boldsymbol{3.9811\times 10^{-8}}$ & $10^{-74.0/10}$ \\
+量化$+$原始 KTC 总噪声 $P_{Q+K_{raw}}$ & $\boldsymbol{7.2444\times 10^{-8}}$ & $10^{-71.4/10}$ \\
+量化$+$抑制后 KTC 总噪声 $P_{Q+K_{sup}}$ & $\boldsymbol{4.5709\times 10^{-8}}$ & $10^{-73.4/10}$ \\
+整机开抑制总噪声 $P_{ALL_{sup}}$ & $\boldsymbol{8.3176\times 10^{-8}}$ & $10^{-70.8/10}$ \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{步骤 2：独立噪声分量拆分（100\% 自洽无歧义）}
+
+\begin{table}[htbp]\centering\caption{独立噪声分量拆分}\label{tab:split}\small
+\begin{tabular}{lll}\toprule
+\textbf{独立噪声分量} & \textbf{精确功率值} & \textbf{计算逻辑} \\\midrule
+原始未抑制 KTC 噪声 $P_{K_{raw}}$ & $\boldsymbol{3.2633\times 10^{-8}}$ & $P_{Q+K_{raw}} - P_Q$ \\
+抑制后残余 KTC 噪声 $P_{K_{sup}}$ & $\boldsymbol{5.8981\times 10^{-9}}$ & $P_{Q+K_{sup}} - P_Q$ \\
+整机固定其他噪声 $P_{OTHER}$ & $\boldsymbol{3.7467\times 10^{-8}}$ & $P_{ALL_{sup}} - P_{Q+K_{sup}}$ \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{步骤 3：核心技术指标（无任何估算，基于仿真数据推导）}
+
+\textbf{KTC 噪声本身的抑制能力}
+
+\begin{table}[htbp]\centering\caption{KTC 抑制核心指标}\label{tab:ktc-core}\small
+\begin{tabular}{lc}\toprule
+\textbf{指标} & \textbf{数值} \\\midrule
+KTC 噪声功率压缩倍数 & \textbf{5.53 倍} \\
+KTC 噪声功率衰减 & \textbf{$-$7.43 dB} \\
+KTC 噪声功率削减比例 & \textbf{81.93\%} \\
+纯量化$+$KTC 场景下 SNR 提升 & \textbf{$+$2.0 dB} \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{整机全链路仿真性能提升（严格功率叠加计算）}
+
+\begin{table}[htbp]\centering\caption{整机全链路 SNR 提升}\label{tab:full-sys}\small
+\begin{tabular}{lc}\toprule
+\textbf{指标} & \textbf{数值} \\\midrule
+整机关 KTC 抑制总噪声 $P_{ALL_{raw}}$ & $P_Q + P_{K_{raw}} + P_{OTHER} = \boldsymbol{1.0991\times 10^{-7}}$ \\
+整机关 KTC 抑制对应 SNR & $10\lg(1/P_{ALL_{raw}}) \approx \boldsymbol{69.59\ \mathrm{dB}}$ \\
+整机开 KTC 抑制仿真 SNR & $\boldsymbol{70.80\ \mathrm{dB}}$ \\
+$\checkmark$ 整机全链路仿真 SNR 提升 & \textbf{$+$1.21 dB} \\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.65\textwidth]{Fig8_Noise_Pie_Charts.pdf}
+\caption{KTC Cancellation 技术对 ADC 整机噪声分布的优化效果}\label{fig:pie8}
+\end{figure}
+
+\begin{findbox}{Phase I 核心结论}
+本次提出的 KTC Cancellation 采样噪声抑制技术，可将原始 KTC 采样噪声功率压缩 5.53 倍，实现 7.43 dB 的噪声衰减，KTC 噪声能量削减 81.93\%。在仅含量化与 KTC 噪声的理想模块级场景中，该技术可实现 2.0 dB 的 SNR 提升；在全链路整机场景中，仿真系统 SNR 由 69.59 dB 提升至 70.80 dB（$+$1.21 dB）。噪声分布对比结果显示，该技术可将 KTC 噪声在整机总噪声中的占比从 29.69\% 大幅降低至 7.09\%，有效缓解了高精度 SAR ADC 中采样噪声对系统动态范围的限制，具备显著的工程应用价值。
+\end{findbox}
+
+\subsection{Phase II：10-MS/s NF=10 CAAZ 效率定量表征}
+
+Phase II 推进至 10-MS/s 全面表征，采用 NF=10 噪声注入双 $t_d$ 方法完成 CAAZ 高效率 $\eta$ 的全 PVT 定量表征。
+
+\textbf{NF=1 基线性能（$t_d=26$ ns）}
+
+\begin{table}[htbp]\centering\caption{NF=1 基线全角性能}\label{tab:nf1-data}\small
+\begin{tabular}{lcccc}\toprule
+\textbf{Corner} & \textbf{温度} & \textbf{SNR (dB)} & \textbf{ENOB (bit)} & \textbf{SFDR (dB)} \\\midrule
+TT & 27$^\circ$C & \textbf{71.81} & \textbf{11.61} & \textbf{84.01} \\
+FF & $-40^\circ$C & 71.16 & 11.49 & 81.85 \\
+SS & 85$^\circ$C & 71.48 & 11.55 & 83.86 \\
+SF & 85$^\circ$C & 71.29 & 11.53 & 83.52 \\
+FS & $-40^\circ$C & 70.92 & 11.47 & 81.50 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{关键发现}：全五角 PVT ENOB 均 $>$11.4 bit，12-bit ADC 裕量充足。ENOB 极差仅 \textbf{0.14 bit}（11.47--11.61），CAAZ 全角稳定。SFDR 全部 $>$81 dB，线性度良好。
+
+\textbf{$t_d$ 优化：24.05 ns vs 26.0 ns}
+
+\begin{table}[htbp]\centering\caption{$t_d$ 延展对 SNR 的影响}\label{tab:td-comp}\small
+\begin{tabular}{lccc}\toprule
+\textbf{Corner} & \textbf{SNR$_{24}$ (dB)} & \textbf{SNR$_{26}$ (dB)} & $\Delta$SNR (dB) \\\midrule
+TT & 70.39 & 71.81 & \textbf{$+$1.42} \\
+FF & 70.79 & 71.16 & $+$0.37 \\
+SS & 69.66 & 71.48 & \textbf{$+$1.82} \\
+SF & 69.44 & 71.29 & \textbf{$+$1.85} \\
+FS & 70.30 & 70.92 & $+$0.62 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.85\textwidth]{Fig1_PVT_Performance.pdf}
+\caption{PVT 全角性能：ENOB（左）与 SNR（右），$t_d=24.05$ vs 26.0 ns}\label{fig:pvt2}
+\end{figure}
+
+\textbf{结论}：高温角（SS/SF, 85$^\circ$C）受益最大（SNR $+$1.8--1.9 dB），低温角（FF/FS, $-40^\circ$C）几乎无变化（$g_m$ 大, 24ns 已充分建立）。\textbf{26.0 ns 为最优设计点}，26.5 ns 无额外收益。
+
+\textbf{CAAZ 消除效率 $\eta$}
+
+通过 NF=10（100$\times$噪声注入）双 $t_d$ 方法计算。具体采用新导出 CSV 数据：
+$$\eta = 1 - \frac{101 \cdot 10^{-\Delta\text{SNR}/10} - 1}{100},\quad \Delta\text{SNR} = \text{SNR}_{26\text{ns}} - \text{SNR}_{24.05\text{ns}}$$
+
+\begin{table}[htbp]\centering\caption{CAAZ $\eta$ 全角表征（新导出数据）}\label{tab:eta-full}\small
+\begin{tabular}{lccccc}\toprule
+\textbf{Corner} & \textbf{SNR$_{26}$ (dB)} & \textbf{SNR$_{24}$ (dB)} & $\eta$ (新导出) & $\eta$ (旧导出) & \textbf{降噪倍} \\\midrule
+TT & 64.10 & 55.22 & \textbf{87.9\%} & 86.8\% & \textbf{8.3$\times$} \\
+FF & 66.40 & 57.01 & 89.4\% & 89.4\% & 9.4$\times$ \\
+SS & 61.03 & 53.33 & 83.9\% & 82.5\% & 6.2$\times$ \\
+SF & 61.60 & 54.84 & \textbf{79.7\%} & 78.8\% & 4.9$\times$ \\
+FS & 67.06 & 56.94 & \textbf{91.2\%} & 90.9\% & \textbf{11.4$\times$} \\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.65\textwidth]{Fig2_CAAZ_Eta.pdf}
+\caption{CAAZ $\eta$ 跨批次对比（两批次偏差 $<$1.4 p.p.）}\label{fig:eta2}
+\end{figure}
+
+\textbf{关键发现}：
+\begin{itemize}
+  \item TT 角 $\eta=\textbf{87.9\%}$，满足 $>$85\% 目标
+  \item FS 角 $\eta=\textbf{91.2\%}$ 全 PVT 最优（低温 $+$ fast-N, $g_{mn}$ 最大）
+  \item SF 角 $\eta=\textbf{79.7\%}$ 全 PVT 最差（85$^\circ$C $+$ slow-N fast-P, $g_{mn}$ 最不足）
+  \item 双批次 $\eta$ 偏差 $<$1.4 p.p. $\rightarrow$ \textbf{CAAZ 效率结论跨批次稳健}
+\end{itemize}
+
+\textbf{工艺角依赖性物理机制}：CAAZ 建立时间常数 $\tau_{CAAZ}\approx C_{AZ}/g_{mn}$。FF/FS 角（$-40^\circ$C）$g_{mn}$ 最大，建立最充分（$\eta>89\%$）。SF/SS 角（85$^\circ$C）$g_{mn}$ 降低，建立不足。SF 角 slow-N fast-P 组合使 NMOS 负载 $g_{mn}$ 最弱，$\eta$ 最低。
+
+\textbf{功耗分解 (TT, NF=1, $t_d=26$ ns)}
+
+\begin{table}[htbp]\centering\caption{功耗分解}\label{tab:power2}\small
+\begin{tabular}{lcc}\toprule
+\textbf{模块} & \textbf{功耗 ($\mu$W)} & \textbf{占比} \\\midrule
+COMPOWER（预放大器$+$SR$+$驱动器） & 363.7 & 50\% \\
+~~PREWOCM & 298.4 & 41\% \\
+~~SRPOWER & 30.93 & 4\% \\
+SWITCHPOWER（开关网络） & 97.14 & 14\% \\
+LOGICPOWER（SAR\_LOGIC） & 149.0 & 21\% \\
+SYNCPOWER（SYNC） & 110.4 & 15\% \\\midrule
+\textbf{总计} & \textbf{720.3} & 100\% \\\bottomrule
+\end{tabular}
+\end{table}
+
+模拟部分占 $\sim$65\%，数字部分占 $\sim$35\%。\textbf{预放大器 PREWOCM 是最大功耗源（41\%），为当前最大优化空间。}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.75\textwidth]{Fig3_Power_Breakdown.pdf}
+\caption{功耗分解图}\label{fig:power}
+\end{figure}
+
+\textbf{跨批次数据验证}
+
+\begin{table}[htbp]\centering\caption{双批次跨验证核心指标}\label{tab:cross2}\small
+\begin{tabular}{lccc}\toprule
+\textbf{指标} & \textbf{旧导出} & \textbf{新导出} & \textbf{偏差} \\\midrule
+COMPOWER (TT) & 363.2 $\mu$W & 365.2 $\mu$W & $+$2.0 $\mu$W \\
+$\eta$ (TT) & 86.8\% & 87.9\% & $+$1.1 p.p. \\
+ENOB (TT, NF=10, 26ns) & 10.31 & 10.31 & 0 \\
+SNR (TT, NF=10, 26ns) & 63.68 dB & 64.10 dB & $+$0.42 dB \\
+SWITCHPOWER & 97.2 $\mu$W & 110.7 $\mu$W & \textbf{$+$14\%} \\\bottomrule
+\end{tabular}
+\end{table}
+
+COMPOWER、$\eta$、ENOB、SNR 等核心指标跨批次高度一致。SWITCHPOWER 存在系统性 $+$14\% 偏差，经核查系第二次 CSV 导出时 Calculator 表达式不同所致，非电路实际变化。\textbf{CAAZ 效率定性结论跨批次稳健。}
+
+\subsection{失调注入测试}
+
+\begin{prinbox}{原理解析}
+仅开启采样噪声时 ENOB 达 11.59 bit，证明 CAAZ 架构配合极小采样电容可显著降低 $kT/C$ 噪声影响。引入后级全噪声后 ENOB 回落至 11.08 bit，说明比较器噪声是当前精度瓶颈。
+\end{prinbox}
+
+\textbf{噪声源与失调电压对 ADC 性能的影响分解 ($t_d = 25$ ns)}
+
+\begin{table}[htbp]\centering\caption{噪声/失调分解分析}\label{tab:offset}\small
+\begin{tabular}{lccr}\toprule
+\textbf{仿真条件配置} & \textbf{ENOB 范围 (bit)} & \textbf{SNR 范围 (dB)} & \textbf{平均 ENOB} \\\midrule
+仅开启采样噪声 & 11.42--11.70 & 70.42--72.54 & 11.59 bit \\
+全噪声开启 (0 mV 失调) & 10.94--11.18 & 67.51--69.28 & 11.08 bit \\
+全噪声开启 (2 mV 失调) & 11.03--11.25 & 68.12--69.36 & 11.13 bit \\
+全噪声开启 (5 mV 失调) & 10.85--10.92 & 67.37--67.76 & 10.89 bit \\\bottomrule
+\end{tabular}
+\end{table}
+
+分析表明，在仅开启前端采样噪声时，各工艺角下的平均 ENOB 高达 11.59 bit，峰值达到 11.70 bit。这证明了本文提出的 CAAZ 架构配合 5 fF 极小采样电容，能够显著降低 $kT/C$ 噪声的限制。当引入比较器等后级全系统热噪声时，ENOB 回落至 11.08 bit，说明比较器噪声是当前制约系统精度的主要瓶颈。
+
+\textbf{失调注入测试结果（隔离寄生电容，$t_d = 25$ ns）}
+
+\begin{table}[htbp]\centering\caption{失调注入测试}\label{tab:offset2}\small
+\begin{tabular}{lccc}\toprule
+\textbf{注入失调 (mV)} & \textbf{ENOB 范围 (bit)} & \textbf{平均 ENOB (bit)} & \textbf{退化幅度} \\\midrule
+0 & 10.94--11.18 & 11.08 & 基准 \\
+2 & 11.03--11.25 & 11.13 & $\sim$0 \\
+5 & 10.85--10.92 & 10.89 & $-0.19$ \\\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.48\textwidth]{Fig6_Offset_Sensitivity.pdf}\hfill
+\includegraphics[width=0.48\textwidth]{Fig7_Time_Window_Sweep.pdf}
+\caption{失调敏感度分析（左）与时间窗口扫参（右）}\label{fig:offset-sweep}
+\end{figure}
+
+\begin{findbox}{失调鲁棒性结论}
+注入失调从 0 mV 增至 5 mV 时，ENOB 仅下降约 0.19 bit。CAAZ 架构对等效输入失调展现出强鲁棒性，验证了电流域消除机制对失调的有效处理能力。
+\end{findbox}
+
+\subsection{Phase I $\rightarrow$ Phase II 演进分析}
+
+\begin{table}[htbp]\centering\caption{两阶段关键指标对比}\label{tab:evolution2}\small
+\begin{tabular}{lcc}\toprule
+\textbf{维度} & \textbf{Phase I (10-MS/s)} & \textbf{Phase II (10-MS/s)} \\\midrule
+ENOB (TT, NF=1) & 10.94 bit & \textbf{11.61 bit} ($+$0.67) \\
+SNR (TT) & 67.51 dB & \textbf{71.81 dB} ($+$4.30) \\
+$C_{AZ}$ & 500 fF & \textbf{300 fF} ($-$40\%) \\
+$t_d$ & 25 ns & \textbf{26 ns}（扫参最优） \\
+噪声表征方法 & 四工况分解 & \textbf{NF=10 $\eta$ 法}（更系统化） \\
+PVT 覆盖 & 6 角（含 SS\_mim） & \textbf{5 角（含 SF）} \\
+跨批次验证 & 无 & \textbf{双批次}（$\eta$ 偏差 $<$1.4 p.p.） \\
+功耗数据 & 比较器 272 $\mu$W & \textbf{全芯片 720 $\mu$W} \\
+SFDR & N/A & \textbf{84.01 dB} \\\bottomrule
+\end{tabular}
+\end{table}
+
+Phase II 通过优化 $C_{AZ}$、建立 NF=10 $\eta$ 表征方法论，实现了从验证架构可行到全面定量表征的跨越。双批次跨验证为 CAAZ 技术的数据可靠性提供了有力支撑。
+
+\section{技术优势与结论}
+\label{sec:conclusion}
+
+\subsection{技术优势总结}
+
+\begin{findbox}{三大核心优势}
+\textbf{抗饱和}：增益与饱和解耦，可用增益 $A > 50$（$8\times$ 传统 OOS）。\textbf{噪声抑制}：主噪声衰减因子 $\approx$0.02，$\eta_{TT}=87.9\%$，降低对外部节点建立时间的依赖，但仍受内部 CAAZ 建立影响。\textbf{系统能效}：小采样电容降低前端驱动负担，全芯片 720 $\mu$W。
+\end{findbox}
+
+\textbf{抗饱和优势}
+
+\begin{table}[htbp]\centering\caption{抗饱和对比}\label{tab:anti-sat}\small
+\begin{tabular}{lcc}\toprule
+\textbf{参数} & \textbf{传统 OOS 架构} & \textbf{CAAZ 架构} \\\midrule
+可用增益范围 & $A < 10$ & $A > 50$ \\
+增益-饱和关系 & 强耦合 & 解耦 \\
+时间窗口灵活性 & 受饱和限制 & 仅受建立时间限制 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{噪声抑制优势}
+
+\begin{table}[htbp]\centering\caption{噪声抑制机制对比}\label{tab:noise-adv}\small
+\begin{tabular}{lccc}\toprule
+\textbf{架构} & \textbf{衰减机制} & \textbf{衰减因子} & \textbf{典型值} \\\midrule
+传统 OOS & 建立时间衰减 & $e^{-2\Delta t/\tau}$ & $\sim$0.1 \\
+CAAZ & 增益衰减 & $1/(g_{mp}R_{OA})$ & $\approx$0.02 \\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{后续研究计划}
+
+\begin{warnbox}{待解决挑战}
+\textbf{关键技术挑战}：① 预放功耗优化——PREWOCM 占 41\%，目标缩小至 200 $\mu$W 以下；② SF 角改善——$\eta=79.7\%$ 为最差角，需增大 $t_d$ 余量或提升预放 $g_{mn}$；③ 版图后仿——PEX 反标验证；④ 低频噪声——NF=1 时 N=5 退化 $\sim$0.3 bit。
+\end{warnbox}
+
+\begin{table}[htbp]\centering\caption{优先行动清单}\label{tab:actions}\small\setlength{\tabcolsep}{6pt}
+\begin{tabular}{c>{\raggedright}p{3cm}>{\raggedright}p{3.5cm}>{\raggedright}p{5.5cm}}\toprule
+\textbf{级} & \textbf{项目} & \textbf{目标} & \textbf{说明} \\\midrule
+P0 & SWITCHPOWER 表达式 & 统一 Cadence 定义 & 跨批次 $+$14\% 根因确认 \\
+P1 & 预放电流优化 & 总功耗 $<$600 $\mu$W & PREWOCM 占 41\%, 最大优化空间 \\
+P1 & SF 角改善 & $\eta_{SF}>85\%$ & 增大 $t_d$ 或提升预放 $g_{mn}$ \\
+P1 & CCLK H-tree & skew $<$20 ps & 版图对称布线验证 \\
+P2 & PEX 寄生反标 & 后仿验证 & 版图完成后必须执行 \\
+P2 & 低频 1/f 噪声排查 & 闪烁噪声确认 & N=5 退化约 0.3 bit \\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{总结}
+
+本报告系统研究了基于电流调整自动调零（CAAZ）技术的 SAR ADC 设计。
+
+\textbf{Phase I}（3--4月）：在 10-MS/s 下完成 CAAZ 架构原理验证，通过四工况瞬态噪声仿真进行噪声分解。KTC 噪声功率压缩 5.53$\times$（81.93\% 能量削减），系统 SNR 提升 1.21 dB。各工艺角 ENOB 均达 10.7--11.0 bit。
+
+\textbf{Phase II}（4--5月）：推进至 10-MS/s 全面表征，通过 NF=10 双 $t_d$ 方法完成全 PVT $\eta$ 定量表征（79.7\%--91.2\%），双批次跨验证确认结论稳健。基线性能达 ENOB=11.61 bit, SNR=71.81 dB, SFDR=84.01 dB（TT 角），全五角 ENOB $>$11.4 bit，总功耗 720 $\mu$W。SF 角（85$^\circ$C, slow-N fast-P）为当前设计瓶颈（$\eta=79.7\%$），后续可通过预放电流优化和 $t_d$ 余量改善进一步提升。
+
+\begin{findbox}{核心创新点汇总}
+\begin{tabular}{lll}\toprule
+\textbf{创新点} & \textbf{技术贡献} & \textbf{量化意义} \\\midrule
+电容负担转移 & 大电容从高阻抗$\rightarrow$低阻抗节点 & $\tau$ 降低两个数量级 \\
+电流域自动调零 & 电流域噪声提取，打破增益-饱和 & $A > 50$（传统 $A < 6$） \\
+NF=10 $\eta$ 表征 & 100$\times$ 噪声注入双 $t_d$ 定量方法 & $\eta_{TT}=87.9\%$，覆盖全 PVT \\
+双批次跨验证 & 独立 CSV 导出交叉校验 & $\eta$ 偏差 $<$1.4 p.p. \\
+成熟工艺高能效 & 180nm 工艺下 10-MS/s & 720 $\mu$W, ENOB 11.61 bit \\\bottomrule
+\end{tabular}
+\end{findbox}
+
+\vspace{1cm}
+\begin{center}\rule{0.5\textwidth}{0.4pt}
+{\small Rev.4.0 (2026-05-13): 忠实保留原始框架，仅更新数据值}
+
+{\small Rev.1.0 (2026-04-18): 初版}
+\rule{0.5\textwidth}{0.4pt}
+\end{center}
+
+\end{document}

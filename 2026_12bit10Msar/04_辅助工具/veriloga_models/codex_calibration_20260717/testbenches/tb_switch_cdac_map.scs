@@ -1,0 +1,143 @@
+simulator lang=spectre
+global 0
+parameters vdd=1.8 C=4f
+
+subckt CDAC_0716 BITD1 BITD2 BITD3 BITD4 BITD5 BITD6 BITD7 BITD8 BITD9 \
+        BITD10 BITD11 BITD12 BITD13 BITU1 BITU2 BITU3 BITU4 BITU5 BITU6 \
+        BITU7 BITU8 BITU9 BITU10 BITU11 BITU12 BITU13 N P
+    C153 (N BITU8) capacitor c=C
+    C154 (N BITU12) capacitor c=8.00545*C
+    C155 (N BITU11) capacitor c=4*C
+    C156 (N BITU13) capacitor c=16.0365*C
+    C157 (net4 BITU4) capacitor c=6*C
+    C249 (N BITU9) capacitor c=2*C
+    C248 (P BITD9) capacitor c=2*C
+    C152 (N BITU10) capacitor c=2*C
+    C141 (P BITD12) capacitor c=8*C
+    C149 (net4 BITU5) capacitor c=10*C
+    C144 (net3 P) capacitor c=C
+    C147 (net4 BITU2) capacitor c=2*C
+    C143 (P BITD13) capacitor c=16.054213*C
+    C146 (net4 BITU1) capacitor c=C
+    C139 (P BITD10) capacitor c=2*C
+    C151 (net4 BITU7) capacitor c=24*C
+    C138 (net3 BITD7) capacitor c=24*C
+    C150 (net4 BITU6) capacitor c=16*C
+    C145 (net4 N) capacitor c=C
+    C142 (P BITD11) capacitor c=4*C
+    C148 (net4 BITU3) capacitor c=4*C
+    C140 (P BITD8) capacitor c=C
+    C136 (net3 BITD5) capacitor c=10*C
+    C137 (net3 BITD6) capacitor c=16*C
+    C132 (net3 BITD4) capacitor c=6*C
+    C135 (net3 BITD3) capacitor c=4*C
+    C134 (net3 BITD2) capacitor c=2*C
+    C133 (net3 BITD1) capacitor c=C
+ends CDAC_0716
+
+VSS (AGND 0) vsource dc=0 type=dc
+VDD (AVDD AGND) vsource dc=vdd type=dc
+VVCM (VCM AGND) vsource dc=vdd/2 type=dc
+VREFP_SRC (VREFP AGND) vsource dc=vdd type=dc
+VREFN_SRC (VREFN AGND) vsource dc=0 type=dc
+VVIP (VIP AGND) vsource dc=vdd/2 type=dc
+VVIN (VIN AGND) vsource dc=vdd/2 type=dc
+VRST (RST AGND) vsource dc=0 type=dc
+VRST1 (RST1 AGND) vsource dc=vdd type=dc
+VCAL (CAL AGND) vsource dc=0 type=dc
+VCALCLK (CAL_CLK AGND) vsource dc=0 type=dc
+
+// BITN<k>=1 and BITP<k>=0 force active BITD<k> to VREFP and BITU<k> to VREFN.
+VBN0 (BITN0 AGND) vsource dc=vdd type=dc
+VBN1 (BITN1 AGND) vsource dc=vdd type=dc
+VBN2 (BITN2 AGND) vsource dc=vdd type=dc
+VBN3 (BITN3 AGND) vsource dc=vdd type=dc
+VBN4 (BITN4 AGND) vsource dc=vdd type=dc
+VBN5 (BITN5 AGND) vsource dc=vdd type=dc
+VBN6 (BITN6 AGND) vsource dc=vdd type=dc
+VBN7 (BITN7 AGND) vsource dc=vdd type=dc
+VBN8 (BITN8 AGND) vsource dc=vdd type=dc
+VBN9 (BITN9 AGND) vsource dc=vdd type=dc
+VBN10 (BITN10 AGND) vsource dc=vdd type=dc
+VBN11 (BITN11 AGND) vsource dc=vdd type=dc
+VBN12 (BITN12 AGND) vsource dc=vdd type=dc
+VBN13 (BITN13 AGND) vsource dc=vdd type=dc
+VBP0 (BITP0 AGND) vsource dc=0 type=dc
+VBP1 (BITP1 AGND) vsource dc=0 type=dc
+VBP2 (BITP2 AGND) vsource dc=0 type=dc
+VBP3 (BITP3 AGND) vsource dc=0 type=dc
+VBP4 (BITP4 AGND) vsource dc=0 type=dc
+VBP5 (BITP5 AGND) vsource dc=0 type=dc
+VBP6 (BITP6 AGND) vsource dc=0 type=dc
+VBP7 (BITP7 AGND) vsource dc=0 type=dc
+VBP8 (BITP8 AGND) vsource dc=0 type=dc
+VBP9 (BITP9 AGND) vsource dc=0 type=dc
+VBP10 (BITP10 AGND) vsource dc=0 type=dc
+VBP11 (BITP11 AGND) vsource dc=0 type=dc
+VBP12 (BITP12 AGND) vsource dc=0 type=dc
+VBP13 (BITP13 AGND) vsource dc=0 type=dc
+
+// Stage j selects physical capacitor k=13-j.  Stage 13 has no switched capacitor.
+VSET0 (SET0 AGND) vsource type=pulse val0=0 val1=vdd delay=1n rise=10p fall=10p width=80n period=2u
+VSET1 (SET1 AGND) vsource type=pulse val0=0 val1=vdd delay=101n rise=10p fall=10p width=80n period=2u
+VSET2 (SET2 AGND) vsource type=pulse val0=0 val1=vdd delay=201n rise=10p fall=10p width=80n period=2u
+VSET3 (SET3 AGND) vsource type=pulse val0=0 val1=vdd delay=301n rise=10p fall=10p width=80n period=2u
+VSET4 (SET4 AGND) vsource type=pulse val0=0 val1=vdd delay=401n rise=10p fall=10p width=80n period=2u
+VSET5 (SET5 AGND) vsource type=pulse val0=0 val1=vdd delay=501n rise=10p fall=10p width=80n period=2u
+VSET6 (SET6 AGND) vsource type=pulse val0=0 val1=vdd delay=601n rise=10p fall=10p width=80n period=2u
+VSET7 (SET7 AGND) vsource type=pulse val0=0 val1=vdd delay=701n rise=10p fall=10p width=80n period=2u
+VSET8 (SET8 AGND) vsource type=pulse val0=0 val1=vdd delay=801n rise=10p fall=10p width=80n period=2u
+VSET9 (SET9 AGND) vsource type=pulse val0=0 val1=vdd delay=901n rise=10p fall=10p width=80n period=2u
+VSET10 (SET10 AGND) vsource type=pulse val0=0 val1=vdd delay=1.001u rise=10p fall=10p width=80n period=2u
+VSET11 (SET11 AGND) vsource type=pulse val0=0 val1=vdd delay=1.101u rise=10p fall=10p width=80n period=2u
+VSET12 (SET12 AGND) vsource type=pulse val0=0 val1=vdd delay=1.201u rise=10p fall=10p width=80n period=2u
+VMONCLK (MONCLK AGND) vsource type=pulse val0=0 val1=vdd delay=50n rise=10p fall=10p width=10n period=100n
+
+// Calibration controls are held low in this normal-mode mapping test.
+VCALD0 (BITD_CAL0 AGND) vsource dc=0 type=dc
+VCALD1 (BITD_CAL1 AGND) vsource dc=0 type=dc
+VCALD2 (BITD_CAL2 AGND) vsource dc=0 type=dc
+VCALD3 (BITD_CAL3 AGND) vsource dc=0 type=dc
+VCALD4 (BITD_CAL4 AGND) vsource dc=0 type=dc
+VCALD5 (BITD_CAL5 AGND) vsource dc=0 type=dc
+VCALD6 (BITD_CAL6 AGND) vsource dc=0 type=dc
+VCALD7 (BITD_CAL7 AGND) vsource dc=0 type=dc
+VCALD8 (BITD_CAL8 AGND) vsource dc=0 type=dc
+VCALD9 (BITD_CAL9 AGND) vsource dc=0 type=dc
+VCALD10 (BITD_CAL10 AGND) vsource dc=0 type=dc
+VCALD11 (BITD_CAL11 AGND) vsource dc=0 type=dc
+VCALD12 (BITD_CAL12 AGND) vsource dc=0 type=dc
+VCALU0 (BITU_CAL0 AGND) vsource dc=0 type=dc
+VCALU1 (BITU_CAL1 AGND) vsource dc=0 type=dc
+VCALU2 (BITU_CAL2 AGND) vsource dc=0 type=dc
+VCALU3 (BITU_CAL3 AGND) vsource dc=0 type=dc
+VCALU4 (BITU_CAL4 AGND) vsource dc=0 type=dc
+VCALU5 (BITU_CAL5 AGND) vsource dc=0 type=dc
+VCALU6 (BITU_CAL6 AGND) vsource dc=0 type=dc
+VCALU7 (BITU_CAL7 AGND) vsource dc=0 type=dc
+VCALU8 (BITU_CAL8 AGND) vsource dc=0 type=dc
+VCALU9 (BITU_CAL9 AGND) vsource dc=0 type=dc
+VCALU10 (BITU_CAL10 AGND) vsource dc=0 type=dc
+VCALU11 (BITU_CAL11 AGND) vsource dc=0 type=dc
+VCALU12 (BITU_CAL12 AGND) vsource dc=0 type=dc
+
+XSW (AGND AVDD BITD1 BITD2 BITD3 BITD4 BITD5 BITD6 BITD7 BITD8 BITD9 BITD10 BITD11 BITD12 BITD13 \
+    BITN0 BITN1 BITN2 BITN3 BITN4 BITN5 BITN6 BITN7 BITN8 BITN9 BITN10 BITN11 BITN12 BITN13 \
+    BITP0 BITP1 BITP2 BITP3 BITP4 BITP5 BITP6 BITP7 BITP8 BITP9 BITP10 BITP11 BITP12 BITP13 \
+    BITU1 BITU2 BITU3 BITU4 BITU5 BITU6 BITU7 BITU8 BITU9 BITU10 BITU11 BITU12 BITU13 N P RST RST1 \
+    SET0 SET1 SET2 SET3 SET4 SET5 SET6 SET7 SET8 SET9 SET10 SET11 SET12 VCM VIN VIP VREFN VREFP \
+    BITD_CAL0 BITD_CAL1 BITD_CAL2 BITD_CAL3 BITD_CAL4 BITD_CAL5 BITD_CAL6 BITD_CAL7 BITD_CAL8 BITD_CAL9 BITD_CAL10 BITD_CAL11 BITD_CAL12 \
+    BITU_CAL0 BITU_CAL1 BITU_CAL2 BITU_CAL3 BITU_CAL4 BITU_CAL5 BITU_CAL6 BITU_CAL7 BITU_CAL8 BITU_CAL9 BITU_CAL10 BITU_CAL11 BITU_CAL12 \
+    CAL CAL_CLK) SWITCH_CAL RON_SAMPLE=5 RON_REF=10 RON_TOP=5 ROFF=1e15 TD_RSTT=200p TD_RST11=200p NORMAL_REF_SWAP=1
+
+XCDAC (BITD1 BITD2 BITD3 BITD4 BITD5 BITD6 BITD7 BITD8 BITD9 BITD10 BITD11 BITD12 BITD13 \
+    BITU1 BITU2 BITU3 BITU4 BITU5 BITU6 BITU7 BITU8 BITU9 BITU10 BITU11 BITU12 BITU13 N P) CDAC_0716
+XMON (MONCLK BITD1 BITD2 BITD3 BITD4 BITD5 BITD6 BITD7 BITD8 BITD9 BITD10 BITD11 BITD12 BITD13 \
+    BITU1 BITU2 BITU3 BITU4 BITU5 BITU6 BITU7 BITU8 BITU9 BITU10 BITU11 BITU12 BITU13 AGND AVDD) SW_MON
+
+tran tran stop=1.31u maxstep=1n annotate=status
+save P N BITD1 BITD2 BITD3 BITD4 BITD5 BITD6 BITD7 BITD8 BITD9 BITD10 BITD11 BITD12 BITD13
+saveOptions options save=selected
+
+ahdl_include "SWITCH_CAL_original.va"
+ahdl_include "SW_MON.va"

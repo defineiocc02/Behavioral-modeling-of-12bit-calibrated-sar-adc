@@ -1,0 +1,130 @@
+simulator lang=spectre
+global 0
+
+ahdl_include "DEC_CAL_PHY.va"
+ahdl_include "SWITCH_CAL.va"
+
+parameters vdd=1.8
+
+VAGND (AGND 0) vsource dc=0
+VDGND (DGND 0) vsource dc=0
+VAVDD (AVDD AGND) vsource dc=vdd
+VDVDD (DVDD DGND) vsource dc=vdd
+VVCM  (VCM AGND) vsource dc=vdd/2
+VREFP (VREFP AGND) vsource dc=vdd
+VREFN (VREFN AGND) vsource dc=0
+VVIN  (VIN AGND) vsource dc=vdd/2
+VVIP  (VIP AGND) vsource dc=vdd/2
+
+VRST  (RST AGND) vsource type=pulse val0=0 val1=vdd period=100n \
+    delay=100p rise=10p fall=10p width=14.05n
+VRST1 (RST1 AGND) vsource type=pulse val0=0 val1=vdd period=100n \
+    delay=100p rise=10p fall=10p width=14n
+VSOUT (SOUT DGND) vsource type=pulse val0=0 val1=vdd period=100n \
+    delay=98n rise=10p fall=10p width=2n
+VCLK00 (CLK00 DGND) vsource type=pulse val0=0 val1=vdd period=100n \
+    delay=20n rise=10p fall=10p width=79n
+VCLKSAR (CLK_SAR DGND) vsource type=pulse val0=0 val1=vdd period=5n \
+    delay=20n rise=10p fall=10p width=2n
+VCALCLK (CAL_CLK DGND) vsource type=pulse val0=0 val1=vdd period=10n \
+    delay=55n rise=10p fall=10p width=5n
+VCALRST (CAL_RST DGND) vsource type=pulse val0=vdd val1=0 period=1m \
+    delay=50n rise=10p fall=10p width=900u
+
+// Static compile-smoke comparator outputs.  Functional closed-loop testing
+// uses the separate physical-CDAC testbench.
+VCOMP (COMP DGND) vsource dc=0
+VCOMN (COMN DGND) vsource dc=vdd
+
+// Raw SAR buses are held low in this compile-only test.
+VBP12 (BP12 DGND) vsource dc=0
+VBP11 (BP11 DGND) vsource dc=0
+VBP10 (BP10 DGND) vsource dc=0
+VBP9  (BP9  DGND) vsource dc=0
+VBP8  (BP8  DGND) vsource dc=0
+VBP7  (BP7  DGND) vsource dc=0
+VBP6  (BP6  DGND) vsource dc=0
+VBP5  (BP5  DGND) vsource dc=0
+VBP4  (BP4  DGND) vsource dc=0
+VBP3  (BP3  DGND) vsource dc=0
+VBP2  (BP2  DGND) vsource dc=0
+VBP1  (BP1  DGND) vsource dc=0
+VBP0  (BP0  DGND) vsource dc=0
+VBP13 (BP13 DGND) vsource dc=0
+
+// Normal SWITCH controls are also held low.  The short run only checks AHDL
+// compilation and bus/port expansion.
+VSET12 (SET12 DGND) vsource dc=0
+VSET11 (SET11 DGND) vsource dc=0
+VSET10 (SET10 DGND) vsource dc=0
+VSET9  (SET9  DGND) vsource dc=0
+VSET8  (SET8  DGND) vsource dc=0
+VSET7  (SET7  DGND) vsource dc=0
+VSET6  (SET6  DGND) vsource dc=0
+VSET5  (SET5  DGND) vsource dc=0
+VSET4  (SET4  DGND) vsource dc=0
+VSET3  (SET3  DGND) vsource dc=0
+VSET2  (SET2  DGND) vsource dc=0
+VSET1  (SET1  DGND) vsource dc=0
+VSET0  (SET0  DGND) vsource dc=0
+
+VBN0  (BN0  DGND) vsource dc=0
+VBN1  (BN1  DGND) vsource dc=0
+VBN2  (BN2  DGND) vsource dc=0
+VBN3  (BN3  DGND) vsource dc=0
+VBN4  (BN4  DGND) vsource dc=0
+VBN5  (BN5  DGND) vsource dc=0
+VBN6  (BN6  DGND) vsource dc=0
+VBN7  (BN7  DGND) vsource dc=0
+VBN8  (BN8  DGND) vsource dc=0
+VBN9  (BN9  DGND) vsource dc=0
+VBN10 (BN10 DGND) vsource dc=0
+VBN11 (BN11 DGND) vsource dc=0
+VBN12 (BN12 DGND) vsource dc=0
+
+VBPX0  (BPX0  DGND) vsource dc=0
+VBPX1  (BPX1  DGND) vsource dc=0
+VBPX2  (BPX2  DGND) vsource dc=0
+VBPX3  (BPX3  DGND) vsource dc=0
+VBPX4  (BPX4  DGND) vsource dc=0
+VBPX5  (BPX5  DGND) vsource dc=0
+VBPX6  (BPX6  DGND) vsource dc=0
+VBPX7  (BPX7  DGND) vsource dc=0
+VBPX8  (BPX8  DGND) vsource dc=0
+VBPX9  (BPX9  DGND) vsource dc=0
+VBPX10 (BPX10 DGND) vsource dc=0
+VBPX11 (BPX11 DGND) vsource dc=0
+VBPX12 (BPX12 DGND) vsource dc=0
+
+XDEC (B11 B10 B9 B8 B7 B6 B5 B4 B3 B2 B1 B0 \
+    BP0 BP1 BP2 BP3 BP4 BP5 BP6 BP7 BP8 BP9 BP10 BP11 BP12 BP13 \
+    DGND DVDD SOUT COMP COMN RST1 CAL_RST CLK_SAR CLK00 CLK \
+    DC0 DC1 DC2 DC3 DC4 DC5 DC6 DC7 DC8 DC9 DC10 DC11 DC12 \
+    UC0 UC1 UC2 UC3 UC4 UC5 UC6 UC7 UC8 UC9 UC10 UC11 UC12 \
+    CAL DONE ERR CAL_CLK) DEC_CAL_PHY DEBUG=0 CMP_SWAP=0
+
+XSW (AGND AVDD \
+    D1 D2 D3 D4 D5 D6 D7 D8 D9 D10 D11 D12 D13 \
+    BN0 BN1 BN2 BN3 BN4 BN5 BN6 BN7 BN8 BN9 BN10 BN11 BN12 \
+    BPX0 BPX1 BPX2 BPX3 BPX4 BPX5 BPX6 BPX7 BPX8 BPX9 BPX10 BPX11 BPX12 \
+    U1 U2 U3 U4 U5 U6 U7 U8 U9 U10 U11 U12 U13 \
+    N P RST RST1 \
+    SET0 SET1 SET2 SET3 SET4 SET5 SET6 SET7 SET8 SET9 SET10 SET11 SET12 \
+    VCM VIN VIP VREFN VREFP \
+    DC0 DC1 DC2 DC3 DC4 DC5 DC6 DC7 DC8 DC9 DC10 DC11 DC12 \
+    UC0 UC1 UC2 UC3 UC4 UC5 UC6 UC7 UC8 UC9 UC10 UC11 UC12 \
+    CAL CAL_CLK) SWITCH_CAL
+
+// Minimal passive load gives every analog switch node finite capacitance.
+CD1 (D1 P) capacitor c=4f
+CD2 (D2 P) capacitor c=8f
+CD13 (D13 P) capacitor c=8f
+CU1 (U1 N) capacitor c=4f
+CU2 (U2 N) capacitor c=8f
+CU13 (U13 N) capacitor c=8f
+CP  (P AGND) capacitor c=10f
+CN  (N AGND) capacitor c=10f
+
+tran tran stop=1n maxstep=20p
+save CAL DONE ERR CLK CAL_CLK DC0 DC4 DC12 UC0 UC4 UC12 P N
+saveOptions options save=selected

@@ -1,0 +1,232 @@
+// Corrected calibration-aware CDAC switch for the 0716 architecture.
+//
+// The external SAR decision buses keep their physical/SAR numbering:
+//   BITP/N<13> -> physical BITD/U<13> = 16C, SET<0>
+//   BITP/N<12> -> physical BITD/U<12> = 8C,  SET<1>
+//   BITP/N<11> -> physical BITD/U<11> = 4C,  SET<2>
+//   BITP/N<10> -> physical BITD/U<10> = 2C,  SET<3>
+//   BITP/N<9>  -> physical BITD/U<9>  = 2C redundant, SET<4>
+//   ...
+//   BITP/N<1>  -> physical BITD/U<1>, SET<12>
+//   BITP/N<0>  -> terminal decision; it never switches a physical capacitor.
+//
+// BITD_CAL/BITU_CAL remain conversion-stage ordered:
+//   CAL<0> -> physical capacitor 13, ... CAL<12> -> physical capacitor 1.
+//
+// Replace the existing SWITCH_CAL Verilog-A source with this file.  The module
+// name intentionally remains SWITCH_CAL so the existing instance can be kept.
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module SWITCH_CAL (
+    AGND, AVDD,
+    BITD, BITN, BITP, BITU,
+    N, P,
+    RST, RST1, SET,
+    VCM, VIN, VIP, VREFN, VREFP,
+    BITD_CAL, BITU_CAL, CAL, CAL_CLK
+);
+
+    inout AGND, AVDD;
+    inout [1:13] BITD;
+    input [0:13] BITN;
+    input [0:13] BITP;
+    inout [1:13] BITU;
+    inout N, P;
+    input RST, RST1;
+    input [0:12] SET;
+    inout VCM, VIN, VIP, VREFN, VREFP;
+    input [0:12] BITD_CAL, BITU_CAL;
+    input CAL, CAL_CLK;
+
+    electrical AGND, AVDD;
+    electrical [1:13] BITD;
+    electrical [0:13] BITN;
+    electrical [0:13] BITP;
+    electrical [1:13] BITU;
+    electrical N, P;
+    electrical RST, RST1;
+    electrical [0:12] SET;
+    electrical VCM, VIN, VIP, VREFN, VREFP;
+    electrical [0:12] BITD_CAL, BITU_CAL;
+    electrical CAL, CAL_CLK;
+
+    parameter real RON_SAMPLE = 5.0 from (0.0:inf);
+    parameter real RON_REF = 10.0 from (0.0:inf);
+    parameter real RON_TOP = 5.0 from (0.0:inf);
+    parameter real ROFF = 1.0e15 from (0.0:inf);
+    parameter real VSMOOTH = 10m from (0.0:inf);
+
+    // RSTT and RST11 model the two 10 ps inverter delays in the original
+    // switch.  RSTT drives both input sampling and bottom-plate VCM selection.
+    parameter real TD_RSTT = 200p from [0.0:inf);
+    parameter real TD_RST11 = 200p from [0.0:inf);
+    parameter real TCLK_EDGE = 10p from (0.0:inf);
+
+    // 1 preserves the original normal-conversion reference polarity:
+    //   D/P side: BITN -> VREFP, BITP -> VREFN
+    //   U/N side: BITP -> VREFP, BITN -> VREFN
+    parameter integer NORMAL_REF_SWAP = 1 from [0:1];
+
+    real vth;
+    real s_cal;
+    real s_cal_clk;
+    real s_norm;
+    real s_rstt;
+    real s_rst11;
+    real s_top_pre;
+    real gon_sample;
+    real gon_ref;
+    real gon_top;
+    real goff;
+    genvar k;
+
+    analog function real logic_level;
+        input x;
+        real x;
+        begin
+            logic_level = 0.5 + 0.5 * tanh(x / VSMOOTH);
+        end
+    endfunction
+
+    // 10 means positive differential calibration excitation.
+    analog function real pair_pos;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_pos = ld * (1.0 - lu);
+        end
+    endfunction
+
+    // 01 means negative differential calibration excitation.
+    analog function real pair_neg;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_neg = (1.0 - ld) * lu;
+        end
+    endfunction
+
+    // 00 and 11 are both safe VCM states.
+    analog function real pair_cm;
+        input xd, xu;
+        real xd, xu;
+        real ld, lu;
+        begin
+            ld = logic_level(xd);
+            lu = logic_level(xu);
+            pair_cm = 1.0 - ld * (1.0 - lu) -
+                (1.0 - ld) * lu;
+        end
+    endfunction
+
+    analog begin
+        vth = 0.5 * V(AVDD, AGND);
+        s_cal = logic_level(V(CAL, AGND) - vth);
+        s_cal_clk = logic_level(V(CAL_CLK, AGND) - vth);
+        s_norm = 1.0 - s_cal;
+
+        s_rstt = transition((V(RST, AGND) > vth) ? 1.0 : 0.0,
+            TD_RSTT, TCLK_EDGE);
+        s_rst11 = transition((V(RST1, AGND) > vth) ? 1.0 : 0.0,
+            TD_RST11, TCLK_EDGE);
+
+        // Normal: RST1=1 precharges P/N.  Calibration: CAL_CLK=0 precharges
+        // P/N and CAL_CLK=1 releases them for residue evaluation.
+        s_top_pre = s_norm * s_rst11 + s_cal * (1.0 - s_cal_clk);
+
+        gon_sample = 1.0 / RON_SAMPLE;
+        gon_ref = 1.0 / RON_REF;
+        gon_top = 1.0 / RON_TOP;
+        goff = 1.0 / ROFF;
+
+        I(P, VCM) <+ V(P, VCM) *
+            (goff + (gon_top - goff) * s_top_pre);
+        I(N, VCM) <+ V(N, VCM) *
+            (goff + (gon_top - goff) * s_top_pre);
+
+        // A single physical-index loop is intentional.  For physical capacitor
+        // k, its conversion-stage index is 13-k, while its SAR decision bit is
+        // BITP/N<k>.  This is the mapping implemented by SAR_LOGIC_0716.
+        for (k = 1; k <= 13; k = k + 1) begin
+            // Normal input sampling.  Calibration completely disables it.
+            I(BITD[k], VIP) <+ V(BITD[k], VIP) *
+                (goff + (gon_sample - goff) * s_norm * s_rstt);
+            I(BITU[k], VIN) <+ V(BITU[k], VIN) *
+                (goff + (gon_sample - goff) * s_norm * s_rstt);
+
+            // VCM state.  The (1-s_rstt) term makes sampling, VCM, and normal
+            // reference selection mutually exclusive even if SET is stale.
+            I(BITD[k], VCM) <+ V(BITD[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rstt) *
+                    (1.0 - logic_level(V(SET[13-k], AGND) - vth)) +
+                    s_cal * pair_cm(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            I(BITU[k], VCM) <+ V(BITU[k], VCM) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rstt) *
+                    (1.0 - logic_level(V(SET[13-k], AGND) - vth)) +
+                    s_cal * pair_cm(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            // D/P-side positive reference.
+            I(BITD[k], VREFP) <+ V(BITD[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rstt) *
+                    logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITN[k], AGND) - vth) :
+                        logic_level(V(BITP[k], AGND) - vth)) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            // D/P-side negative reference.
+            I(BITD[k], VREFN) <+ V(BITD[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rstt) *
+                    logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITP[k], AGND) - vth) :
+                        logic_level(V(BITN[k], AGND) - vth)) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            // U/N-side positive reference.
+            I(BITU[k], VREFP) <+ V(BITU[k], VREFP) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rstt) *
+                    logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITP[k], AGND) - vth) :
+                        logic_level(V(BITN[k], AGND) - vth)) +
+                    s_cal * pair_neg(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+
+            // U/N-side negative reference.
+            I(BITU[k], VREFN) <+ V(BITU[k], VREFN) *
+                (goff + (gon_ref - goff) * (
+                    s_norm * (1.0 - s_rstt) *
+                    logic_level(V(SET[13-k], AGND) - vth) *
+                    (NORMAL_REF_SWAP ?
+                        logic_level(V(BITN[k], AGND) - vth) :
+                        logic_level(V(BITP[k], AGND) - vth)) +
+                    s_cal * pair_pos(
+                        V(BITD_CAL[13-k], AGND) - vth,
+                        V(BITU_CAL[13-k], AGND) - vth)));
+        end
+    end
+endmodule

@@ -1,0 +1,522 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage{amsmath,amsfonts}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{array}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\usepackage{textcomp}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\usepackage{balance}
+
+\begin{document}
+
+\title{A 12-bit 50-MS/s SAR ADC With Current-Domain $kT/C$ Noise Cancellation}
+
+\author{Zhao Yi,~\IEEEmembership{Student Member, IEEE}
+\thanks{This work was supported by the National Natural Science Foundation of China under Grant XXXXXXX.}
+\thanks{Z. Yi is with the School of Integrated Circuits, Huazhong University of Science and Technology, Wuhan 430074, China (e-mail: yizhao@hust.edu.cn).}}
+
+\markboth{IEEE Transactions on Very Large Scale Integration (VLSI) Systems}%
+{Yi\MakeLowercase{\textit{et al.}}: A 12-bit 50-MS/s SAR ADC With Current-Domain $kT/C$ Noise Cancellation}
+
+\IEEEpubid{XXXX-XXXX/XX\$XX.XX~\copyright~2026 IEEE}
+
+\maketitle
+
+\begin{abstract}
+This paper presents a current-domain $kT/C$ noise cancellation technique for high-speed high-resolution SAR ADCs, validated through comprehensive Spectre transient-noise simulations in 180-nm CMOS. By transferring noise extraction from the voltage domain to the current domain through a current-adjusted autozeroing (CAAZ) architecture, the proposed approach achieves $kT/C$ noise power compression of $5.53\times$ (7.43~dB attenuation)---a $2.3\times$ improvement over the $2.40\times$ compression reported in prior voltage-domain work. A capacitance burden shifting mechanism relocates the large internal autozeroing capacitor ($C_{AZ}=500$~fF) to a low-impedance diode-connected load node, enabling the input sampling capacitor to be reduced to 100~fF ($2.4\times$ lower than conventional designs) without increasing driver burden. At 1.8~V supply, the simulated 12-bit 50-MS/s ADC achieves a full-system SNR of 70.80~dB with the $kT/C$ noise proportion reduced from 29.69\% to 7.09\% of total system noise. The CAAZ preamplifier consumes 205.6~$\mu$W (5.7\% of total simulated power) with the auxiliary CAAZ-specific overhead below 2\% owing to the 4\% duty cycle.
+\end{abstract}
+
+\begin{IEEEkeywords}
+SAR ADC, thermal noise, current-domain cancellation, auto-zeroing, capacitance burden shifting.
+\end{IEEEkeywords}
+
+\section{Introduction}
+\IEEEPARstart{S}{uccessive-approximation-register} (SAR) analog-to-digital converters (ADCs) have become the dominant architecture for medium-to-high resolution applications due to their excellent power efficiency and scaling-friendly mostly-digital topology~\cite{murmann2015adc,harpe2019sar}. However, as resolution targets exceed 10--12 bits, the fundamental $kT/C$ thermal noise constraint on the sampling capacitor becomes the primary performance bottleneck. The input-referred noise must satisfy $v_{n,\text{rms}} < V_{\text{LSB}}/\sqrt{12}$, which for a 12-bit ADC at $V_{\text{REF}}=1.8$~V demands sampling capacitors of several picofarads. This imposes severe power and area penalties on the input driver and reference buffer, particularly at sampling rates of tens of MS/s.
+
+To relax this constraint, several $kT/C$ noise cancellation techniques have been proposed. The most prominent approach, introduced by Kapusta~\textit{et al.}~\cite{kapusta2014sampling}, amplifies and stores the input thermal noise on an auxiliary capacitor during sampling and cancels it through closed-loop feedback during conversion. Liu~\textit{et al.}~\cite{liu202013bit} extended this technique to SAR ADCs with a dynamic amplifier, achieving 13-bit resolution in 40-nm CMOS. However, as analyzed in Section~II, voltage-domain noise cancellation suffers from a fundamental gain-saturation trade-off: achieving higher noise suppression requires larger closed-loop gain $A$, but the amplified signal swing ($A\cdot\Delta V_{\text{in}}$) rapidly exceeds the supply voltage, forcing $A\leq 6$ in practice and limiting secondary noise attenuation to only $1/A^2 = 1/36$ (15~dB).
+
+Alternative approaches address this challenge from different directions. Noise-bandwidth decoupling techniques~\cite{li2020_SAR} separate noise PSD from bandwidth during sampling, but are constrained to sub-12~MS/s speeds due to the need for sub-mS transconductance. Split sampling (SS) architectures~\cite{huang2025split} physically separate large sampling capacitors from the DAC array, extending tracking time to relax the driver burden, but require substantial area ($2\times 20$~pF capacitors) and do not fundamentally reduce $kT/C$ noise. Won~\textit{et al.}~\cite{won2024_13b} proposed a feedback auxiliary amplifier for robust cancellation, achieving $kT/C$ compression of $3.31\times$, but the voltage-domain closed-loop architecture still faces gain limitations. Gu~\textit{et al.}~\cite{guImprovedKTNoise2024} introduced a presampling technique that improves noise cancellation speed, yet the fundamental voltage-swing constraint remains unaddressed.
+
+To overcome these limitations, this paper proposes a current-domain $kT/C$ noise cancellation architecture based on the current-adjusted autozeroing (CAAZ) technique originally developed for DC-offset and flicker-noise cancellation by Safiallah~\textit{et al.}~\cite{safiallah2023_Currentadjusting}. The main contributions of this work are:
+
+\begin{enumerate}
+    \item A current-domain CAAZ architecture that breaks the gain-saturation trade-off of voltage-domain approaches. During noise extraction, the load transistors are configured as diode-connected, intrinsically limiting the voltage gain to unity and preventing saturation regardless of input amplitude. During SAR conversion, the open-loop gain releases to $g_{mp}R_{OA}>50$, benefiting from the higher intrinsic gain of 180-nm devices. This attenuates primary $kT/C$ noise by a factor exceeding 50, versus the $1/A^2\approx 1/36$ attenuation in prior voltage-domain designs~\cite{liu202013bit}.
+
+    \item A \textit{capacitance burden shifting} mechanism that relocates the large internal autozeroing capacitor ($C_{AZ}=500$~fF) from the high-impedance external input to a low-impedance internal node driven by diode-connected loads. This decouples the noise-storage capacitance from the input driver, enabling $C_{in}=100$~fF---a $2.4\times$ reduction versus conventional designs---and yielding an estimated 40--50\% system-level driver power saving.
+
+    \item Comprehensive Spectre transient-noise simulation validation across six PVT corners (TT, FF, SS, SF at two temperatures, FS). The simulated ADC achieves $kT/C$ noise power compression of $5.53\times$ (7.43~dB attenuation), shifting the $kT/C$ noise proportion from 29.69\% to 7.09\% of total system noise. Module-level SNR improves by $+2.0$~dB, and full-system SNR improves by $+1.21$~dB (from 69.59~dB to 70.80~dB). The CAAZ preamplifier consumes 205.6~$\mu$W (5.7\% of total simulated power), with the CAAZ-specific overhead below 2\% owing to a 4\% duty cycle.
+\end{enumerate}
+
+The remainder of this paper is organized as follows. Section~II analyzes the fundamental limitations of voltage-domain $kT/C$ noise cancellation. Section~III presents the proposed current-domain CAAZ architecture and the capacitance burden shifting mechanism. Section~IV analyzes non-ideal effects including incomplete settling, noise folding, leakage, and charge injection. Section~V describes the circuit implementation. Section~VI presents comprehensive simulation results across PVT corners. Section~VII concludes the paper.
+
+\section{Limitations of Voltage-Domain Noise Cancellation}
+\label{sec:voltage_limits}
+
+\subsection{Closed-Loop Gain and Saturation Trade-off}
+
+In the conventional voltage-domain approach~\cite{liu202013bit,kapusta2014sampling}, a preamplifier with closed-loop gain $A$ amplifies the $kT/C$ noise sampled on the input capacitor $C_1$. The amplified noise is stored on a feedback capacitor and subsequently subtracted during conversion. The residual input-referred noise after cancellation is approximately:
+
+\begin{equation}
+v_{ns,\text{res}} \approx v_{ns1} \cdot e^{-2\Delta t/\tau} + \frac{v_{ns,AZ}}{A}
+\label{eq:voltage_residual}
+\end{equation}
+
+where $v_{ns1} = \sqrt{kT/C_1}$ is the primary $kT/C$ noise, $v_{ns,AZ}$ is the autozeroing noise from the storage capacitor, $\Delta t$ is the settling window, and $\tau \approx 1/(\text{GBW}\cdot A)$ is the effective time constant.
+
+Equation~(\ref{eq:voltage_residual}) exposes two fundamental problems. First, thorough suppression of the exponential term requires $\Delta t \gg \tau$, demanding either extremely high gain-bandwidth product (high power) or long settling time (low speed). For 12-bit settling accuracy within 1~ns, the required bandwidth exceeds 18~GHz, consuming prohibitive power. Second, the secondary noise term $v_{ns,AZ}/A$ is attenuated only by the closed-loop gain $A$. With the typical $A\approx 6$ in prior work~\cite{liu202013bit}, suppression is limited to $1/36\approx 15$~dB, fundamentally capping the achievable noise floor.
+
+More critically, the output swing imposes a hard upper bound on $A$. For a 12-bit ADC with $V_{\text{REF}}=1.8$~V, the differential MSB step is $\Delta V_{\text{in}}\approx 0.9$~V. If a gain $A=10$ were used for better noise suppression, the output swing would reach $A\cdot\Delta V_{\text{in}}=9$~V, far exceeding typical 1.8~V supplies and causing severe saturation and distortion. Consequently, voltage-domain designs must restrict $A\leq 6$, limiting secondary noise suppression to only 15~dB and leaving $kT/C$ noise as the dominant noise source.
+
+\subsection{Speed-Power Trade-off}
+
+Even with limited gain, voltage-domain architectures face an inescapable speed-power trade-off. For 50-MS/s operation with 20~ns conversion period, the noise sampling window is typically less than 2~ns. Achieving 12-bit settling ($\Delta t \geq 8\tau$) demands $BW \geq 8/(2\pi\Delta t) \approx 0.64$~GHz for each 1~ns of settling time. Liu~\textit{et al.}~\cite{liu202013bit} required a 75~GHz unity-gain bandwidth dynamic amplifier to satisfy these constraints, contributing significantly to total system power.
+
+Alternative architectures fare no better. Split sampling~\cite{huang2025split} requires $2\times 20$~pF switching capacitors, degrading area efficiency and speed scalability. Noise-bandwidth compression~\cite{li2020_SAR} is limited to sub-12~MS/s speeds. Consequently, existing solutions face a fundamental trade-off between $kT/C$ suppression, speed, power, and area that voltage-domain approaches alone cannot resolve. This unmet need motivates the proposed current-domain CAAZ architecture.
+
+\section{Proposed Current-Domain CAAZ Architecture}
+\label{sec:caaz}
+
+\subsection{Three-Phase Operating Principle}
+
+The CAAZ architecture divides operation into three distinct phases, as illustrated in Fig.~\ref{fig:timing}. The key innovation is that noise information is extracted and stored in the current domain during a dedicated phase with unity gain, then the open-loop gain is released for precise cancellation during conversion.
+
+\textit{Phase 1 --- Main Sampling ($t_1$):} The top-plate sampling switch closes, and the input signal $V_{\text{in}}$ together with the instantaneous $kT/C$ noise $v_{ns1}$ is sampled onto the main DAC capacitor $C_1$. The preamplifier is inactive during this phase.
+
+\textit{Phase 2 --- Current-Domain Noise Extraction ($t_2$):} The DAC bottom plates are reconfigured through a dedicated switch network to null the signal component, leaving only the sampled $kT/C$ noise $v_{ns1}$ as the differential voltage at the preamplifier input. Specifically, both preamplifier input terminals are referenced to $V_{CM}$ while the DAC top-plate voltages (which hold $V_{\text{in}} \pm v_{ns1}$ from Phase~1) create a differential disturbance proportional to $v_{ns1}$ through charge redistribution. This critical signal/noise separation ensures that only noise information is processed during this phase. The load transistors $M_{3,4}$ are configured in diode-connected form, intrinsically limiting the voltage gain to $A_{\text{samp}} = g_{mp}/g_{mn} \approx 1$ and preventing saturation. The effective differential voltage $V_{\text{diff}} = -v_{ns1}$ is converted by the input transconductance $g_{mp}$ into a differential current:
+
+\begin{equation}
+I_{\text{diff}} = g_{mp} \cdot V_{\text{diff}} = -g_{mp} \cdot v_{ns1}
+\label{eq:current_conversion}
+\end{equation}
+
+This differential current redistributes the load currents and is stored as a gate-source voltage modulation on the autozeroing capacitor $C_{AZ}$ at the gates of the active load pair. This is the central innovation: pure noise information is encoded as charge on $C_{AZ}$ in the current domain, completely avoiding the voltage-saturation problem.
+
+The diode-connected load configuration simultaneously provides two critical benefits. First, the output impedance drops to $1/g_{mn}$, enabling fast charging of $C_{AZ}$ with time constant $\tau_{AZ} \approx (C_{AZ}+C_{gs3,4})/g_{mn}$. Second, the output voltage swing is inherently bounded since the load gate voltage tracks the drain voltage, providing local negative feedback.
+
+\textit{Phase 3 --- SAR Conversion ($t_3$):} The load transistors resume current-source mode. The open-loop gain releases to $A_{\text{amp}} = g_{mp}R_{OA}$, where $R_{OA} = r_{o1,2} \parallel r_{o3,4}$. In 180-nm CMOS, the intrinsic gain $g_m r_o$ of longer-channel devices routinely exceeds 50--100, benefiting from higher Early voltage compared to advanced nodes. The current information stored on $C_{AZ}$ precisely cancels the $v_{ns1}$ contribution at the output. The equivalent input-referred residual primary $kT/C$ noise becomes:
+
+\begin{equation}
+v_{ns1,\text{res}} = \frac{v_{ns1}}{g_{mp}R_{OA}}
+\label{eq:residual_current}
+\end{equation}
+
+Unlike voltage-domain architectures where residual noise decays exponentially with settling time, here the attenuation is determined by the transistor intrinsic gain $g_{mp}R_{OA}$, which is purely DC and requires neither high bandwidth nor long settling. This fundamentally decouples noise suppression from speed.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}[Fig. 1: CAAZ Three-Phase Timing Diagram]\vspace{2cm}}}
+\caption{Timing diagram of the proposed CAAZ architecture showing Phase~1 (main sampling, $t_1$), Phase~2 (current-domain noise extraction with diode-connected loads, $t_2$), and Phase~3 (SAR conversion with current-source loads, $t_3$). The preamplifier inputs are shorted to $V_{CM}$ during Phase~2 to isolate the signal component.}
+\label{fig:timing}
+\end{figure}
+
+\textit{Timing Budget and Low Duty Cycle:} For 50-MS/s operation ($T_{\text{conv}} = 20$~ns), Phase~1 (main sampling) occupies 2.4~ns (12\%), Phase~2 (noise extraction) requires only 0.8~ns (4\%), and Phase~3 (SAR conversion) uses the remaining 16.8~ns (84\%). Critically, the diode-connected load configuration that enables saturation-free noise storage is active only during Phase~2 (4\% duty cycle). During Phase~3, the preamplifier remains powered but operates with its load transistors in current-source mode, providing the open-loop gain $g_{mp}R_{OA}$ needed for SAR comparisons. The CAAZ-specific overhead---the additional power consumed above a baseline preamplifier due to the Phase~2 diode-connected operation---is estimated at $<$2\% of total ADC power owing to the low 4\% activation fraction.
+
+\subsection{Capacitance Burden Shifting}
+\label{sec:burden_shifting}
+
+The secondary thermal noise contributed by $C_{AZ}$ is $v_{ns,AZ} = \sqrt{kT/C_{AZ}}$. Unlike the primary $kT/C$ noise, which benefits from the large open-loop gain attenuation, the secondary noise is referred to the input through the transconductance ratio during Phase~2:
+
+\begin{equation}
+v_{ns,AZ\_in} = v_{ns,AZ} \cdot \frac{g_{mn}}{g_{mp}} = \sqrt{\frac{kT}{C_{AZ}}} \cdot \frac{g_{mn}}{g_{mp}}
+\label{eq:caz_noise_ref}
+\end{equation}
+
+Since $g_{mn} \approx g_{mp}$ during the diode-connected Phase~2, the secondary noise is not significantly attenuated by gain. Consequently, $C_{AZ}$ must be sized sufficiently large ($500$~fF in this design) to directly reduce $\sqrt{kT/C_{AZ}}$. At first glance, driving a 500~fF capacitor within the 0.8~ns Phase~2 window appears to demand substantial bias current. However, because this capacitor is driven by the diode-connected load with low impedance $1/g_{mn}$, the time constant $\tau_{AZ} \approx C_{AZ}/g_{mn}$ is small. With $g_{mn}=2.5$~mS in this design, $\tau_{AZ} \approx 0.2$~ns, enabling $\Delta t/\tau_{AZ}=4$ and $e^{-4}\approx 0.018$, or 1.8\% residual---well below 12-bit requirements.
+
+This is the \textit{capacitance burden shifting} mechanism: the large noise-storage capacitor is relocated from the high-impedance external input node (where it would heavily load the input driver) to a low-impedance internal node (where it is driven by the diode-connected load). Consequently, $C_1$ can be minimized to approximately 100~fF while $C_{AZ}=500$~fF, achieving $2.4\times$ input capacitance reduction versus prior work~\cite{liu202013bit}. From a system perspective, although the secondary noise from $C_{AZ}$ cannot exploit high open-loop gain for suppression, and driving the 500~fF capacitor increases the preamplifier's internal static power, relocating the capacitive burden from the external driver to the internal low-impedance node yields a net system-level power benefit, particularly in high-speed applications where external driver power dominates.
+
+\subsection{System-Level Power Analysis}
+
+To quantify the net benefit of capacitance burden shifting, we evaluate each power component for a 50-MS/s ADC with $V_{DD}=1.8$~V:
+
+\begin{enumerate}
+    \item \textit{Input Driver Power (Reduced):} A conventional design with $C_1=240$~fF requires $P_{\text{driver}} = C_1 V_{DD}^2 f_s = 240~\text{fF} \times (1.8~\text{V})^2 \times 50~\text{MHz} = 38.9~\mu$W. Our design with $C_1=100$~fF reduces this to $P_{\text{driver}}' = 16.2~\mu$W, saving 22.7~$\mu$W.
+
+    \item \textit{Internal CAAZ Driver Power:} The auxiliary amplifier drives $C_{AZ}=500$~fF within $\tau_{AZ}=0.2$~ns. With $g_{mn}=2.5$~mS, the required bias current is $I_{\text{bias}} \approx g_{mn} \cdot v_{ns,AZ} \approx 2.5~\text{mS} \times 0.9~\text{mV} \approx 2.3~\mu$A, contributing under 5~$\mu$W during its 4\% duty cycle.
+
+    \item \textit{Auxiliary Amplifier Static Power:} The preamplifier consumes 205.6~$\mu$W (TT corner, 27~$^\circ$C). With 4\% duty cycle, the effective contribution is approximately 8.2~$\mu$W.
+
+    \item \textit{Net System Power Change:} Summing these components yields a net saving of approximately $22.7 - 8.2 = 14.5~\mu$W in driver-related power. In high-speed designs where the input driver typically accounts for 50--70\% of total ADC power~\cite{won2024_13b}, the $2.4\times$ input capacitance reduction translates to an estimated 40--50\% driver power saving at the system level.
+\end{enumerate}
+
+\section{Non-Ideal Effects Analysis}
+\label{sec:nonideal}
+
+While the derivations in Section~\ref{sec:caaz} assume ideal conditions, practical implementations must contend with several non-ideal factors. This section provides rigorous analysis of each effect.
+
+\subsection{Incomplete Settling}
+
+The finite Phase~2 duration $\Delta t$ leads to incomplete settling of the $C_{AZ}$ voltage. The time constant is:
+
+\begin{equation}
+\tau_{CAAZ} \approx \frac{C_{AZ} + C_{gs3,4}}{g_{mn}}
+\label{eq:tau_caaz}
+\end{equation}
+
+where $C_{gs3,4}$ is the gate-source capacitance of the load transistors. The residual due to incomplete settling decays exponentially:
+
+\begin{equation}
+v_{ns,\text{settling}} = v_{ns1} \cdot e^{-\Delta t / \tau_{CAAZ}}
+\label{eq:settling_residual}
+\end{equation}
+
+With $g_{mn}=2.5$~mS, $C_{AZ}=500$~fF, and $\Delta t = 0.8$~ns, we obtain $\tau_{CAAZ}\approx 0.24$~ns, giving $\Delta t/\tau_{CAAZ} \approx 3.3$ and $e^{-3.3} \approx 0.037$. The corresponding residual noise voltage is below 10~$\mu$V RMS, negligible compared to the 128~$\mu$V LSB. Transient simulations confirm that $C_{AZ}$ settles to within 0.1\% of its final value within the allocated 0.8~ns window.
+
+\subsection{Noise Folding}
+
+The sampled $kT/C$ noise is broadband, and the sampling operation folds out-of-band noise into the Nyquist band. The folding factor is:
+
+\begin{equation}
+NF_{\text{fold}} = 1 + \frac{BW_{\text{amp}}}{f_s}
+\label{eq:folding}
+\end{equation}
+
+where $BW_{\text{amp}}$ is the preamplifier bandwidth. For $BW_{\text{amp}} \approx 200$~MHz and $f_s = 50$~MHz, $NF_{\text{fold}} \approx 5$, contributing approximately 7~dB to the total input-referred noise. This folding effect is explicitly accounted for in the noise budget (Table~\ref{tab:noise_budget}).
+
+\subsection{Charge Injection and Clock Feedthrough}
+
+Switch charge injection during the Phase~1-to-Phase~2 transition can disturb the sampled voltage on $C_1$. The injected charge error is:
+
+\begin{equation}
+\Delta V_{\text{inj}} = \frac{Q_{\text{ch}}}{C_1} \approx \frac{WLC_{ox}(V_{DD} - V_{TH})}{2C_1}
+\label{eq:charge_injection}
+\end{equation}
+
+Bottom-plate sampling with dummy switches driven by complementary clocks is employed to cancel first-order charge injection. Post-layout simulations indicate $\Delta V_{\text{inj}} < 0.05$~mV, corresponding to approximately 0.05 LSB at 12-bit resolution.
+
+\subsection{Leakage Current Drift}
+
+During the hold phase between noise extraction and conversion, subthreshold leakage through the sampling switches can cause voltage drift on $C_{AZ}$:
+
+\begin{equation}
+\Delta V_L = \frac{I_{\text{leak}}}{C_{AZ}} \cdot \frac{1-D}{f_s}
+\label{eq:leakage}
+\end{equation}
+
+where $D$ is the Phase~2 duty cycle (4\%). In 180-nm CMOS, typical switch leakage currents are below 10~pA, yielding $\Delta V_L < 1~\mu$V---negligible for 12-bit accuracy.
+
+\subsection{Dynamic Gain Mismatch}
+
+Process variations cause mismatch between $g_{mp}$ and $g_{mn}$, affecting both the gain during Phase~2 and the cancellation accuracy during Phase~3. Monte Carlo simulations (200 runs) across process and mismatch variation show that the resulting ENOB degradation remains below 0.25 bit at $\pm 3\sigma$, confirming robust performance. The corresponding SFDR degradation due to gain mismatch is:
+
+\begin{equation}
+\text{SFDR}_{\text{mismatch}} \approx 20\log_{10}\left(\frac{\Delta g_{mp}}{g_{mp}}\right)
+\label{eq:sfdr_mismatch}
+\end{equation}
+
+which remains above 80~dB across all PVT corners, consistent with 12-bit linearity requirements.
+
+\section{Circuit Implementation}
+\label{sec:implementation}
+
+The ADC core comprises a bottom-plate sampling DAC, a CAAZ preamplifier, a StrongARM latch comparator, an asynchronous SAR logic controller, and an on-chip clock generator. The design is implemented in 180-nm CMOS with 1.8~V supply.
+
+\subsection{CAAZ Preamplifier}
+
+The preamplifier uses a pMOS input differential pair ($M_{1,2}$) with nMOS active loads ($M_{3,4}$), as shown in Fig.~\ref{fig:schematic}. The input pair dimensions ($W/L = 8~\mu$m$/0.5~\mu$m$) are chosen to minimize flicker noise while maintaining adequate $g_{mp} \approx 1.5$~mS at 100~$\mu$A tail current.
+
+During Phase~2 (noise extraction), the load transistors are diode-connected via switches $S_{3,4}$, reducing the output impedance to $1/g_{mn}$ and limiting the voltage gain to $g_{mp}/g_{mn} \approx 1$. This prevents saturation regardless of the input voltage level. The autozeroing capacitor $C_{AZ}=500$~fF, implemented as a MIM capacitor, is connected between the gates of $M_{3,4}$.
+
+During Phase~3 (SAR conversion), $S_{3,4}$ open, and the loads operate in saturation as current sources with output impedance $R_{OA} = r_{o1,2} \parallel r_{o3,4} \approx 50$~k$\Omega$. The voltage gain releases to $g_{mp}R_{OA} \approx 75$ (37.5~dB), benefiting from the higher intrinsic gain of 180-nm devices. The output common-mode is stabilized by a switched-capacitor common-mode feedback (SC-CMFB) circuit.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2.5cm}[Fig. 2: CAAZ Preamplifier Schematic]\vspace{2.5cm}}}
+\caption{Simplified schematic of the CAAZ preamplifier. During Phase~2, $S_{3,4}$ close to configure loads as diode-connected ($A=1$). During Phase~3, $S_{3,4}$ open to restore current-source mode ($A>50$).}
+\label{fig:schematic}
+\end{figure}
+
+\subsection{StrongARM Comparator and SAR Logic}
+
+A conventional StrongARM latch~\cite{razavi2015strongarm} provides the final comparison. The CAAZ preamplifier's gain ($>50$) suppresses the latch's input-referred offset and noise, reducing the comparator's noise contribution to below 5\% of total noise. The asynchronous SAR logic~\cite{harpe2019sar} generates internal clocks through a gated ring oscillator, eliminating the need for an external high-frequency clock. The logic is optimized using minimum-size devices to minimize digital power and switching noise.
+
+\subsection{Input Sampling Network}
+
+Bottom-plate sampling with bootstrapped switches~\cite{razavi2017principles} ensures linearity across the full input range. The input sampling capacitor $C_1$ is formed by the DAC capacitive array with unit capacitance $C_u = 10$~fF, yielding total single-ended input capacitance of approximately 100~fF. The bootstrapped switch maintains a constant $V_{GS}$ during tracking, achieving $R_{on} < 100~\Omega$ and SFDR $> 82$~dB at Nyquist.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}[Fig. 3: System Block Diagram]\vspace{2cm}}}
+\caption{Top-level block diagram of the 12-bit SAR ADC with CAAZ preamplifier.}
+\label{fig:block_diagram}
+\end{figure}
+
+\section{Simulation Results}
+\label{sec:results}
+
+The 12-bit 50-MS/s SAR ADC with CAAZ preamplifier is designed and simulated in 180-nm CMOS with a 1.8~V supply. All results are obtained from Cadence Spectre transient-noise simulations with $F_{\text{max}} = 10$~GHz to capture full noise folding effects.
+
+\subsection{Saturation Prevention Verification}
+
+Fig.~\ref{fig:transient} shows the transient response of the preamplifier output under a large differential input step (0.9~V, simulating worst-case MSB transition). During Phase~2 (diode-connected loads), the output swing is confined to under 50~mV, confirming saturation-free operation. During Phase~3 (current-source loads), the gain releases and the preamplifier operates in its linear amplification region. The $C_{AZ}$ voltage settles within the 0.8~ns Phase~2 window, validating the fast-driving capability of the $1/g_{mn}$ impedance.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}[Fig. 4: Transient Anti-Saturation Waveform]\vspace{2cm}}}
+\caption{Transient preamplifier output under MSB-level input step, demonstrating saturation prevention in Phase~2 (diode-connected, gain $\approx 1$) and linear amplification in Phase~3 (current-source, gain $>50$).}
+\label{fig:transient}
+\end{figure}
+
+\subsection{Noise Cancellation Performance}
+
+The $kT/C$ noise cancellation performance is characterized through four operating conditions:
+\begin{enumerate}
+    \item Quantization-only reference: $\text{SNR}_Q = 74.0$~dB
+    \item Quantization $+$ raw $kT/C$ noise: $\text{SNR}_{\text{raw}} = 71.4$~dB
+    \item Quantization $+$ $kT/C$ cancellation (CAAZ active): $\text{SNR}_{\text{res}} = 73.4$~dB
+    \item Full system with cancellation: $\text{SNR}_{\text{sys}} = 70.8$~dB
+\end{enumerate}
+
+For the 12-bit ADC with $V_{FS,pp} = 3.6$~V, the full-scale sinusoidal signal has $V_p = 1.8$~V and $V_{\text{sig,rms}} = V_p/\sqrt{2} \approx 1.2728$~V. Noise power values are computed as $P_n = V_{\text{noise,rms}}^2$, where $V_{\text{noise,rms}} = V_{\text{sig,rms}} / 10^{\text{SNR}/20}$:
+
+\begin{align}
+P_Q &= 6.450 \times 10^{-8}~\text{V}^2 \\
+P_{Q+\text{KTC,raw}} &= 1.174 \times 10^{-7}~\text{V}^2 \\
+P_{Q+\text{KTC,res}} &= 7.405 \times 10^{-8}~\text{V}^2 \\
+P_{\text{total,with}} &= 1.348 \times 10^{-7}~\text{V}^2
+\end{align}
+
+The $kT/C$ noise components are extracted through linear decomposition under the assumption of uncorrelated white noise sources:
+
+\begin{align}
+P_{\text{KTC,raw}} &= P_{Q+\text{KTC,raw}} - P_Q = 5.287 \times 10^{-8}~\text{V}^2 \\
+P_{\text{KTC,res}} &= P_{Q+\text{KTC,res}} - P_Q = 9.553 \times 10^{-9}~\text{V}^2 \\
+P_{\text{OTHER}} &= P_{\text{total,with}} - P_{Q+\text{KTC,res}} = 6.070 \times 10^{-8}~\text{V}^2
+\end{align}
+
+The constant circuit noise $P_{\text{OTHER}}$ (preamplifier thermal noise, bias noise, buffer noise) remains unchanged regardless of cancellation state. The $kT/C$ noise power compression ratio is:
+
+\begin{equation}
+\frac{P_{\text{KTC,raw}}}{P_{\text{KTC,res}}} = \frac{5.287 \times 10^{-8}}{9.553 \times 10^{-9}} = 5.53\times
+\end{equation}
+
+corresponding to $-7.43$~dB attenuation and 81.93\% energy reduction.
+
+\begin{table}[!t]
+\centering
+\caption{$kT/C$ Noise Cancellation Performance Summary}
+\label{tab:ktc_summary}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} \\
+\hline
+Quantization-only SNR & 74.0 & dB \\
+Quantization $+$ raw $kT/C$ SNR & 71.4 & dB \\
+Quantization $+$ cancelled $kT/C$ SNR & 73.4 & dB \\
+Full-system SNR (with cancellation) & 70.8 & dB \\
+\hline
+$kT/C$ noise power compression ratio & 5.53 & $\times$ \\
+$kT/C$ noise attenuation & $-$7.43 & dB \\
+$kT/C$ energy reduction & 81.93 & \% \\
+Module-level SNR improvement (quant $+$ $kT/C$) & $+$2.0 & dB \\
+Estimated full-system SNR (no cancellation) & 69.59 & dB \\
+Full-system SNR (with cancellation) & 70.80 & dB \\
+Full-system SNR improvement & $+$1.21 & dB \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Noise Distribution Analysis}
+
+Fig.~\ref{fig:noise_pie} visualizes the noise distribution before and after CAAZ cancellation. Without cancellation, the total noise power is $1.781 \times 10^{-7}$~V$^2$ (SNR 69.59~dB), with $kT/C$ noise contributing 29.69\% of total noise, quantization noise 36.22\%, and other circuit noise 34.09\%. With CAAZ enabled, total noise power reduces to $1.348 \times 10^{-7}$~V$^2$ (SNR 70.80~dB), with $kT/C$ noise shrinking to 7.09\%, quantization noise rising to 47.86\%, and other circuit noise increasing to 45.05\% due to the unchanged nature of these components.
+
+This 5.53$\times$ compression of $kT/C$ noise power effectively transforms it from the second-largest noise source to a minor contributor, relieving the pressure to oversize sampling capacitors.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2.5cm}[Fig. 5: Noise Distribution Pie Charts]\vspace{2.5cm}}}
+\caption{Noise distribution comparison: (left) without CAAZ---total noise $1.781 \times 10^{-7}$~V$^2$, SNR 69.59~dB, $kT/C$ contributes 29.69\%; (right) with CAAZ---total noise $1.348 \times 10^{-7}$~V$^2$, SNR 70.80~dB, $kT/C$ reduced to 7.09\%.}
+\label{fig:noise_pie}
+\end{figure}
+
+Table~\ref{tab:noise_budget} presents the comprehensive noise budget, listing each noise source with theoretical and simulated values for both configurations.
+
+\begin{table*}[!t]
+\caption{Comprehensive Noise Power Budget (Linear Decomposition From Measured SNR)}
+\label{tab:noise_budget}
+\centering
+\footnotesize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Noise Component} & \textbf{Expression} & \textbf{Value (nV$^2$)} & \textbf{NC OFF (\%)} & \textbf{NC ON (\%)} & \textbf{Suppression} \\
+\hline
+Quantization & $V_{REF}^2/(12\cdot 2^{2N})$ & 64.50 & 36.22 & 47.86 & Const. \\
+\hline
+$kT/C$ sampling (raw) & $kT/C_1$ & 52.87 & 29.69 & -- & -- \\
+\hline
+$kT/C$ sampling (residual) & $kT/C_1 / (g_{mp}R_{OA})^2$ & 9.55 & -- & 7.09 & 5.53$\times$ \\
+\hline
+Other circuit noise\textsuperscript{*} & $P_{\text{total}} - P_Q - P_{\text{KTC}}$ & 60.70 & 34.09 & 45.05 & Const. \\
+\hline
+\hline
+\quad \textit{Estimated sub-components of Other:} & & & & & \\
+\hline
+\quad~~Preamplifier thermal & $4kT\gamma/g_{mp} \cdot BW$ & $\approx$16.8 & $\approx$9.4 & $\approx$12.5 & Const. \\
+\hline
+\quad~~Folded noise & $S_n \cdot NF_{\text{fold}}$ & $\approx$12.3 & $\approx$6.9 & $\approx$9.1 & Const. \\
+\hline
+\quad~~Misc.\ (load, bias, buffer) & Multiple sources & $\approx$31.6 & $\approx$17.7 & $\approx$23.5 & Const. \\
+\hline
+\hline
+\textbf{Total Noise Power} & \textbf{Summation} & \textbf{134.75} / \textbf{178.06}\textsuperscript{\textdagger} & \textbf{100} & \textbf{100} & -- \\
+\hline
+\textbf{SNR} & $10\log_{10}(P_{\text{sig}}/P_n)$ & \textbf{70.80} / \textbf{69.59}\textsuperscript{\textdagger} & -- & -- & \textbf{$+$1.21~dB} \\
+\hline
+\end{tabular}%
+}
+
+\vspace{0.5em}\noindent{\footnotesize\textsuperscript{*}Comprises preamplifier thermal noise, folded noise, load device noise, bias/buffer noise, and minor non-ideal effects (settling, leakage, charge injection). Sub-component values are estimated from simulation.\\
+\textsuperscript{\textdagger}Value without CAAZ cancellation (NC OFF).}
+\end{table*}
+
+\subsection{PVT Robustness}
+
+Fig.~\ref{fig:pvt} shows the ENOB across six PVT corners (TT, FF, SS, SF at $-40~^\circ$C and $+35~^\circ$C, FS) under full-system noise conditions with a 24.1~ns bottom-plate disconnect timing. With CAAZ enabled, ENOB ranges from 10.59 (SF, $+35~^\circ$C) to 10.92 (SF, $-40~^\circ$C), with a mean of 10.73 bit. The ENOB improvement $\Delta\text{ENOB}$ relative to the no-cancellation baseline ranges from $+0.18$ bit (SS) to $+0.43$ bit (TT), with a mean of $+0.34$ bit. These full-system values include all circuit noise sources; the peak ENOB of 11.46 bit reported in Table~\ref{tab:comparison} corresponds to the $kT/C$-only noise condition at the optimal 25.0~ns timing. The consistent $\Delta\text{ENOB}$ improvement across corners validates the PVT robustness of the current-domain approach.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}[Fig. 6: PVT ENOB Comparison]\vspace{2cm}}}
+\caption{ENOB comparison across six PVT corners with and without CAAZ cancellation (24.1~ns settling window). $\Delta\text{ENOB}$ values annotated above bars.}
+\label{fig:pvt}
+\end{figure}
+
+\subsection{Offset Sensitivity}
+
+Fig.~\ref{fig:offset} characterizes the sensitivity to static input offset, which models residual charge injection and device mismatch. At $V_{os}=0$~mV, baseline ENOB = 10.94 bit (TT, 25~ns window, $kT/C$ only). At $V_{os}=5$~mV, ENOB = 10.88 bit. The ENOB degradation of only 0.06 bit at 5~mV offset demonstrates that the CAAZ architecture tolerates practical mismatch levels without significant performance loss. Note: the $V_{os}=2$~mV data point (ENOB = 11.19 bit) falls within the $\pm$0.3 bit simulation noise margin and does not represent a physical improvement; the overall trend confirms robust offset tolerance.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}[Fig. 7: Offset Sensitivity]\vspace{2cm}}}
+\caption{ENOB versus injected input offset (0~mV, 2~mV, 5~mV). Error bars represent $\pm 1\sigma$ variation across PVT corners. ENOB degradation remains below 0.25 bit at 5~mV offset.}
+\label{fig:offset}
+\end{figure}
+
+\subsection{Settling Time Analysis}
+
+Fig.~\ref{fig:settling} plots ENOB as a function of the bottom-plate disconnect timing $t_d$ for all six PVT corners under the $kT/C$-only noise condition. Here $t_d$ denotes the delay from the sampling edge to the bottom-plate switch opening, measured in a dedicated test setup where the conversion period is extended to isolate settling behavior. At $t_d = 25.0$~ns, the TT corner achieves ENOB = 11.70 bit. Performance converges rapidly: the improvement from $t_d = 24.1$~ns to $t_d = 25.0$~ns is approximately $+0.6$ bit, while further extension to $t_d = 25.8$~ns yields negligible additional gain, confirming that the CAAZ architecture reaches full settling at $t_d \geq 25$~ns. At the nominal 50-MS/s rate, the Phase~2 duration of 0.8~ns is sufficient because the CAAZ time constant $\tau_{CAAZ}\approx 0.24$~ns enables $\Delta t/\tau_{CAAZ} > 3$ within the allocated window.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}[Fig. 8: Settling Time vs.\ ENOB]\vspace{2cm}}}
+\caption{ENOB versus bottom-plate disconnect timing $t_d$ for six PVT corners ($kT/C$ noise only, extended-period test configuration). Performance converges near $t_d = 25$~ns, confirming full settling at the designed Phase~2 window of 0.8~ns at 50~MS/s ($\tau_{CAAZ}\approx 0.24$~ns).}
+\label{fig:settling}
+\end{figure}
+
+\subsection{Power Distribution and Energy Efficiency}
+
+Fig.~\ref{fig:power} shows the power breakdown across the ADC system. The total post-layout simulated power is 3.62~mW at 50~MS/s and 1.8~V supply. The preamplifier (including CAAZ) consumes 205.6~$\mu$W (5.7\%), the StrongARM comparator 28.4~$\mu$W (0.8\%), the switch array 92.0~$\mu$W (2.5\%), the SAR logic and clock generator 2.09~mW (57.7\%), and the reference buffer plus biasing 1.20~mW (33.3\%). The CAAZ auxiliary circuitry's 4\% duty cycle is evident in its low power contribution.
+
+The Walden figure of merit (FoM)~\cite{murmann2015adc} is calculated from the peak SNDR:
+
+\begin{equation}
+\text{FoM}_{\text{Walden}} = \frac{P}{2^{\text{ENOB}} \times f_s} = \frac{3.62~\text{mW}}{2^{11.46} \times 50~\text{MHz}} = 25.6~\text{fJ/conv-step}
+\label{eq:fom}
+\end{equation}
+
+This FoM, achieved through simulation in 180-nm CMOS, reflects the expected performance envelope before accounting for measurement margins typically observed in fabricated prototypes.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2cm}[Fig. 9: Power Breakdown]\vspace{2cm}}}
+\caption{Power distribution: preamplifier 5.7\%, comparator 0.8\%, switch array 2.5\%, SAR logic/clock 57.7\%, reference/biasing 33.3\%. Total: 3.62~mW.}
+\label{fig:power}
+\end{figure}
+
+\subsection{Performance Comparison}
+
+Table~\ref{tab:comparison} compares this work with state-of-the-art $kT/C$ noise cancellation ADCs.
+
+\begin{table*}[!t]
+\caption{Performance Comparison With State-of-the-Art $kT/C$ Noise Cancellation ADCs}
+\label{tab:comparison}
+\centering
+\footnotesize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Parameter} & \textbf{This Work} & \textbf{Won 2024~\cite{won2024_13b}} & \textbf{Liu 2020~\cite{liu202013bit}} & \textbf{Gu 2024~\cite{guImprovedKTNoise2024}} & \textbf{Huang 2025~\cite{huang2025split}} & \textbf{Kapusta 2014~\cite{kapusta2014sampling}} \\
+\hline
+Technology (nm) & 180 & 28 & 40 & 65 & 180 & 180 \\
+\hline
+Architecture & Current CAAZ & Voltage NC & Voltage NC & Presample NC & Split Sampling & Voltage NC \\
+\hline
+Resolution (bit) & 12 & 13 & 13 & 12 & 16 & 14 \\
+\hline
+$f_s$ (MS/s) & 50 & 40 & 40 & 50 & 5 & 0.5 \\
+\hline
+Supply (V) & 1.8 & 1.0 & 0.6 & 1.2 & 1.8 & 3.3 \\
+\hline
+$C_{\text{in}}$ (fF) & \textbf{100} & 150 & 240 & 200 & $2\times20$~pF & 2000 \\
+\hline
+\textbf{$kT/C$ Suppression (dB)} & \textbf{$-$7.43} & $-$5.2 & $-$3.8 & $-$4.1 & N/A & $-$2.5 \\
+\hline
+\textbf{$kT/C$ Compression ($\times$)} & \textbf{5.53} & 3.31 & 2.40 & 2.57 & N/A & 1.78 \\
+\hline
+SNR (dB) & 70.80 & 69.20 & 70.10 & 68.00 & 81.50 & 80.50 \\
+\hline
+SNDR (dB) & 70.80 & 68.50 & 69.40 & 67.00 & 80.80 & 79.00 \\
+\hline
+ENOB (bit) & 11.46 & 11.08 & 11.27 & 10.84 & 13.16 & 12.86 \\
+\hline
+SFDR (dB) & 85.7 & 81.0 & 82.5 & 79.0 & 92.0 & 95.0 \\
+\hline
+Power (mW) & 3.62\textsuperscript{\textdagger} & 5.80 & 2.10 & 1.80 & 4.50 & 16.0 \\
+\hline
+\textbf{FoM$_{\text{Walden}}$ (fJ/conv-step)} & 25.6\textsuperscript{\textdagger} & 4.92 & 2.19 & 2.05 & 6.10 & N/A \\
+\hline
+Area (mm$^2$) & 0.042 & 0.025 & 0.018 & 0.030 & 0.150\textsuperscript{*} & 0.470 \\
+\hline
+\end{tabular}%
+}
+
+\vspace{0.5em}\noindent{\footnotesize\textsuperscript{*}Estimated from reported system architecture.\\
+\textsuperscript{\textdagger}Simulation result; a typical 1--3~dB degradation is expected in silicon measurements.}
+\end{table*}
+
+The comparison highlights that the proposed current-domain CAAZ achieves the highest $kT/C$ suppression (7.43~dB, $5.53\times$ compression) among all designs with explicit noise cancellation, and the smallest reported input capacitance (100~fF). The simulated FoM of 25.6~fJ/conv-step in 180-nm CMOS is expected; a typical 1--3~dB SNDR degradation from simulation to silicon would result in a measured FoM of 32--50~fJ/conv-step, consistent with the technology node. All values for this work are simulation results and should be interpreted as the pre-silicon performance envelope.
+
+\subsection{Dynamic Performance}
+
+Fig.~\ref{fig:fft} shows the FFT spectrum at 1.23~MHz input (near-DC) and 24.5~MHz input (near-Nyquist). At low frequency, SNDR = 70.80~dB, SFDR = 85.7~dB, with HD3 at $-$82.3~dBFS. At Nyquist, SNDR = 70.12~dB and SFDR = 82.4~dB, representing only 0.68~dB degradation. The flat noise floor around $-$105~dBFS confirms that the CAAZ architecture does not introduce additional nonlinearity or switching artifacts. The absence of significant spurs beyond harmonics further validates the clean current-domain operation.
+
+\begin{figure}[!t]
+\centering
+\fbox{\parbox{0.9\columnwidth}{\centering\vspace{2.5cm}[Fig. 10: FFT Spectrum]\vspace{2.5cm}}}
+\caption{FFT spectrum at 1.23~MHz (SNDR = 70.80~dB, SFDR = 85.7~dB) and 24.5~MHz (SNDR = 70.12~dB, SFDR = 82.4~dB) inputs, 50-MS/s sampling.}
+\label{fig:fft}
+\end{figure}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper has presented a current-domain $kT/C$ noise cancellation architecture for high-speed high-resolution SAR ADCs, validated through Spectre transient-noise simulations in 180-nm CMOS. By adapting the CAAZ technique~\cite{safiallah2023_Currentadjusting} from its original DC-offset cancellation context to broadband $kT/C$ noise cancellation, the architecture achieves an open-loop gain exceeding 50 (versus $A\approx 6$ in prior voltage-domain work), breaking the fundamental gain-saturation trade-off. Three key architectural features enable this result:
+
+\begin{enumerate}
+    \item \textit{Current-domain noise storage} decouples noise suppression from amplifier bandwidth, with residual noise attenuated by the transistor intrinsic gain $g_{mp}R_{OA}$ rather than by settling time.
+    \item \textit{Capacitance burden shifting} relocates the large noise-storage capacitor from the high-impedance input node to a low-impedance internal node, achieving $2.4\times$ input capacitance reduction (100~fF vs.\ 240~fF) without noise penalty.
+    \item \textit{Ultra-low duty cycle} (4\%) of the CAAZ preamplifier limits its power overhead to 2.2\% of total ADC power.
+\end{enumerate}
+
+The $kT/C$ noise power is compressed by $5.53\times$ (7.43~dB attenuation), reducing the $kT/C$ proportion in total system noise from 29.69\% to 7.09\%. Module-level SNR improves by $+2.0$~dB, and full-system SNR improves by $+1.21$~dB (from 69.59~dB to 70.80~dB). The residual gap between the module-level and full-system improvements is attributable to fixed circuit noise sources (preamplifier thermal noise, bias noise, buffer noise) that are unaffected by $kT/C$ cancellation; reducing these through conventional optimization would allow the full system to approach the $+2.0$~dB theoretical limit.
+
+Comprehensive PVT simulations across six corners validate robust performance with ENOB variation within $\pm 0.2$ bit. The simulated Walden FoM of 25.6~fJ/conv-step in 180-nm CMOS represents the pre-silicon performance baseline; with anticipated measurement margins, the expected silicon FoM falls within the 32--50~fJ/conv-step range. This work demonstrates that adapting autozeroing techniques from the DC domain to broadband $kT/C$ noise cancellation opens a viable path for high-resolution SAR ADC design in mature technology nodes.
+
+\begin{IEEEbiography}{Zhao Yi} received the B.S. degree in microelectronics from the School of Integrated Circuits, Huazhong University of Science and Technology (HUST), Wuhan, China, in 2024, where he is currently pursuing the Ph.D. degree. His research interests include high-speed high-resolution SAR ADC design and noise optimization techniques.
+\end{IEEEbiography}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

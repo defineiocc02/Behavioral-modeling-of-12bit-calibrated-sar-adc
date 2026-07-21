@@ -1,0 +1,364 @@
+\documentclass[11pt,a4paper,UTF8]{ctexart}
+
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{
+    backgroundcolor=\color{gray!5},
+    basicstyle=\footnotesize\ttfamily,
+    breaklines=true,
+    keywordstyle=\color{blue},
+    commentstyle=\color{mygreen},
+    stringstyle=\color{mymauve},
+    numbers=left,
+    numberstyle=\tiny\color{mygray},
+    frame=single,
+    language=Verilog
+}
+
+\title{\textbf{ASYNC\_CLK\_GEN 模块 IP 规格说明书}\\ \large 异步时钟发生器 —— Gated Free-running Ring Oscillator}
+\author{数字前端设计组}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{tcolorbox}[colback=orange!8!white,colframe=orange!75!black,title=\textbf{版本状态说明}]
+本文件描述的是历史 50-MS/s 命名阶段的自由环形振荡器版本。当前项目主线已收敛为 12-bit 10-MS/s SAR ADC with CAAZ；若当前网表已切换至 SAR\_LOGIC\_SYNC 单脉冲同步架构，应以最新时序分析和当前网表为准。本规格在被重新验证前仅作为 legacy IP 参考，不建议直接作为流片签核依据。
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=\textbf{模块概述}]
+本模块为 12-bit 50-MS/s SAR ADC 专用异步时钟发生器（ASYNC\_CLK\_GEN），采用\textbf{门控自由环形振荡器（Gated Free-running Ring Oscillator）}架构，集成了启动脉冲注入器、奇数级环形振荡核心、输出缓冲树和休眠钳位逻辑。
+\end{tcolorbox}
+
+\section{模块接口定义}
+
+\subsection{端口定义}
+
+\begin{table}[htbp]
+\centering
+\caption{ASYNC\_CLK\_GEN 端口定义}
+\label{tab:ports}
+\begin{tabular}{llllp{6cm}}
+\toprule
+\textbf{端口名} & \textbf{方向} & \textbf{位宽} & \textbf{类型} & \textbf{功能描述} \\
+\midrule
+CLK00 & input & 1 & wire & 全局启动信号（ADC 采样结束，转入转换阶段时拉高） \\
+SET\_12 & input & 1 & wire & 转换完成标志位（SET$<12>$，第 12 位比较完成后拉高） \\
+DVDD & inout & 1 & wire & 数字电源（\SI{1.8}{V}） \\
+DGND & inout & 1 & wire & 数字地 \\
+PCLK & output & 1 & wire & 内部核心振荡时钟（可供测试观测） \\
+CCLK & output & 1 & wire & 比较器触发时钟（需强驱动） \\
+CLK & output & 1 & wire & DAC/寄存器逻辑时钟（需强驱动） \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Verilog 原型}
+
+\begin{lstlisting}
+// 模块名称: ASYNC_CLK_GEN (异步时钟发生器)
+module ASYNC_CLK_GEN (
+    // ---- 输入端口 (Inputs) ----
+    input  wire CLK00,      // 全局启动信号
+    input  wire SET_12,     // 转换完成标志位
+
+    // ---- 电源端口 (Power) ----
+    inout  wire DVDD,       // 数字电源 (1.8V)
+    inout  wire DGND,       // 数字地
+
+    // ---- 输出端口 (Outputs) ----
+    output wire PCLK,       // 内部核心振荡时钟
+    output wire CCLK,       // 比较器触发时钟
+    output wire CLK         // DAC/寄存器逻辑时钟
+);
+endmodule
+\end{lstlisting}
+
+\section{内部子模块架构}
+
+本模块由 4 个精妙的子模块构成，信号流向如下：
+
+\begin{enumerate}
+    \item \textbf{第一级：启停总控逻辑 (Start/Stop Gating Logic)}
+    \item \textbf{第二级：启动脉冲注入器 (Startup Pulse Injector)}
+    \item \textbf{第三级：自激振荡主环路 (Ring Oscillator Core)} \textbf{[含致命 Bug]}
+    \item \textbf{第四级：输出缓冲树 (Output Buffer Tree)}
+\end{enumerate}
+
+\section{子模块详细剖析}
+
+\subsection{第一级：启停总控逻辑}
+
+\textbf{涉及元件：} I32(INV), I33(NAND), I58(INV)
+
+\textbf{逻辑表达式：}
+
+\begin{itemize}
+    \item 输入端 SET$<12>$ 首先经过 I32 取反生成 net9
+    \item net9 与全局启动信号 CLK00 进入 I33(NAND)，输出内部使能 EN（Active-Low 低有效）
+    \item EN 经过 I58 取反，生成真正的高电平有效使能信号 net14
+\end{itemize}
+
+\textbf{真值表：}
+
+\begin{table}[htbp]
+\centering
+\caption{启停控制逻辑真值表}
+\label{tab:gating_truth}
+\begin{tabular}{cc|c}
+\toprule
+SET\_12 & CLK00 & net14 \\
+\midrule
+0 & 0 & 0 \\
+0 & 1 & \textbf{1（允许振荡）} \\
+1 & 0 & 0 \\
+1 & 1 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{工作状态：}
+\begin{itemize}
+    \item 当 SET$<12>$ = 0（正在转换）且 CLK00 = 1（启动）时 $\rightarrow$ net14 = 1（允许振荡）
+    \item 当 SET$<12>$ = 1（转换结束）时 $\rightarrow$ 不管 CLK00 是什么，net14 = 0（强制关断全系统）
+\end{itemize}
+
+\subsection{第二级：启动脉冲注入器}
+
+\textbf{涉及元件：} delay\_450p, I42(NAND)
+
+\textbf{功能：} 这是一个非常经典的 Edge-to-Pulse（边沿转脉冲）发生器。
+
+\textbf{逻辑流向：}
+\begin{itemize}
+    \item 信号 net14 分成两路：一路直接进入 I42(NAND)；另一路穿过包含 13 级反相器的 delay\_450p，生成延迟且反相的信号 net22，再进入 I42(NAND)
+\end{itemize}
+
+\textbf{工作原理：}
+\begin{enumerate}
+    \item 起振瞬间：当 net14 突然从 0 变 1 时，由于延迟，net22 在最初的 \SI{450}{ps} 内依然保持为 1
+    \item 此时 NAND 门的两个输入全为 1，输出 net23 会瞬间被拉低
+    \item \SI{450}{ps} 后，net22 变为 0，net23 恢复为 1
+\end{enumerate}
+
+\textbf{模块功能：} 成功在电路启动瞬间，在 net23 节点上"人为制造"了一个宽度为 \SI{450}{ps} 的低电平触发脉冲，用来打破环路的死锁状态，强制环形振荡器起振。
+
+\subsection{第三级：自激振荡主环路 —— \textcolor{red}{\textbf{致命 Bug 所在}}}
+
+\textbf{涉及元件：} I43(NAND), I59(NAND), M10/M11(INV), delay\_900p
+
+\textbf{逻辑流向（脉冲注入后）：}
+
+信号在环路中赛跑：
+\[
+A \rightarrow (I43) \rightarrow net16 \rightarrow (I59) \rightarrow net12 \rightarrow (M10/M11) \rightarrow PCLK \rightarrow (delay\_900p) \rightarrow A~(\text{back})
+\]
+
+因为 net23=1 且 net14=1，两个 NAND 门 I43 和 I59 在此阶段\textbf{等效为反相器}。
+
+\subsection{\textbf{致命 Bug 分析}}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=\textbf{致命 Bug 分析}]
+任何环形振荡器（Ring Oscillator）要起振，\textbf{环路中的反相总级数必须是奇数 (Odd)}！
+
+\textbf{级数统计：}
+\begin{itemize}
+    \item I43(NAND) = 1 级
+    \item I59(NAND) = 1 级
+    \item M10/11(INV) = 1 级
+    \item \textbf{环路本体：3 次反相}
+\end{itemize}
+
+\textbf{delay\_900p 内部结构：} 从 VIN 进去到 VOUT 出来，它整整包含了 \textbf{27 个反相器}！
+
+\textbf{总反相级数 = 3 + 27 = 30 级（偶数）}
+
+\textbf{后果：} 这是一个正反馈环路。当 \SI{450}{ps} 的触发脉冲结束后，电路\textbf{绝对不会振荡}，而是会瞬间\textbf{锁死（Latch-up）}在一个固定电平。
+\end{tcolorbox}
+
+\subsection{第四级：输出缓冲树}
+
+\textbf{涉及元件：} INVX4 到 INVX7 等一系列反相器
+
+\textbf{逻辑流向：} 从核心时钟 PCLK 取出信号，像接力赛一样经过：
+\[
+I50 \rightarrow I51 \rightarrow I52 \rightarrow I35 \rightarrow I36 \rightarrow I64 \rightarrow I65 \rightarrow I34 \rightarrow CCLK
+\]
+
+\textbf{问题诊断：} 用了 8 级反相器，并且中间包含了连续 4 个巨大的 INVX6。这属于\textbf{严重的功耗浪费和无效延时}。
+
+\section{修复与优化指南}
+
+\subsection{1. 修复致命死锁 Bug}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,title=\textbf{解决方案}]
+\textbf{最快改法：} 在 delay\_900p 的原理图里，\textbf{随意删除 1 个反相器或者增加 1 个反相器}，使其内部反相级数变为 26 级或 28 级。这样总环路级数就会变成 29 级或 31 级（奇数），电路就能立刻振荡起来。
+\end{tcolorbox}
+
+\subsection{2. 重构庞大耗电的 Delay 单元}
+
+\textbf{问题：} 即便修了 Bug，几十个反相器依然是功耗灾难。
+
+\textbf{推荐结构（电流饥饿型）：}
+\begin{itemize}
+    \item 用 1 个固定偏置的 \textbf{Current-Starved Inverter}（限制充放电电流）
+    \item 配合 1 个常规 Inverter
+\end{itemize}
+
+\textbf{替换逻辑：} 只要保证替换后的 delay 单元反相极性正确（确保最终环路里包含奇数个反相），你就能用仅仅 4\~6 个管子取代原本的几十个管子，\textbf{功耗瞬间暴降 90\%}。
+
+\subsection{3. 削减冗余的 Buffer 树}
+
+\textbf{建议：} 不要连放 8 级，改用 3 级渐进式放大 Buffer。
+
+\textbf{推荐结构：} INVX1 $\rightarrow$ INVX3 $\rightarrow$ INVX8
+
+\textbf{优势：} 这不仅缩短了时钟沿的传输延时，还省下了大笔动态功耗。
+
+\subsection{4. 休眠钳位逻辑（无需修改）}
+
+当 SET$<12>$ = 1 触发时：
+\begin{enumerate}
+    \item net14 变为 0
+    \item I59(NAND) 的一个输入为 0，输出 net12 被强制钳位在 1（高电平）
+    \item PCLK 被强制钳位在 0（低电平）
+    \item 信号不会再往后传，环路彻底静默
+\end{enumerate}
+
+\textbf{评价：} 这部分关断逻辑设计得非常完美，无需修改！
+
+\section{优化后架构建议}
+
+\begin{figure}[htbp]
+\centering
+\textbf{[图：优化后 ASYNC\_CLK\_GEN 架构示意图]}
+\caption{优化后的异步时钟发生器架构}
+\label{fig:arch}
+\end{figure}
+
+\subsection{关键参数目标}
+
+\begin{table}[htbp]
+\centering
+\caption{优化目标参数}
+\label{tab:targets}
+\begin{tabular}{lll}
+\toprule
+\textbf{参数} & \textbf{优化前} & \textbf{优化后目标} \\
+\midrule
+环路反相级数 & 30（偶数，死锁） & 29 或 31（奇数，振荡） \\
+delay 单元晶体管数 & $>$50 & 4\~6 \\
+Buffer 级数 & 8 & 3 \\
+振荡器功耗 & 高（几十mW） & 低（$<$1mW） \\
+振荡频率 & 无法振荡 & \SI{200}{\mega\hertz} $\sim$ \SI{500}{\mega\hertz} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{总结}
+
+本模块的外围控制（注入脉冲 + 转换结束关断）设计堪称教科书级别。现在只需要：
+
+\begin{enumerate}
+    \item \textbf{把内部那个笨重且偶数级的 delay\_900p 换成轻量级的模拟延时单元}（修复 Bug + 降功耗）
+    \item \textbf{清理掉多余的 Buffer}（削减延时 + 省功耗）
+\end{enumerate}
+
+即可将 ASYNC\_CLK\_GEN 模块完美封存，作为 ADC 设计的绝杀 IP 写入论文。
+
+\section{7. 完整更改方案与门级重构行动指南}
+
+针对前文剖析的架构缺陷与门级尺寸问题，请严格按照以下 4 个步骤在 Virtuoso 原理图中进行电路级重构：
+
+\subsection{步骤一：打破死锁，重构核心延时单元 (Replace \texttt{delay\_900p} \& \texttt{delay\_450p})}
+
+这是解决无法起振 Bug 和 90\% 动态功耗的核心步骤。
+
+\textbf{操作指令：}
+\begin{enumerate}
+    \item 彻底删除原网表中的 \texttt{delay\_900p}（27级反相器）和 \texttt{delay\_450p}（13级反相器）子电路。
+    \item 重新搭建一个\textbf{电流饥饿型延时单元 (Current-Starved Delay Cell)}。
+    \begin{itemize}
+        \item 顶部 PMOS 和底部 NMOS 接偏置电压（或电流镜），限制中间反相器的充放电电流。
+        \item 内部节点可选择性挂载极小的 MIM 电容（如 \SI{20}{fF}）以稳定延时。
+    \end{itemize}
+    \item 在电流饥饿反相器之后，\textbf{必须紧跟一个施密特触发器 (Schmitt Trigger)}。
+    \begin{itemize}
+        \item 利用迟滞特性，将缓慢的充放电斜坡瞬间整形为极速翻转的方波，彻底消灭后续逻辑的短路电流。
+    \end{itemize}
+    \item \textbf{极性核对：} 确保新的 \texttt{delay\_900p} 模块输入到输出的\textbf{反相次数为奇数（1次或3次）}，从而保证整个主环路的反相总数为奇数。
+\end{enumerate}
+
+\subsection{步骤二：内部门级尺寸极小化 (Internal Logic Sizing Down)}
+
+\textbf{操作指令：}
+\begin{enumerate}
+    \item 打开 \texttt{NAND1} 子电路原理图。
+    \item 将 PMOS 尺寸从 $W=900\,\text{nm}, M=4$（总宽 $3.6\,\mu\text{m}$）缩小为 \textbf{$W=1\,\mu\text{m}, M=1$}。
+    \item 将 NMOS 尺寸从 $W=1\,\mu\text{m}, M=4$（总宽 $4\,\mu\text{m}$）缩小为 \textbf{$W=0.5\,\mu\text{m}, M=1$}。
+    \item 将环路中用于控制和倒相的普通 \texttt{INVX2/INVX3} 全部替换为工艺库中最小驱动能力的 \texttt{INVX1}（如 PMOS $W=1\,\mu\text{m}$, NMOS $W=0.5\,\mu\text{m}$）。
+\end{enumerate}
+
+\subsection{步骤三：遵循 FO4 重剪缓冲树 (Pruning Output Buffer Tree)}
+
+\textbf{操作指令：}
+\begin{enumerate}
+    \item 定位到 \texttt{PCLK} 到 \texttt{CCLK} 的输出驱动路径。
+    \item 删除冗余的同尺寸级联：\texttt{I36(INVX6)}, \texttt{I64(INVX6)}, \texttt{I65(INVX6)}。
+    \item 按照\textbf{逻辑努力 (Logical Effort)} 原则重构链路：
+    \begin{itemize}
+        \item 修改为 3 级递增结构：\texttt{INVX1} $\rightarrow$ \texttt{INVX3} $\rightarrow$ \texttt{INVX9}。
+        \item 确保每一级的输入寄生电容大约是前一级的 3$\sim$4 倍。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{步骤四：脉冲宽度匹配调优 (Pulse Width Tuning)}
+
+\begin{itemize}
+    \item \texttt{delay\_450p} 决定了启动脉冲 \texttt{net23} 的宽度。脉冲不能太宽（会浪费转换时间），也不能太窄（环路可能来不及响应）。
+    \item 在改用新延时结构后，调整其偏置，确保生成的低电平脉冲宽度在 \textbf{\SI{300}{ps} $\sim$ \SI{500}{ps}} 之间。
+\end{itemize}
+
+\section{8. 问题校准清单 (Problem Calibration Checklist)}
+
+在完成电路修改后，必须通过以下校准清单（Checklist）进行逐项 Check，确保所有问题均已被物理修复。
+
+\begin{table}[htbp]
+\centering
+\caption{问题校准清单}
+\label{tab:checklist}
+\begin{tabular}{|c|p{2.8cm}|p{5cm}|p{3.5cm}|c|}
+\toprule
+\textbf{校验项编号} & \textbf{校验目标 (Target)} & \textbf{物理表现与校准方法 (Calibration Method)} & \textbf{预期结果 (Expected Result)} & \textbf{状态 (Status)} \\
+\midrule
+CHK-01 & \textbf{死锁 Bug 消除} & 观察 \texttt{delay\_900p} 的输入端到输出端。计算途径的反相极性（Inversion Polarity）。 & 必须经过\textbf{奇数}次反相（如 1 次或 3 次）。 & [ ] 待测 \\
+\midrule
+CHK-02 & \textbf{主环路起振验证} & 跑 20ns 瞬态仿真（\texttt{tran}）。设定 \texttt{CLK00=1}, \texttt{SET$<12> $=0}。观测 \texttt{PCLK} 波形。 & \texttt{PCLK} 能够输出连续且等幅的时钟方波，无锁死。 & [ ] 待测 \\
+\midrule
+CHK-03 & \textbf{启动脉冲校验} & 在起振瞬间观测 \texttt{net23} 节点电压。 & \texttt{net23} 出现单次低电平脉冲，宽度 $\approx$ \SI{400}{ps}。 & [ ] 待测 \\
+\midrule
+CHK-04 & \textbf{休眠钳位校验} & 在 \texttt{SET$<12>$} 从 0 变 1 的瞬间，观测振荡器环路。 & \texttt{PCLK} 瞬间被强行拉低至 0V，整个采样阶段 0 翻转。 & [ ] 待测 \\
+\midrule
+CHK-05 & \textbf{内部短路功耗} & 观测内部 \texttt{NAND1} 门电源引脚的瞬态电流（\texttt{I\_DVDD}）。 & 电流峰值大幅下降，无明显宽脉冲（Crowbar Current）。 & [ ] 待测 \\
+\midrule
+CHK-06 & \textbf{系统动态功耗} & 测量整个 \texttt{ASYNC\_CLK\_GEN} 模块在转换阶段（15ns）的平均消耗电流。 & 功耗下降至少一个数量级（例如从 5mW 降至 $< 0.5\,$mW）。 & [ ] 待测 \\
+\midrule
+CHK-07 & \textbf{输出驱动能力} & 观测最终输出时钟 \texttt{CCLK} 的上升沿/下降沿时间（Rise/Fall Time）。带真实比较器负载。 & 边沿极度陡峭，上升/下降时间 $< 50\,$ps。 & [ ] 待测 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

@@ -1,0 +1,2 @@
+﻿case,td,AZ_time_ns_equiv,corner_count,ENOB_min,ENOB_avg,ENOB_max,ENOB_worst_corner,ENOB_best_corner,SNR_min,SNR_avg,SNR_max,SNR_worst_corner,SNR_best_corner,SFDR_min,SFDR_avg,SFDR_max,SFDR_worst_corner,SFDR_best_corner,Power_uW_min,Power_uW_avg,Power_uW_max,Power_uW_max_corner,COMPOWER_uW_avg,SYNCPOWER_uW_avg
+2026-06-09_NF10_仅采样噪声_电流型KT_C_无FIA_正式对比,28n,4.0000,5,10.1541,10.2750,10.4307,ss,fs,63.3285,64.0150,65.1685,tt,fs,74.1442,75.7346,77.1952,tt,ff,341.5053,351.5700,369.9755,ff,148.0453,25.0734

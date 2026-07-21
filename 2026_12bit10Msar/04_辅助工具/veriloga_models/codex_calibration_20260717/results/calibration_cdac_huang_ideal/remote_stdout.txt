@@ -1,0 +1,1045 @@
+
+Spectre (R) Circuit Simulator
+Version 23.1.0.242.isr1 64bit -- 7 Sep 2023
+Copyright (C) 1989-2023 Cadence Design Systems, Inc. All rights reserved
+        worldwide. Cadence and Spectre are registered trademarks of Cadence
+        Design Systems, Inc. All others are the property of their respective
+        holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA
+        Security, Inc.
+
+User: meow   Host: meowu   HostID: 7F0101   PID: 25130
+Memory  available: 17.6618 GB  physical: 22.0406 GB
+Linux   : CentOS Linux release 7 (Core)
+CPU Type: AMD Ryzen 7 8845H w/ Radeon 780M Graphics
+All processors running at 3792.6 MHz
+        Socket: Processors
+        0:       0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+                10, 11
+        
+System load averages (1min, 5min, 15min) : 13.6 %, 10.9 %, 16.4 %
+HPC is enabled
+This is a virtual machine
+
+
+Simulating `tb_calibration_cdac_huang_ideal.scs' on meowu at 2:19:29 AM, Sat
+        Jul 18, 2026 (process id: 25130).
+Current working directory:
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal
+Command line:
+    /opt/cadence/SPECTRE231/tools.lnx86/bin/spectre -64  \
+        tb_calibration_cdac_huang_ideal.scs +log spectre.out -format  \
+        psfxl -raw psf +preset=cx
+Licensing Information:
+[02:19:29.406969] Configured Lic search path (22.01-s002):
+        /opt/cadence/IC618/share/license/license.dat
+
+Licensing Information:
+[02:19:29.394738] Periodic Lic check successful
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal/tb_calibration_cdac_huang_ideal.scs
+
+Notice from spectre during circuit read-in.
+    Pre_Configuration file used:
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+    Configuration file used:
+        `/opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg'.
+
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+Reading file:  /usr/include/stdc-predef.h
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal/SWITCH_CAL_original.va
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.vams
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal/DEC_CAL_PHY_FRAME_SYNC.va
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/calibration_cdac_huang_ideal/IDEAL_COMP.va
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg
+Time for NDB Parsing: CPU = 216.984 ms, elapsed = 150.032 ms.
+Time accumulated: CPU = 260.015 ms, elapsed = 150.034 ms.
+Peak resident memory used = 110 Mbytes.
+
+Existing shared object for module SWITCH_CAL is up to date.
+Installed compiled interface for SWITCH_CAL.
+Existing shared object for module IDEAL_COMP is up to date.
+Installed compiled interface for IDEAL_COMP.
+Existing shared object for module DEC_CAL_PHY is up to date.
+Installed compiled interface for DEC_CAL_PHY.
+
+
+Time for Elaboration: CPU = 27.326 ms, elapsed = 13.6621 ms.
+Time accumulated: CPU = 287.809 ms, elapsed = 163.929 ms.
+Peak resident memory used = 117 Mbytes.
+
+
+Warning from spectre during hierarchy flattening.
+    WARNING (SPCRTRF-15520): Following parameters in Tran analysis are disabled
+        because they are ignored or redefined in Spectre X.
+         Option Parameters: maxstep 
+
+
+Time for EDB Visiting: CPU = 1.877 ms, elapsed = 938.177 us.
+Time accumulated: CPU = 289.92 ms, elapsed = 164.984 ms.
+Peak resident memory used = 118 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to the following 14 nodes:
+        Bit11
+        Bit10
+        Bit9
+        Bit8
+        Bit7
+        Further occurrences of this notice will be suppressed (except in log
+        file).
+    No DC path from node `XCDAC.net4' to ground, Gmin installed to provide
+        path.
+    No DC path from node `XCDAC.net3' to ground, Gmin installed to provide
+        path.
+Notice from spectre during initial setup.
+    Multithreading is disabled due to the size of the design being too small.
+Warning from spectre during initial setup.
+    WARNING (SPECTRE-592): Following parameters are disabled because they are
+        ignored or redefined in Spectre X:
+        
+        Tran Parameters:
+          maxstep
+
+
+Global user options:
+               save = selected
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 145
+          capacitor 28    
+        DEC_CAL_PHY 1     
+         IDEAL_COMP 1     
+         SWITCH_CAL 1     
+            vsource 71    
+
+Analysis and control statement inventory:
+               tran 1     
+
+Output statements:
+             .probe 0     
+           .measure 0     
+               save 1     
+
+
+Notice from spectre during initial setup.
+    61 vsources are shorted because their absolute value is less than or equal
+        to 'vabsshort'.
+    Spectre X preset=cx enabled.
+    1 notice suppressed.
+
+Time for parsing: CPU = 9.707 ms, elapsed = 5.97405 ms.
+Time accumulated: CPU = 299.797 ms, elapsed = 171.043 ms.
+Peak resident memory used = 120 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+   -   (Spectre X) Multi-threading. The recommended number of threads is 1,
+        consider adding +mt=1 on command line.
+~~~~~~~~~~~~~~~~~~~~~~
+
+************************************************
+Transient Analysis `tran': time = (0 s -> 42 us)
+************************************************
+DC simulation time: CPU = 1.707 ms, elapsed = 854.015 us.
+
+Opening the PSFXL file psf/tran.tran.tran ...
+Important parameter values:
+    start = 0 s
+    outputstart = 0 s
+    stop = 42 us
+    step = 42 ns
+    maxstep = 420 ns
+    ic = all
+    useprevic = no
+    skipdc = no
+    reltol = 100e-06
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    errpreset = conservative_sigglobal
+    method = gear2only
+    lteratio = 10
+    relref = sigglobal
+    cmin = 0 F
+    gmin = 1 pS
+    rabsshort = 1 mOhm
+
+
+Notice from spectre during transient analysis `tran'.
+    Multithreading is disabled due to the size of the design being too small.
+
+
+Output and IC/nodeset summary:
+                 save   6       (voltage)
+
+DEC_CAL_PHY start t=3.015e-09
+DEC_CAL_PHY frame start target=5 side=0 pair=0 t=1.4115e-08
+DEC_CAL_PHY measure target=5 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=0 t=1.14115e-07
+DEC_CAL_PHY measure target=5 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=1 t=2.14115e-07
+DEC_CAL_PHY measure target=5 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=1 t=3.14115e-07
+DEC_CAL_PHY measure target=5 pair=1 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=2 t=4.14115e-07
+DEC_CAL_PHY measure target=5 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=2 t=5.14115e-07
+DEC_CAL_PHY measure target=5 pair=2 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=3 t=6.14115e-07
+DEC_CAL_PHY measure target=5 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=3 t=7.14115e-07
+DEC_CAL_PHY measure target=5 pair=3 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=4 t=8.14115e-07
+DEC_CAL_PHY measure target=5 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=4 t=9.14115e-07
+DEC_CAL_PHY measure target=5 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=5 t=1.01412e-06
+    tran: time = 1.05 us      (2.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=5 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=5 t=1.11412e-06
+DEC_CAL_PHY measure target=5 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=6 t=1.21412e-06
+DEC_CAL_PHY measure target=5 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=6 t=1.31412e-06
+DEC_CAL_PHY measure target=5 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=7 t=1.41412e-06
+DEC_CAL_PHY measure target=5 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=7 t=1.51412e-06
+DEC_CAL_PHY measure target=5 pair=7 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=8 t=1.61412e-06
+DEC_CAL_PHY measure target=5 pair=8 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=8 t=1.71412e-06
+DEC_CAL_PHY measure target=5 pair=8 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=9 t=1.81412e-06
+DEC_CAL_PHY measure target=5 pair=9 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=9 t=1.91412e-06
+DEC_CAL_PHY measure target=5 pair=9 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=10 t=2.01412e-06
+DEC_CAL_PHY measure target=5 pair=10 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=10 t=2.11412e-06
+DEC_CAL_PHY measure target=5 pair=10 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=11 t=2.21412e-06
+DEC_CAL_PHY measure target=5 pair=11 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=11 t=2.31412e-06
+DEC_CAL_PHY measure target=5 pair=11 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=12 t=2.41412e-06
+DEC_CAL_PHY measure target=5 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=12 t=2.51412e-06
+DEC_CAL_PHY measure target=5 pair=12 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=13 t=2.61412e-06
+DEC_CAL_PHY measure target=5 pair=13 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=13 t=2.71412e-06
+DEC_CAL_PHY measure target=5 pair=13 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=14 t=2.81412e-06
+DEC_CAL_PHY measure target=5 pair=14 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=14 t=2.91412e-06
+DEC_CAL_PHY measure target=5 pair=14 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=15 t=3.01412e-06
+DEC_CAL_PHY measure target=5 pair=15 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=15 t=3.11412e-06
+    tran: time = 3.15 us      (7.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=5 pair=15 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=16 t=3.21412e-06
+DEC_CAL_PHY measure target=5 pair=16 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=16 t=3.31412e-06
+DEC_CAL_PHY measure target=5 pair=16 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=17 t=3.41412e-06
+DEC_CAL_PHY measure target=5 pair=17 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=17 t=3.51412e-06
+DEC_CAL_PHY measure target=5 pair=17 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=18 t=3.61412e-06
+DEC_CAL_PHY measure target=5 pair=18 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=18 t=3.71412e-06
+DEC_CAL_PHY measure target=5 pair=18 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=19 t=3.81412e-06
+DEC_CAL_PHY measure target=5 pair=19 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=19 t=3.91412e-06
+DEC_CAL_PHY measure target=5 pair=19 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=20 t=4.01412e-06
+DEC_CAL_PHY measure target=5 pair=20 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=20 t=4.11412e-06
+DEC_CAL_PHY measure target=5 pair=20 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=21 t=4.21412e-06
+DEC_CAL_PHY measure target=5 pair=21 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=21 t=4.31412e-06
+DEC_CAL_PHY measure target=5 pair=21 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=22 t=4.41412e-06
+DEC_CAL_PHY measure target=5 pair=22 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=22 t=4.51412e-06
+DEC_CAL_PHY measure target=5 pair=22 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=23 t=4.61412e-06
+DEC_CAL_PHY measure target=5 pair=23 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=23 t=4.71412e-06
+DEC_CAL_PHY measure target=5 pair=23 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=24 t=4.81412e-06
+DEC_CAL_PHY measure target=5 pair=24 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=24 t=4.91412e-06
+DEC_CAL_PHY measure target=5 pair=24 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=25 t=5.01412e-06
+DEC_CAL_PHY measure target=5 pair=25 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=25 t=5.11412e-06
+DEC_CAL_PHY measure target=5 pair=25 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=26 t=5.21412e-06
+    tran: time = 5.25 us     (12.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=5 pair=26 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=26 t=5.31412e-06
+DEC_CAL_PHY measure target=5 pair=26 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=27 t=5.41412e-06
+DEC_CAL_PHY measure target=5 pair=27 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=27 t=5.51412e-06
+DEC_CAL_PHY measure target=5 pair=27 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=28 t=5.61412e-06
+DEC_CAL_PHY measure target=5 pair=28 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=28 t=5.71412e-06
+DEC_CAL_PHY measure target=5 pair=28 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=29 t=5.81412e-06
+DEC_CAL_PHY measure target=5 pair=29 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=29 t=5.91412e-06
+DEC_CAL_PHY measure target=5 pair=29 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=30 t=6.01412e-06
+DEC_CAL_PHY measure target=5 pair=30 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=30 t=6.11412e-06
+DEC_CAL_PHY measure target=5 pair=30 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=5 side=0 pair=31 t=6.21412e-06
+DEC_CAL_PHY measure target=5 pair=31 side=D q=0
+DEC_CAL_PHY frame start target=5 side=1 pair=31 t=6.31412e-06
+DEC_CAL_PHY measure target=5 pair=31 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=5 wall=8064 measured_q=8064 value_q=8064 value=126
+        pairs=32 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY frame start target=3 side=0 pair=0 t=6.41412e-06
+DEC_CAL_PHY measure target=3 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=0 t=6.51412e-06
+DEC_CAL_PHY measure target=3 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=1 t=6.61412e-06
+DEC_CAL_PHY measure target=3 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=1 t=6.71412e-06
+DEC_CAL_PHY measure target=3 pair=1 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=2 t=6.81412e-06
+DEC_CAL_PHY measure target=3 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=2 t=6.91412e-06
+DEC_CAL_PHY measure target=3 pair=2 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=3 t=7.01412e-06
+DEC_CAL_PHY measure target=3 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=3 t=7.11412e-06
+DEC_CAL_PHY measure target=3 pair=3 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=4 t=7.21412e-06
+DEC_CAL_PHY measure target=3 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=4 t=7.31412e-06
+    tran: time = 7.35 us     (17.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=3 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=5 t=7.41412e-06
+DEC_CAL_PHY measure target=3 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=5 t=7.51412e-06
+DEC_CAL_PHY measure target=3 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=6 t=7.61412e-06
+DEC_CAL_PHY measure target=3 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=6 t=7.71412e-06
+DEC_CAL_PHY measure target=3 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=7 t=7.81412e-06
+DEC_CAL_PHY measure target=3 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=7 t=7.91412e-06
+DEC_CAL_PHY measure target=3 pair=7 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=8 t=8.01412e-06
+DEC_CAL_PHY measure target=3 pair=8 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=8 t=8.11412e-06
+DEC_CAL_PHY measure target=3 pair=8 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=9 t=8.21412e-06
+DEC_CAL_PHY measure target=3 pair=9 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=9 t=8.31412e-06
+DEC_CAL_PHY measure target=3 pair=9 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=10 t=8.41412e-06
+DEC_CAL_PHY measure target=3 pair=10 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=10 t=8.51412e-06
+DEC_CAL_PHY measure target=3 pair=10 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=11 t=8.61412e-06
+DEC_CAL_PHY measure target=3 pair=11 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=11 t=8.71412e-06
+DEC_CAL_PHY measure target=3 pair=11 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=12 t=8.81412e-06
+DEC_CAL_PHY measure target=3 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=12 t=8.91412e-06
+DEC_CAL_PHY measure target=3 pair=12 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=13 t=9.01412e-06
+DEC_CAL_PHY measure target=3 pair=13 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=13 t=9.11412e-06
+DEC_CAL_PHY measure target=3 pair=13 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=14 t=9.21412e-06
+DEC_CAL_PHY measure target=3 pair=14 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=14 t=9.31412e-06
+DEC_CAL_PHY measure target=3 pair=14 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=15 t=9.41412e-06
+    tran: time = 9.45 us     (22.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=3 pair=15 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=15 t=9.51412e-06
+DEC_CAL_PHY measure target=3 pair=15 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=16 t=9.61412e-06
+DEC_CAL_PHY measure target=3 pair=16 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=16 t=9.71412e-06
+DEC_CAL_PHY measure target=3 pair=16 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=17 t=9.81412e-06
+DEC_CAL_PHY measure target=3 pair=17 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=17 t=9.91412e-06
+DEC_CAL_PHY measure target=3 pair=17 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=18 t=1.00141e-05
+DEC_CAL_PHY measure target=3 pair=18 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=18 t=1.01141e-05
+DEC_CAL_PHY measure target=3 pair=18 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=19 t=1.02141e-05
+DEC_CAL_PHY measure target=3 pair=19 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=19 t=1.03141e-05
+DEC_CAL_PHY measure target=3 pair=19 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=20 t=1.04141e-05
+DEC_CAL_PHY measure target=3 pair=20 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=20 t=1.05141e-05
+DEC_CAL_PHY measure target=3 pair=20 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=21 t=1.06141e-05
+DEC_CAL_PHY measure target=3 pair=21 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=21 t=1.07141e-05
+DEC_CAL_PHY measure target=3 pair=21 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=22 t=1.08141e-05
+DEC_CAL_PHY measure target=3 pair=22 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=22 t=1.09141e-05
+DEC_CAL_PHY measure target=3 pair=22 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=23 t=1.10141e-05
+DEC_CAL_PHY measure target=3 pair=23 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=23 t=1.11141e-05
+DEC_CAL_PHY measure target=3 pair=23 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=24 t=1.12141e-05
+DEC_CAL_PHY measure target=3 pair=24 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=24 t=1.13141e-05
+DEC_CAL_PHY measure target=3 pair=24 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=25 t=1.14141e-05
+DEC_CAL_PHY measure target=3 pair=25 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=25 t=1.15141e-05
+    tran: time = 11.55 us    (27.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=3 pair=25 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=26 t=1.16141e-05
+DEC_CAL_PHY measure target=3 pair=26 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=26 t=1.17141e-05
+DEC_CAL_PHY measure target=3 pair=26 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=27 t=1.18141e-05
+DEC_CAL_PHY measure target=3 pair=27 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=27 t=1.19141e-05
+DEC_CAL_PHY measure target=3 pair=27 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=28 t=1.20141e-05
+DEC_CAL_PHY measure target=3 pair=28 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=28 t=1.21141e-05
+DEC_CAL_PHY measure target=3 pair=28 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=29 t=1.22141e-05
+DEC_CAL_PHY measure target=3 pair=29 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=29 t=1.23141e-05
+DEC_CAL_PHY measure target=3 pair=29 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=30 t=1.24141e-05
+DEC_CAL_PHY measure target=3 pair=30 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=30 t=1.25141e-05
+DEC_CAL_PHY measure target=3 pair=30 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=3 side=0 pair=31 t=1.26141e-05
+DEC_CAL_PHY measure target=3 pair=31 side=D q=0
+DEC_CAL_PHY frame start target=3 side=1 pair=31 t=1.27141e-05
+DEC_CAL_PHY measure target=3 pair=31 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=3 wall=16128 measured_q=16128 value_q=16128 value=252
+        pairs=32 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY frame start target=4 side=0 pair=0 t=1.28141e-05
+DEC_CAL_PHY measure target=4 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=0 t=1.29141e-05
+DEC_CAL_PHY measure target=4 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=1 t=1.30141e-05
+DEC_CAL_PHY measure target=4 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=1 t=1.31141e-05
+DEC_CAL_PHY measure target=4 pair=1 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=2 t=1.32141e-05
+DEC_CAL_PHY measure target=4 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=2 t=1.33141e-05
+DEC_CAL_PHY measure target=4 pair=2 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=3 t=1.34141e-05
+DEC_CAL_PHY measure target=4 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=3 t=1.35141e-05
+DEC_CAL_PHY measure target=4 pair=3 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=4 t=1.36141e-05
+    tran: time = 13.65 us    (32.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=4 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=4 t=1.37141e-05
+DEC_CAL_PHY measure target=4 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=5 t=1.38141e-05
+DEC_CAL_PHY measure target=4 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=5 t=1.39141e-05
+DEC_CAL_PHY measure target=4 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=6 t=1.40141e-05
+DEC_CAL_PHY measure target=4 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=6 t=1.41141e-05
+DEC_CAL_PHY measure target=4 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=7 t=1.42141e-05
+DEC_CAL_PHY measure target=4 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=7 t=1.43141e-05
+DEC_CAL_PHY measure target=4 pair=7 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=8 t=1.44141e-05
+DEC_CAL_PHY measure target=4 pair=8 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=8 t=1.45141e-05
+DEC_CAL_PHY measure target=4 pair=8 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=9 t=1.46141e-05
+DEC_CAL_PHY measure target=4 pair=9 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=9 t=1.47141e-05
+DEC_CAL_PHY measure target=4 pair=9 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=10 t=1.48141e-05
+DEC_CAL_PHY measure target=4 pair=10 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=10 t=1.49141e-05
+DEC_CAL_PHY measure target=4 pair=10 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=11 t=1.50141e-05
+DEC_CAL_PHY measure target=4 pair=11 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=11 t=1.51141e-05
+DEC_CAL_PHY measure target=4 pair=11 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=12 t=1.52141e-05
+DEC_CAL_PHY measure target=4 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=12 t=1.53141e-05
+DEC_CAL_PHY measure target=4 pair=12 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=13 t=1.54141e-05
+DEC_CAL_PHY measure target=4 pair=13 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=13 t=1.55141e-05
+DEC_CAL_PHY measure target=4 pair=13 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=14 t=1.56141e-05
+DEC_CAL_PHY measure target=4 pair=14 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=14 t=1.57141e-05
+    tran: time = 15.75 us    (37.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=4 pair=14 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=15 t=1.58141e-05
+DEC_CAL_PHY measure target=4 pair=15 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=15 t=1.59141e-05
+DEC_CAL_PHY measure target=4 pair=15 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=16 t=1.60141e-05
+DEC_CAL_PHY measure target=4 pair=16 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=16 t=1.61141e-05
+DEC_CAL_PHY measure target=4 pair=16 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=17 t=1.62141e-05
+DEC_CAL_PHY measure target=4 pair=17 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=17 t=1.63141e-05
+DEC_CAL_PHY measure target=4 pair=17 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=18 t=1.64141e-05
+DEC_CAL_PHY measure target=4 pair=18 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=18 t=1.65141e-05
+DEC_CAL_PHY measure target=4 pair=18 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=19 t=1.66141e-05
+DEC_CAL_PHY measure target=4 pair=19 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=19 t=1.67141e-05
+DEC_CAL_PHY measure target=4 pair=19 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=20 t=1.68141e-05
+DEC_CAL_PHY measure target=4 pair=20 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=20 t=1.69141e-05
+DEC_CAL_PHY measure target=4 pair=20 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=21 t=1.70141e-05
+DEC_CAL_PHY measure target=4 pair=21 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=21 t=1.71141e-05
+DEC_CAL_PHY measure target=4 pair=21 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=22 t=1.72141e-05
+DEC_CAL_PHY measure target=4 pair=22 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=22 t=1.73141e-05
+DEC_CAL_PHY measure target=4 pair=22 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=23 t=1.74141e-05
+DEC_CAL_PHY measure target=4 pair=23 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=23 t=1.75141e-05
+DEC_CAL_PHY measure target=4 pair=23 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=24 t=1.76141e-05
+DEC_CAL_PHY measure target=4 pair=24 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=24 t=1.77141e-05
+DEC_CAL_PHY measure target=4 pair=24 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=25 t=1.78141e-05
+    tran: time = 17.85 us    (42.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=4 pair=25 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=25 t=1.79141e-05
+DEC_CAL_PHY measure target=4 pair=25 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=26 t=1.80141e-05
+DEC_CAL_PHY measure target=4 pair=26 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=26 t=1.81141e-05
+DEC_CAL_PHY measure target=4 pair=26 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=27 t=1.82141e-05
+DEC_CAL_PHY measure target=4 pair=27 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=27 t=1.83141e-05
+DEC_CAL_PHY measure target=4 pair=27 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=28 t=1.84141e-05
+DEC_CAL_PHY measure target=4 pair=28 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=28 t=1.85141e-05
+DEC_CAL_PHY measure target=4 pair=28 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=29 t=1.86141e-05
+DEC_CAL_PHY measure target=4 pair=29 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=29 t=1.87141e-05
+DEC_CAL_PHY measure target=4 pair=29 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=30 t=1.88141e-05
+DEC_CAL_PHY measure target=4 pair=30 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=30 t=1.89141e-05
+DEC_CAL_PHY measure target=4 pair=30 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=4 side=0 pair=31 t=1.90141e-05
+DEC_CAL_PHY measure target=4 pair=31 side=D q=0
+DEC_CAL_PHY frame start target=4 side=1 pair=31 t=1.91141e-05
+DEC_CAL_PHY measure target=4 pair=31 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=4 wall=16128 measured_q=16128 value_q=16128 value=252
+        pairs=32 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY frame start target=2 side=0 pair=0 t=1.92141e-05
+DEC_CAL_PHY measure target=2 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=0 t=1.93141e-05
+DEC_CAL_PHY measure target=2 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=1 t=1.94141e-05
+DEC_CAL_PHY measure target=2 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=1 t=1.95141e-05
+DEC_CAL_PHY measure target=2 pair=1 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=2 t=1.96141e-05
+DEC_CAL_PHY measure target=2 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=2 t=1.97141e-05
+DEC_CAL_PHY measure target=2 pair=2 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=3 t=1.98141e-05
+DEC_CAL_PHY measure target=2 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=3 t=1.99141e-05
+    tran: time = 19.95 us    (47.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=2 pair=3 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=4 t=2.00141e-05
+DEC_CAL_PHY measure target=2 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=4 t=2.01141e-05
+DEC_CAL_PHY measure target=2 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=5 t=2.02141e-05
+DEC_CAL_PHY measure target=2 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=5 t=2.03141e-05
+DEC_CAL_PHY measure target=2 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=6 t=2.04141e-05
+DEC_CAL_PHY measure target=2 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=6 t=2.05141e-05
+DEC_CAL_PHY measure target=2 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=7 t=2.06141e-05
+DEC_CAL_PHY measure target=2 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=7 t=2.07141e-05
+DEC_CAL_PHY measure target=2 pair=7 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=8 t=2.08141e-05
+DEC_CAL_PHY measure target=2 pair=8 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=8 t=2.09141e-05
+DEC_CAL_PHY measure target=2 pair=8 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=9 t=2.10141e-05
+DEC_CAL_PHY measure target=2 pair=9 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=9 t=2.11141e-05
+DEC_CAL_PHY measure target=2 pair=9 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=10 t=2.12141e-05
+DEC_CAL_PHY measure target=2 pair=10 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=10 t=2.13141e-05
+DEC_CAL_PHY measure target=2 pair=10 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=11 t=2.14141e-05
+DEC_CAL_PHY measure target=2 pair=11 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=11 t=2.15141e-05
+DEC_CAL_PHY measure target=2 pair=11 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=12 t=2.16141e-05
+DEC_CAL_PHY measure target=2 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=12 t=2.17141e-05
+DEC_CAL_PHY measure target=2 pair=12 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=13 t=2.18141e-05
+DEC_CAL_PHY measure target=2 pair=13 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=13 t=2.19141e-05
+DEC_CAL_PHY measure target=2 pair=13 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=14 t=2.20141e-05
+    tran: time = 22.05 us    (52.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=2 pair=14 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=14 t=2.21141e-05
+DEC_CAL_PHY measure target=2 pair=14 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=15 t=2.22141e-05
+DEC_CAL_PHY measure target=2 pair=15 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=15 t=2.23141e-05
+DEC_CAL_PHY measure target=2 pair=15 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=16 t=2.24141e-05
+DEC_CAL_PHY measure target=2 pair=16 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=16 t=2.25141e-05
+DEC_CAL_PHY measure target=2 pair=16 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=17 t=2.26141e-05
+DEC_CAL_PHY measure target=2 pair=17 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=17 t=2.27141e-05
+DEC_CAL_PHY measure target=2 pair=17 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=18 t=2.28141e-05
+DEC_CAL_PHY measure target=2 pair=18 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=18 t=2.29141e-05
+DEC_CAL_PHY measure target=2 pair=18 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=19 t=2.30141e-05
+DEC_CAL_PHY measure target=2 pair=19 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=19 t=2.31141e-05
+DEC_CAL_PHY measure target=2 pair=19 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=20 t=2.32141e-05
+DEC_CAL_PHY measure target=2 pair=20 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=20 t=2.33141e-05
+DEC_CAL_PHY measure target=2 pair=20 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=21 t=2.34141e-05
+DEC_CAL_PHY measure target=2 pair=21 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=21 t=2.35141e-05
+DEC_CAL_PHY measure target=2 pair=21 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=22 t=2.36141e-05
+DEC_CAL_PHY measure target=2 pair=22 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=22 t=2.37141e-05
+DEC_CAL_PHY measure target=2 pair=22 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=23 t=2.38141e-05
+DEC_CAL_PHY measure target=2 pair=23 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=23 t=2.39141e-05
+DEC_CAL_PHY measure target=2 pair=23 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=24 t=2.40141e-05
+DEC_CAL_PHY measure target=2 pair=24 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=24 t=2.41141e-05
+    tran: time = 24.15 us    (57.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=2 pair=24 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=25 t=2.42141e-05
+DEC_CAL_PHY measure target=2 pair=25 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=25 t=2.43141e-05
+DEC_CAL_PHY measure target=2 pair=25 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=26 t=2.44141e-05
+DEC_CAL_PHY measure target=2 pair=26 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=26 t=2.45141e-05
+DEC_CAL_PHY measure target=2 pair=26 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=27 t=2.46141e-05
+DEC_CAL_PHY measure target=2 pair=27 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=27 t=2.47141e-05
+DEC_CAL_PHY measure target=2 pair=27 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=28 t=2.48141e-05
+DEC_CAL_PHY measure target=2 pair=28 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=28 t=2.49141e-05
+DEC_CAL_PHY measure target=2 pair=28 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=29 t=2.50141e-05
+DEC_CAL_PHY measure target=2 pair=29 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=29 t=2.51141e-05
+DEC_CAL_PHY measure target=2 pair=29 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=30 t=2.52141e-05
+DEC_CAL_PHY measure target=2 pair=30 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=30 t=2.53141e-05
+DEC_CAL_PHY measure target=2 pair=30 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=2 side=0 pair=31 t=2.54141e-05
+DEC_CAL_PHY measure target=2 pair=31 side=D q=0
+DEC_CAL_PHY frame start target=2 side=1 pair=31 t=2.55141e-05
+DEC_CAL_PHY measure target=2 pair=31 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=2 wall=32256 measured_q=32256 value_q=32256 value=504
+        pairs=32 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY frame start target=1 side=0 pair=0 t=2.56141e-05
+DEC_CAL_PHY measure target=1 pair=0 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=0 t=2.57141e-05
+DEC_CAL_PHY measure target=1 pair=0 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=1 t=2.58141e-05
+DEC_CAL_PHY measure target=1 pair=1 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=1 t=2.59141e-05
+DEC_CAL_PHY measure target=1 pair=1 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=2 t=2.60141e-05
+DEC_CAL_PHY measure target=1 pair=2 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=2 t=2.61141e-05
+DEC_CAL_PHY measure target=1 pair=2 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=3 t=2.62141e-05
+    tran: time = 26.25 us    (62.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=1 pair=3 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=3 t=2.63141e-05
+DEC_CAL_PHY measure target=1 pair=3 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=4 t=2.64141e-05
+DEC_CAL_PHY measure target=1 pair=4 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=4 t=2.65141e-05
+DEC_CAL_PHY measure target=1 pair=4 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=5 t=2.66141e-05
+DEC_CAL_PHY measure target=1 pair=5 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=5 t=2.67141e-05
+DEC_CAL_PHY measure target=1 pair=5 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=6 t=2.68141e-05
+DEC_CAL_PHY measure target=1 pair=6 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=6 t=2.69141e-05
+DEC_CAL_PHY measure target=1 pair=6 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=7 t=2.70141e-05
+DEC_CAL_PHY measure target=1 pair=7 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=7 t=2.71141e-05
+DEC_CAL_PHY measure target=1 pair=7 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=8 t=2.72141e-05
+DEC_CAL_PHY measure target=1 pair=8 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=8 t=2.73141e-05
+DEC_CAL_PHY measure target=1 pair=8 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=9 t=2.74141e-05
+DEC_CAL_PHY measure target=1 pair=9 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=9 t=2.75141e-05
+DEC_CAL_PHY measure target=1 pair=9 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=10 t=2.76141e-05
+DEC_CAL_PHY measure target=1 pair=10 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=10 t=2.77141e-05
+DEC_CAL_PHY measure target=1 pair=10 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=11 t=2.78141e-05
+DEC_CAL_PHY measure target=1 pair=11 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=11 t=2.79141e-05
+DEC_CAL_PHY measure target=1 pair=11 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=12 t=2.80141e-05
+DEC_CAL_PHY measure target=1 pair=12 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=12 t=2.81141e-05
+DEC_CAL_PHY measure target=1 pair=12 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=13 t=2.82141e-05
+DEC_CAL_PHY measure target=1 pair=13 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=13 t=2.83141e-05
+    tran: time = 28.35 us    (67.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=1 pair=13 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=14 t=2.84141e-05
+DEC_CAL_PHY measure target=1 pair=14 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=14 t=2.85141e-05
+DEC_CAL_PHY measure target=1 pair=14 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=15 t=2.86141e-05
+DEC_CAL_PHY measure target=1 pair=15 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=15 t=2.87141e-05
+DEC_CAL_PHY measure target=1 pair=15 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=16 t=2.88141e-05
+DEC_CAL_PHY measure target=1 pair=16 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=16 t=2.89141e-05
+DEC_CAL_PHY measure target=1 pair=16 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=17 t=2.90141e-05
+DEC_CAL_PHY measure target=1 pair=17 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=17 t=2.91141e-05
+DEC_CAL_PHY measure target=1 pair=17 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=18 t=2.92141e-05
+DEC_CAL_PHY measure target=1 pair=18 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=18 t=2.93141e-05
+DEC_CAL_PHY measure target=1 pair=18 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=19 t=2.94141e-05
+DEC_CAL_PHY measure target=1 pair=19 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=19 t=2.95141e-05
+DEC_CAL_PHY measure target=1 pair=19 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=20 t=2.96141e-05
+DEC_CAL_PHY measure target=1 pair=20 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=20 t=2.97141e-05
+DEC_CAL_PHY measure target=1 pair=20 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=21 t=2.98141e-05
+DEC_CAL_PHY measure target=1 pair=21 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=21 t=2.99141e-05
+DEC_CAL_PHY measure target=1 pair=21 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=22 t=3.00141e-05
+DEC_CAL_PHY measure target=1 pair=22 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=22 t=3.01141e-05
+DEC_CAL_PHY measure target=1 pair=22 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=23 t=3.02141e-05
+DEC_CAL_PHY measure target=1 pair=23 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=23 t=3.03141e-05
+DEC_CAL_PHY measure target=1 pair=23 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=24 t=3.04141e-05
+    tran: time = 30.45 us    (72.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=1 pair=24 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=24 t=3.05141e-05
+DEC_CAL_PHY measure target=1 pair=24 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=25 t=3.06141e-05
+DEC_CAL_PHY measure target=1 pair=25 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=25 t=3.07141e-05
+DEC_CAL_PHY measure target=1 pair=25 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=26 t=3.08141e-05
+DEC_CAL_PHY measure target=1 pair=26 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=26 t=3.09141e-05
+DEC_CAL_PHY measure target=1 pair=26 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=27 t=3.10141e-05
+DEC_CAL_PHY measure target=1 pair=27 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=27 t=3.11141e-05
+DEC_CAL_PHY measure target=1 pair=27 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=28 t=3.12141e-05
+DEC_CAL_PHY measure target=1 pair=28 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=28 t=3.13141e-05
+DEC_CAL_PHY measure target=1 pair=28 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=29 t=3.14141e-05
+DEC_CAL_PHY measure target=1 pair=29 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=29 t=3.15141e-05
+DEC_CAL_PHY measure target=1 pair=29 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=30 t=3.16141e-05
+DEC_CAL_PHY measure target=1 pair=30 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=30 t=3.17141e-05
+DEC_CAL_PHY measure target=1 pair=30 side=U qD=64 qU=64
+DEC_CAL_PHY frame start target=1 side=0 pair=31 t=3.18141e-05
+DEC_CAL_PHY measure target=1 pair=31 side=D q=64
+DEC_CAL_PHY frame start target=1 side=1 pair=31 t=3.19141e-05
+DEC_CAL_PHY measure target=1 pair=31 side=U qD=64 qU=64
+DEC_CAL_PHY weight target=1 wall=64512 measured_q=64640 value_q=64640
+        value=1010 pairs=32 residual_sum=4096 residual_avg=64 diversity=0
+        snap=0
+DEC_CAL_PHY frame start target=0 side=0 pair=0 t=3.20141e-05
+DEC_CAL_PHY measure target=0 pair=0 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=0 t=3.21141e-05
+DEC_CAL_PHY measure target=0 pair=0 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=1 t=3.22141e-05
+DEC_CAL_PHY measure target=0 pair=1 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=1 t=3.23141e-05
+DEC_CAL_PHY measure target=0 pair=1 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=2 t=3.24141e-05
+DEC_CAL_PHY measure target=0 pair=2 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=2 t=3.25141e-05
+    tran: time = 32.55 us    (77.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=0 pair=2 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=3 t=3.26141e-05
+DEC_CAL_PHY measure target=0 pair=3 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=3 t=3.27141e-05
+DEC_CAL_PHY measure target=0 pair=3 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=4 t=3.28141e-05
+DEC_CAL_PHY measure target=0 pair=4 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=4 t=3.29141e-05
+DEC_CAL_PHY measure target=0 pair=4 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=5 t=3.30141e-05
+DEC_CAL_PHY measure target=0 pair=5 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=5 t=3.31141e-05
+DEC_CAL_PHY measure target=0 pair=5 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=6 t=3.32141e-05
+DEC_CAL_PHY measure target=0 pair=6 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=6 t=3.33141e-05
+DEC_CAL_PHY measure target=0 pair=6 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=7 t=3.34141e-05
+DEC_CAL_PHY measure target=0 pair=7 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=7 t=3.35141e-05
+DEC_CAL_PHY measure target=0 pair=7 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=8 t=3.36141e-05
+DEC_CAL_PHY measure target=0 pair=8 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=8 t=3.37141e-05
+DEC_CAL_PHY measure target=0 pair=8 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=9 t=3.38141e-05
+DEC_CAL_PHY measure target=0 pair=9 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=9 t=3.39141e-05
+DEC_CAL_PHY measure target=0 pair=9 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=10 t=3.40141e-05
+DEC_CAL_PHY measure target=0 pair=10 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=10 t=3.41141e-05
+DEC_CAL_PHY measure target=0 pair=10 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=11 t=3.42141e-05
+DEC_CAL_PHY measure target=0 pair=11 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=11 t=3.43141e-05
+DEC_CAL_PHY measure target=0 pair=11 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=12 t=3.44141e-05
+DEC_CAL_PHY measure target=0 pair=12 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=12 t=3.45141e-05
+DEC_CAL_PHY measure target=0 pair=12 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=13 t=3.46141e-05
+    tran: time = 34.65 us    (82.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=0 pair=13 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=13 t=3.47141e-05
+DEC_CAL_PHY measure target=0 pair=13 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=14 t=3.48141e-05
+DEC_CAL_PHY measure target=0 pair=14 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=14 t=3.49141e-05
+DEC_CAL_PHY measure target=0 pair=14 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=15 t=3.50141e-05
+DEC_CAL_PHY measure target=0 pair=15 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=15 t=3.51141e-05
+DEC_CAL_PHY measure target=0 pair=15 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=16 t=3.52141e-05
+DEC_CAL_PHY measure target=0 pair=16 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=16 t=3.53141e-05
+DEC_CAL_PHY measure target=0 pair=16 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=17 t=3.54141e-05
+DEC_CAL_PHY measure target=0 pair=17 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=17 t=3.55141e-05
+DEC_CAL_PHY measure target=0 pair=17 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=18 t=3.56141e-05
+DEC_CAL_PHY measure target=0 pair=18 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=18 t=3.57141e-05
+DEC_CAL_PHY measure target=0 pair=18 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=19 t=3.58141e-05
+DEC_CAL_PHY measure target=0 pair=19 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=19 t=3.59141e-05
+DEC_CAL_PHY measure target=0 pair=19 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=20 t=3.60141e-05
+DEC_CAL_PHY measure target=0 pair=20 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=20 t=3.61141e-05
+DEC_CAL_PHY measure target=0 pair=20 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=21 t=3.62141e-05
+DEC_CAL_PHY measure target=0 pair=21 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=21 t=3.63141e-05
+DEC_CAL_PHY measure target=0 pair=21 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=22 t=3.64141e-05
+DEC_CAL_PHY measure target=0 pair=22 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=22 t=3.65141e-05
+DEC_CAL_PHY measure target=0 pair=22 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=23 t=3.66141e-05
+DEC_CAL_PHY measure target=0 pair=23 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=23 t=3.67141e-05
+    tran: time = 36.75 us    (87.5 %), step = 802.5 ps    (1.91 m%)
+DEC_CAL_PHY measure target=0 pair=23 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=24 t=3.68141e-05
+DEC_CAL_PHY measure target=0 pair=24 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=24 t=3.69141e-05
+DEC_CAL_PHY measure target=0 pair=24 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=25 t=3.70141e-05
+DEC_CAL_PHY measure target=0 pair=25 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=25 t=3.71141e-05
+DEC_CAL_PHY measure target=0 pair=25 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=26 t=3.72141e-05
+DEC_CAL_PHY measure target=0 pair=26 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=26 t=3.73141e-05
+DEC_CAL_PHY measure target=0 pair=26 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=27 t=3.74141e-05
+DEC_CAL_PHY measure target=0 pair=27 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=27 t=3.75141e-05
+DEC_CAL_PHY measure target=0 pair=27 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=28 t=3.76141e-05
+DEC_CAL_PHY measure target=0 pair=28 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=28 t=3.77141e-05
+DEC_CAL_PHY measure target=0 pair=28 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=29 t=3.78141e-05
+DEC_CAL_PHY measure target=0 pair=29 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=29 t=3.79141e-05
+DEC_CAL_PHY measure target=0 pair=29 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=30 t=3.80141e-05
+DEC_CAL_PHY measure target=0 pair=30 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=30 t=3.81141e-05
+DEC_CAL_PHY measure target=0 pair=30 side=U qD=0 qU=0
+DEC_CAL_PHY frame start target=0 side=0 pair=31 t=3.82141e-05
+DEC_CAL_PHY measure target=0 pair=31 side=D q=0
+DEC_CAL_PHY frame start target=0 side=1 pair=31 t=3.83141e-05
+DEC_CAL_PHY measure target=0 pair=31 side=U qD=0 qU=0
+DEC_CAL_PHY weight target=0 wall=129152 measured_q=129152 value_q=129152
+        value=2018 pairs=32 residual_sum=0 residual_avg=0 diversity=0 snap=0
+DEC_CAL_PHY finish t=3.84001e-05 done=1 err=0
+DEC_CAL_PHY
+        weights_q={129152,64640,32256,16128,16128,8064,3072,2048,1280,768,512,256,128,64}
+        Q=6 pairs=32
+    tran: time = 38.85 us    (92.5 %), step = 3.27 ns     (7.79 m%)
+    tran: time = 40.95 us    (97.5 %), step = 3.27 ns     (7.79 m%)
+Number of accepted tran steps =             629093
+
+Maximum value achieved for any signal of each quantity: 
+V: V(BITD6) = 1.949 V
+I: I(VREFP_SRC:p) = 244.5 mA
+Maximum value of each quantity, excluding Verilog-A modules or dangling current
+        sources:
+V: V(XCDAC.net3) = 1 V
+I: I(VREFP_SRC:p) = 244.5 mA
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Post-Transient Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   -   Non-default settings that could significantly slow down simulation
+          errpreset = conservative_sigglobal, default moderate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+During simulation, the CPU load for active processors is :
+         0 (22.8 %)      3 (13.2 %)      4 (86.5 %)      5 (100.0 %)
+         8 (2.9 %)      
+        Total: 226.6%
+Initial condition solution time: CPU = 1.843 ms, elapsed = 921.965 us.
+Intrinsic tran analysis time:    CPU = 73.8168 s, elapsed = 71.8659 s.
+Total time required for tran analysis `tran': CPU = 73.8219 s (1m  13.8s),
+        elapsed = 71.8685 s (1m  11.9s), util. = 103%.
+Time accumulated: CPU = 74.1613 s (1m  14.2s), elapsed = 72.0788 s (1m 
+        12.1s).
+Peak resident memory used = 227 Mbytes.
+
+Licensing Information:
+Lic Summary:
+[02:20:41.001112] cdslmd servers: /opt/cadence/IC618/share/license/license.dat
+[02:20:41.001112] Feature usage summary:
+[02:20:41.016456]  Spectre_X_MMSIM_Lk  
+[02:20:41.496703]   Virtuoso_Multi_mode_Simulation  
+
+
+Aggregate audit (2:20:41 AM, Sat Jul 18, 2026):
+Time used: CPU = 74.2 s (1m  14.2s), elapsed = 72.1 s (1m  12.1s), util. =
+        103%.
+Time spent in licensing: elapsed = 62.4 ms.
+Peak memory used = 227 Mbytes.
+Simulation started at: 2:19:29 AM, Sat Jul 18, 2026, ended at: 2:20:41 AM, Sat
+        Jul 18, 2026, with elapsed time (wall clock): 72.1 s (1m  12.1s).
+spectre completes with 0 errors, 2 warnings, and 11 notices.

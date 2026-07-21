@@ -1,0 +1,8 @@
+openResults("/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_debug2u/psf")
+selectResult('tran)
+ocnPrint(v("OUT") ?numberNotation (quote scientific) ?from 98.505n ?to 1.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_debug2u/exports/OUT.txt")
+ocnPrint(v("SOUT") ?numberNotation (quote scientific) ?from 98.505n ?to 1.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_debug2u/exports/SOUT.txt")
+ocnPrint(v("CAL") ?numberNotation (quote scientific) ?from 98.505n ?to 1.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_debug2u/exports/CAL.txt")
+ocnPrint(v("DONE") ?numberNotation (quote scientific) ?from 98.505n ?to 1.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_debug2u/exports/DONE.txt")
+ocnPrint(v("ERR") ?numberNotation (quote scientific) ?from 98.505n ?to 1.998505u ?step 100n ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_debug2u/exports/ERR.txt")
+exit()

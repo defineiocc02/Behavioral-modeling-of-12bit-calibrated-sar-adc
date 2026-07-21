@@ -1,0 +1,578 @@
+IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS—I: REGULAR PAPERS, VOL. 63, NO. 6, JUNE 2016                                                                       763
+
+
+
+
+                      Matching Properties of Femtofarad and
+                       Sub-Femtofarad MOM Capacitors
+                        Hesham Omran, Hamzah Alahmadi, and Khaled N. Salama, Senior Member, IEEE
+
+
+    Abstract—Small metal-oxide-metal (MOM) capacitors are es-                        improving by benefiting from the continuous down scaling of
+sential to energy-efficient mixed-signal integrated circuit design.                  the technology minimum feature size. The down scaling results
+However, only few reports discuss their matching properties based                    in smaller device capacitances, where the parasitic capacitance
+on large sets of measured data. In this paper, we report matching
+properties of femtofarad and sub-femtofarad MOM vertical-field                       of the interconnects is now the limiting factor. On the other
+parallel-plate capacitors and lateral-field fringing capacitors. We                  hand, for analog and mixed-signal circuitry there are two factors
+study the effect of both the finger-length and finger-spacing on                     that limit reducing the capacitance, namely, thermal noise and
+the mismatch of lateral-field capacitors. In addition, we compare                    matching [1]. The thermal noise of a simple R-C circuit (e.g.,
+the matching properties and the area efficiency of vertical-field                    a sampling circuit) is given by kT /C, which imposes a lower
+and lateral-field capacitors. We use direct mismatch measurement
+technique, and we illustrate its feasibility using experimental                      bound on the minimum required capacitance to achieve a given
+measurements and Monte Carlo simulations. The test-chips are                         signal-to-noise ratio. With respect to matching, a smaller capac-
+fabricated in a 0.18 μm CMOS process. A large number of test                         itance typically has a smaller area, which results in higher mis-
+structures is characterized (4800 test structures), which improves                   match as given by Pelgrom’s inverse-area mismatch model [2].
+the statistical reliability of the extracted mismatch information.                      For low and medium resolution circuits, the minimum capac-
+Despite conventional wisdom, extensive measurements show that
+vertical-field and lateral-field MOM capacitors have the same                        itance is limited by the mismatch, rather than the thermal noise
+matching properties when the actual capacitor area is considered.                    [3]–[5]. An important application where capacitor matching
+Measurements show that the mismatch depends on the capacitor                         plays an important role in defining the circuit performance
+area but not on the spacing; thus, for a given mismatch spec-                        is data-converter circuits [3], [6]–[9]. For instance, in charge-
+ification, the lateral-field MOM capacitor can have arbitrarily                      redistribution analog-to-digital converters (ADCs), the matching
+small capacitance by increasing the spacing between the capacitor
+fingers, at the expense of increased chip area.                                      of the unit capacitors in the capacitive digital-to-analog converter
+                                                                                     (CapDAC) is the primary factor affecting the ADC linearity
+   Index Terms—Analog-to-digital converter (ADC), capacitance-                       [3], [10], [11]. The matching of the unit capacitors also defines
+to-digital converter (CDC), capacitive digital-to-analog converter
+(CapDAC), capacitor mismatch, energy-efficient circuits, metal-                      the absolute resolution and the dynamic range of successive-
+oxide-metal (MOM) capacitors, mismatch characterization, pro-                        approximation capacitance-to-digital converters (CDCs) [8].
+grammable capacitor array (PCA).                                                        Several types of capacitors are used in the design of mixed-
+                                                                                     signal circuits, e.g., poly-insulator-poly (PIP) capacitors, metal-
+                                                                                     insulator-metal (MIM) capacitors, and metal-oxide-metal
+                            I. I NTRODUCTION
+                                                                                     (MOM) capacitors. PIP capacitors have superior area efficiency
+
+C     APACITANCE sets a fundamental limit for the energy
+      consumed in electronic circuitry. The energy required to
+charge a capacitor (C) to a voltage (V ) is given by CV 2 ;
+                                                                                     and matching properties [1], [12]; however, they are no longer
+                                                                                     supported by semiconductor foundries in technologies beyond
+                                                                                     180 nm. MIM capacitors have good area efficiency; however,
+thus, the smaller the capacitance the smaller the energy con-                        they are usually associated with strict layout design rules which
+sumed. Energy efficiency of digital circuitry has been steadily                      limit the minimum MIM capacitance to several femtofarads or
+                                                                                     tens of femtofarads. In addition, MIM capacitors require special
+                                                                                     dedicated metal layers and process steps; thus, they are not sup-
+   Manuscript received October 26, 2015; revised January 27, 2016; accepted          ported by all process technologies. On the other hand, MOM ca-
+February 10, 2016. Date of publication April 21, 2016; date of current version       pacitors are built using the standard metal interconnect layers;
+July 15, 2016. This work was supported by the Advanced Membranes and                 thus, they can be implemented in any digital CMOS process.
+Porous Materials Center (AMPMC) under grant FCC/1/1972-05-01 and by
+King Abdullah University of Science and Technology (KAUST). This paper               In addition, MOM capacitors can be custom-crafted as layout
+was recommended by Associate Editor N. Krishnapura.                                  parasitic elements; thus, they can be arbitrarily small, where the
+   H. Omran and K. N. Salama are with King Abdullah University of Science            layout design rules to be observed are merely the metal-width
+and Technology (KAUST), Computer, Electrical and Mathematical Science and
+Engineering Division (CEMSE), Thuwal, 23955-6900, Saudi Arabia (e-mail:              and metal-spacing rules of the interconnect layer [3], [9].
+hesham.omran@kaust.edu.sa; khaled.salama@kaust.edu.sa).                                 In spite of the importance of small MOM capacitors in the de-
+   H. Alahmadi is with King Abdullah University of Science and Technology            sign of energy-efficient mixed-signal circuits, only few reports
+(KAUST), Computer, Electrical and Mathematical Science and Engineering Di-
+vision (CEMSE), Thuwal, 23955-6900, Saudi Arabia, and also with the School           discuss their matching properties based on reliable measure-
+of Electrical and Computer Engineering, Purdue University, West Lafayette, IN        ment data. The effect of the finger-length of lateral-field MOM
+47907 USA (e-mail: hamzah.alahmadi@kaust.edu.sa; halahmad@purdue.edu).               capacitor on mismatch is reported in [13] using two test struc-
+   Color versions of one or more of the figures in this paper are available online
+at http://ieeexplore.ieee.org.                                                       tures (1.2 fF and 0.45 fF). The mismatch measurement tech-
+   Digital Object Identifier 10.1109/TCSI.2016.2537824                               nique used in [13] employs a dedicated on-chip ADC for every
+1549-8328 © 2016 IEEE. Translations and content mining are permitted for academic research only. Personal use is also permitted, but republication/redistribution
+              requires IEEE permission. See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+764                                                IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS—I: REGULAR PAPERS, VOL. 63, NO. 6, JUNE 2016
+
+
+
+instance of the test structures, which requires considerable
+design-time and silicon area and makes it difficult to port the
+test structure from one technology to another. Matching prop-
+erties of MOM capacitors down to 8 fF are reported in [14].
+However, the mismatch measurement technique used in [14]
+relies on a complicated and error-prone process where compo-
+nent values are tuned in simulation till simulation results fit with
+measurement data.
+   In this paper, we study the matching properties of parallel-
+plate (vertical-field) and fringing (lateral-field) MOM capaci-
+tors using eight different test structures with unit capacitance
+down to 0.5 fF. The effect of both the finger-length and finger-
+spacing of fringing MOM capacitors on mismatch is studied.
+Direct mismatch measurement technique is employed, which
+allows simple and accurate mismatch measurement [1]. Six
+test-chips fabricated in a 0.18 μm CMOS process and compris-
+ing a total of 4800 test structures are characterized. Measured
+results show that the mismatch of both vertical-field and lateral-
+field MOM capacitors follow Pelgrom’s inverse-area model.
+The matching properties of vertical-field and lateral-field MOM        Fig. 1. Simplified schematic illustrating direct mismatch measurement be-
+capacitors are compared, and it is demonstrated that—despite           tween one pair of capacitors (Ceq1 and Ceq2 ). The parasitic capacitance at
+conventional wisdom—both have the same matching properties             the HIGH and LOW terminals are denoted as CP,H and CP,L , respectively.
+when the actual capacitor area is considered. Measurements
+show that a given matching requirement can be achieved using
+arbitrarily small capacitance by increasing the spacing while
+keeping the capacitor area constant. The area efficiency of
+vertical-field and lateral-field capacitors is compared, and the
+conditions that can make one type of implementation preferable
+are discussed.
+   The remainder of this paper is organized as follows. Section II
+explains the direct mismatch measurement technique and
+demonstrates its feasibility using experimental measurements
+and Monte Carlo simulations. Section III describes the capac-
+                                                                       Fig. 2. Results of Monte Carlo simulation showing the percent of error in
+itive test structures used in this study and illustrates the relia-    the capacitance mismatch measurement due to the mismatch in the switch ON
+bility of the proposed mismatch measurement approach using             resistance vs. the number of unit capacitors connected in parallel (NE ). The
+Monte Carlo simulations. Section IV presents experimental re-          parameters used for simulation are as follows: C = 1 fF, σ(ΔC/C) = 0.2%,
+                                                                       and 1 MHz measurement frequency.
+sults and provides insights on the measured matching properties
+of vertical-field and lateral-field MOM capacitors. Section V
+concludes this paper.                                                  where ΔC is the random variation of the unit capacitor (C).
+                                                                       The standard deviation of the unit capacitor relative variation is
+                                                                       denoted as σ(ΔC/C).
+           II. D IRECT M ISMATCH M EASUREMENT                             The first possible source of error in the previously described
+    A simplified schematic illustrating direct mismatch mea-           measurement configuration is the mismatch in the ON resistance
+surement is shown in Fig. 1. A pair of matched capacitors              of the switches used to select the capacitor-under-test. How-
+(Ceq1 and Ceq2 ) is directly measured using an LCR meter. By           ever, noting that the capacitor-under-test is in the femtofarad
+using on-chip switches, only one capacitor is connected to the         range, the ON resistance is negligible compared to the capacitor
+LCR meter at a time. The difference between the two LCR                reactance, where frequencies used in precision LCR meters
+meter readings is the mismatch between the two capacitors.             are typically ≤ 1 MHz. To further illustrate this, Monte Carlo
+This process is applied to several identical pairs of matched ca-      circuit simulation was performed using the models provided in
+pacitors to generate a statistical distribution that can be used to    the 0.18 μm process used to implement the test-chips in this
+calculate the standard deviation of the mismatch between Ceq1          study. The worst case error occurs when the reactance of the
+and Ceq2 . In order to increase the absolute capacitance differ-       capacitor-under-test is small (i.e., large number of elements and
+ence to be measured by the LCR meter, each of Ceq1 and Ceq2 is         large measurement frequency) and the switch ON resistance is
+comprised of NE independent unit capacitors (C) connected in           large (i.e., small transistor width). Fig. 2 shows that even when
+parallel. Thus, the absolute standard deviation to be measured         using a small switch of W/L = 0.5 μm/0.18 μm, a large number
+is given by                                                            of elements (NE = 50), and a large measurement frequency of
+                                                                      1 MHz, the error is less than 0.01%. Thus, the error due to the
+                  σ(Ceq ) = NE × σ(ΔC)                          (1)    switches ON resistance mismatch is practically negligible.
+OMRAN et al.: MATCHING PROPERTIES OF FEMTOFARAD AND SUB-FEMTOFARAD MOM CAPACITORS                                                                              765
+
+
+
+
+Fig. 3. Standard deviation of measurement noise vs. number of averaged LCR
+meter readings (Navg ) plotted on a log-log scale. The data set is obtained from
+30 000 consecutive LCR meter readings of a 2 fF unit capacitor with NE = 6.
+
+
+   The second possible source of error is the parasitic capaci-
+tance at the two terminals of the capacitor-under-test. Parasitic
+capacitances at the HIGH and LOW terminals of the LCR meter
+are denoted as CP,H and CP,L , respectively, as shown in Fig. 1.
+CP,H does not affect the measurement because the measured                          Fig. 4. Simplified schematic of (a) the vertical-field parallel-plate capacitor,
+                                                                                   and (b) the lateral-field fringing capacitor used in the mismatch study.
+current is the current flowing into the current-to-voltage con-
+verter (I-to-V) at the LOW terminal. The LCR meter LOW
+terminal is a virtual ground; thus, CP,L does not affect the mea-
+surement in the ideal case. Moreover, the LOW terminal is con-                     Metal5 and Metal4 layers as shown in Fig. 4(a). The capacitor
+nected to the common terminal of Ceq1 and Ceq2 ; thus, the same                    area is L2 , where L is the side length of the overlap region.
+parasitic capacitance exists when performing the two measure-                      The vertical spacing between Metal5 and Metal4—i.e., the
+ments. Consequently, even if CP,L affects the measurement due                      interlayer dielectric thickness (TOX )—is ≈ 0.55 μm. The con-
+to non-ideal effects, it will affect the measurement of Ceq1 and                   nections to the bottom plates were made using Metal2 layer,
+Ceq2 equally; thus, it will not affect the mismatch measurement.                   while Metal3 layer was used as a shield to eliminate any par-
+In addition, the parasitic capacitance is actually dominated by                    asitic capacitance between the routing wires and the top plate.
+the capacitance of the cables, connectors, and pads; thus, any                     The second type is a lateral-field fringing capacitor built using
+mismatch in the parasitic capacitance of the on-chip switches                      interdigitated fingers in Metal5 layer as shown in Fig. 4(b).
+or the capacitor-under-test is practically negligible.                             The capacitor is defined by three parameters: the overlap length
+   Given the previous two arguments, the only limitation to                        (L), the width of the metal finger (W ), and the spacing between
+the direct mismatch measurement technique is the measure-                          the fingers (S). The thickness of the metal layer (TM ) is
+ment accuracy of the LCR meter itself. For capacitors in the                       ≈ 0.48 μm.
+femtofarad range, the absolute accuracy of commercial LCR                             Fig. 5 shows a simplified schematic of the implemented test-
+meters is worse than 1%. Therefore, if we assume a 2 fF                            chip. Three sets of capacitors (A, B, and C) were considered in
+unit capacitor with σ(ΔC/C) = 0.1%, it may be anticipated                          the study. Each set comprises three arrays of test structures: e.g.,
+that such a measurement cannot be directly performed with an                       set A comprises the arrays A1, A2, and A3. Each array is com-
+LCR meter. However, the purpose of mismatch measurement                            prised of 100 identical test structures: e.g., as shown in Fig. 5,
+is to quantify the difference between two consecutively mea-                       the array A1 has 100 structures from A1[1] to A1[100]. Each
+sured capacitors, rather than measuring the absolute value of                      test structure, e.g., A1[1], has two matched capacitors: Ceq1 and
+the capacitance. Thus, the important specification that affects                    Ceq2 . Using on-chip switches, only one capacitor is connected
+mismatch measurement is the short-term repeatability (i.e.,                        to the CTOP and CBOT terminals at a time. The LCR meter
+measurement noise) rather than the absolute accuracy.                              measures the mismatch between the two capacitors (Ceq1 and
+   In order to illustrate the feasibility of direct mismatch mea-                  Ceq2 ) in each test structure. The on-chip switches are controlled
+surement, Fig. 3 shows the rms noise when measuring one                            by a register file which is accessed through an SPI interface.
+of the capacitive structures fabricated in this study, using a                        Each capacitor (Ceq1 or Ceq2 ) is comprised of NE unit
+commercial LCR meter (Agilent E4980A). The rms noise is                            capacitors connected in parallel: i.e., NE elements. The pitch
+only 11 aF which is much better than the absolute accuracy, and                    between elements is ≥ 2.72 μm; thus, the assumption of inde-
+it can be reduced by averaging multiple readings.                                  pendent unit capacitors in (1) is fairly reasonable [3], [13]. The
+                                                    Fig. 3 shows                  rationale behind choosing the number of elements per capacitor
+that the rms noise is inversely proportional to Navg , where
+Navg is the number of averaged readings [15]. By averaging                         is to keep σ(Ceq ) given by (1) sufficiently above the LCR meter
+100 readings an rms noise as low as 1 aF can be obtained.                          noise level. In addition, the number of elements was tuned to
+                                                                                   ensure a symmetric layout to minimize systematic mismatch.
+                                                                                      The parameters of the test structures are summarized in
+               III. C APACITIVE T EST S TRUCTURES
+                                                                                   Table I. Unit capacitors of three different values were considered:
+  Two types of MOM capacitors are considered in this work.                         namely, 2 fF, 1 fF, and 0.5 fF. Set A has three arrays of structures
+The first type is a vertical-field parallel-plate capacitor using                  (A1, A2, and A3) of the vertical capacitor shown in Fig. 4(a).
+766                                                       IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS—I: REGULAR PAPERS, VOL. 63, NO. 6, JUNE 2016
+
+
+
+
+Fig. 5. Simplified schematic of the implemented test-chip. Each array is comprised of 100 identical mismatch structures. Each mismatch structure contains two
+matched capacitors (Ceq1 and Ceq2 ).
+
+
+                                                                TABLE I
+          PARAMETERS OF THE T EST S TRUCTURES U SED IN THE M ISMATCH S TUDY. S ET A C OMPRISES V ERTICAL -F IELD C APACITORS W ITH
+                  D IFFERENT S IDE L ENGTHS (L), S ET B C OMPRISES L ATERAL -F IELD C APACITORS W ITH L ENGTH (L) VARIED
+                           W HILE S PACING (S) I S C ONSTANT, AND S ET C C OMPRISES L ATERAL -F IELD C APACITORS
+                                        W ITH S PACING (S) VARIED W HILE L ENGTH (L) I S C ONSTANT
+
+
+
+
+The side length (L) of the unit capacitor is varied in the layout
+and a parasitic extraction tool (Mentor Calibre) is used to verify
+that the three aforementioned values of unit capacitors are
+achieved. Similarly, Set B has three arrays of structures (B1,
+B2, and B3) of the lateral capacitor shown in Fig. 4(b), where
+the finger spacing (S) is constant while the overlap length (L) is
+varied. Set C also has three arrays of lateral structures (C1, C2,
+and C3) but the overlap length (L) is constant while the spacing
+(S) is varied. Structures B1 and C1 have the same parameters;
+thus, they are physically implemented as one array, i.e., a total
+of eight arrays are implemented in the test-chip.
+   In order to investigate the effect of the LCR meter noise on
+                                                                                Fig. 6. Monte Carlo simulation results to illustrate the effect of LCR meter
+the mismatch measurement, a MATLAB Monte Carlo simula-                          noise on the estimated σ(ΔC/C). The estimated σ(ΔC/C) is plotted vs. the
+tion was conducted. Without loss of generality, the simulation                  number of averaged LCR meter readings (Navg ).
+used the parameters of structures B1 and B2 where it was
+assumed that σ(ΔC/C) of B1 and B2 is 0.15% and 0.2%,                            can be subtracted from the estimated σ(ΔC/C) to obtain a
+respectively. For both B1 and B2, σ(ΔC/C) was estimated                         corrected estimate that is given by
+                                                                                                          
+from 100 mismatch structures, which is the same number of
+                                                                                                                        
+structures per array per test-chip. Based on the measurement                                        ΔC                 ΔC    σ2
+data in Section II, the LCR meter rms noise is assumed to be                           σcorrected                 2
+                                                                                                            = σnoisy        − noise  (2)
+                                                                                                     C                  C     Navg
+≈ 11 aF. Fig. 6 shows that as the number of averaged readings
+increases, the effect of the noise becomes negligible and the es-                        2
+                                                                                where σnoise   is the LCR meter rms noise. As shown in Fig. 6,
+timated σ(ΔC/C) converges to the expected values. It may be                     by averaging 10 readings only the corrected σ(ΔC/C) is close
+anticipated that a large number of readings, and consequently                   to the expected value; however, 100 readings were averaged in
+long measurement time, is required; however, even when using                    the experimental measurements to further improve the accuracy
+a small number of readings, the effect of the LCR meter noise                   of the results.
+OMRAN et al.: MATCHING PROPERTIES OF FEMTOFARAD AND SUB-FEMTOFARAD MOM CAPACITORS                                                                         767
+
+
+
+
+Fig. 7. Monte Carlo simulation results for the estimated σ(ΔC/C) using six
+chips where each chip contains 100 mismatch structures.                         Fig. 9. Schematic of the test setup used for mismatch characterization.
+
+
+
+
+                                                                                Fig. 10. Measured σ(ΔC/C) for structures B1 and B2 vs. number of averaged
+                                                                                readings.
+Fig. 8. Micrograph of the fabricated MOM mismatch characterization test-chip.
+
+
+
+   The statistical distribution of the test structures mismatch
+measurement is used to estimate σ(ΔC/C). The larger the
+number of measured test structures, the smaller the error in
+the estimated σ(ΔC/C). To obtain an estimate of the expected
+error in the estimated σ(ΔC/C), an additional Monte Carlo
+simulation was performed. Without loss of generality, the sim-
+ulation emulates the measurement scenario of the structure B2,
+assuming its σ(ΔC/C) to be 0.2%. Each chip has 100 mis-
+match structures of B2, where each structure is measured
+100 times. After averaging the readings of each structure and
+                                                                                Fig. 11. Repeatability of the measured σ(ΔC/C) for three test structures: A1,
+subtracting the LCR meter noise, σ(ΔC/C) is estimated from                      B1/C1, and B2.
+the resulting distribution. Furthermore, the simulation assumes
+that a total of six chips are characterized (which is same number
+of experimentally characterized chips); thus, the estimated stan-               boards and 65 μm × 65 μm pads were directly bonded to the
+dard deviations from the six chips are averaged to obtain a more                board using Hybond 676 wedge wire bonder. A large number of
+accurate estimate of σ(ΔC/C). The Monte Carlo simulation                        digital signals is used on-chip to control the switches associated
+repeats the previous scenario 1000 times, and the resulting                     with the large number of structures; however, by implementing
+distribution of the estimated σ(ΔC/C) is shown in Fig. 7. The                   an SPI interface, the number of the chip digital input/output
+mean of the distribution is very close to the actual value (0.2%)               signals were minimized. A total of six chips were characterized
+and the rms error is only 0.006%, which illustrates the accuracy                in this study: i.e., 600 mismatch measurement points for each
+of the measurement scenario employed in this study.                             type of structure and 4800 total mismatch measurement points.
+                                                                                Noting that each structure has two capacitors and each mea-
+                                                                                surement point is obtained by averaging 100 readings, a total of
+                  IV. R ESULTS AND D ISCUSSION                                  960 000 readings were performed. A LabVIEW program was
+                                                                                designed for measurement automation and data acquisition. An
+A. Fabricated Chip and Test Setup
+                                                                                Aardvark USB-to-SPI adapter is used to communicate with the
+  Fig. 8 shows a micrograph for the test-chip fabricated in a                   test-chip. Data acquisition from the LCR meter is done via
+0.18 μm CMOS technology. All the mismatch structures are                        GPIB. The LCR meter is connected to the test board using
+covered with a metal shield using the top metal layer (Metal6).                 shielded cables and SMA connectors. Fig. 9 shows a schematic
+The fabricated chips were directly mounted on custom test                       of the test setup.
+768                                                           IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS—I: REGULAR PAPERS, VOL. 63, NO. 6, JUNE 2016
+
+
+
+
+Fig. 12. Histograms of the measured relative variation (ΔC/C) for each type of mismatch structures using one test-chip. Set A has vertical capacitors with
+length (L) as a variable, set B has lateral capacitors with length (L) as a variable, and set C has lateral capacitors with spacing (S) as a variable. Capacitor values
+for each set are 2 fF, 1 fF, and 0.5 fF.
+
+
+B. Averaging and Repeatability                                                       procedure is repeated for six chips, and the estimated σ(ΔC/C)
+                                                                                     is plotted vs. chip index in Fig. 13. The measurements of each
+   The effect of the LCR meter noise on the estimated σ(ΔC/C)
+                                                                                     set are grouped together in a subfigure. The behavior observed
+was experimentally verified. As an example, the estimated
+                                                                                     in Fig. 12 is similar for all the chips: i.e., the structures of
+σ(ΔC/C) from measurement data of structures B1 and B2 is
+                                                                                     set A and set B follow Pelgrom’s inverse-area relation, while
+plotted vs. number of averaged readings in Fig. 10. The mea-
+                                                                                     structures of set C have almost the same σ(ΔC/C). The expla-
+sured results show the same behavior expected from the Monte
+                                                                                     nation for this behavior follows in the next subsection.
+Carlo simulations shown in Fig. 6. By correcting σ(ΔC/C)
+using (2), a fairly accurate estimate can be obtained using
+a small number of readings. However, for all the reported                            D. Pelgrom’s Coefficients
+results, 100 readings were averaged for each mismatch mea-
+                                                                                       The previous results can be explained by noting that
+surement point to improve the accuracy and the reliability of the
+                                                                                     Pelgrom’s inverse-area dependence is based on the area of the
+measurements.
+                                                                                     capacitor itself rather than the occupied top-view chip area or
+   To further demonstrate the robustness of the measurement
+                                                                                     the value of the capacitance. The analysis of capacitance errors
+technique used in this study, the repeatability of the measure-
+                                                                                     due to random oxide variations shows that σ(ΔC/C) satisfies
+ment was assessed by repeating the measurement on the same
+                                                                                     [16, eq. (16)]
+array for 10 times. As an example, Fig. 11 shows the estimated
+                                                                                                                                     
+σ(ΔC/C) for three different arrays (A1, B1/C1, and B2) on
+                                                                                                 ΔC          1           Δr            ΔS
+one test-chip for 10 measurement cycles, where the results show                              σ           ∝ √ · σ      2         +σ  2             (3)
+excellent repeatability.                                                                          C           A           r            S
+
+                                                                                     where A is the capacitor area and r is the oxide relative
+C. Measured Capacitor Variation
+                                                                                     permittivity. For set C of lateral capacitors, the capacitor area is
+   Fig. 12 shows the histograms of the measured relative varia-                      the lateral area, which is the same for the three structures: C1,
+tion of each type of test structure from one test-chip. For                          C2, and C3. The measurement results in Figs. 12 and 13 show
+structures of set A and set B, the estimated σ(ΔC/C) matches                         that the structures of set C have the same mismatch behavior,
+the expected behavior from Pelgrom’s inverse-area model: the                         which means that σ(ΔC/C) does not depend on S. Hence,
+smaller capacitors (with smaller area) show higher relative                          the dominant component in (3) is σ 2 (Δr /r ) rather than
+variation. For set C, although the three structures have different                   σ 2 (ΔS/S), and (3) simplifies to the well-known Pelgrom’s
+unit capacitors (2 fF, 1 fF, and 0.5 fF) and occupy different chip                   inverse-area relation. This also suggests that vertical capacitors
+areas, they all show similar relative variation. The measurement                     and lateral capacitors should show the same mismatch behavior
+OMRAN et al.: MATCHING PROPERTIES OF FEMTOFARAD AND SUB-FEMTOFARAD MOM CAPACITORS                                                                                769
+
+
+
+
+Fig. 13. Measured σ(ΔC/C) for the structures of six different chips. From left to right: set A of vertical capacitors with length (L) as a variable, set B of lateral
+capacitors with length (L) as a variable, and set C of lateral capacitors with spacing (S) as a variable. Capacitor values for each set are 2 fF, 1 fF, and 0.5 fF.
+
+                                                              TABLE II
+           M EASURED U NIT C APACITOR M EAN VALUES , M EAN σ(ΔC/C), AND P ELGROM ’ S C OEFFICIENTS E XTRACTED BY C URVE F ITTING
+
+
+
+
+when the actual capacitor area is considered, as will be shown                         Pelgrom’s coefficients given in (4)–(6) were extracted using
+in the next subsection.                                                             non-linear least squares curve fitting, performed using MAT-
+   For set A of vertical capacitors, the capacitor area is itself the               LAB curve fitting toolbox. Table II shows the measured mean
+top-view chip area; thus, Pelgrom’s relation can be written as                      unit capacitance, mean σ(ΔC/C), and the fitted Pelgrom’s
+                                                                                  coefficients for each structure. Three points were used for
+                           ΔC         KA,top
+                      σ           =                              (4)               the fitting of set A and set B model, where the rms error
+                            C           Atop                                        (RMSE) of the fit is only 0.004% for set A and 0.006% for
+                                                                                    set B. It is worth mentioning that the increased mismatch due
+where KA,top is Pelgrom’s coefficient for the dependence of                         to edge effects reported for the PIP structures in [1] was not
+σ(ΔC/C) on the top-view chip area (Atop ). For set B and set C                      observed for the MOM structures in this study.
+of lateral capacitors, the capacitor area is the lateral area rather
+than the top-view chip area; thus, Pelgrom’s dependence can be
+                                                                                    E. Comparison and Discussion
+written as
+                                                                                     In order to gain more insight into the results, the measured
+                         ΔC        KA,lateral
+                     σ          = √                              (5)                mean σ(ΔC/C) is plotted vs. capacitance and overlaid on fitted
+                           C          Alateral                                      Pelgrom’s model in Fig. 14. Fig. 14(a) shows that for the same
+                                                                                    capacitance value, set A has lower mismatch compared to set B.
+where KA,lateral is Pelgrom’s coefficient for the dependence of
+                                                                                    It may be anticipated from this result that vertical capacitors
+σ(ΔC/C) on the lateral area (Alateral ). Noting that for set B
+                                                                                    match better than lateral capacitors; however, this is not true
+the metal spacing (S) and the metal thickness (TM ) are con-
+                                                                                    as will be shown shortly. Fig. 14(b) shows that all capacitors of
+stant while the length (L) is varied, the top-view area is propor-
+                                                                                    set C have roughly the same σ(ΔC/C) although their capacitor
+tional to the capacitor area; thus, (4) can be applied to set B as
+                                                                                    values are different. Taking a horizontal line in Fig. 14(b) re-
+well. For both set A and set B, the capacitance is proportional
+                                                                                    veals that for a given mismatch requirement the capacitance of a
+to the capacitor area; thus, a third form of Pelgrom’s model can
+                                                                                    lateral capacitor can be arbitrarily small, while taking a vertical
+be used, which is given by [13]
+                                                                                    line shows that for a given capacitance the mismatch can be
+                                 
+                            ΔC          KC                                          arbitrarily small. The price paid in both cases is increasing the
+                        σ           =√                         (6)                  occupied chip area.
+                              C          C
+                                                                                       The relation between vertical and lateral capacitors can be
+where KC is Pelgrom’s coefficient for the dependence of                             understood with the help of Fig. 15, where the measured mean
+σ(ΔC/C) on the capacitance. If (4) and (6) are applied to set C,                    σ(ΔC/C) is plotted vs. area overlaid on fitted Pelgrom’s model.
+each structure will have its own Pelgrom’s coefficient because                      Fig. 15(a) shows that, when the top-view chip area is consid-
+the top-view chip area and the capacitance are not proportional                     ered, set A matches better similar to Fig. 14(a). However, when
+to the actual capacitor area.                                                       the actual capacitor area is considered (where the capacitor
+770                                                        IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS—I: REGULAR PAPERS, VOL. 63, NO. 6, JUNE 2016
+
+
+
+                                                                                 set A, B, and C follow the same mismatch curve. Previous
+                                                                                 reports suggested that lateral capacitors should match better
+                                                                                 than vertical capacitors, because their spacing is determined
+                                                                                 by accurate lithography [13], [17]. However, based on the
+                                                                                 presented measurement results, the claim that lateral capacitors
+                                                                                 match better is disproved. This can be further explained by
+                                                                                 noting that the dominant component in (3) is σ 2 (Δr /r ) rather
+                                                                                 than σ 2 (ΔS/S); thus, the accuracy of the lithography should
+                                                                                 imply no difference between vertical and lateral capacitors.
+                                                                                    Additional experimental measurements for test-chips fab-
+                                                                                 ricated in several different technology nodes are required to
+                                                                                 verify that the above conclusions will remain valid under tech-
+                                                                                 nology scaling. However, it should be noted that the pitch of
+                                                                                 top metal layers is typically much larger than the technology
+                                                                                 minimum feature size [13], [18]. Since top metal layers have
+                                                                                 less parasitics, they are typically preferred for capacitor imple-
+                                                                                 mentation. Thus, we expect that the conclusions drawn in this
+                                                                                 study will remain valid.
+
+                                                                                 F. Area Efficiency
+
+Fig. 14. Measured mean σ(ΔC/C) vs. capacitance for the three sets of
+                                                                                    Although the results show that vertical and lateral capacitors
+structures overlaid on fitted Pelgrom’s model. (a) Set A compared to set B and   will show the same mismatch behavior if the actual capacitor
+(b) set B compared to set C.                                                     area is considered, an important question is not yet answered:
+                                                                                 namely, which type of capacitor to use and when? The answer
+                                                                                 to this question depends on the specific parameters of each
+                                                                                 process; however, we will present a simplified analysis that uses
+                                                                                 the parameters of the process used to implement the test-chip as
+                                                                                 an example. The primary factor affecting the answer is the area
+                                                                                 efficiency: i.e., given the same capacitance value and the same
+                                                                                 σ(ΔC/C), which type of capacitor occupies a smaller sili-
+                                                                                 con area?
+                                                                                    To answer this question, we assume a vertical capacitor and
+                                                                                 a lateral capacitor with the same capacitance and the same
+                                                                                 σ(ΔC/C). From the condition that the two capacitors have the
+                                                                                 same σ(ΔC/C), it follows that they have the same capacitor
+                                                                                 area, which can be written as
+                                                                                                        L2V = 2NM TM LL                        (7)
+                                                                                 where LV is the side length of the vertical capacitor, NM is the
+                                                                                 number of metal layers used to implement the lateral capacitor,
+                                                                                 and LL is the length of the lateral capacitor. Noting that the
+                                                                                 capacitor area is the same, the condition that the two capacitors
+                                                                                 have the same value means that they have the same spacing be-
+                                                                                 tween the capacitor plates. This can be written as
+                                                                                                          NOX TOX = S                          (8)
+Fig. 15. Measured mean σ(ΔC/C) vs. area for the three sets of structures
+overlaid on fitted Pelgrom’s model. (a) Set A compared to set B, and (b) all     where NOX is the number of oxide layers between the plates
+results overlaid vs. actual capacitor area. The x-axis is either top-view chip   of the vertical capacitor. From (7) and (8), the ratio between
+area or lateral area as indicated in the legend of the subfigures.               the occupied chip area of the vertical capacitor and the lateral
+                                                                                 capacitor is given by
+area of set B is the lateral area), interestingly, set A and set B
+                                                                                                           L2V        NM T M
+almost coincide. This means that, when the actual capacitor                                μArea =                =                            (9)
+                                                                                                      2LL (W + S)   W + NOX TOX
+area is considered, both vertical and lateral capacitors have
+the same mismatch behavior when they are implemented using                       where for μArea < 1, the vertical capacitor is more area effi-
+the same process. This is further clarified in Fig. 15(b), which                 cient, while for μArea > 1 the lateral capacitor is more area
+shows that, when the actual capacitor area is considered-which                   efficient. The number of oxide layers (NOX ) is practically
+is the lateral area for set B and set C—all the structures of                    limited to one or two layers, because at least two metal layers
+OMRAN et al.: MATCHING PROPERTIES OF FEMTOFARAD AND SUB-FEMTOFARAD MOM CAPACITORS                                                                       771
+
+
+
+                                                                                                           R EFERENCES
+                                                                              [1] H. Omran, R. ElAfandy, M. Arsalan, and K. Salama, “Direct mismatch
+                                                                                  characterization of femtofarad capacitors,” IEEE Trans. Circuits Syst. II,
+                                                                                  Exp. Briefs, vol. 63, no. 2, pp. 151–155, Feb. 2016.
+                                                                              [2] M. Pelgrom, A. C. J. Duinmaijer, and A. Welbers, “Matching proper-
+                                                                                  ties of MOS transistors,” IEEE J. Solid-State Circuits, vol. 24, no. 5,
+                                                                                  pp. 1433–1439, 1989.
+                                                                              [3] P. Harpe, C. Zhou, Y. Bi, N. van der Meijs, X. Wang, K. Philips,
+                                                                                  G. Dolmans, and H. De Groot, “A 26 μW 8 bit 10 MS/s asynchronous
+                                                                                  SAR ADC for low energy radios,” IEEE J. Solid-State Circuits, vol. 46,
+                                                                                  no. 7, pp. 1585–1595, 2011.
+                                                                              [4] B. Murmann, “Energy limits in A/D converters,” in Proc. IEEE Faible
+                                                                                  Tension Faible Consommation (FTFC), Jun. 2013, pp. 1–4.
+                                                                              [5] M. Pertijs and Z. Tan, “Energy-Efficient Capacitive Sensor Inter-
+Fig. 16. Ratio between the occupied silicon area of vertical capacitor and        faces,” in Nyquist AD Converters, Sensor Interfaces, Robustness,
+lateral capacitor having the same capacitance value and the same σ(ΔC/C)          A. H. van Roermund, A. Baschirotto, and M. Steyaert, Eds. New York,
+vs. the number of metal layers used in the lateral capacitor (NM ).               NY, USA: Springer, 2013, pp. 129–147.
+                                                                              [6] H. Lee, S. Park, C. Lim, and C. Kim, “A 100-nW 9.1-ENOB 20-kS/s
+                                                                                  SAR ADC for portable pulse oximeter,” IEEE Trans. Circuits Syst. II,
+are required for shielding and routing below the capacitor                        Exp. Briefs, vol. 62, no. 4, pp. 357–361, Apr. 2015.
+bottom plate layer. On the other hand, the number of metal                    [7] J.-H. Tsai, H.-H. Wang, Y.-J. Chen, Y.-H. Wei, Y.-H. Kao, Y.-C. Yen,
+layers in a lateral capacitor can be as large as the number of the                P.-C. Huang, M.-H. Shen, and H. Chen, “A 1-V − 0.6-V 9-b 1.5-MS/s
+                                                                                  reference-free charge-sharing SAR ADC for wireless-powered im-
+standard routing metal layers in the process. Plotting (9) reveals                plantable telemetry,” IEEE Trans. Circuits Syst. II, Exp. Briefs, vol. 61,
+that, if both NOX and NM are equal to one, the area efficiency                    no. 11, pp. 825–829, Nov. 2014.
+of the vertical capacitor is two times better than the lateral                [8] H. Omran, M. Arsalan, and K. N. Salama, “An integrated energy-efficient
+                                                                                  capacitive sensor digital interface circuit,” Sensors Actuators A, Phys.,
+capacitor, as shown in Fig. 16. However, the lateral capacitor                    vol. 216, pp. 43–51, 2014.
+is more area efficient in the case of a large number of metal lay-            [9] P. Harpe, E. Cantatore, and A. van Roermund, “A 2.2/2.7fJ/conversion-
+ers: i.e., roughly speaking, when NM > NOX + 1. Technology                        step 10/12b 40kS/s SAR ADC with data-driven noise reduction,” in IEEE
+                                                                                  Int. Solid-State Circuits Conf. Dig. Tech. Papers (ISSCC), Feb. 2013,
+scaling decreases W and increases TM [18]; thus, it will be in                    pp. 270–271.
+favor of lateral capacitors. It should be noted that the previous            [10] J. McCreary and P. Gray, “All-MOS charge redistribution analog-to-
+analysis is simplified, e.g., it ignores the effect of vias on lateral            digital conversion techniques. I,” IEEE J. Solid-State Circuits, vol. 10,
+                                                                                  no. 6, pp. 371–379, Dec. 1975.
+capacitors, and it assumes r is the same for both vertical and              [11] M. Saberi, R. Lotfi, K. Mafinezhad, and W. Serdijn, “Analysis of power
+lateral capacitors. Practically, the layout design rules, routing                 consumption and linearity in capacitive digital-to-analog converters used
+complexity, and parasitics may also affect the designer’s choice                  in successive approximation ADCs,” IEEE Trans. Circuits Syst. I, Reg.
+                                                                                  Papers, vol. 58, no. 8, pp. 1736–1748, 2011.
+between vertical and lateral capacitors.                                     [12] H. Omran, M. Arsalan, and K. N. Salama, “A robust parasitic-insensitive
+                                                                                  successive approximation capacitance-to-digital converter,” in Proc. IEEE
+                                                                                  Custom Integr. Circuits Conf. (CICC), San Jose, CA, Sep. 2014, pp. 1–4,
+                          V. C ONCLUSION                                          doi: 10.1109/CICC.2014.6946080.
+                                                                             [13] V. Tripathi and B. Murmann, “Mismatch characterization of small metal
+   The mismatch of several different vertical-field and lateral-                  fringe capacitors,” IEEE Trans. Circuits Syst. I, Reg. Papers, vol. 61,
+field MOM capacitors was directly measured using simple test                      no. 8, pp. 2236–2242, Aug. 2014.
+                                                                             [14] A. Verma and B. Razavi, “Frequency-based measurement of mismatches
+structures that can be automated and ported. A large number                       between small capacitors,” in Proc. IEEE Custom Integr. Circuits Conf.
+of structures is multiplexed using shared pads, which greatly                     (CICC ’06), Sep. 2006, pp. 481–484.
+simplifies the testing process and enables extracting mismatch               [15] C. Kraaikamp, F. Dekking, H. Lopuhaä, and L. Meester, A Modern Intro-
+                                                                                  duction to Probability and Statistics. New York, NY, USA: Springer,
+information from reliable statistical distributions. Extensive ex-                2005.
+perimental measurements reveal several important results that                [16] J.-B. Shyu, G. Temes, and K. Yao, “Random errors in MOS capacitors,”
+are useful to the designer: 1) femtofarad and sub-femtofarad                      IEEE J. Solid-State Circuits, vol. 17, no. 6, pp. 1070–1076, Dec. 1982.
+                                                                             [17] R. Aparicio, and A. Hajimiri, “Capacity limits and matching properties of
+vertical and lateral capacitors follow Pelgrom’s inverse-area                     integrated capacitors,” IEEE J. Solid-State Circuits, vol. SSC-37, no. 3,
+model, 2) capacitor mismatch depends on the capacitor area but                    pp. 384–393, Mar. 2002.
+not on the spacing, 3) vertical and lateral capacitors have the              [18] R. Ho, K. Mai, and M. Horowitz, “The future of wires,” Proc. IEEE,
+                                                                                  vol. 89, no. 4, pp. 490–504, Apr. 2001.
+same matching properties if the actual capacitor area is consid-
+ered, 4) vertical capacitors are more area efficient than lateral                                      Hesham Omran received the B.Sc. (with honors)
+capacitors that are built using a single metal layer, 5) lateral                                       and M.Sc. degrees from Ain Shams University,
+capacitors are more area efficient if a large number of metal                                          Cairo, Egypt, in 2007 and 2010, respectively, and
+                                                                                                       the Ph.D. degree from King Abdullah University of
+layers are stacked, and 6) for a given matching requirement, the                                       Science and Technology (KAUST), Saudi Arabia,
+capacitance of a lateral capacitor can be made arbitrarily small                                       in 2015, all in electrical engineering. From 2008 to
+by increasing the spacing between the capacitor fingers at the                                         2011, he was a Research Assistant with the Inte-
+                                                                                                       grated Circuits Lab (ICL), Ain Shams University,
+expense of increased chip area.                                                                        and a Design Engineer with Si-Ware Systems (SWS),
+                                                                                                       Cairo, Egypt, where he worked on the circuit and
+                        ACKNOWLEDGMENT                                                                 system design of the first miniaturized FT-IR MEMS
+                                                                             spectrometer. Since 2011, he has been a researcher with the Sensors lab,
+  The authors would like to thank the reviewers for their                    KAUST. He held internships with Bosch Research and Technology Center, Palo
+                                                                             Alto, CA, USA, and with Mentor Graphics, Cairo, Egypt. He has published
+valuable comments and suggestions which helped improve the                   18 + papers in international journals and conferences. His research interests
+quality of the manuscript and made it clearer and easier to read.            include sensing microsystems and mixed-signal integrated circuit design.
+772                                                       IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS—I: REGULAR PAPERS, VOL. 63, NO. 6, JUNE 2016
+
+
+
+                          Hamzah Alahmadi is currently working toward                                        Khaled N. Salama (S’97–M’05–SM’10) received
+                          the B.S. degree in electrical engineering at Purdue                                the B.S. degree (with honors) from the Department
+                          University, West Lafayette, IN, USA, with expected                                 Electronics and Communications, Cairo University,
+                          graduation in May 2016. He had the privilege to                                    Cairo, Egypt, in 1997, and the M.S. and Ph.D. de-
+                          be selected by King Abdullah University of Science                                 grees from the Department of Electrical Engineering,
+                          and Technology (KAUST) with 50 other high school                                   Stanford University, Stanford, CA, USA, in 2000 and
+                          students in Saudi Arabia to be awarded KAUST                                       2005, respectively.
+                          Gifted Student Program (KGSP) scholarship. During                                     He was an Assistant Professor at Rensselaer Poly-
+                          the summer of 2014, he worked at the e-Lab at                                      technic Institute, Troy, NY, USA, between 2005 and
+                          Purdue University to transfer data wirelessly from                                 2009. He joined King Abdullah University of Sci-
+                          brain monitoring devices. In the summer of 2015, he                                ence and Technology, Saudi Arabia, in January 2009,
+did an internship at the Sensors Lab at KAUST, working on characterizing        where he is currently an Associate Professor, and was the founding Program
+mixed-signal integrated circuits and sensor readout systems. He has also        Chair until August 2011. His work on CMOS sensors for molecular detection
+been involved in the Global Development Team at Purdue to lead the power        has been funded by the National Institutes of Health (NIH) and the Defense
+distribution design in Bangang, Cameroon.                                       Advanced Research Projects Agency (DARPA), awarded the Stanford-Berkeley
+                                                                                Innovators Challenge Award in biological sciences and was acquired by Lumina
+                                                                                Inc. He is the author of 150 papers and 14 patents on low-power mixed-
+                                                                                signal circuits for intelligent fully integrated sensors and nonlinear electronics
+                                                                                specially memristor devices.
+

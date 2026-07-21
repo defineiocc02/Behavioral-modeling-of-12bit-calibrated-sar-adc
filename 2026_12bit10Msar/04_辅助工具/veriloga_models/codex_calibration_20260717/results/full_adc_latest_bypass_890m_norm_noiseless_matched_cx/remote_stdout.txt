@@ -1,0 +1,1437 @@
+
+Spectre (R) Circuit Simulator
+Version 23.1.0.242.isr1 64bit -- 7 Sep 2023
+Copyright (C) 1989-2023 Cadence Design Systems, Inc. All rights reserved
+        worldwide. Cadence and Spectre are registered trademarks of Cadence
+        Design Systems, Inc. All others are the property of their respective
+        holders.
+
+Includes RSA BSAFE(R) Cryptographic or Security Protocol Software from RSA
+        Security, Inc.
+
+User: meow   Host: meowu   HostID: 7F0101   PID: 17054
+Memory  available: 17.8033 GB  physical: 22.0406 GB
+Linux   : CentOS Linux release 7 (Core)
+CPU Type: AMD Ryzen 7 8845H w/ Radeon 780M Graphics
+All processors running at 3792.6 MHz
+        Socket: Processors
+        0:       0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+                10, 11
+        
+System load averages (1min, 5min, 15min) : 8.3 %, 9.3 %, 15.4 %
+HPC is enabled
+This is a virtual machine
+
+
+Simulating `full_adc_latest_bypass_890m_norm_noiseless.scs' on meowu at 1:20:38
+        AM, Sat Jul 18, 2026 (process id: 17054).
+Current working directory:
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_bypass_890m_norm_noiseless_matched_cx
+Command line:
+    /opt/cadence/SPECTRE231/tools.lnx86/bin/spectre -64  \
+        full_adc_latest_bypass_890m_norm_noiseless.scs +log spectre.out  \
+        -format psfxl -raw psf +mt +preset=cx
+Licensing Information:
+[01:20:38.406897] Configured Lic search path (22.01-s002):
+        /opt/cadence/IC618/share/license/license.dat
+
+Licensing Information:
+[01:20:38.187939] Periodic Lic check successful
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_bypass_890m_norm_noiseless_matched_cx/full_adc_latest_bypass_890m_norm_noiseless.scs
+
+Notice from spectre during circuit read-in.
+    Pre_Configuration file used:
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+    Configuration file used:
+        `/opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg'.
+
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/spectre.cfg
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.precfg
+Reading file:  /usr/include/stdc-predef.h
+Reading file:  /home/meow/Desktop/TSMC18RF/models/spectre/rf018.scs
+
+Warning from spectre in `ndio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16006: The inline subckt definition `ndio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16023: The inline subckt definition `pdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `nwdio', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16040: The inline subckt definition `nwdio' does not contain any inline
+        components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `ndio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16067: The inline subckt definition `ndio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+Warning from spectre in `pdio_3', during circuit read-in.
+    WARNING (SFE-2296):
+        "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs"
+        16084: The inline subckt definition `pdio_3' does not contain any
+        inline components. The `inline' qualifier will therefore be ignored.
+        Further occurrences of this warning will be suppressed.
+
+Reading link: 
+        /opt/cadence/IC618/tools/dfII/samples/artist/ahdlLib/not_gate/veriloga/veriloga.va
+Reading link:  /opt/cadence/IC618/tools
+Reading file: 
+        /opt/cadence/IC618/tools.lnx86/dfII/samples/artist/spectreHDL/Verilog-A/logic/not_gate.va
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/constants.vams
+Reading link: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/discipline.h
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/ahdl/disciplines.vams
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_bypass_890m_norm_noiseless_matched_cx/SWITCH_CAL_original.va
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_latest_bypass_890m_norm_noiseless_matched_cx/DEC_CAL_PHY_FRAME_SYNC.va
+Reading file: 
+        /opt/cadence/SPECTRE231/tools.lnx86/spectre/etc/configs/preset.cfg
+Time for NDB Parsing: CPU = 397.912 ms, elapsed = 255.881 ms.
+Time accumulated: CPU = 454.11 ms, elapsed = 255.883 ms.
+Peak resident memory used = 122 Mbytes.
+
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_not_gate.so
+Created directory
+        ./full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to directory
+        ./full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/
+        to
+        ./full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB//1aee6bedc9758d9332d0cd712f3427c6.not_gate.ahdlcmi/Linux-64/.
+The simulator has reused the existing Verilog-A libraries for this simulation
+        run. If you do not want to use these libraries, set the
+        'CDS_AHDL_REUSE_LIB' environment variable to 'NO' and rerun the
+        simulation.
+Existing shared object for module not_gate is up to date.
+Installed compiled interface for not_gate.
+Reading file: 
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0/libahdlcmi_SWITCH_CAL.so
+Created directory
+        ./full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/obj/optimize/5.0
+
+
+Copying files from directory
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to directory
+        ./full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+Finished copying files from
+        /home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/full_adc_bypass_890m_norm_cx/full_adc_bypass_890m_norm.ahdlSimDB/620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/
+        to
+        ./full_adc_latest_bypass_890m_norm_noiseless.ahdlSimDB//620f504020a4055924f8682792b3f2e2.SWITCH_CAL.ahdlcmi/Linux-64/.
+Existing shared object for module SWITCH_CAL is up to date.
+Installed compiled interface for SWITCH_CAL.
+Compiling ahdlcmi module library for DEC_CAL_PHY.
+Finished compilation in 961 ms (elapsed) for DEC_CAL_PHY.
+Installed compiled interface for DEC_CAL_PHY.
+
+
+Time for Elaboration: CPU = 1.56725 s, elapsed = 1.27745 s.
+Time accumulated: CPU = 2.02174 s, elapsed = 1.53352 s.
+Peak resident memory used = 174 Mbytes.
+
+
+Notice from spectre during hierarchy flattening.
+    The value 'psf' specified for the 'checklimitdest' option will no longer be
+        supported in future releases. Use 'spectre -h' to see other recommended
+        values for the 'checklimitdest' option.
+
+
+Time for EDB Visiting: CPU = 16.757 ms, elapsed = 8.4672 ms.
+Time accumulated: CPU = 2.03898 s, elapsed = 1.54223 s.
+Peak resident memory used = 176 Mbytes.
+
+
+Notice from spectre during topology check.
+    Only one connection to the following 18 nodes:
+        OUT
+        CAL_START
+        BN<13>
+        BN<12>
+        BN<11>
+        Further occurrences of this notice will be suppressed (except in log
+        file).
+    No DC path from node `I1.net4' to ground, Gmin installed to provide path.
+    No DC path from node `I1.net3' to ground, Gmin installed to provide path.
+
+
+Global user options:
+         psfversion = 1.4.0
+               temp = 27
+           homotopy = 5
+              limit = delta
+            gmethod = dev
+     dptran_gmethod = dev
+        try_fast_op = yes
+               gmin = 1e-12
+             rforce = 1
+           maxnotes = 5
+           maxwarns = 5
+             digits = 5
+               cols = 80
+             pivrel = 0.001
+           sensfile = ../psf/sens.output
+     checklimitdest = psf
+               save = selected
+           currents = selected
+               tnom = 27
+             scalem = 1
+              scale = 1
+
+Scoped user options:
+
+Circuit inventory:
+              nodes 503
+            bsim3v3 594   
+          capacitor 37    
+        DEC_CAL_PHY 1     
+            isource 1     
+           not_gate 85    
+         SWITCH_CAL 1     
+               vcvs 12    
+            vsource 20    
+
+Analysis and control statement inventory:
+                 dc 1     
+               info 8     
+               tran 1     
+
+Output statements:
+             .probe 0     
+           .measure 0     
+               save 1     
+
+
+Notice from spectre during initial setup.
+    Spectre X preset=cx enabled.
+    1 notice suppressed.
+    4 warnings suppressed.
+
+Licensing Information:
+[01:20:40.226562] Periodic Lic check successful
+
+
+Notice from spectre.
+    Multithreading enabled: 8 threads in the system with 12 available
+        processors.
+
+Time for parsing: CPU = 133.145 ms, elapsed = 65.8729 ms.
+Time accumulated: CPU = 2.17294 s, elapsed = 1.60851 s.
+Peak resident memory used = 178 Mbytes.
+
+~~~~~~~~~~~~~~~~~~~~~~
+Pre-Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~
+   -   (Spectre X) Multi-threading. The recommended number of threads is [2,
+        4], consider adding +mt=2 or +mt=4 on command line.
+~~~~~~~~~~~~~~~~~~~~~~
+
+******************
+DC Analysis `dcOp'
+******************
+
+Opening the PSF file psf/dcOp.dc ...
+Important parameter values:
+    reltol = 1e-03
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    gmindc = 1 pS
+    rabsshort = 1 mOhm
+Trying Fast DC 0.
+
+Notice from spectre during DC analysis `dcOp'.
+    Bad pivoting is found during DC analysis. Option dc_pivot_check=yes is
+        recommended for possible improvement of convergence.
+
+
+Maximum value achieved for any signal of each quantity: 
+V: V(I91.net3) = 1.8 V
+I: I(V34:p) = 12.89 uA
+Convergence achieved in 228 iterations.
+DC simulation time: CPU = 583.431 ms, elapsed = 92.8419 ms.
+Total time required for dc analysis `dcOp': CPU = 584.216 ms, elapsed = 93.081
+        ms, util. = 628%.
+Time accumulated: CPU = 2.77579 s, elapsed = 1.71064 s.
+Peak resident memory used = 178 Mbytes.
+
+dcOpInfo: writing operating point information to rawfile.
+
+Opening the PSF file psf/dcOpInfo.info ...
+
+************************************************
+Transient Analysis `tran': time = (0 s -> 23 us)
+************************************************
+DC simulation time: CPU = 43.246 ms, elapsed = 7.78604 ms.
+
+Opening the PSFXL file psf/tran.tran.tran ...
+Important parameter values:
+    start = 0 s
+    outputstart = 0 s
+    stop = 23 us
+    step = 23 ns
+    maxstep = 230 ns
+    ic = all
+    useprevic = no
+    skipdc = no
+    reltol = 100e-06
+    abstol(V) = 1 uV
+    abstol(I) = 1 pA
+    temp = 27 C
+    tnom = 27 C
+    tempeffects = all
+    errpreset = conservative_sigglobal
+    method = gear2only
+    lteratio = 10
+    relref = sigglobal
+    cmin = 1.23365 aF
+    gmin = 1 pS
+    rabsshort = 1 mOhm
+
+
+Output and IC/nodeset summary:
+                 save   9       (current)
+                 save   28      (voltage)
+
+    tran: time = 30.08 ns    (131 m%), step = 906.8 fs    (3.94 u%)
+    tran: time = 48.91 ns    (213 m%), step = 4.423 ps    (19.2 u%)
+    tran: time = 66.67 ns    (290 m%), step = 5.064 ps      (22 u%)
+    tran: time = 82.18 ns    (357 m%), step = 2.616 ps    (11.4 u%)
+    tran: time = 122.6 ns    (533 m%), step = 3.068 ps    (13.3 u%)
+    tran: time = 136.9 ns    (595 m%), step = 320.1 fs    (1.39 u%)
+    tran: time = 151.9 ns    (661 m%), step = 115.6 fs     (502 n%)
+    tran: time = 168.8 ns    (734 m%), step = 6.282 ps    (27.3 u%)
+    tran: time = 186.8 ns    (812 m%), step = 2.711 ps    (11.8 u%)
+    tran: time = 226.8 ns    (986 m%), step = 7.127 ps      (31 u%)
+    tran: time = 240 ns      (1.04 %), step = 6.021 ps    (26.2 u%)
+    tran: time = 256.8 ns    (1.12 %), step = 748.5 fs    (3.25 u%)
+    tran: time = 274.8 ns    (1.19 %), step = 7.231 ps    (31.4 u%)
+    tran: time = 299.4 ns     (1.3 %), step = 9.283 ps    (40.4 u%)
+    tran: time = 332 ns      (1.44 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 349.3 ns    (1.52 %), step = 288.3 fs    (1.25 u%)
+    tran: time = 364.7 ns    (1.59 %), step = 5.265 ps    (22.9 u%)
+    tran: time = 381.3 ns    (1.66 %), step = 7.409 ps    (32.2 u%)
+    tran: time = 420.1 ns    (1.83 %), step = 3.582 ps    (15.6 u%)
+    tran: time = 437.3 ns     (1.9 %), step = 4.728 ps    (20.6 u%)
+    tran: time = 452.5 ns    (1.97 %), step = 5.5 ps      (23.9 u%)
+    tran: time = 467.1 ns    (2.03 %), step = 3.723 ps    (16.2 u%)
+    tran: time = 481.8 ns    (2.09 %), step = 3.479 ps    (15.1 u%)
+    tran: time = 520 ns      (2.26 %), step = 2.398 ps    (10.4 u%)
+    tran: time = 536.7 ns    (2.33 %), step = 4.892 ps    (21.3 u%)
+    tran: time = 552.5 ns     (2.4 %), step = 7.906 ps    (34.4 u%)
+    tran: time = 571.2 ns    (2.48 %), step = 226.1 fs     (983 n%)
+    tran: time = 575 ns       (2.5 %), step = 12.15 ps    (52.8 u%)
+    tran: time = 599 ns       (2.6 %), step = 1.095 ps    (4.76 u%)
+    tran: time = 630.1 ns    (2.74 %), step = 943.4 fs     (4.1 u%)
+    tran: time = 647.4 ns    (2.81 %), step = 3.08 ps     (13.4 u%)
+    tran: time = 666.3 ns     (2.9 %), step = 4.11 ps     (17.9 u%)
+    tran: time = 683.7 ns    (2.97 %), step = 4.408 ps    (19.2 u%)
+    tran: time = 722.4 ns    (3.14 %), step = 261.1 fs    (1.14 u%)
+    tran: time = 739 ns      (3.21 %), step = 2.562 ps    (11.1 u%)
+    tran: time = 756.6 ns    (3.29 %), step = 2.564 ps    (11.1 u%)
+    tran: time = 774.7 ns    (3.37 %), step = 494.9 fs    (2.15 u%)
+    tran: time = 800 ns      (3.48 %), step = 5 ps        (21.7 u%)
+    tran: time = 833 ns      (3.62 %), step = 9.438 ps      (41 u%)
+    tran: time = 851.7 ns     (3.7 %), step = 474.8 fs    (2.06 u%)
+    tran: time = 871.1 ns    (3.79 %), step = 514.3 fs    (2.24 u%)
+    tran: time = 889 ns      (3.87 %), step = 2.354 ps    (10.2 u%)
+    tran: time = 927.3 ns    (4.03 %), step = 3.754 ps    (16.3 u%)
+    tran: time = 944.4 ns    (4.11 %), step = 2.303 ps      (10 u%)
+    tran: time = 962.1 ns    (4.18 %), step = 3.491 ps    (15.2 u%)
+    tran: time = 979.8 ns    (4.26 %), step = 6.428 ps    (27.9 u%)
+    tran: time = 1.018 us    (4.43 %), step = 4.945 ps    (21.5 u%)
+    tran: time = 1.037 us    (4.51 %), step = 6.523 ps    (28.4 u%)
+    tran: time = 1.056 us    (4.59 %), step = 5.239 ps    (22.8 u%)
+    tran: time = 1.074 us    (4.67 %), step = 550.3 fs    (2.39 u%)
+    tran: time = 1.099 us    (4.78 %), step = 1.602 ps    (6.97 u%)
+    tran: time = 1.13 us     (4.91 %), step = 7.625 ps    (33.2 u%)
+    tran: time = 1.148 us    (4.99 %), step = 5.598 ps    (24.3 u%)
+    tran: time = 1.167 us    (5.07 %), step = 374.7 fs    (1.63 u%)
+    tran: time = 1.185 us    (5.15 %), step = 662.5 fs    (2.88 u%)
+    tran: time = 1.225 us    (5.33 %), step = 5.292 ps      (23 u%)
+    tran: time = 1.242 us     (5.4 %), step = 3.257 ps    (14.2 u%)
+    tran: time = 1.26 us     (5.48 %), step = 5.485 ps    (23.8 u%)
+    tran: time = 1.277 us    (5.55 %), step = 3.726 ps    (16.2 u%)
+    tran: time = 1.313 us    (5.71 %), step = 1.984 ps    (8.62 u%)
+    tran: time = 1.335 us     (5.8 %), step = 207.9 fs     (904 n%)
+    tran: time = 1.353 us    (5.88 %), step = 23.93 ps     (104 u%)
+    tran: time = 1.372 us    (5.96 %), step = 3.01 ps     (13.1 u%)
+    tran: time = 1.398 us    (6.08 %), step = 3.449 ps      (15 u%)
+    tran: time = 1.43 us     (6.22 %), step = 5.157 ps    (22.4 u%)
+    tran: time = 1.447 us    (6.29 %), step = 203.7 fs     (886 n%)
+    tran: time = 1.465 us    (6.37 %), step = 1.407 ps    (6.12 u%)
+    tran: time = 1.483 us    (6.45 %), step = 7.764 ps    (33.8 u%)
+    tran: time = 1.523 us    (6.62 %), step = 55.54 ps     (241 u%)
+    tran: time = 1.54 us      (6.7 %), step = 2.132 ps    (9.27 u%)
+    tran: time = 1.558 us    (6.77 %), step = 117.8 ps     (512 u%)
+    tran: time = 1.577 us    (6.86 %), step = 2.155 ps    (9.37 u%)
+    tran: time = 1.613 us    (7.01 %), step = 1.253 ps    (5.45 u%)
+    tran: time = 1.635 us    (7.11 %), step = 5.255 ps    (22.8 u%)
+    tran: time = 1.652 us    (7.18 %), step = 3.666 ps    (15.9 u%)
+    tran: time = 1.672 us    (7.27 %), step = 1.102 ps    (4.79 u%)
+    tran: time = 1.698 us    (7.38 %), step = 2.003 ps    (8.71 u%)
+    tran: time = 1.725 us     (7.5 %), step = 4.496 ps    (19.5 u%)
+    tran: time = 1.742 us    (7.58 %), step = 3.502 ps    (15.2 u%)
+    tran: time = 1.76 us     (7.65 %), step = 16.35 ps    (71.1 u%)
+    tran: time = 1.779 us    (7.74 %), step = 346.6 fs    (1.51 u%)
+    tran: time = 1.818 us    (7.91 %), step = 5.599 ps    (24.3 u%)
+    tran: time = 1.837 us    (7.98 %), step = 1.114 ps    (4.84 u%)
+    tran: time = 1.852 us    (8.05 %), step = 381 fs      (1.66 u%)
+    tran: time = 1.87 us     (8.13 %), step = 7.095 ps    (30.8 u%)
+    tran: time = 1.891 us    (8.22 %), step = 623.2 ps    (2.71 m%)
+    tran: time = 1.929 us    (8.39 %), step = 17.11 ps    (74.4 u%)
+    tran: time = 1.947 us    (8.47 %), step = 2.966 ps    (12.9 u%)
+    tran: time = 1.965 us    (8.54 %), step = 1.605 ps    (6.98 u%)
+    tran: time = 1.984 us    (8.63 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 2.024 us     (8.8 %), step = 3.323 ps    (14.4 u%)
+    tran: time = 2.041 us    (8.88 %), step = 3.781 ps    (16.4 u%)
+    tran: time = 2.058 us    (8.95 %), step = 94.13 ps     (409 u%)
+    tran: time = 2.076 us    (9.03 %), step = 257.2 fs    (1.12 u%)
+    tran: time = 2.1 us      (9.13 %), step = 6.302 ps    (27.4 u%)
+    tran: time = 2.133 us    (9.27 %), step = 8.676 ps    (37.7 u%)
+    tran: time = 2.152 us    (9.36 %), step = 109.8 fs     (478 n%)
+    tran: time = 2.171 us    (9.44 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 2.189 us    (9.52 %), step = 1.791 ps    (7.79 u%)
+    tran: time = 2.228 us    (9.69 %), step = 209.8 fs     (912 n%)
+    tran: time = 2.245 us    (9.76 %), step = 617.7 fs    (2.69 u%)
+    tran: time = 2.262 us    (9.84 %), step = 2.036 ps    (8.85 u%)
+    tran: time = 2.282 us    (9.92 %), step = 1.135 ps    (4.93 u%)
+    tran: time = 2.32 us     (10.1 %), step = 3.866 ps    (16.8 u%)
+    tran: time = 2.34 us     (10.2 %), step = 2.683 ps    (11.7 u%)
+    tran: time = 2.357 us    (10.2 %), step = 2.499 ps    (10.9 u%)
+    tran: time = 2.375 us    (10.3 %), step = 1.66 ps     (7.22 u%)
+    tran: time = 2.399 us    (10.4 %), step = 7.207 ps    (31.3 u%)
+    tran: time = 2.432 us    (10.6 %), step = 2.168 ps    (9.43 u%)
+    tran: time = 2.45 us     (10.7 %), step = 530.8 fs    (2.31 u%)
+    tran: time = 2.468 us    (10.7 %), step = 5.447 ps    (23.7 u%)
+    tran: time = 2.487 us    (10.8 %), step = 3.104 ps    (13.5 u%)
+    tran: time = 2.527 us      (11 %), step = 5.413 ps    (23.5 u%)
+    tran: time = 2.542 us    (11.1 %), step = 8.214 ps    (35.7 u%)
+    tran: time = 2.561 us    (11.1 %), step = 516.8 fs    (2.25 u%)
+    tran: time = 2.579 us    (11.2 %), step = 917.5 fs    (3.99 u%)
+    tran: time = 2.614 us    (11.4 %), step = 7.173 ps    (31.2 u%)
+    tran: time = 2.635 us    (11.5 %), step = 5.033 ps    (21.9 u%)
+    tran: time = 2.652 us    (11.5 %), step = 25.19 ps     (110 u%)
+    tran: time = 2.67 us     (11.6 %), step = 7.071 ps    (30.7 u%)
+    tran: time = 2.689 us    (11.7 %), step = 3.575 ps    (15.5 u%)
+    tran: time = 2.728 us    (11.9 %), step = 10.48 ps    (45.5 u%)
+    tran: time = 2.745 us    (11.9 %), step = 1.486 ps    (6.46 u%)
+    tran: time = 2.762 us      (12 %), step = 1.755 ps    (7.63 u%)
+    tran: time = 2.782 us    (12.1 %), step = 445.3 fs    (1.94 u%)
+    tran: time = 2.822 us    (12.3 %), step = 4.658 ps    (20.3 u%)
+    tran: time = 2.84 us     (12.3 %), step = 1.453 ps    (6.32 u%)
+    tran: time = 2.859 us    (12.4 %), step = 2.233 ps    (9.71 u%)
+    tran: time = 2.875 us    (12.5 %), step = 12.16 ps    (52.9 u%)
+    tran: time = 2.901 us    (12.6 %), step = 5.721 ps    (24.9 u%)
+    tran: time = 2.935 us    (12.8 %), step = 3.332 ps    (14.5 u%)
+    tran: time = 2.952 us    (12.8 %), step = 6.303 ps    (27.4 u%)
+    tran: time = 2.972 us    (12.9 %), step = 1.507 ps    (6.55 u%)
+    tran: time = 2.987 us      (13 %), step = 5.387 ps    (23.4 u%)
+    tran: time = 3.025 us    (13.2 %), step = 1.647 ps    (7.16 u%)
+    tran: time = 3.042 us    (13.2 %), step = 3.091 ps    (13.4 u%)
+    tran: time = 3.059 us    (13.3 %), step = 4.655 ps    (20.2 u%)
+
+Warning from spectre at time = 3.07164 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<3>. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 3.076 us    (13.4 %), step = 1.67 ps     (7.26 u%)
+    tran: time = 3.1 us      (13.5 %), step = 228.9 fs     (995 n%)
+    tran: time = 3.13 us     (13.6 %), step = 2.312 ps    (10.1 u%)
+    tran: time = 3.142 us    (13.7 %), step = 748.4 fs    (3.25 u%)
+    tran: time = 3.159 us    (13.7 %), step = 223.4 fs     (971 n%)
+    tran: time = 3.175 us    (13.8 %), step = 6.998 ps    (30.4 u%)
+    tran: time = 3.2 us      (13.9 %), step = 709.7 fs    (3.09 u%)
+    tran: time = 3.232 us    (14.1 %), step = 4.816 ps    (20.9 u%)
+    tran: time = 3.251 us    (14.1 %), step = 1.447 ps    (6.29 u%)
+    tran: time = 3.269 us    (14.2 %), step = 4.655 ps    (20.2 u%)
+    tran: time = 3.287 us    (14.3 %), step = 170 fs       (739 n%)
+    tran: time = 3.327 us    (14.5 %), step = 2.951 ps    (12.8 u%)
+    tran: time = 3.345 us    (14.5 %), step = 3.995 ps    (17.4 u%)
+    tran: time = 3.362 us    (14.6 %), step = 3.335 ps    (14.5 u%)
+    tran: time = 3.382 us    (14.7 %), step = 3.613 ps    (15.7 u%)
+    tran: time = 3.422 us    (14.9 %), step = 2.233 ps    (9.71 u%)
+    tran: time = 3.439 us      (15 %), step = 3.34 ps     (14.5 u%)
+    tran: time = 3.457 us      (15 %), step = 1.494 ps    (6.49 u%)
+    tran: time = 3.477 us    (15.1 %), step = 5.151 ps    (22.4 u%)
+    tran: time = 3.501 us    (15.2 %), step = 6.862 ps    (29.8 u%)
+    tran: time = 3.533 us    (15.4 %), step = 7.147 ps    (31.1 u%)
+    tran: time = 3.549 us    (15.4 %), step = 2.908 ps    (12.6 u%)
+    tran: time = 3.567 us    (15.5 %), step = 3.415 ps    (14.8 u%)
+    tran: time = 3.587 us    (15.6 %), step = 6.921 ps    (30.1 u%)
+    tran: time = 3.627 us    (15.8 %), step = 4.115 ps    (17.9 u%)
+    tran: time = 3.644 us    (15.8 %), step = 6.852 ps    (29.8 u%)
+    tran: time = 3.662 us    (15.9 %), step = 17.58 ps    (76.4 u%)
+    tran: time = 3.68 us       (16 %), step = 1.579 ps    (6.87 u%)
+    tran: time = 3.713 us    (16.1 %), step = 2.362 ps    (10.3 u%)
+    tran: time = 3.735 us    (16.2 %), step = 3.277 ps    (14.2 u%)
+    tran: time = 3.752 us    (16.3 %), step = 6.046 ps    (26.3 u%)
+    tran: time = 3.771 us    (16.4 %), step = 175 fs       (761 n%)
+    tran: time = 3.798 us    (16.5 %), step = 4.199 ps    (18.3 u%)
+    tran: time = 3.832 us    (16.7 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 3.85 us     (16.7 %), step = 5.021 ps    (21.8 u%)
+    tran: time = 3.869 us    (16.8 %), step = 3.704 ps    (16.1 u%)
+    tran: time = 3.887 us    (16.9 %), step = 2.105 ps    (9.15 u%)
+    tran: time = 3.927 us    (17.1 %), step = 561.4 fs    (2.44 u%)
+    tran: time = 3.944 us    (17.1 %), step = 2.485 ps    (10.8 u%)
+    tran: time = 3.962 us    (17.2 %), step = 669.3 fs    (2.91 u%)
+    tran: time = 3.979 us    (17.3 %), step = 2.605 ps    (11.3 u%)
+    tran: time = 4.02 us     (17.5 %), step = 3.984 ps    (17.3 u%)
+    tran: time = 4.025 us    (17.5 %), step = 7.9 ps      (34.3 u%)
+    tran: time = 4.044 us    (17.6 %), step = 10.96 ps    (47.7 u%)
+    tran: time = 4.062 us    (17.7 %), step = 3.698 ps    (16.1 u%)
+    tran: time = 4.082 us    (17.7 %), step = 3.757 ps    (16.3 u%)
+    tran: time = 4.122 us    (17.9 %), step = 4.373 ps      (19 u%)
+    tran: time = 4.14 us       (18 %), step = 3.252 ps    (14.1 u%)
+    tran: time = 4.15 us       (18 %), step = 961.5 fs    (4.18 u%)
+    tran: time = 4.167 us    (18.1 %), step = 5.079 ps    (22.1 u%)
+    tran: time = 4.187 us    (18.2 %), step = 3.548 ps    (15.4 u%)
+    tran: time = 4.227 us    (18.4 %), step = 6.164 ps    (26.8 u%)
+    tran: time = 4.243 us    (18.4 %), step = 27.37 ps     (119 u%)
+    tran: time = 4.262 us    (18.5 %), step = 6.524 ps    (28.4 u%)
+    tran: time = 4.279 us    (18.6 %), step = 7.596 ps      (33 u%)
+    tran: time = 4.318 us    (18.8 %), step = 8.011 ps    (34.8 u%)
+    tran: time = 4.337 us    (18.9 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 4.354 us    (18.9 %), step = 2.589 ps    (11.3 u%)
+    tran: time = 4.372 us      (19 %), step = 11.73 ps      (51 u%)
+    tran: time = 4.399 us    (19.1 %), step = 2.38 ps     (10.3 u%)
+    tran: time = 4.43 us     (19.3 %), step = 3.027 ps    (13.2 u%)
+    tran: time = 4.447 us    (19.3 %), step = 19.7 fs     (85.7 n%)
+    tran: time = 4.467 us    (19.4 %), step = 163 fs       (709 n%)
+    tran: time = 4.485 us    (19.5 %), step = 769.8 fs    (3.35 u%)
+    tran: time = 4.525 us    (19.7 %), step = 4.858 ps    (21.1 u%)
+    tran: time = 4.543 us    (19.8 %), step = 11.34 ps    (49.3 u%)
+    tran: time = 4.562 us    (19.8 %), step = 301 fs      (1.31 u%)
+    tran: time = 4.58 us     (19.9 %), step = 6.428 ps    (27.9 u%)
+    tran: time = 4.62 us     (20.1 %), step = 4.97 ps     (21.6 u%)
+    tran: time = 4.637 us    (20.2 %), step = 325.9 fs    (1.42 u%)
+    tran: time = 4.654 us    (20.2 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 4.672 us    (20.3 %), step = 92.78 fs     (403 n%)
+    tran: time = 4.698 us    (20.4 %), step = 2.671 ps    (11.6 u%)
+    tran: time = 4.73 us     (20.6 %), step = 4.388 ps    (19.1 u%)
+    tran: time = 4.747 us    (20.6 %), step = 576.4 fs    (2.51 u%)
+    tran: time = 4.765 us    (20.7 %), step = 60.86 ps     (265 u%)
+    tran: time = 4.784 us    (20.8 %), step = 576.8 fs    (2.51 u%)
+    tran: time = 4.825 us      (21 %), step = 545.3 fs    (2.37 u%)
+    tran: time = 4.842 us    (21.1 %), step = 37.56 fs     (163 n%)
+    tran: time = 4.862 us    (21.1 %), step = 3.054 ps    (13.3 u%)
+    tran: time = 4.879 us    (21.2 %), step = 3.551 ps    (15.4 u%)
+    tran: time = 4.918 us    (21.4 %), step = 2.92 ps     (12.7 u%)
+    tran: time = 4.937 us    (21.5 %), step = 4.571 ps    (19.9 u%)
+    tran: time = 4.955 us    (21.5 %), step = 7.22 ps     (31.4 u%)
+    tran: time = 4.972 us    (21.6 %), step = 4.386 ps    (19.1 u%)
+    tran: time = 4.999 us    (21.7 %), step = 381 fs      (1.66 u%)
+    tran: time = 5.03 us     (21.9 %), step = 6.026 ps    (26.2 u%)
+    tran: time = 5.048 us    (21.9 %), step = 136.9 ps     (595 u%)
+    tran: time = 5.067 us      (22 %), step = 380.3 fs    (1.65 u%)
+    tran: time = 5.085 us    (22.1 %), step = 5.421 ps    (23.6 u%)
+    tran: time = 5.125 us    (22.3 %), step = 3.362 ps    (14.6 u%)
+    tran: time = 5.142 us    (22.4 %), step = 4.924 ps    (21.4 u%)
+    tran: time = 5.161 us    (22.4 %), step = 2.952 ps    (12.8 u%)
+    tran: time = 5.175 us    (22.5 %), step = 24.01 ps     (104 u%)
+    tran: time = 5.2 us      (22.6 %), step = 230 fs         (1 u%)
+    tran: time = 5.234 us    (22.8 %), step = 3.248 ps    (14.1 u%)
+    tran: time = 5.252 us    (22.8 %), step = 2.594 ps    (11.3 u%)
+    tran: time = 5.269 us    (22.9 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 5.287 us      (23 %), step = 4.19 ps     (18.2 u%)
+    tran: time = 5.325 us    (23.2 %), step = 1.484 ps    (6.45 u%)
+    tran: time = 5.342 us    (23.2 %), step = 1.028 ps    (4.47 u%)
+    tran: time = 5.362 us    (23.3 %), step = 480.2 fs    (2.09 u%)
+    tran: time = 5.38 us     (23.4 %), step = 981.5 fs    (4.27 u%)
+    tran: time = 5.42 us     (23.6 %), step = 2.672 ps    (11.6 u%)
+    tran: time = 5.437 us    (23.6 %), step = 90.28 fs     (393 n%)
+    tran: time = 5.455 us    (23.7 %), step = 6.573 ps    (28.6 u%)
+    tran: time = 5.472 us    (23.8 %), step = 7.608 ps    (33.1 u%)
+    tran: time = 5.498 us    (23.9 %), step = 4.416 ps    (19.2 u%)
+    tran: time = 5.53 us       (24 %), step = 3.62 ps     (15.7 u%)
+    tran: time = 5.549 us    (24.1 %), step = 3.095 ps    (13.5 u%)
+    tran: time = 5.567 us    (24.2 %), step = 795.3 fs    (3.46 u%)
+    tran: time = 5.583 us    (24.3 %), step = 18.06 ps    (78.5 u%)
+    tran: time = 5.622 us    (24.4 %), step = 5.514 ps      (24 u%)
+    tran: time = 5.64 us     (24.5 %), step = 894.7 fs    (3.89 u%)
+    tran: time = 5.657 us    (24.6 %), step = 1.797 ps    (7.81 u%)
+    tran: time = 5.675 us    (24.7 %), step = 8.18 ps     (35.6 u%)
+    tran: time = 5.7 us      (24.8 %), step = 165.4 fs     (719 n%)
+    tran: time = 5.732 us    (24.9 %), step = 1.054 ps    (4.58 u%)
+    tran: time = 5.749 us      (25 %), step = 2.338 ps    (10.2 u%)
+    tran: time = 5.767 us    (25.1 %), step = 8.811 ps    (38.3 u%)
+    tran: time = 5.786 us    (25.2 %), step = 4.285 ps    (18.6 u%)
+    tran: time = 5.825 us    (25.3 %), step = 4.84 ps       (21 u%)
+    tran: time = 5.844 us    (25.4 %), step = 2.444 ps    (10.6 u%)
+    tran: time = 5.86 us     (25.5 %), step = 37.38 ps     (163 u%)
+    tran: time = 5.878 us    (25.6 %), step = 9.37 ps     (40.7 u%)
+    tran: time = 5.918 us    (25.7 %), step = 1.013 ps    (4.41 u%)
+    tran: time = 5.935 us    (25.8 %), step = 4.814 ps    (20.9 u%)
+    tran: time = 5.952 us    (25.9 %), step = 184.3 fs     (801 n%)
+    tran: time = 5.97 us       (26 %), step = 461.1 fs       (2 u%)
+    tran: time = 5.989 us      (26 %), step = 4.118 ps    (17.9 u%)
+    tran: time = 6.028 us    (26.2 %), step = 2.116 ps     (9.2 u%)
+    tran: time = 6.047 us    (26.3 %), step = 2.739 ps    (11.9 u%)
+    tran: time = 6.064 us    (26.4 %), step = 2.588 ps    (11.3 u%)
+    tran: time = 6.084 us    (26.5 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 6.123 us    (26.6 %), step = 7.891 ps    (34.3 u%)
+    tran: time = 6.14 us     (26.7 %), step = 5.262 ps    (22.9 u%)
+    tran: time = 6.157 us    (26.8 %), step = 7.161 ps    (31.1 u%)
+    tran: time = 6.174 us    (26.8 %), step = 395.7 fs    (1.72 u%)
+    tran: time = 6.199 us      (27 %), step = 3.665 ps    (15.9 u%)
+    tran: time = 6.232 us    (27.1 %), step = 1.185 ps    (5.15 u%)
+    tran: time = 6.249 us    (27.2 %), step = 4.263 ps    (18.5 u%)
+    tran: time = 6.267 us    (27.2 %), step = 557.1 fs    (2.42 u%)
+    tran: time = 6.286 us    (27.3 %), step = 7.403 ps    (32.2 u%)
+    tran: time = 6.325 us    (27.5 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 6.342 us    (27.6 %), step = 158.2 fs     (688 n%)
+    tran: time = 6.359 us    (27.6 %), step = 1.96 ps     (8.52 u%)
+    tran: time = 6.377 us    (27.7 %), step = 2.636 ps    (11.5 u%)
+    tran: time = 6.401 us    (27.8 %), step = 5.942 ps    (25.8 u%)
+    tran: time = 6.435 us      (28 %), step = 11.48 ps    (49.9 u%)
+    tran: time = 6.452 us    (28.1 %), step = 889.1 fs    (3.87 u%)
+    tran: time = 6.47 us     (28.1 %), step = 5.381 ps    (23.4 u%)
+    tran: time = 6.489 us    (28.2 %), step = 1.932 ps     (8.4 u%)
+    tran: time = 6.529 us    (28.4 %), step = 2.092 ps    (9.09 u%)
+    tran: time = 6.547 us    (28.5 %), step = 4.207 ps    (18.3 u%)
+    tran: time = 6.565 us    (28.5 %), step = 6.519 ps    (28.3 u%)
+    tran: time = 6.583 us    (28.6 %), step = 6.279 ps    (27.3 u%)
+    tran: time = 6.623 us    (28.8 %), step = 3.587 ps    (15.6 u%)
+    tran: time = 6.642 us    (28.9 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 6.659 us      (29 %), step = 2.125 ps    (9.24 u%)
+    tran: time = 6.677 us      (29 %), step = 363.3 fs    (1.58 u%)
+    tran: time = 6.701 us    (29.1 %), step = 223.5 fs     (972 n%)
+    tran: time = 6.734 us    (29.3 %), step = 832.9 fs    (3.62 u%)
+    tran: time = 6.752 us    (29.4 %), step = 286.4 fs    (1.25 u%)
+    tran: time = 6.771 us    (29.4 %), step = 7.805 ps    (33.9 u%)
+    tran: time = 6.789 us    (29.5 %), step = 7.407 ps    (32.2 u%)
+    tran: time = 6.828 us    (29.7 %), step = 7.222 ps    (31.4 u%)
+    tran: time = 6.847 us    (29.8 %), step = 561.2 fs    (2.44 u%)
+    tran: time = 6.865 us    (29.8 %), step = 4.699 ps    (20.4 u%)
+    tran: time = 6.884 us    (29.9 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 6.923 us    (30.1 %), step = 1.587 ps     (6.9 u%)
+    tran: time = 6.94 us     (30.2 %), step = 18.76 ps    (81.6 u%)
+    tran: time = 6.957 us    (30.2 %), step = 6.904 ps      (30 u%)
+    tran: time = 6.977 us    (30.3 %), step = 38.03 fs     (165 n%)
+    tran: time = 7.001 us    (30.4 %), step = 16.52 ps    (71.8 u%)
+    tran: time = 7.033 us    (30.6 %), step = 49.28 ps     (214 u%)
+    tran: time = 7.052 us    (30.7 %), step = 3.341 ps    (14.5 u%)
+    tran: time = 7.067 us    (30.7 %), step = 1.463 ps    (6.36 u%)
+    tran: time = 7.087 us    (30.8 %), step = 4.228 ps    (18.4 u%)
+    tran: time = 7.127 us      (31 %), step = 733.1 fs    (3.19 u%)
+    tran: time = 7.145 us    (31.1 %), step = 1.977 ps     (8.6 u%)
+    tran: time = 7.162 us    (31.1 %), step = 7.217 ps    (31.4 u%)
+    tran: time = 7.182 us    (31.2 %), step = 115.7 fs     (503 n%)
+    tran: time = 7.222 us    (31.4 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 7.237 us    (31.5 %), step = 129.5 fs     (563 n%)
+    tran: time = 7.255 us    (31.5 %), step = 337.3 fs    (1.47 u%)
+    tran: time = 7.273 us    (31.6 %), step = 13.06 ps    (56.8 u%)
+    tran: time = 7.298 us    (31.7 %), step = 1.013 ps     (4.4 u%)
+    tran: time = 7.33 us     (31.9 %), step = 217.3 fs     (945 n%)
+    tran: time = 7.349 us      (32 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 7.367 us      (32 %), step = 59.48 fs     (259 n%)
+    tran: time = 7.384 us    (32.1 %), step = 11.84 ps    (51.5 u%)
+    tran: time = 7.423 us    (32.3 %), step = 8.599 ps    (37.4 u%)
+    tran: time = 7.44 us     (32.3 %), step = 4.243 ps    (18.4 u%)
+    tran: time = 7.457 us    (32.4 %), step = 43.84 fs     (191 n%)
+    tran: time = 7.472 us    (32.5 %), step = 3.129 ps    (13.6 u%)
+    tran: time = 7.475 us    (32.5 %), step = 13.91 ps    (60.5 u%)
+    tran: time = 7.5 us      (32.6 %), step = 2.499 ps    (10.9 u%)
+    tran: time = 7.534 us    (32.8 %), step = 3.391 ps    (14.7 u%)
+    tran: time = 7.551 us    (32.8 %), step = 4.159 ps    (18.1 u%)
+    tran: time = 7.569 us    (32.9 %), step = 1.281 ps    (5.57 u%)
+    tran: time = 7.587 us      (33 %), step = 4.027 ps    (17.5 u%)
+    tran: time = 7.627 us    (33.2 %), step = 178.5 fs     (776 n%)
+    tran: time = 7.644 us    (33.2 %), step = 548.9 fs    (2.39 u%)
+    tran: time = 7.662 us    (33.3 %), step = 4.976 ps    (21.6 u%)
+    tran: time = 7.682 us    (33.4 %), step = 2.926 ps    (12.7 u%)
+    tran: time = 7.72 us     (33.6 %), step = 4.789 ps    (20.8 u%)
+    tran: time = 7.737 us    (33.6 %), step = 3.296 ps    (14.3 u%)
+    tran: time = 7.755 us    (33.7 %), step = 4.974 ps    (21.6 u%)
+    tran: time = 7.771 us    (33.8 %), step = 263.3 ps    (1.14 m%)
+    tran: time = 7.787 us    (33.9 %), step = 5.991 ps      (26 u%)
+    tran: time = 7.825 us      (34 %), step = 3.902 ps      (17 u%)
+    tran: time = 7.842 us    (34.1 %), step = 1.949 ps    (8.47 u%)
+    tran: time = 7.859 us    (34.2 %), step = 346.6 fs    (1.51 u%)
+    tran: time = 7.877 us    (34.2 %), step = 2.255 ps     (9.8 u%)
+    tran: time = 7.899 us    (34.3 %), step = 2.177 ps    (9.47 u%)
+    tran: time = 7.93 us     (34.5 %), step = 1.835 ps    (7.98 u%)
+    tran: time = 7.945 us    (34.5 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 7.96 us     (34.6 %), step = 4.178 ps    (18.2 u%)
+    tran: time = 7.977 us    (34.7 %), step = 307.1 fs    (1.34 u%)
+    tran: time = 7.999 us    (34.8 %), step = 2.537 ps      (11 u%)
+    tran: time = 8.03 us     (34.9 %), step = 1.801 ps    (7.83 u%)
+    tran: time = 8.047 us      (35 %), step = 1.718 ps    (7.47 u%)
+    tran: time = 8.065 us    (35.1 %), step = 7.676 ps    (33.4 u%)
+    tran: time = 8.082 us    (35.1 %), step = 1.474 ps    (6.41 u%)
+    tran: time = 8.122 us    (35.3 %), step = 10.67 ps    (46.4 u%)
+    tran: time = 8.14 us     (35.4 %), step = 1.879 ps    (8.17 u%)
+    tran: time = 8.147 us    (35.4 %), step = 107.3 fs     (466 n%)
+    tran: time = 8.165 us    (35.5 %), step = 336.9 fs    (1.46 u%)
+    tran: time = 8.183 us    (35.6 %), step = 13.91 ps    (60.5 u%)
+    tran: time = 8.223 us    (35.8 %), step = 1.754 ps    (7.63 u%)
+    tran: time = 8.242 us    (35.8 %), step = 4.261 ps    (18.5 u%)
+    tran: time = 8.259 us    (35.9 %), step = 1.281 ps    (5.57 u%)
+    tran: time = 8.277 us      (36 %), step = 61.48 fs     (267 n%)
+    tran: time = 8.301 us    (36.1 %), step = 28.87 ps     (126 u%)
+    tran: time = 8.333 us    (36.2 %), step = 5.549 ps    (24.1 u%)
+    tran: time = 8.35 us     (36.3 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 8.367 us    (36.4 %), step = 4.372 ps      (19 u%)
+    tran: time = 8.386 us    (36.5 %), step = 2.057 ps    (8.94 u%)
+    tran: time = 8.425 us    (36.6 %), step = 7.535 ps    (32.8 u%)
+    tran: time = 8.444 us    (36.7 %), step = 13.46 ps    (58.5 u%)
+    tran: time = 8.462 us    (36.8 %), step = 2.447 ps    (10.6 u%)
+    tran: time = 8.48 us     (36.9 %), step = 5.415 ps    (23.5 u%)
+    tran: time = 8.52 us       (37 %), step = 3.582 ps    (15.6 u%)
+    tran: time = 8.535 us    (37.1 %), step = 20.15 ps    (87.6 u%)
+    tran: time = 8.552 us    (37.2 %), step = 1.217 ps    (5.29 u%)
+    tran: time = 8.57 us     (37.3 %), step = 2.343 ps    (10.2 u%)
+    tran: time = 8.589 us    (37.3 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 8.625 us    (37.5 %), step = 4.495 ps    (19.5 u%)
+    tran: time = 8.643 us    (37.6 %), step = 6.933 ps    (30.1 u%)
+    tran: time = 8.662 us    (37.7 %), step = 2.333 ps    (10.1 u%)
+    tran: time = 8.68 us     (37.7 %), step = 4.723 ps    (20.5 u%)
+    tran: time = 8.72 us     (37.9 %), step = 1.575 ps    (6.85 u%)
+    tran: time = 8.737 us      (38 %), step = 116.2 fs     (505 n%)
+    tran: time = 8.756 us    (38.1 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 8.774 us    (38.1 %), step = 114.4 fs     (497 n%)
+    tran: time = 8.799 us    (38.3 %), step = 7.007 ps    (30.5 u%)
+    tran: time = 8.832 us    (38.4 %), step = 3.532 ps    (15.4 u%)
+    tran: time = 8.851 us    (38.5 %), step = 226.6 fs     (985 n%)
+    tran: time = 8.869 us    (38.6 %), step = 3.027 ps    (13.2 u%)
+    tran: time = 8.887 us    (38.6 %), step = 6.062 ps    (26.4 u%)
+    tran: time = 8.927 us    (38.8 %), step = 1.813 ps    (7.88 u%)
+    tran: time = 8.944 us    (38.9 %), step = 3.169 ps    (13.8 u%)
+    tran: time = 8.962 us      (39 %), step = 3.234 ps    (14.1 u%)
+    tran: time = 8.982 us    (39.1 %), step = 1.524 ps    (6.63 u%)
+    tran: time = 9.023 us    (39.2 %), step = 1.429 ps    (6.21 u%)
+    tran: time = 9.042 us    (39.3 %), step = 1.151 ps       (5 u%)
+    tran: time = 9.059 us    (39.4 %), step = 3.209 ps      (14 u%)
+    tran: time = 9.077 us    (39.5 %), step = 7.277 ps    (31.6 u%)
+    tran: time = 9.101 us    (39.6 %), step = 10.21 ps    (44.4 u%)
+    tran: time = 9.135 us    (39.7 %), step = 5.01 ps     (21.8 u%)
+    tran: time = 9.152 us    (39.8 %), step = 4.728 ps    (20.6 u%)
+    tran: time = 9.171 us    (39.9 %), step = 11.49 ps      (50 u%)
+    tran: time = 9.198 us      (40 %), step = 250.3 fs    (1.09 u%)
+    tran: time = 9.23 us     (40.1 %), step = 389.5 fs    (1.69 u%)
+    tran: time = 9.247 us    (40.2 %), step = 4.116 ps    (17.9 u%)
+    tran: time = 9.264 us    (40.3 %), step = 904.2 fs    (3.93 u%)
+    tran: time = 9.282 us    (40.4 %), step = 239.9 fs    (1.04 u%)
+    tran: time = 9.32 us     (40.5 %), step = 7.656 ps    (33.3 u%)
+    tran: time = 9.338 us    (40.6 %), step = 5.126 ps    (22.3 u%)
+    tran: time = 9.356 us    (40.7 %), step = 4.158 ps    (18.1 u%)
+    tran: time = 9.374 us    (40.8 %), step = 5.953 ps    (25.9 u%)
+    tran: time = 9.4 us      (40.9 %), step = 10.12 ps      (44 u%)
+    tran: time = 9.432 us      (41 %), step = 739 fs      (3.21 u%)
+    tran: time = 9.45 us     (41.1 %), step = 3.865 ps    (16.8 u%)
+    tran: time = 9.467 us    (41.2 %), step = 2.828 ps    (12.3 u%)
+    tran: time = 9.485 us    (41.2 %), step = 6.45 ps       (28 u%)
+    tran: time = 9.525 us    (41.4 %), step = 1.66 ps     (7.22 u%)
+    tran: time = 9.543 us    (41.5 %), step = 29.11 ps     (127 u%)
+    tran: time = 9.562 us    (41.6 %), step = 174.1 fs     (757 n%)
+    tran: time = 9.58 us     (41.7 %), step = 7.497 ps    (32.6 u%)
+    tran: time = 9.618 us    (41.8 %), step = 1.174 ps     (5.1 u%)
+    tran: time = 9.635 us    (41.9 %), step = 3.801 ps    (16.5 u%)
+    tran: time = 9.652 us      (42 %), step = 565.9 fs    (2.46 u%)
+    tran: time = 9.672 us    (42.1 %), step = 2.91 ps     (12.7 u%)
+    tran: time = 9.698 us    (42.2 %), step = 29.73 fs     (129 n%)
+    tran: time = 9.73 us     (42.3 %), step = 1.977 ps     (8.6 u%)
+    tran: time = 9.749 us    (42.4 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 9.767 us    (42.5 %), step = 1.894 ps    (8.24 u%)
+    tran: time = 9.775 us    (42.5 %), step = 28.21 ps     (123 u%)
+    tran: time = 9.8 us      (42.6 %), step = 237.5 fs    (1.03 u%)
+    tran: time = 9.832 us    (42.7 %), step = 140 fs       (609 n%)
+    tran: time = 9.849 us    (42.8 %), step = 2.338 ps    (10.2 u%)
+
+Warning from spectre at time = 9.86174 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<5>. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 9.867 us    (42.9 %), step = 2.499 ps    (10.9 u%)
+    tran: time = 9.885 us      (43 %), step = 7.381 ps    (32.1 u%)
+    tran: time = 9.925 us    (43.2 %), step = 5.508 ps    (23.9 u%)
+    tran: time = 9.944 us    (43.2 %), step = 4.382 ps    (19.1 u%)
+    tran: time = 9.962 us    (43.3 %), step = 1.341 ps    (5.83 u%)
+    tran: time = 9.98 us     (43.4 %), step = 6.061 ps    (26.4 u%)
+    tran: time = 10.02 us    (43.6 %), step = 436.5 fs     (1.9 u%)
+    tran: time = 10.04 us    (43.6 %), step = 705 fs      (3.07 u%)
+    tran: time = 10.05 us    (43.7 %), step = 3.309 ps    (14.4 u%)
+    tran: time = 10.07 us    (43.8 %), step = 1.052 ps    (4.58 u%)
+    tran: time = 10.1 us     (43.9 %), step = 615.2 fs    (2.67 u%)
+    tran: time = 10.13 us    (44.1 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 10.15 us    (44.1 %), step = 7.716 ps    (33.5 u%)
+    tran: time = 10.16 us    (44.2 %), step = 5.172 ps    (22.5 u%)
+    tran: time = 10.18 us    (44.3 %), step = 641.1 fs    (2.79 u%)
+    tran: time = 10.22 us    (44.4 %), step = 6.071 ps    (26.4 u%)
+    tran: time = 10.24 us    (44.5 %), step = 1.5 ps      (6.52 u%)
+    tran: time = 10.26 us    (44.6 %), step = 2.092 ps     (9.1 u%)
+    tran: time = 10.28 us    (44.7 %), step = 1.029 ps    (4.47 u%)
+    tran: time = 10.3 us     (44.8 %), step = 1.008 ps    (4.38 u%)
+    tran: time = 10.33 us    (44.9 %), step = 1.802 ps    (7.83 u%)
+    tran: time = 10.35 us      (45 %), step = 8.22 ps     (35.7 u%)
+    tran: time = 10.37 us    (45.1 %), step = 480 fs      (2.09 u%)
+    tran: time = 10.39 us    (45.2 %), step = 3.272 ps    (14.2 u%)
+    tran: time = 10.43 us    (45.3 %), step = 6.504 ps    (28.3 u%)
+    tran: time = 10.44 us    (45.4 %), step = 691.3 fs    (3.01 u%)
+    tran: time = 10.46 us    (45.5 %), step = 157.2 fs     (683 n%)
+    tran: time = 10.48 us    (45.6 %), step = 5.969 ps      (26 u%)
+    tran: time = 10.52 us    (45.7 %), step = 374.7 fs    (1.63 u%)
+    tran: time = 10.54 us    (45.8 %), step = 236.7 fs    (1.03 u%)
+    tran: time = 10.56 us    (45.9 %), step = 2.208 ps     (9.6 u%)
+    tran: time = 10.58 us      (46 %), step = 205.1 fs     (892 n%)
+    tran: time = 10.6 us     (46.1 %), step = 3.434 ps    (14.9 u%)
+    tran: time = 10.63 us    (46.2 %), step = 6.711 ps    (29.2 u%)
+    tran: time = 10.65 us    (46.3 %), step = 4.648 ps    (20.2 u%)
+    tran: time = 10.67 us    (46.4 %), step = 5.3 ps        (23 u%)
+    tran: time = 10.69 us    (46.5 %), step = 685.4 fs    (2.98 u%)
+    tran: time = 10.73 us    (46.6 %), step = 3.831 ps    (16.7 u%)
+    tran: time = 10.74 us    (46.7 %), step = 186.1 ps     (809 u%)
+    tran: time = 10.76 us    (46.8 %), step = 330.4 fs    (1.44 u%)
+    tran: time = 10.78 us    (46.9 %), step = 183.2 fs     (797 n%)
+    tran: time = 10.82 us      (47 %), step = 2.58 ps     (11.2 u%)
+    tran: time = 10.84 us    (47.1 %), step = 1.274 ps    (5.54 u%)
+    tran: time = 10.86 us    (47.2 %), step = 6.427 ps    (27.9 u%)
+    tran: time = 10.87 us    (47.3 %), step = 2.402 ps    (10.4 u%)
+    tran: time = 10.9 us     (47.4 %), step = 1.993 ps    (8.66 u%)
+    tran: time = 10.93 us    (47.5 %), step = 3.472 ps    (15.1 u%)
+    tran: time = 10.94 us    (47.6 %), step = 111.7 fs     (486 n%)
+    tran: time = 10.96 us    (47.6 %), step = 11.38 ps    (49.5 u%)
+    tran: time = 10.98 us    (47.7 %), step = 1.038 ps    (4.51 u%)
+    tran: time = 11.01 us    (47.9 %), step = 127.4 fs     (554 n%)
+    tran: time = 11.04 us      (48 %), step = 81.43 ps     (354 u%)
+    tran: time = 11.05 us    (48.1 %), step = 5.34 ps     (23.2 u%)
+    tran: time = 11.07 us    (48.1 %), step = 30.69 ps     (133 u%)
+    tran: time = 11.1 us     (48.3 %), step = 2.523 ps      (11 u%)
+    tran: time = 11.13 us    (48.4 %), step = 18.33 ps    (79.7 u%)
+    tran: time = 11.15 us    (48.5 %), step = 169.8 fs     (738 n%)
+    tran: time = 11.16 us    (48.5 %), step = 4.476 ps    (19.5 u%)
+    tran: time = 11.18 us    (48.6 %), step = 946.7 fs    (4.12 u%)
+    tran: time = 11.22 us    (48.8 %), step = 9.359 ps    (40.7 u%)
+    tran: time = 11.24 us    (48.9 %), step = 7.33 ps     (31.9 u%)
+    tran: time = 11.26 us    (48.9 %), step = 19.99 ps    (86.9 u%)
+    tran: time = 11.27 us      (49 %), step = 12.68 ps    (55.1 u%)
+    tran: time = 11.3 us     (49.1 %), step = 31.75 ps     (138 u%)
+    tran: time = 11.33 us    (49.3 %), step = 5.426 ps    (23.6 u%)
+    tran: time = 11.35 us    (49.3 %), step = 1.794 ps     (7.8 u%)
+    tran: time = 11.37 us    (49.4 %), step = 3.73 ps     (16.2 u%)
+    tran: time = 11.39 us    (49.5 %), step = 23.85 ps     (104 u%)
+    tran: time = 11.43 us    (49.7 %), step = 112.5 ps     (489 u%)
+    tran: time = 11.44 us    (49.8 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 11.46 us    (49.8 %), step = 228.5 fs     (993 n%)
+    tran: time = 11.48 us    (49.9 %), step = 696.7 fs    (3.03 u%)
+    tran: time = 11.52 us    (50.1 %), step = 2.046 ps     (8.9 u%)
+    tran: time = 11.54 us    (50.2 %), step = 3.112 ps    (13.5 u%)
+    tran: time = 11.55 us    (50.2 %), step = 1.593 ps    (6.92 u%)
+    tran: time = 11.57 us    (50.3 %), step = 3.019 ps    (13.1 u%)
+    tran: time = 11.6 us     (50.4 %), step = 3.013 ps    (13.1 u%)
+    tran: time = 11.63 us    (50.6 %), step = 6.085 ps    (26.5 u%)
+    tran: time = 11.65 us    (50.6 %), step = 7.8 ps      (33.9 u%)
+    tran: time = 11.67 us    (50.7 %), step = 331.3 fs    (1.44 u%)
+    tran: time = 11.69 us    (50.8 %), step = 21.1 ps     (91.7 u%)
+    tran: time = 11.73 us      (51 %), step = 5.195 ps    (22.6 u%)
+    tran: time = 11.74 us    (51.1 %), step = 11.49 ps      (50 u%)
+    tran: time = 11.76 us    (51.1 %), step = 61.58 ps     (268 u%)
+    tran: time = 11.78 us    (51.2 %), step = 5.472 ps    (23.8 u%)
+    tran: time = 11.81 us    (51.4 %), step = 2.5 ps      (10.9 u%)
+    tran: time = 11.83 us    (51.5 %), step = 4.982 ps    (21.7 u%)
+    tran: time = 11.85 us    (51.5 %), step = 3.826 ps    (16.6 u%)
+    tran: time = 11.87 us    (51.6 %), step = 108 fs       (469 n%)
+    tran: time = 11.9 us     (51.7 %), step = 4.49 ps     (19.5 u%)
+    tran: time = 11.93 us    (51.9 %), step = 6.749 ps    (29.3 u%)
+    tran: time = 11.95 us    (51.9 %), step = 1.921 ps    (8.35 u%)
+    tran: time = 11.97 us      (52 %), step = 46.16 fs     (201 n%)
+    tran: time = 11.98 us    (52.1 %), step = 3.377 ps    (14.7 u%)
+    tran: time = 12.02 us    (52.3 %), step = 6.493 ps    (28.2 u%)
+    tran: time = 12.04 us    (52.4 %), step = 7.756 ps    (33.7 u%)
+    tran: time = 12.06 us    (52.4 %), step = 7.234 ps    (31.5 u%)
+    tran: time = 12.08 us    (52.5 %), step = 19.91 ps    (86.6 u%)
+    tran: time = 12.1 us     (52.6 %), step = 227.6 fs     (990 n%)
+    tran: time = 12.13 us    (52.8 %), step = 9.363 ps    (40.7 u%)
+    tran: time = 12.14 us    (52.8 %), step = 1.448 ps    (6.29 u%)
+    tran: time = 12.16 us    (52.9 %), step = 3.095 ps    (13.5 u%)
+
+Warning from spectre at time = 12.1667 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<4>. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 12.18 us    (52.9 %), step = 2.492 ps    (10.8 u%)
+    tran: time = 12.22 us    (53.1 %), step = 1.109 ps    (4.82 u%)
+    tran: time = 12.24 us    (53.2 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 12.25 us    (53.3 %), step = 111.5 ps     (485 u%)
+    tran: time = 12.27 us    (53.4 %), step = 375.7 fs    (1.63 u%)
+    tran: time = 12.3 us     (53.5 %), step = 3.49 ps     (15.2 u%)
+    tran: time = 12.33 us    (53.6 %), step = 14.81 ps    (64.4 u%)
+    tran: time = 12.35 us    (53.7 %), step = 320.1 fs    (1.39 u%)
+    tran: time = 12.36 us    (53.8 %), step = 6.154 ps    (26.8 u%)
+    tran: time = 12.38 us    (53.8 %), step = 2.847 ps    (12.4 u%)
+    tran: time = 12.42 us      (54 %), step = 1.581 ps    (6.87 u%)
+    tran: time = 12.44 us    (54.1 %), step = 2.407 ps    (10.5 u%)
+    tran: time = 12.46 us    (54.2 %), step = 6.294 ps    (27.4 u%)
+    tran: time = 12.48 us    (54.2 %), step = 209.4 fs     (910 n%)
+    tran: time = 12.5 us     (54.3 %), step = 10.21 ps    (44.4 u%)
+    tran: time = 12.53 us    (54.5 %), step = 7.718 ps    (33.6 u%)
+    tran: time = 12.55 us    (54.6 %), step = 824.4 fs    (3.58 u%)
+    tran: time = 12.56 us    (54.6 %), step = 3.07 ps     (13.3 u%)
+    tran: time = 12.58 us    (54.7 %), step = 4.216 ps    (18.3 u%)
+    tran: time = 12.61 us    (54.8 %), step = 7.597 ps      (33 u%)
+    tran: time = 12.63 us    (54.9 %), step = 6.437 ps      (28 u%)
+    tran: time = 12.65 us      (55 %), step = 6.969 ps    (30.3 u%)
+    tran: time = 12.66 us    (55.1 %), step = 17.98 ps    (78.2 u%)
+    tran: time = 12.68 us    (55.1 %), step = 7.449 ps    (32.4 u%)
+    tran: time = 12.72 us    (55.3 %), step = 4.724 ps    (20.5 u%)
+    tran: time = 12.74 us    (55.4 %), step = 1.953 ps    (8.49 u%)
+    tran: time = 12.75 us    (55.5 %), step = 2.251 ps    (9.79 u%)
+    tran: time = 12.77 us    (55.5 %), step = 359.9 fs    (1.56 u%)
+    tran: time = 12.79 us    (55.6 %), step = 2.928 ps    (12.7 u%)
+    tran: time = 12.83 us    (55.8 %), step = 3.718 ps    (16.2 u%)
+    tran: time = 12.84 us    (55.8 %), step = 3.078 ps    (13.4 u%)
+    tran: time = 12.86 us    (55.9 %), step = 493.7 fs    (2.15 u%)
+    tran: time = 12.88 us      (56 %), step = 780.6 fs    (3.39 u%)
+    tran: time = 12.92 us    (56.2 %), step = 4.26 ps     (18.5 u%)
+    tran: time = 12.94 us    (56.2 %), step = 5.229 ps    (22.7 u%)
+    tran: time = 12.95 us    (56.3 %), step = 6.444 ps      (28 u%)
+    tran: time = 12.97 us    (56.4 %), step = 23.16 ps     (101 u%)
+    tran: time = 13 us       (56.5 %), step = 2.37 ps     (10.3 u%)
+    tran: time = 13.03 us    (56.7 %), step = 3.424 ps    (14.9 u%)
+    tran: time = 13.05 us    (56.7 %), step = 475.3 fs    (2.07 u%)
+    tran: time = 13.06 us    (56.8 %), step = 5.847 ps    (25.4 u%)
+    tran: time = 13.08 us    (56.9 %), step = 2.914 ps    (12.7 u%)
+    tran: time = 13.12 us    (57.1 %), step = 11.95 fs    (51.9 n%)
+    tran: time = 13.14 us    (57.1 %), step = 3.396 ps    (14.8 u%)
+    tran: time = 13.16 us    (57.2 %), step = 6.752 ps    (29.4 u%)
+    tran: time = 13.17 us    (57.3 %), step = 5.277 ps    (22.9 u%)
+    tran: time = 13.2 us     (57.4 %), step = 229.3 fs     (997 n%)
+    tran: time = 13.23 us    (57.5 %), step = 4.495 ps    (19.5 u%)
+    tran: time = 13.24 us    (57.6 %), step = 716.9 fs    (3.12 u%)
+    tran: time = 13.26 us    (57.7 %), step = 4.333 ps    (18.8 u%)
+    tran: time = 13.28 us    (57.7 %), step = 1.506 ps    (6.55 u%)
+    tran: time = 13.31 us    (57.9 %), step = 2.434 ps    (10.6 u%)
+    tran: time = 13.33 us      (58 %), step = 1.606 ps    (6.98 u%)
+    tran: time = 13.35 us    (58.1 %), step = 215.2 fs     (936 n%)
+    tran: time = 13.37 us    (58.1 %), step = 17.11 ps    (74.4 u%)
+    tran: time = 13.39 us    (58.2 %), step = 4.393 ps    (19.1 u%)
+    tran: time = 13.43 us    (58.4 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 13.44 us    (58.5 %), step = 4.439 ps    (19.3 u%)
+    tran: time = 13.46 us    (58.5 %), step = 3.759 ps    (16.3 u%)
+    tran: time = 13.48 us    (58.6 %), step = 272.5 fs    (1.18 u%)
+    tran: time = 13.52 us    (58.8 %), step = 6.83 ps     (29.7 u%)
+    tran: time = 13.54 us    (58.9 %), step = 2.501 ps    (10.9 u%)
+    tran: time = 13.55 us    (58.9 %), step = 409.3 fs    (1.78 u%)
+    tran: time = 13.57 us      (59 %), step = 6.474 ps    (28.1 u%)
+    tran: time = 13.6 us     (59.1 %), step = 2.743 ps    (11.9 u%)
+    tran: time = 13.63 us    (59.3 %), step = 6.552 ps    (28.5 u%)
+    tran: time = 13.65 us    (59.3 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 13.67 us    (59.4 %), step = 3.184 ps    (13.8 u%)
+    tran: time = 13.69 us    (59.5 %), step = 9.684 ps    (42.1 u%)
+    tran: time = 13.73 us    (59.7 %), step = 667.2 fs     (2.9 u%)
+    tran: time = 13.74 us    (59.7 %), step = 64.27 fs     (279 n%)
+    tran: time = 13.76 us    (59.8 %), step = 6.577 ps    (28.6 u%)
+    tran: time = 13.78 us    (59.9 %), step = 6.245 ps    (27.2 u%)
+    tran: time = 13.81 us    (60.1 %), step = 116.9 ps     (508 u%)
+    tran: time = 13.84 us    (60.2 %), step = 2.198 ps    (9.56 u%)
+    tran: time = 13.85 us    (60.2 %), step = 3.657 ps    (15.9 u%)
+    tran: time = 13.87 us    (60.3 %), step = 151.7 fs     (660 n%)
+    tran: time = 13.89 us    (60.4 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 13.93 us    (60.6 %), step = 4.081 ps    (17.7 u%)
+    tran: time = 13.94 us    (60.6 %), step = 6.06 ps     (26.3 u%)
+    tran: time = 13.96 us    (60.7 %), step = 184.8 fs     (803 n%)
+    tran: time = 13.98 us    (60.8 %), step = 200.4 fs     (871 n%)
+    tran: time = 14.02 us      (61 %), step = 3.623 ps    (15.8 u%)
+    tran: time = 14.04 us      (61 %), step = 6.464 ps    (28.1 u%)
+    tran: time = 14.05 us    (61.1 %), step = 4.511 ps    (19.6 u%)
+    tran: time = 14.07 us    (61.2 %), step = 3.114 ps    (13.5 u%)
+    tran: time = 14.1 us     (61.3 %), step = 3.059 ps    (13.3 u%)
+    tran: time = 14.13 us    (61.4 %), step = 6.193 ps    (26.9 u%)
+    tran: time = 14.15 us    (61.5 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 14.17 us    (61.6 %), step = 111.7 fs     (486 n%)
+    tran: time = 14.19 us    (61.7 %), step = 2.663 ps    (11.6 u%)
+    tran: time = 14.23 us    (61.9 %), step = 4.359 ps      (19 u%)
+    tran: time = 14.24 us    (61.9 %), step = 16.9 ps     (73.5 u%)
+    tran: time = 14.26 us      (62 %), step = 6.932 ps    (30.1 u%)
+    tran: time = 14.28 us    (62.1 %), step = 640.8 fs    (2.79 u%)
+    tran: time = 14.32 us    (62.3 %), step = 2.098 ps    (9.12 u%)
+    tran: time = 14.34 us    (62.3 %), step = 6.954 ps    (30.2 u%)
+    tran: time = 14.35 us    (62.4 %), step = 7.662 ps    (33.3 u%)
+    tran: time = 14.37 us    (62.5 %), step = 1.152 ps    (5.01 u%)
+    tran: time = 14.38 us    (62.5 %), step = 15.14 ps    (65.8 u%)
+    tran: time = 14.4 us     (62.6 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 14.43 us    (62.8 %), step = 2.764 ps      (12 u%)
+    tran: time = 14.45 us    (62.8 %), step = 9.39 ps     (40.8 u%)
+    tran: time = 14.47 us    (62.9 %), step = 1.818 ps     (7.9 u%)
+    tran: time = 14.49 us      (63 %), step = 14.58 ps    (63.4 u%)
+    tran: time = 14.53 us    (63.2 %), step = 4.882 ps    (21.2 u%)
+    tran: time = 14.54 us    (63.2 %), step = 5.713 ps    (24.8 u%)
+    tran: time = 14.56 us    (63.3 %), step = 5.68 ps     (24.7 u%)
+    tran: time = 14.58 us    (63.4 %), step = 4.416 ps    (19.2 u%)
+    tran: time = 14.62 us    (63.6 %), step = 1.647 ps    (7.16 u%)
+    tran: time = 14.64 us    (63.6 %), step = 170.6 fs     (742 n%)
+    tran: time = 14.65 us    (63.7 %), step = 2.397 ps    (10.4 u%)
+    tran: time = 14.67 us    (63.8 %), step = 3.534 ps    (15.4 u%)
+    tran: time = 14.7 us     (63.9 %), step = 2.199 ps    (9.56 u%)
+    tran: time = 14.73 us    (64.1 %), step = 3.667 ps    (15.9 u%)
+    tran: time = 14.75 us    (64.1 %), step = 4.99 ps     (21.7 u%)
+    tran: time = 14.77 us    (64.2 %), step = 2.537 ps      (11 u%)
+    tran: time = 14.79 us    (64.3 %), step = 4.29 ps     (18.7 u%)
+    tran: time = 14.83 us    (64.5 %), step = 4.32 ps     (18.8 u%)
+    tran: time = 14.84 us    (64.5 %), step = 328.9 fs    (1.43 u%)
+    tran: time = 14.86 us    (64.6 %), step = 678.6 fs    (2.95 u%)
+    tran: time = 14.88 us    (64.7 %), step = 2.765 ps      (12 u%)
+    tran: time = 14.9 us     (64.8 %), step = 6.795 ps    (29.5 u%)
+    tran: time = 14.93 us    (64.9 %), step = 7.178 ps    (31.2 u%)
+    tran: time = 14.95 us      (65 %), step = 54.3 fs      (236 n%)
+    tran: time = 14.97 us    (65.1 %), step = 949 fs      (4.13 u%)
+    tran: time = 14.99 us    (65.2 %), step = 35.92 fs     (156 n%)
+    tran: time = 15.03 us    (65.3 %), step = 1.102 ps    (4.79 u%)
+    tran: time = 15.04 us    (65.4 %), step = 211.8 fs     (921 n%)
+    tran: time = 15.06 us    (65.5 %), step = 559.7 fs    (2.43 u%)
+    tran: time = 15.08 us    (65.6 %), step = 1.898 ps    (8.25 u%)
+    tran: time = 15.1 us     (65.7 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 15.13 us    (65.8 %), step = 588.3 fs    (2.56 u%)
+    tran: time = 15.15 us    (65.9 %), step = 111.8 fs     (486 n%)
+    tran: time = 15.17 us      (66 %), step = 7.186 ps    (31.2 u%)
+
+Warning from spectre at time = 15.1818 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: I1.net4. Check the design or use
+        '+diagnose' to get more information.
+
+    tran: time = 15.19 us      (66 %), step = 6.738 ps    (29.3 u%)
+    tran: time = 15.23 us    (66.2 %), step = 10.68 ps    (46.4 u%)
+    tran: time = 15.24 us    (66.3 %), step = 2.713 ps    (11.8 u%)
+    tran: time = 15.26 us    (66.4 %), step = 1.659 ps    (7.21 u%)
+    tran: time = 15.28 us    (66.4 %), step = 5.829 ps    (25.3 u%)
+    tran: time = 15.32 us    (66.6 %), step = 2.357 ps    (10.2 u%)
+    tran: time = 15.34 us    (66.7 %), step = 21.04 ps    (91.5 u%)
+    tran: time = 15.36 us    (66.8 %), step = 2.328 ps    (10.1 u%)
+    tran: time = 15.37 us    (66.8 %), step = 6.516 ps    (28.3 u%)
+    tran: time = 15.4 us       (67 %), step = 2.509 ps    (10.9 u%)
+    tran: time = 15.43 us    (67.1 %), step = 154.4 fs     (671 n%)
+    tran: time = 15.45 us    (67.2 %), step = 7.316 ps    (31.8 u%)
+    tran: time = 15.47 us    (67.3 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 15.49 us    (67.3 %), step = 3.551 ps    (15.4 u%)
+    tran: time = 15.53 us    (67.5 %), step = 3.474 ps    (15.1 u%)
+    tran: time = 15.54 us    (67.6 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 15.56 us    (67.6 %), step = 2.584 ps    (11.2 u%)
+    tran: time = 15.58 us    (67.7 %), step = 394.5 fs    (1.72 u%)
+    tran: time = 15.6 us     (67.8 %), step = 9.863 ps    (42.9 u%)
+    tran: time = 15.63 us      (68 %), step = 4.771 ps    (20.7 u%)
+    tran: time = 15.65 us    (68.1 %), step = 871.3 fs    (3.79 u%)
+    tran: time = 15.67 us    (68.1 %), step = 7.445 ps    (32.4 u%)
+    tran: time = 15.69 us    (68.2 %), step = 13.24 ps    (57.6 u%)
+    tran: time = 15.73 us    (68.4 %), step = 3.828 ps    (16.6 u%)
+    tran: time = 15.75 us    (68.5 %), step = 3.453 ps      (15 u%)
+    tran: time = 15.76 us    (68.5 %), step = 14.12 ps    (61.4 u%)
+    tran: time = 15.78 us    (68.6 %), step = 1.769 ps    (7.69 u%)
+    tran: time = 15.82 us    (68.8 %), step = 76.11 fs     (331 n%)
+    tran: time = 15.84 us    (68.9 %), step = 910.6 fs    (3.96 u%)
+    tran: time = 15.86 us      (69 %), step = 3.254 ps    (14.1 u%)
+    tran: time = 15.88 us      (69 %), step = 210.3 fs     (914 n%)
+    tran: time = 15.9 us     (69.1 %), step = 33.88 ps     (147 u%)
+    tran: time = 15.93 us    (69.3 %), step = 2.481 ps    (10.8 u%)
+    tran: time = 15.95 us    (69.4 %), step = 6.216 ps      (27 u%)
+    tran: time = 15.97 us    (69.4 %), step = 6.287 ps    (27.3 u%)
+    tran: time = 15.99 us    (69.5 %), step = 2.03 ps     (8.83 u%)
+    tran: time = 16.03 us    (69.7 %), step = 1.18 ps     (5.13 u%)
+    tran: time = 16.05 us    (69.8 %), step = 7.322 ps    (31.8 u%)
+    tran: time = 16.07 us    (69.9 %), step = 226 fs       (983 n%)
+    tran: time = 16.08 us    (69.9 %), step = 2.914 ps    (12.7 u%)
+    tran: time = 16.12 us    (70.1 %), step = 327 fs      (1.42 u%)
+    tran: time = 16.13 us    (70.1 %), step = 8.029 ps    (34.9 u%)
+    tran: time = 16.15 us    (70.2 %), step = 210.7 fs     (916 n%)
+    tran: time = 16.16 us    (70.3 %), step = 7.706 ps    (33.5 u%)
+    tran: time = 16.18 us    (70.4 %), step = 5.512 ps      (24 u%)
+    tran: time = 16.22 us    (70.5 %), step = 13.85 ps    (60.2 u%)
+    tran: time = 16.24 us    (70.6 %), step = 3.231 ps      (14 u%)
+    tran: time = 16.26 us    (70.7 %), step = 15.03 ps    (65.3 u%)
+    tran: time = 16.28 us    (70.8 %), step = 4.22 ps     (18.3 u%)
+    tran: time = 16.32 us    (70.9 %), step = 5.127 ps    (22.3 u%)
+    tran: time = 16.34 us      (71 %), step = 8.468 ps    (36.8 u%)
+    tran: time = 16.35 us    (71.1 %), step = 1.682 ps    (7.31 u%)
+    tran: time = 16.37 us    (71.2 %), step = 359.9 fs    (1.56 u%)
+    tran: time = 16.4 us     (71.3 %), step = 3.439 ps      (15 u%)
+    tran: time = 16.43 us    (71.4 %), step = 7.122 ps      (31 u%)
+    tran: time = 16.45 us    (71.5 %), step = 2.52 ps       (11 u%)
+    tran: time = 16.47 us    (71.6 %), step = 690.6 fs       (3 u%)
+    tran: time = 16.49 us    (71.7 %), step = 1.485 ps    (6.46 u%)
+    tran: time = 16.53 us    (71.9 %), step = 1.95 ps     (8.48 u%)
+    tran: time = 16.54 us    (71.9 %), step = 6.102 ps    (26.5 u%)
+    tran: time = 16.56 us      (72 %), step = 2.451 ps    (10.7 u%)
+    tran: time = 16.58 us    (72.1 %), step = 6.6 ps      (28.7 u%)
+    tran: time = 16.62 us    (72.3 %), step = 1.203 ps    (5.23 u%)
+    tran: time = 16.64 us    (72.3 %), step = 72.4 fs      (315 n%)
+    tran: time = 16.65 us    (72.4 %), step = 4.169 ps    (18.1 u%)
+    tran: time = 16.67 us    (72.5 %), step = 3.827 ps    (16.6 u%)
+    tran: time = 16.68 us    (72.5 %), step = 16.42 ps    (71.4 u%)
+    tran: time = 16.7 us     (72.6 %), step = 13.41 ps    (58.3 u%)
+    tran: time = 16.73 us    (72.8 %), step = 3.688 ps      (16 u%)
+    tran: time = 16.75 us    (72.8 %), step = 579.5 fs    (2.52 u%)
+    tran: time = 16.77 us    (72.9 %), step = 189.1 fs     (822 n%)
+    tran: time = 16.78 us      (73 %), step = 4.261 ps    (18.5 u%)
+    tran: time = 16.82 us    (73.2 %), step = 3.297 ps    (14.3 u%)
+    tran: time = 16.84 us    (73.2 %), step = 6.358 ps    (27.6 u%)
+    tran: time = 16.86 us    (73.3 %), step = 411.3 fs    (1.79 u%)
+    tran: time = 16.88 us    (73.4 %), step = 3.873 ps    (16.8 u%)
+    tran: time = 16.92 us    (73.6 %), step = 470.9 fs    (2.05 u%)
+    tran: time = 16.94 us    (73.6 %), step = 691.3 fs    (3.01 u%)
+    tran: time = 16.95 us    (73.7 %), step = 2.749 ps      (12 u%)
+    tran: time = 16.97 us    (73.8 %), step = 10.8 ps     (46.9 u%)
+    tran: time = 17 us       (73.9 %), step = 5.468 ps    (23.8 u%)
+    tran: time = 17.03 us      (74 %), step = 36.96 ps     (161 u%)
+    tran: time = 17.05 us    (74.1 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 17.07 us    (74.2 %), step = 3.609 ps    (15.7 u%)
+    tran: time = 17.09 us    (74.3 %), step = 9.281 ps    (40.4 u%)
+    tran: time = 17.13 us    (74.5 %), step = 10.88 ps    (47.3 u%)
+    tran: time = 17.14 us    (74.5 %), step = 6.134 ps    (26.7 u%)
+    tran: time = 17.16 us    (74.6 %), step = 4.829 ps      (21 u%)
+    tran: time = 17.18 us    (74.7 %), step = 6.823 ps    (29.7 u%)
+    tran: time = 17.21 us    (74.8 %), step = 127.8 fs     (556 n%)
+    tran: time = 17.23 us    (74.9 %), step = 825.3 fs    (3.59 u%)
+    tran: time = 17.25 us      (75 %), step = 1.789 ps    (7.78 u%)
+    tran: time = 17.26 us    (75.1 %), step = 7.823 ps      (34 u%)
+    tran: time = 17.28 us    (75.1 %), step = 148.1 fs     (644 n%)
+    tran: time = 17.32 us    (75.3 %), step = 72.44 ps     (315 u%)
+    tran: time = 17.34 us    (75.4 %), step = 185.2 fs     (805 n%)
+    tran: time = 17.35 us    (75.5 %), step = 231.8 fs    (1.01 u%)
+    tran: time = 17.37 us    (75.5 %), step = 182.2 fs     (792 n%)
+    tran: time = 17.39 us    (75.6 %), step = 2.516 ps    (10.9 u%)
+    tran: time = 17.43 us    (75.8 %), step = 5.47 ps     (23.8 u%)
+    tran: time = 17.44 us    (75.8 %), step = 3.978 ps    (17.3 u%)
+    tran: time = 17.46 us    (75.9 %), step = 3.637 ps    (15.8 u%)
+    tran: time = 17.47 us      (76 %), step = 6.55 ps     (28.5 u%)
+    tran: time = 17.5 us     (76.1 %), step = 6.738 ps    (29.3 u%)
+    tran: time = 17.53 us    (76.2 %), step = 1.121 ps    (4.88 u%)
+    tran: time = 17.55 us    (76.3 %), step = 4.615 ps    (20.1 u%)
+    tran: time = 17.57 us    (76.4 %), step = 3.448 ps      (15 u%)
+    tran: time = 17.59 us    (76.5 %), step = 14.78 ps    (64.3 u%)
+    tran: time = 17.63 us    (76.6 %), step = 173.3 fs     (754 n%)
+    tran: time = 17.64 us    (76.7 %), step = 2.977 ps    (12.9 u%)
+    tran: time = 17.66 us    (76.8 %), step = 4.106 ps    (17.9 u%)
+    tran: time = 17.68 us    (76.9 %), step = 389.9 fs     (1.7 u%)
+    tran: time = 17.7 us       (77 %), step = 8.453 ps    (36.8 u%)
+    tran: time = 17.73 us    (77.1 %), step = 2.339 ps    (10.2 u%)
+    tran: time = 17.75 us    (77.2 %), step = 10.07 ps    (43.8 u%)
+    tran: time = 17.77 us    (77.3 %), step = 8.042 ps      (35 u%)
+    tran: time = 17.79 us    (77.3 %), step = 23.88 ps     (104 u%)
+    tran: time = 17.83 us    (77.5 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 17.84 us    (77.6 %), step = 5.942 ps    (25.8 u%)
+    tran: time = 17.86 us    (77.7 %), step = 14.42 ps    (62.7 u%)
+    tran: time = 17.88 us    (77.7 %), step = 3.441 ps      (15 u%)
+    tran: time = 17.92 us    (77.9 %), step = 2.871 ps    (12.5 u%)
+    tran: time = 17.94 us      (78 %), step = 20.22 ps    (87.9 u%)
+    tran: time = 17.95 us    (78.1 %), step = 5.778 ps    (25.1 u%)
+    tran: time = 17.97 us    (78.1 %), step = 4.34 ps     (18.9 u%)
+    tran: time = 18 us       (78.3 %), step = 267.4 fs    (1.16 u%)
+    tran: time = 18.03 us    (78.4 %), step = 2.461 ps    (10.7 u%)
+    tran: time = 18.05 us    (78.5 %), step = 5.926 ps    (25.8 u%)
+    tran: time = 18.07 us    (78.6 %), step = 1.129 ps    (4.91 u%)
+    tran: time = 18.08 us    (78.6 %), step = 4.556 ps    (19.8 u%)
+    tran: time = 18.12 us    (78.8 %), step = 4.407 ps    (19.2 u%)
+    tran: time = 18.14 us    (78.9 %), step = 1.999 ps    (8.69 u%)
+    tran: time = 18.16 us      (79 %), step = 4.799 ps    (20.9 u%)
+    tran: time = 18.18 us      (79 %), step = 2.362 ps    (10.3 u%)
+    tran: time = 18.22 us    (79.2 %), step = 2.466 ps    (10.7 u%)
+    tran: time = 18.24 us    (79.3 %), step = 3.969 ps    (17.3 u%)
+    tran: time = 18.25 us    (79.4 %), step = 242.1 fs    (1.05 u%)
+    tran: time = 18.27 us    (79.4 %), step = 218.6 fs     (950 n%)
+    tran: time = 18.3 us     (79.6 %), step = 1.148 ps    (4.99 u%)
+    tran: time = 18.33 us    (79.7 %), step = 7.917 ps    (34.4 u%)
+    tran: time = 18.35 us    (79.8 %), step = 3.232 ps    (14.1 u%)
+    tran: time = 18.36 us    (79.8 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 18.38 us    (79.9 %), step = 3.404 ps    (14.8 u%)
+    tran: time = 18.42 us    (80.1 %), step = 152.3 fs     (662 n%)
+    tran: time = 18.44 us    (80.2 %), step = 1.443 ps    (6.28 u%)
+    tran: time = 18.46 us    (80.2 %), step = 4.348 ps    (18.9 u%)
+    tran: time = 18.47 us    (80.3 %), step = 6.104 ps    (26.5 u%)
+    tran: time = 18.5 us     (80.4 %), step = 2.31 ps       (10 u%)
+    tran: time = 18.53 us    (80.6 %), step = 412.4 fs    (1.79 u%)
+    tran: time = 18.55 us    (80.6 %), step = 6.862 ps    (29.8 u%)
+    tran: time = 18.57 us    (80.7 %), step = 4.161 ps    (18.1 u%)
+    tran: time = 18.58 us    (80.8 %), step = 779 fs      (3.39 u%)
+    tran: time = 18.62 us      (81 %), step = 1.311 ps     (5.7 u%)
+    tran: time = 18.64 us    (81.1 %), step = 721.8 fs    (3.14 u%)
+    tran: time = 18.66 us    (81.1 %), step = 11.38 ps    (49.5 u%)
+    tran: time = 18.68 us    (81.2 %), step = 2.722 ps    (11.8 u%)
+    tran: time = 18.71 us    (81.4 %), step = 6.96 ps     (30.3 u%)
+    tran: time = 18.73 us    (81.5 %), step = 4.477 ps    (19.5 u%)
+    tran: time = 18.75 us    (81.5 %), step = 910.6 fs    (3.96 u%)
+    tran: time = 18.77 us    (81.6 %), step = 2.719 ps    (11.8 u%)
+    tran: time = 18.79 us    (81.7 %), step = 54.63 ps     (238 u%)
+    tran: time = 18.83 us    (81.8 %), step = 4.727 ps    (20.6 u%)
+    tran: time = 18.84 us    (81.9 %), step = 8.914 ps    (38.8 u%)
+    tran: time = 18.86 us      (82 %), step = 1.411 ps    (6.14 u%)
+    tran: time = 18.88 us    (82.1 %), step = 7.974 ps    (34.7 u%)
+    tran: time = 18.92 us    (82.3 %), step = 3.821 ps    (16.6 u%)
+    tran: time = 18.94 us    (82.3 %), step = 121.2 fs     (527 n%)
+    tran: time = 18.95 us    (82.4 %), step = 227.4 fs     (989 n%)
+    tran: time = 18.97 us    (82.5 %), step = 1.916 ps    (8.33 u%)
+    tran: time = 18.98 us    (82.5 %), step = 27.38 ps     (119 u%)
+    tran: time = 19 us       (82.6 %), step = 256.2 fs    (1.11 u%)
+    tran: time = 19.03 us    (82.8 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 19.05 us    (82.8 %), step = 5.862 ps    (25.5 u%)
+    tran: time = 19.07 us    (82.9 %), step = 5.269 ps    (22.9 u%)
+    tran: time = 19.09 us      (83 %), step = 5.398 ps    (23.5 u%)
+    tran: time = 19.13 us    (83.2 %), step = 2.717 ps    (11.8 u%)
+    tran: time = 19.15 us    (83.2 %), step = 5.598 ps    (24.3 u%)
+    tran: time = 19.16 us    (83.3 %), step = 2.666 ps    (11.6 u%)
+    tran: time = 19.18 us    (83.4 %), step = 233.3 fs    (1.01 u%)
+    tran: time = 19.22 us    (83.6 %), step = 35.67 fs     (155 n%)
+    tran: time = 19.24 us    (83.7 %), step = 3.946 ps    (17.2 u%)
+    tran: time = 19.26 us    (83.7 %), step = 170.4 ps     (741 u%)
+    tran: time = 19.27 us    (83.8 %), step = 3.248 ps    (14.1 u%)
+    tran: time = 19.3 us     (83.9 %), step = 3.387 ps    (14.7 u%)
+    tran: time = 19.33 us      (84 %), step = 4.825 ps      (21 u%)
+    tran: time = 19.35 us    (84.1 %), step = 705.8 fs    (3.07 u%)
+    tran: time = 19.37 us    (84.2 %), step = 62.19 fs     (270 n%)
+    tran: time = 19.38 us    (84.3 %), step = 3.836 ps    (16.7 u%)
+    tran: time = 19.42 us    (84.5 %), step = 3.454 ps      (15 u%)
+    tran: time = 19.44 us    (84.5 %), step = 160.4 fs     (697 n%)
+    tran: time = 19.46 us    (84.6 %), step = 611.9 fs    (2.66 u%)
+    tran: time = 19.48 us    (84.7 %), step = 1.774 ps    (7.71 u%)
+    tran: time = 19.5 us     (84.8 %), step = 163.9 fs     (713 n%)
+    tran: time = 19.53 us    (84.9 %), step = 819.3 fs    (3.56 u%)
+    tran: time = 19.55 us      (85 %), step = 8.662 ps    (37.7 u%)
+    tran: time = 19.57 us    (85.1 %), step = 351 fs      (1.53 u%)
+    tran: time = 19.59 us    (85.2 %), step = 15.21 ps    (66.1 u%)
+    tran: time = 19.63 us    (85.3 %), step = 7.166 ps    (31.2 u%)
+    tran: time = 19.65 us    (85.4 %), step = 631.6 fs    (2.75 u%)
+    tran: time = 19.67 us    (85.5 %), step = 1.031 ps    (4.48 u%)
+    tran: time = 19.68 us    (85.6 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 19.73 us    (85.8 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 19.74 us    (85.8 %), step = 3.454 ps      (15 u%)
+    tran: time = 19.76 us    (85.9 %), step = 26.92 ps     (117 u%)
+    tran: time = 19.78 us      (86 %), step = 12.27 ps    (53.3 u%)
+    tran: time = 19.82 us    (86.2 %), step = 3.434 ps    (14.9 u%)
+    tran: time = 19.84 us    (86.2 %), step = 1.995 ps    (8.67 u%)
+    tran: time = 19.85 us    (86.3 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 19.87 us    (86.4 %), step = 4.443 ps    (19.3 u%)
+    tran: time = 19.89 us    (86.5 %), step = 241.7 fs    (1.05 u%)
+    tran: time = 19.93 us    (86.6 %), step = 3.159 ps    (13.7 u%)
+    tran: time = 19.95 us    (86.7 %), step = 4.191 ps    (18.2 u%)
+    tran: time = 19.97 us    (86.8 %), step = 19.99 ps    (86.9 u%)
+    tran: time = 19.98 us    (86.9 %), step = 6.031 ps    (26.2 u%)
+    tran: time = 20.02 us    (87.1 %), step = 11.61 ps    (50.5 u%)
+    tran: time = 20.04 us    (87.1 %), step = 1.669 ps    (7.26 u%)
+    tran: time = 20.06 us    (87.2 %), step = 2.69 ps     (11.7 u%)
+    tran: time = 20.07 us    (87.3 %), step = 6.45 ps       (28 u%)
+    tran: time = 20.1 us     (87.4 %), step = 19.01 ps    (82.6 u%)
+    tran: time = 20.13 us    (87.5 %), step = 4.495 ps    (19.5 u%)
+    tran: time = 20.13 us    (87.5 %), step = 11.78 ps    (51.2 u%)
+    tran: time = 20.15 us    (87.6 %), step = 790.1 fs    (3.44 u%)
+    tran: time = 20.16 us    (87.7 %), step = 1.085 ps    (4.72 u%)
+    tran: time = 20.18 us    (87.7 %), step = 492.8 fs    (2.14 u%)
+    tran: time = 20.22 us    (87.9 %), step = 3.141 ps    (13.7 u%)
+    tran: time = 20.24 us      (88 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 20.26 us    (88.1 %), step = 85.59 fs     (372 n%)
+    tran: time = 20.27 us    (88.2 %), step = 5.221 ps    (22.7 u%)
+    tran: time = 20.3 us     (88.3 %), step = 482.6 fs     (2.1 u%)
+    tran: time = 20.33 us    (88.4 %), step = 4.442 ps    (19.3 u%)
+    tran: time = 20.35 us    (88.5 %), step = 2.009 ps    (8.73 u%)
+    tran: time = 20.37 us    (88.6 %), step = 161.3 fs     (701 n%)
+    tran: time = 20.39 us    (88.6 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 20.43 us    (88.8 %), step = 3.408 ps    (14.8 u%)
+    tran: time = 20.44 us    (88.9 %), step = 185.7 fs     (808 n%)
+    tran: time = 20.46 us      (89 %), step = 2.566 ps    (11.2 u%)
+    tran: time = 20.48 us      (89 %), step = 878.8 fs    (3.82 u%)
+    tran: time = 20.51 us    (89.2 %), step = 2.368 ps    (10.3 u%)
+    tran: time = 20.54 us    (89.3 %), step = 23.48 ps     (102 u%)
+    tran: time = 20.55 us    (89.4 %), step = 1.85 ps     (8.04 u%)
+    tran: time = 20.57 us    (89.4 %), step = 1.504 ps    (6.54 u%)
+    tran: time = 20.59 us    (89.5 %), step = 38.41 ps     (167 u%)
+    tran: time = 20.63 us    (89.7 %), step = 3.283 ps    (14.3 u%)
+    tran: time = 20.65 us    (89.8 %), step = 2.673 ps    (11.6 u%)
+    tran: time = 20.66 us    (89.8 %), step = 2.142 ps    (9.31 u%)
+    tran: time = 20.68 us    (89.9 %), step = 181.5 ps     (789 u%)
+    tran: time = 20.72 us    (90.1 %), step = 4.382 ps    (19.1 u%)
+    tran: time = 20.74 us    (90.2 %), step = 6.844 ps    (29.8 u%)
+    tran: time = 20.76 us    (90.2 %), step = 2.165 ps    (9.41 u%)
+    tran: time = 20.78 us    (90.3 %), step = 5.735 ps    (24.9 u%)
+    tran: time = 20.8 us     (90.4 %), step = 4.5 ps      (19.6 u%)
+    tran: time = 20.83 us    (90.6 %), step = 10.96 ps    (47.7 u%)
+    tran: time = 20.85 us    (90.7 %), step = 6.946 ps    (30.2 u%)
+    tran: time = 20.87 us    (90.7 %), step = 4.718 ps    (20.5 u%)
+    tran: time = 20.89 us    (90.8 %), step = 7.189 ps    (31.3 u%)
+    tran: time = 20.93 us      (91 %), step = 1.91 ps     (8.31 u%)
+    tran: time = 20.94 us    (91.1 %), step = 742.4 fs    (3.23 u%)
+    tran: time = 20.96 us    (91.1 %), step = 42.09 ps     (183 u%)
+    tran: time = 20.98 us    (91.2 %), step = 415.9 fs    (1.81 u%)
+    tran: time = 21.02 us    (91.4 %), step = 3.686 ps      (16 u%)
+    tran: time = 21.04 us    (91.5 %), step = 3.247 ps    (14.1 u%)
+    tran: time = 21.06 us    (91.6 %), step = 170.8 fs     (742 n%)
+    tran: time = 21.07 us    (91.6 %), step = 6.449 ps      (28 u%)
+    tran: time = 21.1 us     (91.7 %), step = 7.3 ps      (31.7 u%)
+    tran: time = 21.13 us    (91.9 %), step = 4.371 ps      (19 u%)
+    tran: time = 21.15 us      (92 %), step = 7.385 ps    (32.1 u%)
+    tran: time = 21.17 us      (92 %), step = 161.9 fs     (704 n%)
+    tran: time = 21.18 us    (92.1 %), step = 11.84 ps    (51.5 u%)
+    tran: time = 21.22 us    (92.3 %), step = 1.645 ps    (7.15 u%)
+    tran: time = 21.24 us    (92.4 %), step = 3.287 ps    (14.3 u%)
+    tran: time = 21.26 us    (92.4 %), step = 10.12 ps      (44 u%)
+    tran: time = 21.28 us    (92.5 %), step = 26.14 ps     (114 u%)
+    tran: time = 21.3 us     (92.6 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 21.33 us    (92.8 %), step = 1.654 ps    (7.19 u%)
+    tran: time = 21.35 us    (92.8 %), step = 183.8 fs     (799 n%)
+    tran: time = 21.37 us    (92.9 %), step = 7.633 ps    (33.2 u%)
+    tran: time = 21.39 us      (93 %), step = 6.199 ps      (27 u%)
+    tran: time = 21.43 us    (93.2 %), step = 3.853 ps    (16.8 u%)
+    tran: time = 21.44 us    (93.2 %), step = 913.2 fs    (3.97 u%)
+    tran: time = 21.46 us    (93.3 %), step = 889.5 fs    (3.87 u%)
+    tran: time = 21.48 us    (93.4 %), step = 4.115 ps    (17.9 u%)
+    tran: time = 21.52 us    (93.6 %), step = 27.56 ps     (120 u%)
+    tran: time = 21.54 us    (93.6 %), step = 127.1 fs     (553 n%)
+    tran: time = 21.55 us    (93.7 %), step = 6.579 ps    (28.6 u%)
+    tran: time = 21.57 us    (93.8 %), step = 2.584 ps    (11.2 u%)
+    tran: time = 21.6 us     (93.9 %), step = 1.104 ps     (4.8 u%)
+    tran: time = 21.63 us    (94.1 %), step = 165.6 fs     (720 n%)
+    tran: time = 21.65 us    (94.1 %), step = 2.441 ps    (10.6 u%)
+    tran: time = 21.67 us    (94.2 %), step = 205.1 ps     (892 u%)
+    tran: time = 21.69 us    (94.3 %), step = 2.537 ps      (11 u%)
+    tran: time = 21.73 us    (94.5 %), step = 20.43 ps    (88.8 u%)
+    tran: time = 21.74 us    (94.5 %), step = 5.534 ps    (24.1 u%)
+    tran: time = 21.76 us    (94.6 %), step = 847.9 fs    (3.69 u%)
+    tran: time = 21.78 us    (94.7 %), step = 6.436 ps      (28 u%)
+    tran: time = 21.82 us    (94.9 %), step = 147.6 ps     (642 u%)
+    tran: time = 21.84 us    (94.9 %), step = 2.501 ps    (10.9 u%)
+    tran: time = 21.85 us      (95 %), step = 223.1 fs     (970 n%)
+    tran: time = 21.87 us    (95.1 %), step = 3.265 ps    (14.2 u%)
+    tran: time = 21.9 us     (95.2 %), step = 4.262 ps    (18.5 u%)
+    tran: time = 21.93 us    (95.3 %), step = 4.997 ps    (21.7 u%)
+    tran: time = 21.95 us    (95.4 %), step = 4.293 ps    (18.7 u%)
+    tran: time = 21.96 us    (95.5 %), step = 6.022 ps    (26.2 u%)
+    tran: time = 21.97 us    (95.5 %), step = 3.404 ps    (14.8 u%)
+    tran: time = 22 us       (95.6 %), step = 2.831 ps    (12.3 u%)
+    tran: time = 22.03 us    (95.8 %), step = 1.855 ps    (8.07 u%)
+    tran: time = 22.05 us    (95.9 %), step = 83.51 fs     (363 n%)
+    tran: time = 22.06 us    (95.9 %), step = 3.82 ps     (16.6 u%)
+    tran: time = 22.08 us      (96 %), step = 1.654 ps    (7.19 u%)
+    tran: time = 22.11 us    (96.1 %), step = 1.952 ps    (8.49 u%)
+    tran: time = 22.13 us    (96.2 %), step = 558.3 fs    (2.43 u%)
+    tran: time = 22.15 us    (96.3 %), step = 1.117 ps    (4.85 u%)
+    tran: time = 22.17 us    (96.4 %), step = 350.6 fs    (1.52 u%)
+    tran: time = 22.19 us    (96.5 %), step = 3.045 ps    (13.2 u%)
+    tran: time = 22.23 us    (96.6 %), step = 566.5 fs    (2.46 u%)
+    tran: time = 22.24 us    (96.7 %), step = 2.779 ps    (12.1 u%)
+    tran: time = 22.26 us    (96.8 %), step = 913 fs      (3.97 u%)
+    tran: time = 22.27 us    (96.8 %), step = 41.87 ps     (182 u%)
+    tran: time = 22.3 us     (96.9 %), step = 3.813 ps    (16.6 u%)
+    tran: time = 22.33 us    (97.1 %), step = 2.667 ps    (11.6 u%)
+    tran: time = 22.35 us    (97.2 %), step = 5.106 ps    (22.2 u%)
+    tran: time = 22.36 us    (97.2 %), step = 6.506 ps    (28.3 u%)
+    tran: time = 22.38 us    (97.3 %), step = 18.61 ps    (80.9 u%)
+    tran: time = 22.42 us    (97.5 %), step = 431.7 fs    (1.88 u%)
+    tran: time = 22.43 us    (97.5 %), step = 3.471 ps    (15.1 u%)
+    tran: time = 22.44 us    (97.6 %), step = 4.599 ps      (20 u%)
+    tran: time = 22.46 us    (97.6 %), step = 17.97 ps    (78.1 u%)
+    tran: time = 22.47 us    (97.7 %), step = 959.2 fs    (4.17 u%)
+    tran: time = 22.5 us     (97.8 %), step = 6.458 ps    (28.1 u%)
+    tran: time = 22.53 us      (98 %), step = 6.956 ps    (30.2 u%)
+    tran: time = 22.55 us      (98 %), step = 390.1 fs     (1.7 u%)
+    tran: time = 22.57 us    (98.1 %), step = 824.3 fs    (3.58 u%)
+    tran: time = 22.58 us    (98.2 %), step = 4.238 ps    (18.4 u%)
+    tran: time = 22.62 us    (98.4 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 22.64 us    (98.4 %), step = 3.468 ps    (15.1 u%)
+    tran: time = 22.66 us    (98.5 %), step = 19.47 ps    (84.7 u%)
+
+Warning from spectre at time = 22.6617 us during transient analysis `tran'.
+    WARNING (SPECTRE-16780): LTE tolerance was temporarily relaxed to step over
+        a discontinuity in the signal: BITU<5>. Check the design or use
+        '+diagnose' to get more information.
+        Further occurrences of this warning will be suppressed.
+
+    tran: time = 22.68 us    (98.6 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 22.7 us     (98.7 %), step = 311.8 fs    (1.36 u%)
+    tran: time = 22.73 us    (98.8 %), step = 3.539 ps    (15.4 u%)
+    tran: time = 22.75 us    (98.9 %), step = 6.163 ps    (26.8 u%)
+    tran: time = 22.77 us      (99 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 22.79 us    (99.1 %), step = 5.288 ps      (23 u%)
+    tran: time = 22.83 us    (99.2 %), step = 17.48 ps      (76 u%)
+    tran: time = 22.84 us    (99.3 %), step = 5.003 ps    (21.8 u%)
+    tran: time = 22.86 us    (99.4 %), step = 2.501 ps    (10.9 u%)
+    tran: time = 22.88 us    (99.5 %), step = 11.83 ps    (51.4 u%)
+    tran: time = 22.92 us    (99.6 %), step = 715.1 fs    (3.11 u%)
+    tran: time = 22.94 us    (99.7 %), step = 78.87 fs     (343 n%)
+    tran: time = 22.95 us    (99.8 %), step = 2.134 ps    (9.28 u%)
+    tran: time = 22.97 us    (99.9 %), step = 1.905 ps    (8.28 u%)
+    tran: time = 23 us        (100 %), step = 1.369 ps    (5.95 u%)
+Number of accepted tran steps =             2529488
+
+Maximum value achieved for any signal of each quantity: 
+V: V(OUT) = 3.576 V
+I: I(V30:p) = 227.5 mA
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Post-Transient Simulation Summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   -   Non-default settings that could significantly slow down simulation
+          errpreset = conservative_sigglobal, default moderate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+During simulation, the CPU load for active processors is :
+         0 (17.4 %)      1 (100.0 %)     2 (17.2 %)      3 (31.6 %)
+         4 (31.2 %)      5 (34.8 %)      6 (14.6 %)      7 (43.5 %)
+         8 (19.2 %)      9 (32.7 %)     10 (25.5 %)     11 (35.5 %)
+        Total: 403.2%
+Initial condition solution time: CPU = 43.611 ms, elapsed = 7.92789 ms.
+Intrinsic tran analysis time:    CPU = 10.1897 ks, elapsed = 1.28986 ks.
+Total time required for tran analysis `tran': CPU = 10.1898 ks (2h 49m 50s),
+        elapsed = 1.28987 ks (21m  29.9s), util. = 790%.
+Time accumulated: CPU = 10.1965 ks (2h 49m 57s), elapsed = 1.29208 ks (21m 
+        32.1s).
+Peak resident memory used = 500 Mbytes.
+
+finalTimeOP: writing operating point information to rawfile.
+
+Opening the PSF file psf/finalTimeOP.info ...
+modelParameter: writing model parameter values to rawfile.
+
+Opening the PSF file psf/modelParameter.info ...
+element: writing instance parameter values to rawfile.
+
+Opening the PSF file psf/element.info ...
+outputParameter: writing output parameter values to rawfile.
+
+Opening the PSF file psf/outputParameter.info ...
+designParamVals: writing netlist parameters to rawfile.
+
+Opening the PSFASCII file psf/designParamVals.info ...
+primitives: writing primitives to rawfile.
+
+Opening the PSFASCII file psf/primitives.info.primitives ...
+subckts: writing subcircuits to rawfile.
+
+Opening the PSFASCII file psf/subckts.info.subckts ...
+Licensing Information:
+Lic Summary:
+[01:42:10.001104] cdslmd servers: /opt/cadence/IC618/share/license/license.dat
+[01:42:10.001104] Feature usage summary:
+[01:42:10.016448]  Spectre_X_MMSIM_Lk  
+[01:42:10.496695]   Virtuoso_Multi_mode_Simulation  
+
+
+Aggregate audit (1:42:10 AM, Sat Jul 18, 2026):
+Time used: CPU = 10.2 ks (2h 49m 57s), elapsed = 1.29 ks (21m  32.2s), util. =
+        789%.
+Time spent in licensing: elapsed = 107 ms.
+Peak memory used = 500 Mbytes.
+Simulation started at: 1:20:38 AM, Sat Jul 18, 2026, ended at: 1:42:10 AM, Sat
+        Jul 18, 2026, with elapsed time (wall clock): 1.29 ks (21m  32.2s).
+spectre completes with 0 errors, 10 warnings, and 12 notices.

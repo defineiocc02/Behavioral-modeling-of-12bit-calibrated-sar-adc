@@ -1,0 +1,1123 @@
+% !TEX program = xelatex
+% sar_adc_mismatch_calibration_report_cn.tex
+% SAR ADC电容失配与校准算法综合报告
+% 第一版格式：ctexart + tcolorbox
+\documentclass[UTF8,a4paper,11pt]{ctexart}
+
+% ==================== 页面 ====================
+\usepackage[margin=2.25cm]{geometry}
+
+% ==================== 数学 ====================
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{bm}
+
+% ==================== 表格 ====================
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{makecell}
+
+% ==================== 单位 ====================
+\usepackage{siunitx}
+\newcommand{\LSB}{\mathrm{LSB}}
+
+% ==================== 图形 ====================
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% ==================== TikZ ====================
+\usepackage{tikz}
+\usetikzlibrary{
+  arrows.meta,
+  positioning,
+  shapes.geometric,
+  fit,
+  calc,
+  backgrounds
+}
+
+% ==================== 列表 ====================
+\usepackage{enumitem}
+
+% ==================== 代码 ====================
+\usepackage{listings}
+
+% ==================== 算法 ====================
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ==================== 排版微调 ====================
+\usepackage{microtype}
+
+% ==================== 颜色和链接 ====================
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+% ==================== tcolorbox ====================
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+% ==================== 颜色体系 ====================
+% TikZ/代码用色
+\definecolor{navy}{HTML}{163A5F}
+\definecolor{teal}{HTML}{167C80}
+\definecolor{orange}{HTML}{D97706}
+\definecolor{redx}{HTML}{B42318}
+\definecolor{lightblue}{HTML}{EAF2F8}
+\definecolor{lightteal}{HTML}{E8F5F4}
+\definecolor{lightorange}{HTML}{FFF3E0}
+\definecolor{graybox}{HTML}{F3F4F6}
+
+% tcolorbox 提示框颜色（第一版方案）
+\definecolor{tipblue}{RGB}{220,235,250}
+\definecolor{tipblueframe}{RGB}{60,100,180}
+\definecolor{warnyellow}{RGB}{255,248,220}
+\definecolor{warnyellowframe}{RGB}{200,150,30}
+\definecolor{keygreeng}{RGB}{225,245,225}
+\definecolor{keygreengframe}{RGB}{40,140,60}
+\definecolor{notegray}{RGB}{240,240,240}
+\definecolor{notegrayframe}{RGB}{120,120,120}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=navy,
+  citecolor=teal,
+  urlcolor=navy,
+  pdftitle={SAR ADC电容失配与校准算法综合报告},
+  pdfauthor={混合信号IC设计技术文档}
+}
+
+% ==================== 列表与表格间距 ====================
+\setlist[itemize]{
+  leftmargin=2em,
+  itemsep=0.25em,
+  topsep=0.35em
+}
+\setlist[enumerate]{
+  leftmargin=2.2em,
+  itemsep=0.3em,
+  topsep=0.35em
+}
+\renewcommand{\arraystretch}{1.25}
+
+\captionsetup{
+  font=small,
+  labelfont=bf
+}
+
+% ==================== 代码风格 ====================
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{graybox},
+  frame=single,
+  rulecolor=\color{gray!35},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  keywordstyle=\color{navy}\bfseries,
+  commentstyle=\color{teal},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=1.5em,
+  framexleftmargin=1.2em,
+  language=Verilog
+}
+
+% ==================== 算法伪代码汉化 ====================
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}
+\renewcommand{\algorithmicensure}{\textbf{输出:}}
+\renewcommand{\algorithmicif}{\textbf{若}}
+\renewcommand{\algorithmicthen}{\textbf{则}}
+\renewcommand{\algorithmicelse}{\textbf{否则}}
+\renewcommand{\algorithmicfor}{\textbf{对于}}
+\renewcommand{\algorithmicdo}{\textbf{执行}}
+\renewcommand{\algorithmicwhile}{\textbf{当}}
+\renewcommand{\algorithmicreturn}{\textbf{返回}}
+\renewcommand{\algorithmicprocedure}{\textbf{过程}}
+\renewcommand{\algorithmicend}{\textbf{结束}}
+
+% ==================== tcolorbox 提示框环境 ====================
+\newtcolorbox{tipbox}[1]{%
+  enhanced, breakable,
+  colback=tipblue, colframe=tipblueframe,
+  boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\bfseries\small,
+  title={#1}
+}
+
+\newtcolorbox{warnbox}[1]{%
+  enhanced, breakable,
+  colback=warnyellow, colframe=warnyellowframe,
+  boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\bfseries\small,
+  title={#1}
+}
+
+\newtcolorbox{keybox}[1]{%
+  enhanced, breakable,
+  colback=keygreeng, colframe=keygreengframe,
+  boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\bfseries\small,
+  title={#1}
+}
+
+\newtcolorbox{notebox}[1]{%
+  enhanced, breakable,
+  colback=notegray, colframe=notegrayframe,
+  boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\bfseries\small,
+  title={#1}
+}
+
+% ==================== 便捷命令 ====================
+\newcommand{\Vref}{V_{\mathrm{REF}}}
+\newcommand{\sigc}{\sigma\!\left(\frac{\Delta C}{C}\right)}
+\newcommand{\clip}{\operatorname{clip}}
+\newcommand{\round}{\operatorname{round}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+% ==================== TikZ 节点风格 ====================
+\tikzset{
+  block/.style={
+    rectangle,
+    rounded corners,
+    draw=navy,
+    thick,
+    fill=lightblue,
+    align=center,
+    minimum height=9mm,
+    text width=32mm,
+    inner sep=4pt
+  },
+  decision/.style={
+    diamond,
+    draw=teal,
+    thick,
+    fill=lightteal,
+    align=center,
+    aspect=2,
+    inner sep=2pt
+  },
+  arrow/.style={
+    -{Stealth[length=2.2mm]},
+    thick,
+    draw=navy
+  }
+}
+
+% ==================== 文档信息 ====================
+\title{\textbf{SAR ADC电容失配与校准算法综合报告}\\[6pt]
+\large 从MOM电容统计模型、位权自校准到确定性--随机混合校准}
+\author{基于四篇论文及当前12位冗余SAR实现的系统整理}
+\date{2026年7月}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+本报告从电荷重分配型SAR ADC的基本工作原理出发，系统整理电容失配的物理来源、统计模型、对DNL/INL及动态性能的影响，以及前景/背景、模拟/数字、确定性/随机化等主要校准路径。报告重点综合四项资料：Omran等对飞法及亚飞法MOM电容匹配性的实测研究，Bagheri等提出的“确定性自校准+随机量化”混合方案，Chen等对高分辨率SAR位权自校准误差传播与随机误差的定量分析，以及郑瑜关于小尺寸定制电容阵列、噪声整形和采样噪声消除的工程研究。最后，将这些结论映射到一个12位、14次冗余判决、最高三位前景校准的具体实现，给出可直接用于架构设计、Verilog-A建模、蒙特卡洛仿真和流片验证的公式与设计流程。
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\section{报告范围与核心结论}
+
+\subsection{四篇资料分别解决什么问题}
+
+\begin{table}[H]
+\centering
+\caption{资料分工与本报告中的作用}
+\label{tab:sources}
+\begin{tabularx}{\textwidth}{p{2.5cm}p{3.4cm}X}
+\toprule
+资料 & 核心问题 & 对设计的直接价值\\
+\midrule
+Omran等，2016 & 飞法/亚飞法MOM电容的实测匹配规律 & 给出Pelgrom反面积模型、实测系数及“匹配由实际电容面积而非名义容值或间距决定”的结论\\
+Bagheri等，2020 & 如何把大于1 LSB的失配快速逼近，并继续估计亚LSB残差 & 将确定性SAR搜索与噪声比较器的统计量化结合，实现亚LSB位权估计和数字校正\\
+Chen等，2024 & 位权自校准本身会引入哪些误差，误差如何传播 & 定量讨论比较器失调、后端DAC误差、量化误差、随机噪声、递归传播和重复次数\\
+郑瑜，2024 & 小尺寸电容阵列怎样真正落地到低功耗高精度SAR & 给出12位电容失配约束、55 nm定制MOM阵列、版图与寄生处理、噪声整形和$kT/C$消除方案\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{最重要的统一认识}
+
+\begin{keybox}{统一认识1：校准的目标不是“让电容变理想”，而是“获得可信的实际位权并正确重构输出”。}
+真实CDAC中，第$i$位的物理电容、寄生和开关方式共同形成实际位权$W_i$。数字输出应写成
+\begin{equation}
+D_{\mathrm{cal}}=\sum_i b_i\widehat{W}_i,
+\end{equation}
+其中$\widehat{W}_i$是校准估计值。只要估计准确，物理电容不必严格满足二进制比例。
+\end{keybox}
+
+\begin{keybox}{统一认识2：小电容设计受两条下限约束。}
+采样热噪声给出$kT/C$下限；随机匹配误差给出线性度下限。有效校准可以降低“匹配决定的最小电容”，使总电容更接近由$kT/C$、比较器噪声和驱动建立决定的下限。Bagheri等正是以此为出发点。\cite{bagheri2020}
+\end{keybox}
+
+\begin{keybox}{统一认识3：位权自校准不是无误差测量。}
+比较器失调、后端DAC有限分辨率、后端DAC自身失配、热噪声与闪烁噪声都会被“写入”校准权重；递归校准还会把低位校准误差传播到高位。Chen等表明，传播误差的大部分表现为增益误差，但仍有约$0.5\sim0.6$倍的校准误差进入最终非线性误差。\cite{chen2024}
+\end{keybox}
+
+\section{SAR ADC与位权的基础模型}
+
+\subsection{电荷重分配SAR的抽象表达}
+
+对一个由$M$个可控电容分支组成的差分SAR ADC，完成逐次比较后得到判决向量
+\begin{equation}
+\bm b=[b_0,b_1,\ldots,b_{M-1}],\qquad b_i\in\{0,1\}\ \text{或}\ \{-1,+1\}.
+\end{equation}
+
+将第$i$个分支对输入等效电压的贡献归一化为位权$W_i$，则ADC的原始重构量为
+\begin{equation}
+S_{\mathrm{raw}}=\sum_{i=0}^{M-1}b_iW_i.
+\label{eq:weighted_sum}
+\end{equation}
+
+“位权”并不总等于裸电容倍数。它还取决于：
+\begin{itemize}
+  \item CDAC是完整二进制阵列、分段阵列还是桥接阵列；
+  \item 单端还是差分；
+  \item 上极板/下极板采样；
+  \item 单调、基于共模、三电平或分裂MSB开关策略；
+  \item 顶板寄生、桥接电容误差和参考电压幅度。
+\end{itemize}
+因此，物理$16C$可能对应输入等效$2048\,\LSB$，物理$8C$可能对应$1024\,\LSB$；两者不能仅凭“16”和“8”直接推断数字权重。
+
+\subsection{理想二进制与非二进制冗余}
+
+理想$N$位二进制权重为
+\begin{equation}
+2^{N-1},2^{N-2},\ldots,2,1.
+\end{equation}
+总和为$2^N-1$。非二进制SAR故意令若干权重偏离严格基数2，使后续权重仍能修正前级的有限错误。若总权重
+\begin{equation}
+W_\Sigma=\sum_iW_i>2^N-1,
+\end{equation}
+则多出的部分可构成数字冗余搜索区，但最终仍需映射到标准$N$位输出范围。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.75cm, every node/.style={font=\small},
+box/.style={rounded corners,draw=navy,fill=lightblue,text width=2.65cm,minimum height=1.05cm,align=center},
+arr/.style={-{Latex[length=3mm]},thick,draw=navy}]
+\node[box] (vin) {模拟输入$V_{\mathrm{in}}$};
+\node[box,right=of vin] (sar) {非二进制SAR搜索\\产生$M$个判决$b_i$};
+\node[box,right=of sar] (weight) {实际/校准位权\\$\widehat W_i$};
+\node[box,right=of weight] (sum) {加权重构\\$\sum b_i\widehat W_i$};
+\node[box,below=of sum] (map) {冗余去除、舍入、限幅\\标准$N$位码};
+\draw[arr] (vin)--(sar);
+\draw[arr] (sar)--(weight);
+\draw[arr] (weight)--(sum);
+\draw[arr] (sum)--(map);
+\end{tikzpicture}
+\caption{非二进制SAR中“判决”和“最终位数”是两层概念}
+\label{fig:decoder_overview}
+\end{figure}
+
+\section{电容失配：物理来源、统计模型和线性度影响}
+
+\subsection{随机误差与系统误差}
+
+电容误差可分为：
+\begin{enumerate}
+  \item \textbf{随机失配}：局部介质常数、线宽、厚度、侧壁、通孔和边缘形貌的随机波动；
+  \item \textbf{系统梯度}：跨阵列的工艺梯度、CMP厚度变化和金属密度效应；
+  \item \textbf{寄生误差}：顶板走线、电容到衬底、相邻分支耦合和开关漏端寄生；
+  \item \textbf{参考与动态误差}：参考压降、DAC建立不充分等虽非电容几何失配，但会表现为动态位权变化。
+\end{enumerate}
+校准通常更擅长处理静态或缓慢变化的等效位权误差；高速建立误差和码相关参考扰动需要额外建模。
+
+\subsection{单位电容统计模型}
+
+将单位电容表示为
+\begin{equation}
+C_u=C_{u0}+\delta C_u,\qquad \E[\delta C_u]=0,
+\qquad \Var(\delta C_u)=\sigma_u^2.
+\end{equation}
+若一个权重由$m$个独立单位电容并联得到，
+\begin{equation}
+C_m=mC_{u0}+\sum_{k=1}^{m}\delta C_{u,k},
+\end{equation}
+则
+\begin{equation}
+\sigma(C_m)=\sqrt{m}\,\sigma_u,
+\qquad
+\frac{\sigma(C_m)}{mC_{u0}}=\frac{1}{\sqrt m}\frac{\sigma_u}{C_{u0}}.
+\label{eq:group_mismatch}
+\end{equation}
+所以大电容的\textbf{相对}失配更小，但其\textbf{绝对}误差随$\sqrt m$增加。
+
+\subsection{Pelgrom反面积模型}
+
+Omran等对\SI{0.5}{fF}至\SI{2}{fF}的MOM结构进行了大样本实测，结论是飞法和亚飞法MOM电容遵循反面积规律：\cite{omran2016}
+\begin{equation}
+\sigc=\frac{K_A}{\sqrt{A_{\mathrm{actual}}}}.
+\label{eq:pelgrom_area}
+\end{equation}
+若在某一结构族中电容值与实际电容面积成比例，可写成
+\begin{equation}
+\sigc=\frac{K_C}{\sqrt C}.
+\label{eq:pelgrom_cap}
+\end{equation}
+
+这里最容易被误用的地方是：$A_{\mathrm{actual}}$是形成电场的实际面积，而不一定是版图俯视包围盒面积。对于横向边缘场MOM，增大指间距可以降低容值，却不一定降低实际侧壁面积，因此可能保持相近匹配而获得更小容值，代价是更大芯片面积。
+
+\begin{table}[H]
+\centering
+\caption{Omran等实测数据的代表值（\SI{0.18}{\micro\metre} CMOS）}
+\label{tab:omran_data}
+\begin{tabular}{cccccc}
+\toprule
+结构 & 类型 & 平均容值/fF & $\sigc$ & $K_{A,\mathrm{actual}}$ & $K_C$\\
+\midrule
+A1 & 垂直场 & 1.95 & 0.10\% & $0.49\,\%\!\cdot\!\mu\mathrm{m}$ & 0.14\%$\sqrt{\mathrm{fF}}$\\
+A2 & 垂直场 & 0.94 & 0.15\% & 同组拟合 & 同组拟合\\
+A3 & 垂直场 & 0.48 & 0.21\% & 同组拟合 & 同组拟合\\
+B1 & 横向场 & 1.99 & 0.14\% & $0.48\,\%\!\cdot\!\mu\mathrm{m}$ & 0.20\%$\sqrt{\mathrm{fF}}$\\
+B2 & 横向场 & 1.02 & 0.19\% & 同组拟合 & 同组拟合\\
+B3 & 横向场 & 0.53 & 0.28\% & 同组拟合 & 同组拟合\\
+C1/C2/C3 & 横向场、改间距 & 1.99/1.03/0.45 & 约0.14\% & 约0.46--$0.48\,\%\!\cdot\!\mu\mathrm{m}$ & 各自不同\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{warnbox}{这些系数不是跨工艺通用常数。}
+Omran数据来自\SI{0.18}{\micro\metre}工艺和特定MOM结构。郑瑜在\SI{55}{nm}工艺中对库内\SI{2.7}{fF} MOM的蒙特卡洛得到约6.7\%失配，并从芯片动态测试反推定制\SI{2}{fF}阵列约2.5\%失配。\cite{zheng2024} 不同数字可能来自工艺、结构、提取方式及“单器件标准差/配对差值标准差”的定义差异，不能直接混用。
+\end{warnbox}
+
+\subsection{失配如何形成DNL与INL}
+
+对于二进制CDAC，实际第$k$位可写成
+\begin{equation}
+C_k=2^kC_0+\delta_k.
+\end{equation}
+若输出码中第$k$位判决为$D_k$，电容误差导致的DAC电压误差近似为
+\begin{equation}
+V_{\mathrm{err}}=\frac{\sum_k\delta_kD_k}{C_{\mathrm{tot}}}\Vref.
+\label{eq:dac_error}
+\end{equation}
+最大跳变通常出现在主要进位点，例如MSB翻转而所有低位反向翻转。郑瑜给出的二进制阵列统计近似为\cite{zheng2024}
+\begin{align}
+\sigma_{\mathrm{DNL,max}}&=\sqrt{2^{N-2}-1}\frac{\sigma_0}{C_0}\,\LSB,\\
+\sigma_{\mathrm{INL,max}}&\approx\sqrt{2^{N-2}}\frac{\sigma_0}{C_0}\,\LSB.
+\end{align}
+若要求$3\sigma_{\mathrm{DNL,max}}<0.5\,\LSB$，对$N=12$有
+\begin{equation}
+\frac{\sigma_0}{C_0}<\frac{0.5}{3\sqrt{2^{10}-1}}\approx0.52\%.
+\label{eq:12bit_req}
+\end{equation}
+这个结果说明：对不校准的严格二进制12位阵列，单位电容的相对随机失配要求非常严格。
+
+\subsection{\texorpdfstring{$kT/C$}{kT/C}、能量和失配的三角权衡}
+
+采样热噪声量级为
+\begin{equation}
+\sigma_{v,kT/C}^2\approx\frac{kT}{C_S},
+\end{equation}
+而CDAC动态能量量级为
+\begin{equation}
+E_{\mathrm{DAC}}\propto C_{\mathrm{tot}}\Vref^2.
+\end{equation}
+减小电容有利于面积、速度和功耗，却同时增大$kT/C$噪声和随机失配。因此可以将设计下限理解为
+\begin{equation}
+C_{\min}=\max\left(C_{kT/C},\ C_{\mathrm{matching}},\ C_{\mathrm{settling}},\ C_{\mathrm{parasitic}}\right).
+\end{equation}
+校准的主要价值是降低$C_{\mathrm{matching}}$这一项，但不能自动消除$kT/C$、寄生比例误差和动态参考建立误差。
+
+\section{校准方案的分类框架}
+
+\subsection{检测与校正是两个独立问题}
+
+Bagheri等将失配校准分为两个阶段：\cite{bagheri2020}
+\begin{enumerate}
+  \item \textbf{检测（estimation）}：获得每个位权或失配误差；
+  \item \textbf{校正（correction）}：利用估计值修正模拟DAC或数字输出。
+\end{enumerate}
+一个优秀的检测算法不一定要求模拟修调；一个优秀的数字重构器也不能弥补错误的位权估计。
+
+\subsection{前景与背景}
+
+\begin{table}[H]
+\centering
+\caption{前景与背景校准比较}
+\begin{tabularx}{\textwidth}{p{2.4cm}XX}
+\toprule
+维度 & 前景校准 & 背景校准\\
+\midrule
+工作时机 & 上电、停机或维护窗口 & 正常转换同时运行\\
+输入要求 & 可将输入断开或置于已知状态 & 通常要求输入与扰动统计独立\\
+收敛速度 & 可设计为短时间直接测量 & 常依赖长时间相关/LMS平均\\
+跟踪能力 & 不能连续跟踪快速漂移 & 可跟踪温度、老化和供电变化\\
+实现难度 & 状态机和测试模式相对清晰 & 对输入信号、扰动泄漏和带宽影响更敏感\\
+典型方法 & 位权自校准、DNL扫描、随机残差测量 & PN注入、相关、LMS、冗余码统计\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{主要检测方法}
+
+\begin{longtable}{p{3.0cm}p{4.3cm}p{4.0cm}p{3.0cm}}
+\caption{主要失配检测算法}\label{tab:cal_methods}\\
+\toprule
+方法 & 原理 & 优点 & 主要代价/风险\\
+\midrule
+\endfirsthead
+\toprule
+方法 & 原理 & 优点 & 主要代价/风险\\
+\midrule
+\endhead
+PN扰动+相关/LMS & 注入零均值伪随机扰动，利用输出与扰动的相关性更新位权 & 可背景运行，可同时估计多位 & 收敛慢；扰动可能占用输入范围；依赖输入独立性\\
+双转换 & 同一输入分别叠加正、负扰动，输出相减去除未知输入 & 数据量较少，输入项直接抵消 & 每个样本转换两次，吞吐率降低\\
+Split ADC & 两个相同ADC并行转换，平均作输出、差值作误差 & 可背景运行 & 双倍模拟硬件；两路可能存在不可观测模式，需要shuffling\\
+冗余码比较 & 利用不同内部码对应同一理想模拟量，比较其结果 & 无需额外模拟DAC & 需要冗余码出现或额外比较；可观测位数有限\\
+直接位权自校准 & 用低位后端DAC直接量化高位电容产生的残差 & 结构紧凑、收敛快、复用主SAR & 需要后端权重和大于目标权重；误差递归传播\\
+确定性+随机量化 & 确定性搜索先把大残差压到1 LSB内，再由噪声比较统计亚LSB残差 & 兼顾速度和亚LSB精度 & 需要统计比较、噪声参数估计，Bagheri方案使用辅助比较器\\
+\bottomrule
+\end{longtable}
+
+\subsection{模拟校正与数字校正}
+
+模拟校正包括电容修调、辅助DAC注入补偿电荷等；优点是后续数字输出可保持标准格式，缺点是模拟硬件、速度和功耗开销。数字校正直接使用更新位权：
+\begin{equation}
+D'_{\mathrm{out}}=\sum_i b_i\widehat W_i.
+\label{eq:digital_correction}
+\end{equation}
+数字校正最灵活，但必须保留足够的小数位，且最终舍入会形成不可避免的量化边界。
+
+\section{直接位权自校准：从低位向高位递归}
+
+\subsection{基本原理}
+
+将待校准电容$C_i$单独产生的DAC电压写成
+\begin{equation}
+V_{\mathrm{DAC}}=\frac{C_i}{C_{\mathrm{total}}}\Vref=W_i\Vref.
+\end{equation}
+使用所有已知低位权重组成后端DAC，以双极性判决$B_j\in\{-1,+1\}$逼近该电压：
+\begin{equation}
+\sum_{j=0}^{i-1}W_jB_j\approx W_i.
+\label{eq:backend_quant}
+\end{equation}
+可覆盖条件是
+\begin{equation}
+W_i<\sum_{j=0}^{i-1}W_j.
+\label{eq:redundancy_condition}
+\end{equation}
+这就是为什么高分辨率直接自校准通常需要非二进制冗余：低位后端总权重必须“够得着”高位待测量。Chen等明确将其作为递归校准的基本条件。\cite{chen2024}
+
+\subsection{递归顺序}
+
+若从第$i$位开始校准，则顺序为
+\begin{equation}
+C_i\rightarrow C_{i+1}\rightarrow\cdots\rightarrow C_{\mathrm{MSB}}.
+\end{equation}
+测得$C_i$后，将其加入后端DAC，再校准$C_{i+1}$。这是一种bottom-up过程：
+\begin{equation}
+\widehat W_{i+1}=f(\widehat W_0,\ldots,\widehat W_i,\text{comparison codes}).
+\end{equation}
+优点是无需高分辨率独立辅助DAC；缺点是低位测量误差会成为高位参考误差。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.95cm and 1.2cm, every node/.style={font=\small},
+box/.style={rounded corners,draw=teal,fill=lightteal,minimum width=3.4cm,minimum height=0.85cm,align=center},
+arr/.style={-{Latex[length=2.6mm]},thick,draw=teal}]
+\node[box] (known) {假设低位$W_0\sim W_{i-1}$已知};
+\node[box,below=of known] (excite) {翻转待测$C_i$\\产生$W_i\Vref$};
+\node[box,below=of excite] (quant) {低位后端DAC逐次逼近};
+\node[box,below=of quant] (store) {存储$\widehat W_i$};
+\node[box,below=of store] (next) {$C_i$加入后端DAC\\转向$C_{i+1}$};
+\draw[arr] (known)--(excite);
+\draw[arr] (excite)--(quant);
+\draw[arr] (quant)--(store);
+\draw[arr] (store)--(next);
+\end{tikzpicture}
+\caption{bottom-up直接位权自校准的递归流程}
+\end{figure}
+
+\subsection{相反极性测量：数字域相关双采样}
+
+比较器失调在正常转换中主要体现为整体转移曲线偏移，但在位权校准中会直接写入$\widehat W_i$。若用相反极性分别测量
+\begin{align}
+W_{i,\mathrm{set1}}&=+W_{i,\mathrm{ideal}}+W_{\mathrm{OS}},\\
+W_{i,\mathrm{set0}}&=-W_{i,\mathrm{ideal}}+W_{\mathrm{OS}},
+\end{align}
+则
+\begin{equation}
+\widehat W_i=\frac{W_{i,\mathrm{set1}}-W_{i,\mathrm{set0}}}{2}=W_{i,\mathrm{ideal}}.
+\label{eq:opposite_code}
+\end{equation}
+这相当于数字域相关双采样，可抑制固定失调和低频噪声。对热噪声，其效果近似于两次独立测量平均。\cite{chen2024}
+
+\subsection{重复平均和定点表示}
+
+若单次位权测量的等效随机误差标准差为$\sigma_{\mathrm{cal}}$，重复$n$次并平均后
+\begin{equation}
+\sigma_{\widehat W_i}=\frac{\sigma_{\mathrm{cal}}}{\sqrt n}.
+\label{eq:average_noise}
+\end{equation}
+数字寄存器应保留子LSB信息。若采用$F$位小数的Q格式，
+\begin{equation}
+Q=2^F,\qquad w_{i,Q}=\round(Q\widehat W_i).
+\end{equation}
+Q格式量化步长为$1/Q\,\LSB$。对于12位校准，Q6的步长为$1/64\,\LSB$；若目标是高于12位的静态线性度或更严的SFDR，通常需评估Q8或更高精度。
+
+\section{Bagheri混合校准：确定性搜索与随机量化}
+
+\subsection{为什么纯确定性自校准存在1 LSB边界}
+
+若直接使用主SAR CDAC作为校准DAC，确定性搜索最终只能给出整数码。残差小于校准DAC的1 LSB时，比较器只告诉“正或负”，不能给出连续幅度。因此纯确定性方案适合快速去除大失配，却会留下亚LSB残差。Bagheri等的核心思想是：
+\begin{equation}
+\text{大残差：确定性SAR搜索}\quad\Longrightarrow\quad
+\text{小残差：噪声统计量化}.
+\end{equation}
+该10位原型在\SI{28}{nm} CMOS、\SI{85}{MS/s}下实测INL和SFDR分别改善\SI{6.4}{LSB}和\SI{14.9}{dB}。\cite{bagheri2020}
+
+\subsection{噪声比较器如何测量亚LSB电压}
+
+设比较器输入等效噪声$X\sim\mathcal N(\mu,\sigma^2)$，固定残差为$v_r$。重复比较得到“1”的概率
+\begin{equation}
+p(v_r)=\Phi\!\left(\frac{v_r+\mu}{\sigma}\right),
+\label{eq:prob_comp}
+\end{equation}
+其中$\Phi$为标准正态CDF。由此
+\begin{equation}
+\widehat v_r=\sigma\Phi^{-1}(p)-\mu.
+\label{eq:stochastic_inverse}
+\end{equation}
+只要$p$不接近0或1，有限样本中“1”的比例就携带残差幅度信息。Bagheri采用经验窗口
+\begin{equation}
+0.1<p<0.9,
+\end{equation}
+使输入大致位于噪声分布的有效斜率范围内。
+
+\subsection{在线估计比较器\texorpdfstring{$\mu$}{mu}和\texorpdfstring{$\sigma$}{sigma}}
+
+随机量化需要预先知道比较器噪声和失调。取两个已知输入$v_1,v_2$，测得概率$p_1,p_2$，定义
+\begin{equation}
+z_1=\Phi^{-1}(p_1),\qquad z_2=\Phi^{-1}(p_2),
+\end{equation}
+则
+\begin{align}
+\sigma&=\frac{v_1-v_2}{z_1-z_2},\\
+\mu&=\sigma z_1-v_1.
+\end{align}
+Bagheri原型使用专用辅助比较器，目标输入噪声约$1.5\,\LSB_{\mathrm{rms}}$、失调低于$0.5\,\LSB$，并用已知$+1\,\LSB$与0输入在片上估计$\mu,\sigma$。\cite{bagheri2020}
+
+\subsection{混合校准的三阶段流程}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.1cm and 1.1cm, every node/.style={font=\small},
+box/.style={rounded corners,draw=navy,fill=lightblue,minimum width=4.4cm,minimum height=0.85cm,align=center},
+dec/.style={diamond,aspect=2.2,draw=orange,fill=lightorange,align=center},
+arr/.style={-{Latex[length=2.7mm]},thick}]
+\node[box] (pre) {预充电到$V_{CM}$};
+\node[box,below=of pre] (res) {待测高位与已知低位和相减\\形成残差$v_r$};
+\node[box,below=of res] (sample) {辅助比较器重复判决\\估计$p=\#1/N_{comp}$};
+\node[dec,below=of sample] (range) {$0.1<p<0.9$?};
+\node[box,below left=1.2cm and 2.6cm of range] (det) {否：确定性SAR改变低位码\\将大残差压入统计窗口};
+\node[box,below right=1.2cm and 2.6cm of range] (sto) {是：用$\sigma\Phi^{-1}(p)-\mu$\\估计亚LSB残差};
+\node[box,below=2.0cm of range] (store) {减去已知低位累计误差\\存储目标电容失配};
+\draw[arr] (pre)--(res);
+\draw[arr] (res)--(sample);
+\draw[arr] (sample)--(range);
+\draw[arr] (range)--node[left]{否}(det);
+\draw[arr] (range)--node[right]{是}(sto);
+\draw[arr] (det)|-(sample);
+\draw[arr] (sto)--(store);
+\end{tikzpicture}
+\caption{确定性--随机混合位权估计的逻辑}
+\label{fig:hybrid_cal}
+\end{figure}
+
+\subsection{数字校正}
+
+差分阵列P、N两侧分别存储失配$e_{P,i},e_{N,i}$。对原始输出码，按当前参与转换的电容累加误差，形成
+\begin{equation}
+\Delta E_P=\sum_i \bar b_i e_{P,i},\qquad
+\Delta E_N=\sum_i b_i e_{N,i},
+\end{equation}
+并得到
+\begin{equation}
+D_{\mathrm{cal}}=D_{\mathrm{raw}}+\Delta E_P+\Delta E_N.
+\end{equation}
+本质上仍等价于使用实际位权重构，只是以“标称码+误差码”的形式实现。
+
+\subsection{方案优缺点}
+
+\textbf{优势：}
+\begin{itemize}
+  \item 确定性搜索快速处理数LSB甚至更大的失配；
+  \item 统计量化可突破1 LSB分辨率；
+  \item 不要求外部精密模拟源；
+  \item 顶板寄生主要改变总电容比例，不破坏残差测量的基本关系。
+\end{itemize}
+
+\textbf{代价：}
+\begin{itemize}
+  \item 辅助比较器、失调校准、概率计数器、反CDF查找表和存储器；
+  \item 统计精度随比较次数提高，校准时间不可忽略；
+  \item 噪声必须“恰到好处”：过小无法提供亚LSB统计信息，过大则需要更多样本；
+  \item 只校准静态权重，不能自动修正正常转换中的高速参考动态误差。
+\end{itemize}
+
+\section{Chen误差分析：校准系统本身的误差预算}
+
+\subsection{比较器失调}
+
+若直接测量，比较器失调会加到每个校准权重中，并在递归过程中传播。相反码测量可通过\cref{eq:opposite_code}消除固定失调；其低频噪声传递函数具有高通特性，因此也能抑制比较器闪烁噪声。\cite{chen2024}
+
+\subsection{后端DAC误差}
+
+直接位权校准假设低位后端DAC权重已知。实际中有三类误差：
+\begin{enumerate}
+  \item 未校准低位电容本身的失配；
+  \item 先前已校准位的残余估计误差；
+  \item 开关和寄生导致的后端等效权重偏差。
+\end{enumerate}
+因此，后端DAC不是理想“尺子”，而是一把需要递归校正、并且精度有限的尺子。
+
+\subsection{有限分辨率与量化误差}
+
+后端DAC只能输出离散电平。若真实位权落在两个电平之间，纯确定性重复测量总会得到同一个码，不能通过平均消除偏差。Chen等指出，当校准噪声约高于$0.5\,\LSB_{\mathrm{rms}}$时，噪声可使结果跨越相邻量化阈值，长期平均接近真实值；这与dither/随机量化思想一致。\cite{chen2024}
+
+这揭示了一个重要矛盾：
+\begin{equation}
+\text{噪声太小：量化偏差不能平均；}\qquad
+\text{噪声太大：随机测量误差增大。}
+\end{equation}
+所以设计目标不是简单追求“校准比较器噪声最小”，而是同时考虑量化解相关和平均时间。
+
+\subsection{误差传播与增益归一化}
+
+对简化二进制阵列，Chen等推导表明，递归传播可分成：
+\begin{equation}
+\widehat W_k\approx rW_{k,\mathrm{ideal}}+\frac{1}{2}\epsilon_k-\text{衰减的高位误差项},
+\label{eq:prop_summary}
+\end{equation}
+其中$r$是由累计误差形成的全局增益因子。传播误差虽然在中间权重表达式中呈指数累计，但主要转化为可通过总权重归一化消除的增益误差；对常见冗余CDAC，约$0.5\sim0.6$倍的校准误差转化为最终rms非线性误差。\cite{chen2024}
+
+归一化可写为
+\begin{equation}
+W'_k=\frac{W_k}{r},
+\qquad
+r=\frac{\sum_k\widehat W_k}{\sum_kW_{k,\mathrm{nom}}}.
+\label{eq:weight_normalize}
+\end{equation}
+对冗余SAR，也可通过减去冗余中心偏移或将总权重映射到标准满量程来完成对应的增益/偏移管理。
+
+\subsection{噪声引起的位权误差与卡方分布}
+
+设每个被校准电容的平均测量误差近似为独立高斯变量，标准差为$\sigma/\sqrt n$。正常转换时，总失真功率是多个高斯误差平方项之和，因此近似服从卡方分布：
+\begin{equation}
+\frac{V_{\mathrm{error,rms}}^2}{\sigma'^2}\sim\chi_m^2,
+\label{eq:chi_square}
+\end{equation}
+其中$m$是被校准电容数，等效方差可近似写为
+\begin{equation}
+\sigma'^2\approx(\alpha_E^2+\alpha_{EP}^2)\frac{\sigma^2}{n}
+\approx k_{\mathrm{error}}^2\frac{5}{16}\frac{\sigma^2}{n}.
+\end{equation}
+对于常见非二进制CDAC，$k_{\mathrm{error}}$约为$1.1\sim1.2$。\cite{chen2024}
+
+若要求以概率$P$满足最大校准误差功率$V_{\mathrm{allow}}^2$，则
+\begin{equation}
+n\ge
+\frac{(\alpha_E^2+\alpha_{EP}^2)\sigma^2
+F^{-1}_{\chi_m^2}(P)}{V_{\mathrm{allow}}^2}.
+\label{eq:n_required}
+\end{equation}
+允许误差功率可由SNDR损失约束得到：
+\begin{equation}
+V_{\mathrm{allow}}^2\le
+\left(10^{L_{\mathrm{SNDR}}/10}-1\right)
+\left(P_{Q+D}+\sigma_{\mathrm{normal}}^2\right).
+\end{equation}
+这使“重复32次还是512次”不再是经验选择，而可以由校准噪声、校准位数、目标良率和允许SNDR损失共同计算。
+
+\subsection{工程含义}
+
+\begin{itemize}
+  \item 平均只能按$1/\sqrt n$改善，单纯增加次数存在明显边际递减；
+  \item 降低模拟噪声比无限增加$n$更有效，但通常以功耗平方级增加为代价；
+  \item 减少需要校准的电容数$m$可降低最坏误差，但未校准低位必须通过更大面积保证匹配；
+  \item 前景校准应以高良率而非均值设计，至少考虑$3\sigma$，高端仪器可能要求更高；
+  \item 校准后必须做总权重归一化/冗余偏移重算，否则误差传播形成的增益项会保留。
+\end{itemize}
+
+\section{小尺寸电容阵列的物理与电路方案}
+
+\subsection{MOM结构：容值和匹配不是同一个优化变量}
+
+Omran等的重要结论是：当使用实际电场面积衡量时，垂直场与横向场MOM的匹配曲线基本一致；横向指间距本身不是主要失配来源。\cite{omran2016} 因而可以通过增大间距降低单位容值，同时保持足够侧壁面积获得匹配，代价是更大版图占用。
+
+这意味着设计者可以分开考虑：
+\begin{itemize}
+  \item \textbf{电容值}决定$kT/C$、开关能量和DAC比例；
+  \item \textbf{实际形成电场的面积}决定随机匹配；
+  \item \textbf{俯视占用面积和层叠数}决定版图效率；
+  \item \textbf{顶板走线和衬底耦合}决定寄生及动态建立。
+\end{itemize}
+
+\subsection{郑瑜的定制小尺寸阵列}
+
+郑瑜在\SI{55}{nm}工艺中采用标准金属和通孔构造定制插指电容：\cite{zheng2024}
+\begin{itemize}
+  \item 第一种12位SAR使用\SI{2}{fF}单位电容，单边总电容\SI{4.096}{pF}，阵列面积\SI{0.012}{mm^2}；
+  \item 提取的二进制电容约为\SI{2.0}{fF}、\SI{4.1}{fF}、\SI{8.1}{fF}直至\SI{2086.8}{fF}；
+  \item 顶板寄生约\SI{166}{fF}，主要衰减DAC摆幅；底板寄生由驱动器吸收，对静态比例影响较小；
+  \item 采用中心对称分组与梳状排列，使不同位周围环境相似并减小非期望耦合；
+  \item 芯片测试SNDR约\SI{64.1}{dB}，据THD仿真反推单位电容失配约2.5\%，说明匹配仍限制有效分辨率。
+\end{itemize}
+
+\subsection{分段、噪声整形与\texorpdfstring{$kT/C$}{kT/C}消除}
+
+进一步缩小电容可采用三种互补路径：
+\begin{enumerate}
+  \item \textbf{分段/桥接CDAC}：降低总电容，但桥接比、寄生和分段增益误差会成为新线性度瓶颈；
+  \item \textbf{噪声整形SAR}：把量化噪声推向带外，提高带内SNDR，但并不自动消除静态电容非线性；
+  \item \textbf{采样噪声消除}：通过相关采样或前置低噪声放大降低$kT/C$约束，使总电容进一步缩小。
+\end{enumerate}
+郑瑜的13位方案采用\SI{4}{fF}单位电容、总输入电容仅\SI{256}{fF}，通过$kT/C$消除和低噪声放大实现\SI{77.8}{dB} SNDR。\cite{zheng2024}
+
+\begin{warnbox}{噪声整形、$kT/C$消除和失配校准解决的是不同误差。}
+噪声整形主要处理量化噪声；$kT/C$消除主要处理采样热噪声；位权校准主要处理静态CDAC非线性。高精度小电容SAR往往需要三者中的两项或三项协同，而不能互相替代。
+\end{warnbox}
+
+\section{统一设计流程：从指标到可验证实现}
+
+\subsection{步骤1：建立完整误差预算}
+
+将总误差分成至少五部分：
+\begin{equation}
+\sigma_{\mathrm{total}}^2=
+\sigma_{kT/C}^2+
+\sigma_{\mathrm{cmp}}^2+
+\sigma_{\mathrm{quant}}^2+
+\sigma_{\mathrm{weight}}^2+
+\sigma_{\mathrm{dynamic}}^2.
+\end{equation}
+静态INL/DNL预算与动态SNDR预算应分开：某些比较器失调只移动转移曲线，但校准时却会污染位权。
+
+\subsection{步骤2：确定物理单位电容}
+
+单位电容选择不能只套用$K_C/\sqrt C$。建议顺序：
+\begin{enumerate}
+  \item 用系统SNR确定总采样电容下限；
+  \item 用PVT和建立时间确定驱动能力；
+  \item 用PDK mismatch MC或专用test-key确定单位电容失配；
+  \item 用版图后提取检查顶板寄生、分支耦合和桥接比；
+  \item 最后决定哪些位必须校准。
+\end{enumerate}
+
+\subsection{步骤3：选择校准位数与冗余}
+
+校准高位而不校准低位的逻辑是：高位绝对权重误差对INL最敏感，而低位可作为后端DAC。第一被校准位应满足：
+\begin{equation}
+\sum_{j=0}^{i-1}W_j>W_i+W_{\mathrm{margin}},
+\end{equation}
+其中$W_{\mathrm{margin}}$覆盖比较器失调、参考误差和DAC建立误差。
+
+\subsection{步骤4：选择失调消除和亚LSB策略}
+
+\begin{itemize}
+  \item 若比较器失调不可忽略：使用相反码D+/D$-$或数字CDS；
+  \item 若后端量化步长已远小于目标权重误差：普通重复平均即可；
+  \item 若存在明显亚LSB残差：使用内生噪声dither、SRM或Bagheri式随机量化；
+  \item 若校准时间严格：先确定性逼近，再对最终残差做统计估计。
+\end{itemize}
+
+\subsection{步骤5：数字权重精度和重构}
+
+应同时验证：
+\begin{enumerate}
+  \item 权重寄存器小数位数；
+  \item 平均累加器位宽；
+  \item 符号和舍入方式；
+  \item 总权重归一化或冗余中心偏移；
+  \item 输出限幅；
+  \item 校准值异常检测和回退标称权重。
+\end{enumerate}
+截断会产生单向偏差，建议使用对称四舍五入。
+
+\subsection{步骤6：验证矩阵}
+
+\begin{table}[H]
+\centering
+\caption{建议的验证矩阵}
+\begin{tabularx}{\textwidth}{p{3cm}X}
+\toprule
+验证层级 & 必做项目\\
+\midrule
+数学/行为级 & 电容随机失配扫值、比较器offset/noise、参考误差、校准重复次数、Q格式位宽、输出INL/DNL/SNDR\\
+电路前仿 & 校准相位建立、比较器概率曲线、D+/D$-$对称性、临界码收敛、低频噪声\\
+版图后仿 & 顶板寄生、权重比例、不同位建立时间、参考网络IR drop、耦合串扰\\
+蒙特卡洛 & 先校准再正常转换；不能只在标称权重下统计；报告均值、$3\sigma$和尾部良率\\
+芯片测试 & 静态码密度、正弦FFT、温度/电源重校准、校准前后权重分布、校准重复性\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{映射到当前12位、14判决冗余SAR方案}
+
+\subsection{权重与冗余}
+
+当前实现使用14个原始判决，对应标称权重
+\begin{equation}
+\bm W=[2048,1024,512,256,256,128,48,32,20,12,8,4,2,1].
+\end{equation}
+总权重为
+\begin{equation}
+W_\Sigma=4351,
+\end{equation}
+而标准12位满量程码为4095，因此冗余总量
+\begin{equation}
+W_{\mathrm{red}}=4351-4095=256,
+\end{equation}
+对称中心偏移为
+\begin{equation}
+O_{\mathrm{red}}=128.
+\end{equation}
+这14个判决不是14位输出，而是利用多出的权重形成容错搜索空间，最后解码成12位。
+
+\subsection{最高三位的递归校准}
+
+记待校准高位为$W_2\approx512$、$W_1\approx1024$、$W_0\approx2048$，固定中间位$W_3=W_4=256$。合理的bottom-up关系为
+\begin{align}
+\widehat W_2&=W_3+W_4+\widehat R_2,\\
+\widehat W_1&=\widehat W_2+W_3+W_4+\widehat R_1,\\
+\widehat W_0&=\widehat W_1+\widehat W_2+W_3+W_4+\widehat R_0.
+\end{align}
+这与Chen所述的递归后端DAC思想一致：每个已校准高位都加入下一步的“wall”。
+
+\subsection{校准小DAC与D+/D\texorpdfstring{$-$}{-}公式}
+
+低位校准权重为
+\begin{equation}
+[48,32,20,12,8,4,2],
+\end{equation}
+总和为126，另有1 LSB terminal判决。所有校准电容初始处于正贡献，已翻转权重和为$S$时
+\begin{equation}
+V_{\mathrm{cal}}=126-2S.
+\end{equation}
+定义目标与wall残差
+\begin{equation}
+R=W_{\mathrm{target}}-W_{\mathrm{wall}}.
+\end{equation}
+两个相反方向的比较残差为
+\begin{align}
+F_+&=R+126-2S_+,\\
+F_-&=-R+126-2S_-.
+\end{align}
+零交叉处
+\begin{align}
+D_+&\approx\frac{126+R}{2},\\
+D_-&\approx\frac{126-R}{2},
+\end{align}
+因此
+\begin{equation}
+\boxed{\widehat R=D_+-D_-}.
+\label{eq:dplus_dminus}
+\end{equation}
+这里没有额外除以2，是因为offset-binary切换一次产生$2W$变化，码定义已经包含该比例。它与Chen的相反码公式在尺度定义上不同，但物理本质相同：目标信号反向、比较器失调不反向，因此相减消除失调。
+
+\subsection{Q格式平均}
+
+若平均$N_{\mathrm{avg}}$组D+/D$-$，Q格式残差为
+\begin{equation}
+R_Q=\round\left[
+Q\frac{\sum_{k=1}^{N_{\mathrm{avg}}}D_{+,k}-
+\sum_{k=1}^{N_{\mathrm{avg}}}D_{-,k}}
+{N_{\mathrm{avg}}}
+\right].
+\end{equation}
+目标权重更新为
+\begin{equation}
+W_{\mathrm{target},Q}=W_{\mathrm{wall},Q}+R_Q.
+\end{equation}
+若$Q=64$、$N_{\mathrm{avg}}=32$，平均结果可保存到$1/64\,\LSB$。不过32次只代表实现默认值，不代表所有PVT和良率条件下均足够；应依据\cref{eq:n_required}和实际校准噪声验证。
+
+\subsection{正常转换解码}
+
+设原始判决$r_i\in\{0,1\}$，Q格式位权为$w_i$，则
+\begin{align}
+S_Q&=\sum_{i=0}^{13}r_iw_i,\\
+W_{\Sigma,Q}&=\sum_{i=0}^{13}w_i,\\
+O_Q&=\round\left(\frac{W_{\Sigma,Q}-4095Q}{2}\right),\\
+D_{\mathrm{out}}&=
+\clip_{[0,4095]}\left\{
+\round\left(\frac{S_Q-O_Q}{Q}\right)
+\right\}.
+\label{eq:final_decode}
+\end{align}
+相较于固定减128，动态计算$O_Q$能同步处理校准后总权重变化。另一种方案是
+\begin{equation}
+D_{\mathrm{norm}}=\round\left(4095\frac{S_Q}{W_{\Sigma,Q}}\right),
+\end{equation}
+但它会把整个冗余搜索区压缩进0--4095，改变正常LSB增益。若冗余主要用于容错，通常更适合使用\cref{eq:final_decode}的中心偏移方式。
+
+\subsection{以\SI{4}{fF}单位电容估算匹配}
+
+仅作为Omran实测模型的数量级外推，取
+\begin{equation}
+K_C=0.14\%\sqrt{\mathrm{fF}},
+\end{equation}
+则
+\begin{table}[H]
+\centering
+\caption{按$K_C/\sqrt C$外推的相对失配数量级}
+\begin{tabular}{cccc}
+\toprule
+物理电容 & 容值 & $1\sigma$相对失配 & 绝对失配rms\\
+\midrule
+$C_u$ & \SI{4}{fF} & 0.070\% & \SI{2.8}{aF}\\
+$8C_u$ & \SI{32}{fF} & 0.0247\% & \SI{7.9}{aF}\\
+$16C_u$ & \SI{64}{fF} & 0.0175\% & \SI{11.2}{aF}\\
+\bottomrule
+\end{tabular}
+\end{table}
+取更保守的$K_C=0.20\%\sqrt{\mathrm{fF}}$，三者分别约为0.10\%、0.035\%和0.025\%。
+
+\begin{warnbox}{这张表只能用于早期系统级假设。}
+最终应使用具体工艺PDK的MOM mismatch模型、版图后提取以及测试结构数据。还要确认PDK给出的是单个器件标准差还是两个器件差值的标准差；对于两个独立同分布器件，二者相差$\sqrt2$。
+\end{warnbox}
+
+\section{面向该12位架构的建议方案}
+
+\subsection{推荐的校准链路}
+
+\begin{enumerate}
+  \item \textbf{物理阵列}：保留非二进制冗余，使校准小DAC覆盖每个目标残差并留出offset/settling余量；
+  \item \textbf{校准对象}：优先校准512、1024、2048三个高位；若后仿表明256组或桥接权重是主导误差，再扩展校准位数；
+  \item \textbf{失调消除}：继续使用D+/D$-$相反极性测量，保证两次测量的时序和共模尽量一致；
+  \item \textbf{亚LSB估计}：当前多次平均依赖自然噪声跨码；若结果出现明显“锁码”，引入受控dither或统计残差测量；
+  \item \textbf{数字精度}：Q6可作为12位原型起点；对高SFDR目标建议扫描Q6/Q8/Q10，确认数字量化不成为瓶颈；
+  \item \textbf{权重处理}：校准后重新计算总权重和冗余中心偏移；同时保留全范围归一化作为对照实验；
+  \item \textbf{安全机制}：设置权重合理范围、单次更新deadband、错误回退和输出clip告警；
+  \item \textbf{重复次数}：用比较器输入等效噪声、目标SNDR损失和良率计算，而不是固定认为32次充分；
+  \item \textbf{重校准条件}：上电、温度跨阈值、供电变化或长时间运行后触发；若参考动态误差明显，考虑背景监测而非仅前景权重校准。
+\end{enumerate}
+
+\subsection{最关键的实验}
+
+\begin{table}[H]
+\centering
+\caption{判断校准是否真正有效的实验}
+\begin{tabularx}{\textwidth}{p{3.4cm}X}
+\toprule
+实验 & 观察量\\
+\midrule
+固定残差概率扫描 & 比较器输出概率--输入残差曲线，估计$\mu,\sigma$及有效统计窗口\\
+重复次数扫描 & $N=1,2,4,\ldots,512$时权重方差、INL、SFDR；验证$1/\sqrt N$区间和锁码区间\\
+D+/D$-$对称性 & 两方向码和、码差、共模与建立时间；验证offset抵消\\
+权重注入仿真 & 人为给高位和低位不同失配，分离“被校准位误差”和“后端尺子误差”\\
+Q格式扫描 & Q4--Q12下INL/SFDR，确认数字舍入边界\\
+PVT+MC全流程 & 每次MC先运行校准再转换；统计失败率、拒绝更新率和尾部SNDR\\
+参考建立扰动 & 校准模式与正常高速模式下位权是否一致，排查动态权重漂移\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{结论}
+
+四篇资料形成了一条完整逻辑链：
+\begin{enumerate}
+  \item \textbf{Omran}回答“电容失配怎样随尺寸变化”：核心自变量是实际电容面积，MOM可做到亚飞法，但匹配与面积必须共同评估；
+  \item \textbf{郑瑜}回答“小电容怎样做成ADC”：定制电容、分组对称布局、寄生管理、噪声整形和$kT/C$消除能显著减小面积与功耗，但实测匹配仍可能限制ENOB；
+  \item \textbf{Bagheri}回答“如何估计大失配和亚LSB残差”：确定性搜索负责速度，随机量化负责精度；
+  \item \textbf{Chen}回答“为什么校准后仍可能不够准”：offset、量化、噪声、后端DAC误差和递归传播必须进入统一误差预算，平均次数应按良率和SNDR设计。
+\end{enumerate}
+
+对当前12位、14判决冗余SAR，最合理的解释和实现是：用低位冗余DAC对高三位做bottom-up前景位权测量，使用D+/D$-$抑制比较器offset，通过多次平均获得子LSB分辨率，使用Q格式保存实际权重，正常转换时对14个判决做校准加权，并根据校准后的总权重去除冗余中心偏移。该方案的主要剩余风险不是数学解码，而是低位后端DAC自身误差、比较器噪声与量化的平衡、正常/校准模式动态位权不一致，以及工艺和版图下真实MOM失配远离早期模型假设。
+
+\appendix
+\section{核心公式速查}
+
+\begin{align}
+\text{Pelgrom面积模型:}\quad &\sigc=\frac{K_A}{\sqrt A},\\
+\text{Pelgrom容值模型:}\quad &\sigc=\frac{K_C}{\sqrt C},\\
+\text{后端覆盖条件:}\quad &W_i<\sum_{j<i}W_j,\\
+\text{相反码offset消除:}\quad &W_i=\frac{W_{i,1}-W_{i,0}}{2},\\
+\text{平均噪声:}\quad &\sigma_{\widehat W}=\frac{\sigma}{\sqrt n},\\
+\text{统计残差:}\quad &v_r=\sigma\Phi^{-1}(p)-\mu,\\
+\text{D+/D$-$残差:}\quad &R=D_+-D_-,\\
+\text{最终解码:}\quad &D=\clip_{[0,4095]}\left\{\round\left[\frac{\sum r_iw_i-(\sum w_i-4095Q)/2}{Q}\right]\right\},\\
+\text{卡方误差功率:}\quad &V_{\mathrm{error,rms}}^2/\sigma'^2\sim\chi_m^2.
+\end{align}
+
+\section{校准与解码伪代码}
+
+\begin{algorithm}[H]
+\caption{高三位bottom-up前景校准}
+\begin{algorithmic}[1]
+\State 初始化标称权重；设置$Q=2^F$
+\For{$t\in\{W_2,W_1,W_0\}$}
+  \State 根据已校准低位构造$W_{\mathrm{wall}}$
+  \State $A_+\gets0,\ A_-\gets0$
+  \For{$k=1$ to $N_{\mathrm{avg}}$}
+    \State 用offset-binary低位DAC执行正方向SAR，得到$D_+$
+    \State 用相反极性执行负方向SAR，得到$D_-$
+    \State $A_+\gets A_++D_+$；$A_-\gets A_-+D_-$
+  \EndFor
+  \State $R_Q\gets\round\left(Q(A_+-A_-)/N_{\mathrm{avg}}\right)$
+  \State $W_{t,Q}\gets W_{\mathrm{wall},Q}+R_Q$
+  \If{$W_{t,Q}$超出合理范围}
+    \State 拒绝更新并置错误标志
+  \EndIf
+\EndFor
+\State 计算总权重、冗余中心偏移，进入正常转换
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{14判决到12位校准码}
+\begin{algorithmic}[1]
+\State 在转换完成事件锁存$r_0\ldots r_{13}$
+\State $S_Q\gets\sum_{i=0}^{13}r_iw_i$
+\State $W_{\Sigma,Q}\gets\sum_{i=0}^{13}w_i$
+\State $O_Q\gets\round((W_{\Sigma,Q}-4095Q)/2)$
+\State $D\gets\round((S_Q-O_Q)/Q)$
+\State $D\gets\min(4095,\max(0,D))$
+\State 输出$D[11:0]$并保持到下一次转换完成
+\end{algorithmic}
+\end{algorithm}
+
+\begin{thebibliography}{9}
+\bibitem{omran2016}
+H. Omran, H. Alahmadi, and K. N. Salama,
+``Matching Properties of Femtofarad and Sub-Femtofarad MOM Capacitors,''
+\emph{IEEE Transactions on Circuits and Systems I: Regular Papers},
+vol. 63, no. 6, pp. 763--771, 2016.
+
+\bibitem{bagheri2020}
+M. Bagheri et al.,
+``A Mismatch Calibration Technique for SAR ADCs Based on Deterministic Self-Calibration and Stochastic Quantization,''
+\emph{IEEE Transactions on Circuits and Systems I: Regular Papers},
+vol. 67, no. 9, pp. 2883--2896, 2020.
+
+\bibitem{chen2024}
+Y. Chen, S. Huang, Q. Huang, Y. Fan, and J. Yuan,
+``The Error Analysis of Bit Weight Self-Calibration Methods for High-Resolution SAR ADCs,''
+\emph{IEEE Transactions on Very Large Scale Integration Systems},
+vol. 32, no. 11, pp. 1983--1992, 2024.
+
+\bibitem{zheng2024}
+郑瑜，\emph{小尺寸电容阵列高精度逐次逼近型ADC研究}，浙江大学硕士学位论文，2024。
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,1420 @@
+// Point Netlist Generated on: May  6 04:27:07 2026
+// Generated for: spectre
+// Design Netlist Generated on: May  5 19:24:57 2026
+// Design library name: 12bit_50M_SAR
+// Design cell name: test_12bit50MSAR_AMS_final
+// Design view name: schematic
+simulator lang=spectre
+global 0
+parameters td=24.05n C=5f caz=300f 500f 1p tdel=4.5n W1=500n W2=1u WK=2u \
+    W3=2u W4=3u W5=4u W6=5u W7=8u W8=12u va=899m Vref=1 vdd=1.8 N=61 F1=12 \
+    F2=14 F=20
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_3v
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_na
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_3vna
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_m
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_3m
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_bip
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_bip3
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=dio
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=dio3
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=dio_dnw
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_res
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_mim
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfmos
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfmos33
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfmim
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfind
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfmvar
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfjvar
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfres_sa
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfres_rpo
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfres_hri
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_rfesd
+include "/home/meow/Desktop/TSMC18RF/tsmc18rf/../models/spectre/rf018.scs" section=tt_bbmvar
+simulator lang=spectre
+
+// Library name: 12bit_50M_SAR
+// Cell name: CDAC
+// View name: schematic
+subckt CDAC BITD\<1\> BITD\<2\> BITD\<3\> BITD\<4\> BITD\<5\> BITD\<6\> \
+        BITD\<7\> BITD\<8\> BITD\<9\> BITD\<10\> BITD\<11\> BITD\<12\> \
+        BITU\<1\> BITU\<2\> BITU\<3\> BITU\<4\> BITU\<5\> BITU\<6\> \
+        BITU\<7\> BITU\<8\> BITU\<9\> BITU\<10\> BITU\<11\> BITU\<12\> N P
+    C38 (net1 BITU\<4\>) capacitor c=6*C
+    C36 (N BITU\<12\>) capacitor c=16*C
+    C37 (P BITD\<12\>) capacitor c=16*C
+    C32 (N BITU\<10\>) capacitor c=4*C
+    C33 (P BITD\<10\>) capacitor c=4*C
+    C34 (N BITU\<11\>) capacitor c=8*C
+    C35 (P BITD\<11\>) capacitor c=8*C
+    C28 (N BITU\<8\>) capacitor c=C
+    C29 (P BITD\<8\>) capacitor c=C
+    C17 (net2 P) capacitor c=C
+    C16 (net1 N) capacitor c=C
+    C30 (N BITU\<9\>) capacitor c=2*C
+    C31 (P BITD\<9\>) capacitor c=2*C
+    C13 (net2 BITD\<7\>) capacitor c=24*C
+    C12 (net1 BITU\<7\>) capacitor c=24*C
+    C11 (net2 BITD\<6\>) capacitor c=16*C
+    C10 (net1 BITU\<6\>) capacitor c=16*C
+    C9 (net2 BITD\<5\>) capacitor c=10*C
+    C8 (net1 BITU\<5\>) capacitor c=10*C
+    C7 (net2 BITD\<3\>) capacitor c=4*C
+    C6 (net1 BITU\<3\>) capacitor c=4*C
+    C5 (net2 BITD\<2\>) capacitor c=2*C
+    C4 (net1 BITU\<2\>) capacitor c=2*C
+    C3 (net1 BITU\<1\>) capacitor c=C
+    C2 (net2 BITD\<1\>) capacitor c=C
+    C39 (net2 BITD\<4\>) capacitor c=6*C
+ends CDAC
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: COM_IAZ
+// View name: schematic
+subckt COM_IAZ AGND AVDD CLK RST VIN VIP VON VOP
+    M132 (VB1 VB1 AVDD AVDD) pch l=180.0n w=4u m=1 ad=1.92e-12 as=1.92e-12 \
+        pd=8.96u ps=8.96u nrd=0.0675 nrs=0.0675
+    M28 (DN DP AVDD AVDD) pch l=180.0n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+    M27 (DP DN AVDD AVDD) pch l=180.0n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+    M10 (net6 CLK AVDD AVDD) pch l=180.0n w=1u m=2 ad=2.7e-13 as=4.8e-13 \
+        pd=1.54u ps=2.96u nrd=0.27 nrs=0.27
+    M9 (DP CLK AVDD AVDD) pch l=180.0n w=1u m=2 ad=2.7e-13 as=4.8e-13 \
+        pd=1.54u ps=2.96u nrd=0.27 nrs=0.27
+    M8 (net5 CLK AVDD AVDD) pch l=180.0n w=1u m=2 ad=2.7e-13 as=4.8e-13 \
+        pd=1.54u ps=2.96u nrd=0.27 nrs=0.27
+    M26 (DN CLK AVDD AVDD) pch l=180.0n w=1u m=2 ad=2.7e-13 as=4.8e-13 \
+        pd=1.54u ps=2.96u nrd=0.27 nrs=0.27
+    M375 (net16 CLKAZB VON1 AVDD) pch l=180.0n w=WK m=2 \
+        ad=(WK*((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(2/2)*5.4e-07*(int((2+2)/2)-int((2+1)/2)))+((0*0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*0*int(2/2))*(int((2+2)/2)-int((2+1)/2))))/2 \
+        as=(WK*((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(4.8e-07+4.8e-07+(int(2/2)-1)*5.4e-07+0+0)*(int((2+2)/2)-int((2+1)/2)))+((0*0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*0*(int(2/2)+1-0-0))*(int((2+2)/2)-int((2+1)/2))))/2 \
+        pd=(((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(2/2)*5.4e-07*(int((2+2)/2)-int((2+1)/2)))*2+(((2+1)*(int((2+1)/2)-int(2/2))+(2+0)*(int((2+2)/2)-int((2+1)/2)))-((0*(((2+1)*(int((2+1)/2)-int(2/2))+(2+0)*(int((2+2)/2)-int((2+1)/2)))-0))*(int((2+1)/2)-int(2/2))+(0*((2+1)*(int((2+1)/2)-int(2/2))+(2+0)*(int((2+2)/2)-int((2+1)/2))))*(int((2+2)/2)-int((2+1)/2))))*WK+((0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*int(2/2))*(int((2+2)/2)-int((2+1)/2)))*4)/2 \
+        ps=(((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(4.8e-07+4.8e-07+(int(2/2)-1)*5.4e-07+0+0)*(int((2+2)/2)-int((2+1)/2)))*2+(((2+1)*(int((2+1)/2)-int(2/2))+(2+2)*(int((2+2)/2)-int((2+1)/2)))-((0*(((2+1)*(int((2+1)/2)-int(2/2))+(2+2)*(int((2+2)/2)-int((2+1)/2)))-0))*(int((2+1)/2)-int(2/2))+(0*(((2+1)*(int((2+1)/2)-int(2/2))+(2+2)*(int((2+2)/2)-int((2+1)/2)))-0-0))*(int((2+2)/2)-int((2+1)/2))))*WK+((0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*(int(2/2)+1-0-0))*(int((2+2)/2)-int((2+1)/2)))*4)/2 \
+        nrd=(5.4e-07+2.7e-07*(2*2-2))/2/(WK*2) \
+        nrs=(5.4e-07+2.7e-07*(2*2-2))/2/(WK*2)
+    M376 (VOP1 CLKAZB net8 AVDD) pch l=180.0n w=WK m=2 \
+        ad=(WK*((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(2/2)*5.4e-07*(int((2+2)/2)-int((2+1)/2)))+((0*0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*0*int(2/2))*(int((2+2)/2)-int((2+1)/2))))/2 \
+        as=(WK*((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(4.8e-07+4.8e-07+(int(2/2)-1)*5.4e-07+0+0)*(int((2+2)/2)-int((2+1)/2)))+((0*0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*0*(int(2/2)+1-0-0))*(int((2+2)/2)-int((2+1)/2))))/2 \
+        pd=(((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(2/2)*5.4e-07*(int((2+2)/2)-int((2+1)/2)))*2+(((2+1)*(int((2+1)/2)-int(2/2))+(2+0)*(int((2+2)/2)-int((2+1)/2)))-((0*(((2+1)*(int((2+1)/2)-int(2/2))+(2+0)*(int((2+2)/2)-int((2+1)/2)))-0))*(int((2+1)/2)-int(2/2))+(0*((2+1)*(int((2+1)/2)-int(2/2))+(2+0)*(int((2+2)/2)-int((2+1)/2))))*(int((2+2)/2)-int((2+1)/2))))*WK+((0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*int(2/2))*(int((2+2)/2)-int((2+1)/2)))*4)/2 \
+        ps=(((4.8e-07+((2-1)*5.4e-07)/2+0)*(int((2+1)/2)-int(2/2))+(4.8e-07+4.8e-07+(int(2/2)-1)*5.4e-07+0+0)*(int((2+2)/2)-int((2+1)/2)))*2+(((2+1)*(int((2+1)/2)-int(2/2))+(2+2)*(int((2+2)/2)-int((2+1)/2)))-((0*(((2+1)*(int((2+1)/2)-int(2/2))+(2+2)*(int((2+2)/2)-int((2+1)/2)))-0))*(int((2+1)/2)-int(2/2))+(0*(((2+1)*(int((2+1)/2)-int(2/2))+(2+2)*(int((2+2)/2)-int((2+1)/2)))-0-0))*(int((2+2)/2)-int((2+1)/2))))*WK+((0*((2-1)/2+1-0))*(int((2+1)/2)-int(2/2))+(0*(int(2/2)+1-0-0))*(int((2+2)/2)-int((2+1)/2)))*4)/2 \
+        nrd=(5.4e-07+2.7e-07*(2*2-2))/2/(WK*2) \
+        nrs=(5.4e-07+2.7e-07*(2*2-2))/2/(WK*2)
+    M377 (VON1 VIN net17 AVDD) pch l=180.0n w=6u m=1 ad=2.88e-12 \
+        as=2.88e-12 pd=12.96u ps=12.96u nrd=0.045 nrs=0.045
+    M378 (VOP1 VIP net17 AVDD) pch l=180.0n w=6u m=1 ad=2.88e-12 \
+        as=2.88e-12 pd=12.96u ps=12.96u nrd=0.045 nrs=0.045
+    M379 (net17 VB1 AVDD AVDD) pch l=180.0n w=20u m=6 ad=5.4e-12 \
+        as=6.8e-12 pd=20.54u ps=27.3467u nrd=0.0135 nrs=0.0135
+    M134 (VB1 VB2 AGND AGND) nch l=180.0n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+    M133 (VB2 VB2 AGND AGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M370 (VON1 VON1 net4 net4) nch l=3.6u w=1.2u m=1 ad=5.76e-13 \
+        as=5.76e-13 pd=3.36u ps=3.36u nrd=0.225 nrs=0.225
+    M369 (VOP1 VOP1 net2 net2) nch l=3.6u w=1.2u m=1 ad=5.76e-13 \
+        as=5.76e-13 pd=3.36u ps=3.36u nrd=0.225 nrs=0.225
+    M23 (net7 CLK AGND AGND) nch l=180.0n w=4u m=1 ad=1.92e-12 as=1.92e-12 \
+        pd=8.96u ps=8.96u nrd=0.0675 nrs=0.0675
+    M24 (net6 VOP1 net7 AGND) nch l=180.0n w=1u m=10 ad=2.7e-13 \
+        as=3.12e-13 pd=1.54u ps=1.824u nrd=0.27 nrs=0.27
+    M25 (net5 VON1 net7 AGND) nch l=180.0n w=1u m=10 ad=2.7e-13 \
+        as=3.12e-13 pd=1.54u ps=1.824u nrd=0.27 nrs=0.27
+    M371 (VON1 net16 AGND AGND) nch l=600n w=1.5u m=1 ad=7.2e-13 \
+        as=7.2e-13 pd=3.96u ps=3.96u nrd=0.18 nrs=0.18
+    M372 (VOP1 net8 AGND AGND) nch l=600n w=1.5u m=1 ad=7.2e-13 as=7.2e-13 \
+        pd=3.96u ps=3.96u nrd=0.18 nrs=0.18
+    M2 (DP DN net6 AGND) nch l=180.0n w=4u m=1 ad=1.92e-12 as=1.92e-12 \
+        pd=8.96u ps=8.96u nrd=0.0675 nrs=0.0675
+    M3 (DN DP net5 AGND) nch l=180.0n w=4u m=1 ad=1.92e-12 as=1.92e-12 \
+        pd=8.96u ps=8.96u nrd=0.0675 nrs=0.0675
+    M373 (VON1 CLKAZ net16 AGND) nch l=180.0n w=WK m=1 \
+        ad=(WK*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(WK*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*WK+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*WK+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(WK*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(WK*2)
+    M374 (net8 CLKAZ VOP1 AGND) nch l=180.0n w=WK m=1 \
+        ad=(WK*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(WK*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*WK+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*WK+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(WK*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(WK*2)
+    I41 (CLKAZB CLKAZ) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I48 (DN net20) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I46 (DP net19) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I47 (net19 VOP) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I49 (net20 VON) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I50 (RST net22) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I51 (net22 net21) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I52 (net21 CLKAZB) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    R0 (net2 AGND) resistor r=7K
+    R1 (net4 AGND) resistor r=7K
+    I43 (AVDD VB2) isource dc=1.2u type=dc
+    C20 (net16 AGND) capacitor c=caz
+    C21 (net8 AGND) capacitor c=caz
+ends COM_IAZ
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: INVX3
+// View name: schematic
+subckt INVX3 IN OUT VDD VSS
+    M1 (OUT IN VSS VSS) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M0 (OUT IN VDD VDD) pch l=180.0n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+ends INVX3
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: BS_VCM
+// View name: schematic
+subckt BS_VCM AGND AVDD CLK VIN VOUT
+    M39 (X AVDD net4 AGND) nch l=180.0n w=8u m=1 ad=3.84e-12 as=3.84e-12 \
+        pd=16.96u ps=16.96u nrd=0.03375 nrs=0.03375
+    M38 (net3 X net1 AGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M37 (net3 CLK net1 AGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M34 (net1 CLKB AGND AGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M33 (VIN X net1 AGND) nch l=180.0n w=9u m=1 ad=4.32e-12 as=4.32e-12 \
+        pd=18.96u ps=18.96u nrd=0.03 nrs=0.03
+    M32 (net4 CLKB AGND AGND) nch l=180.0n w=8u m=1 ad=3.84e-12 \
+        as=3.84e-12 pd=16.96u ps=16.96u nrd=0.03375 nrs=0.03375
+    M30 (VOUT X VIN AGND) nch l=180.0n w=5u m=1 ad=2.4e-12 as=2.4e-12 \
+        pd=10.96u ps=10.96u nrd=0.054 nrs=0.054
+    M36 (net3 CLK AVDD AVDD) pch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M35 (net2 X AVDD net2) pch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M31 (X net3 net2 net2) pch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    C0 (net2 net1) mimcap l=27.495u w=10u m=1
+    I1 (CLK CLKB AVDD AGND) INVX3
+ends BS_VCM
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: BS_VIN
+// View name: schematic
+subckt BS_VIN AGND AVDD CLK VIN VOUT\<1\> VOUT\<2\> VOUT\<3\> VOUT\<4\> \
+        VOUT\<5\> VOUT\<6\> VOUT\<7\> VOUT\<8\> VOUT\<9\> VOUT\<10\> \
+        VOUT\<11\> VOUT\<12\>
+    I1 (CLK CLKB AVDD AGND) INVX3
+    M21 (VOUT\<1\> X VIN AGND) nch l=180.0n w=220.0n m=1 ad=1.984e-13 \
+        as=1.984e-13 pd=1.88u ps=1.88u nrd=1.40909 nrs=1.40909
+    M15 (VOUT\<7\> X VIN AGND) nch l=180.0n w=4u m=1 ad=1.92e-12 \
+        as=1.92e-12 pd=8.96u ps=8.96u nrd=0.0675 nrs=0.0675
+    M20 (VOUT\<2\> X VIN AGND) nch l=180.0n w=420.0n m=1 ad=2.016e-13 \
+        as=2.016e-13 pd=1.8u ps=1.8u nrd=0.642857 nrs=0.642857
+    M19 (VOUT\<3\> X VIN AGND) nch l=180.0n w=1.2u m=1 ad=5.76e-13 \
+        as=5.76e-13 pd=3.36u ps=3.36u nrd=0.225 nrs=0.225
+    M18 (VOUT\<4\> X VIN AGND) nch l=180.0n w=1.4u m=1 ad=6.72e-13 \
+        as=6.72e-13 pd=3.76u ps=3.76u nrd=0.192857 nrs=0.192857
+    M17 (VOUT\<5\> X VIN AGND) nch l=180n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+    M16 (VOUT\<6\> X VIN AGND) nch l=180.0n w=2.5u m=1 ad=1.2e-12 \
+        as=1.2e-12 pd=5.96u ps=5.96u nrd=0.108 nrs=0.108
+    M14 (VOUT\<8\> X VIN AGND) nch l=180.0n w=220.0n m=1 ad=1.984e-13 \
+        as=1.984e-13 pd=1.88u ps=1.88u nrd=1.40909 nrs=1.40909
+    M13 (VOUT\<9\> X VIN AGND) nch l=180.0n w=420.0n m=1 ad=2.016e-13 \
+        as=2.016e-13 pd=1.8u ps=1.8u nrd=0.642857 nrs=0.642857
+    M12 (VOUT\<10\> X VIN AGND) nch l=180.0n w=1.2u m=1 ad=5.76e-13 \
+        as=5.76e-13 pd=3.36u ps=3.36u nrd=0.225 nrs=0.225
+    M11 (VOUT\<11\> X VIN AGND) nch l=180.0n w=1.6u m=1 ad=7.68e-13 \
+        as=7.68e-13 pd=4.16u ps=4.16u nrd=0.16875 nrs=0.16875
+    M32 (net16 CLKB AGND AGND) nch l=180.0n w=8u m=1 ad=3.84e-12 \
+        as=3.84e-12 pd=16.96u ps=16.96u nrd=0.03375 nrs=0.03375
+    M39 (X AVDD net16 AGND) nch l=180.0n w=8u m=1 ad=3.84e-12 as=3.84e-12 \
+        pd=16.96u ps=16.96u nrd=0.03375 nrs=0.03375
+    M0 (VOUT\<12\> X VIN AGND) nch l=180.0n w=2.5u m=1 ad=1.2e-12 \
+        as=1.2e-12 pd=5.96u ps=5.96u nrd=0.108 nrs=0.108
+    M33 (VIN X net14 AGND) nch l=180.0n w=9u m=1 ad=4.32e-12 as=4.32e-12 \
+        pd=18.96u ps=18.96u nrd=0.03 nrs=0.03
+    M38 (net15 X net14 AGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M37 (net15 CLK net14 AGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M34 (net14 CLKB AGND AGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M31 (X net15 net10 net10) pch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M36 (net15 CLK AVDD AVDD) pch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M35 (net10 X AVDD net10) pch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    C0 (net10 net14) mimcap l=27.495u w=10u m=1
+ends BS_VIN
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW8
+// View name: schematic
+subckt CMOS_SW8 AGND AVDD CLK CLKB VIN VOUT
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W8*2 m=1 \
+        ad=(W8*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W8*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W8*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W8*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W8*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W8*2*2)
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W8 m=1 \
+        ad=(W8*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W8*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W8+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W8+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W8*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W8*2)
+ends CMOS_SW8
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW8
+// View name: schematic
+subckt SW8 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I1 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW8
+    I0 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW8
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W8 m=1 \
+        ad=(W8*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W8*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W8+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W8+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W8*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W8*2)
+ends SW8
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: NOR1
+// View name: schematic
+subckt NOR1 A AGND AVDD B VOUT
+    M4 (net8 B AVDD AVDD) pch l=180.0n w=800n m=4 ad=2.16e-13 as=3e-13 \
+        pd=1.34u ps=1.95u nrd=0.3375 nrs=0.3375
+    M0 (VOUT A net8 AVDD) pch l=180.0n w=800n m=4 ad=2.16e-13 as=3e-13 \
+        pd=1.34u ps=1.95u nrd=0.3375 nrs=0.3375
+    M3 (VOUT A AGND AGND) nch l=180.0n w=500n m=2 ad=1.35e-13 as=2.4e-13 \
+        pd=1.04u ps=1.96u nrd=0.54 nrs=0.54
+    M2 (VOUT B AGND AGND) nch l=180.0n w=500n m=2 ad=1.35e-13 as=2.4e-13 \
+        pd=1.04u ps=1.96u nrd=0.54 nrs=0.54
+ends NOR1
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: NAND1
+// View name: schematic
+subckt NAND1 A AGND AVDD B VOUT
+    M1 (VOUT B AVDD AVDD) pch l=180.0n w=900n m=4 ad=2.43e-13 as=3.375e-13 \
+        pd=1.44u ps=2.1u nrd=0.3 nrs=0.3
+    M0 (VOUT A AVDD AVDD) pch l=180.0n w=900n m=4 ad=2.43e-13 as=3.375e-13 \
+        pd=1.44u ps=2.1u nrd=0.3 nrs=0.3
+    M3 (net1 B AGND AGND) nch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M2 (VOUT A net1 AGND) nch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+ends NAND1
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: INVX4
+// View name: schematic
+subckt INVX4 IN OUT VDD VSS
+    M1 (OUT IN VSS VSS) nch l=180.0n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+    M0 (OUT IN VDD VDD) pch l=180.0n w=4u m=1 ad=1.92e-12 as=1.92e-12 \
+        pd=8.96u ps=8.96u nrd=0.0675 nrs=0.0675
+ends INVX4
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW7
+// View name: schematic
+subckt CMOS_SW7 AGND AVDD CLK CLKB VIN VOUT
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W7 m=1 \
+        ad=(W7*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W7*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W7+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W7+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W7*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W7*2)
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W7*2 m=1 \
+        ad=(W7*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W7*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W7*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W7*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W7*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W7*2*2)
+ends CMOS_SW7
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW7
+// View name: schematic
+subckt SW7 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I3 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW7
+    I4 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW7
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W7 m=1 \
+        ad=(W7*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W7*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W7+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W7+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W7*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W7*2)
+ends SW7
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW5
+// View name: schematic
+subckt CMOS_SW5 AGND AVDD CLK CLKB VIN VOUT
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W5 m=1 \
+        ad=(W5*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W5*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W5+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W5+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W5*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W5*2)
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W5*2 m=1 \
+        ad=(W5*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W5*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W5*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W5*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W5*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W5*2*2)
+ends CMOS_SW5
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW5
+// View name: schematic
+subckt SW5 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I7 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW5
+    I8 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW5
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W5 m=1 \
+        ad=(W5*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W5*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W5+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W5+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W5*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W5*2)
+ends SW5
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW3
+// View name: schematic
+subckt CMOS_SW3 AGND AVDD CLK CLKB VIN VOUT
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W3 m=1 \
+        ad=(W3*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W3*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W3+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W3+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W3*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W3*2)
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W3*2 m=1 \
+        ad=(W3*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W3*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W3*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W3*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W3*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W3*2*2)
+ends CMOS_SW3
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW3
+// View name: schematic
+subckt SW3 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I11 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW3
+    I12 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW3
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W3 m=1 \
+        ad=(W3*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W3*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W3+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W3+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W3*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W3*2)
+ends SW3
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW2
+// View name: schematic
+subckt CMOS_SW2 AGND AVDD CLK CLKB VIN VOUT
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W2 m=1 \
+        ad=(W2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W2*2)
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W2*2 m=1 \
+        ad=(W2*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W2*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W2*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W2*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W2*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W2*2*2)
+ends CMOS_SW2
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW2
+// View name: schematic
+subckt SW2 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I14 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW2
+    I13 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW2
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W2 m=1 \
+        ad=(W2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W2*2)
+ends SW2
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW1
+// View name: schematic
+subckt CMOS_SW1 AGND AVDD CLK CLKB VIN VOUT
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W1 m=1 \
+        ad=(W1*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W1*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W1+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W1+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W1*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W1*2)
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W1*2 m=1 \
+        ad=(W1*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W1*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W1*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W1*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W1*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W1*2*2)
+ends CMOS_SW1
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW1
+// View name: schematic
+subckt SW1 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I15 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW1
+    I16 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW1
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W1 m=1 \
+        ad=(W1*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W1*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W1+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W1+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W1*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W1*2)
+ends SW1
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW6
+// View name: schematic
+subckt CMOS_SW6 AGND AVDD CLK CLKB VIN VOUT
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W6 m=1 \
+        ad=(W6*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W6*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W6+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W6+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W6*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W6*2)
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W6*2 m=1 \
+        ad=(W6*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W6*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W6*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W6*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W6*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W6*2*2)
+ends CMOS_SW6
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW6
+// View name: schematic
+subckt SW6 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I6 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW6
+    I5 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW6
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W6 m=1 \
+        ad=(W6*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W6*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W6+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W6+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W6*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W6*2)
+ends SW6
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: CMOS_SW4
+// View name: schematic
+subckt CMOS_SW4 AGND AVDD CLK CLKB VIN VOUT
+    M1 (VOUT CLK VIN AGND) nch l=180.0n w=W4 m=1 \
+        ad=(W4*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W4*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W4+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W4+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W4*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W4*2)
+    M0 (VIN CLKB VOUT AVDD) pch l=180.0n w=W4*2 m=1 \
+        ad=(W4*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W4*2*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W4*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W4*2+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W4*2*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W4*2*2)
+ends CMOS_SW4
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SW4
+// View name: schematic
+subckt SW4 AGND AVDD S_VCM S_VREFN S_VREFN_N S_VREFP S_VREFP_N VCM VOUT \
+        VREFN VREFP
+    I10 (AGND AVDD S_VREFP S_VREFP_N VREFP VOUT) CMOS_SW4
+    I9 (AGND AVDD S_VREFN S_VREFN_N VREFN VOUT) CMOS_SW4
+    M0 (VOUT S_VCM VCM AGND) nch l=180.0n w=W4 m=1 \
+        ad=(W4*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*int(1/2))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        as=(W4*((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))+((0*0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2))))/1 \
+        pd=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(1/2)*5.4e-07*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*((1+1)*(int((1+1)/2)-int(1/2))+(1+0)*(int((1+2)/2)-int((1+1)/2))))*(int((1+2)/2)-int((1+1)/2))))*W4+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*int(1/2))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        ps=(((4.8e-07+((1-1)*5.4e-07)/2+0)*(int((1+1)/2)-int(1/2))+(4.8e-07+4.8e-07+(int(1/2)-1)*5.4e-07+0+0)*(int((1+2)/2)-int((1+1)/2)))*2+(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-((0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0))*(int((1+1)/2)-int(1/2))+(0*(((1+1)*(int((1+1)/2)-int(1/2))+(1+2)*(int((1+2)/2)-int((1+1)/2)))-0-0))*(int((1+2)/2)-int((1+1)/2))))*W4+((0*((1-1)/2+1-0))*(int((1+1)/2)-int(1/2))+(0*(int(1/2)+1-0-0))*(int((1+2)/2)-int((1+1)/2)))*4)/1 \
+        nrd=(5.4e-07+2.7e-07*(1*2-2))/1/(W4*2) \
+        nrs=(5.4e-07+2.7e-07*(1*2-2))/1/(W4*2)
+ends SW4
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SWITCH
+// View name: schematic
+subckt SWITCH AGND AVDD BITD\<1\> BITD\<2\> BITD\<3\> BITD\<4\> BITD\<5\> \
+        BITD\<6\> BITD\<7\> BITD\<8\> BITD\<9\> BITD\<10\> BITD\<11\> \
+        BITD\<12\> BITN\<1\> BITN\<2\> BITN\<3\> BITN\<4\> BITN\<5\> \
+        BITN\<6\> BITN\<7\> BITN\<8\> BITN\<9\> BITN\<10\> BITN\<11\> \
+        BITN\<12\> BITP\<1\> BITP\<2\> BITP\<3\> BITP\<4\> BITP\<5\> \
+        BITP\<6\> BITP\<7\> BITP\<8\> BITP\<9\> BITP\<10\> BITP\<11\> \
+        BITP\<12\> BITU\<1\> BITU\<2\> BITU\<3\> BITU\<4\> BITU\<5\> \
+        BITU\<6\> BITU\<7\> BITU\<8\> BITU\<9\> BITU\<10\> BITU\<11\> \
+        BITU\<12\> N P RST RST1 SET\<0\> SET\<1\> SET\<2\> SET\<3\> \
+        SET\<4\> SET\<5\> SET\<6\> SET\<7\> SET\<8\> SET\<9\> SET\<10\> \
+        SET\<11\> VCM VIN VIP VREFN VREFP
+    I49 (net2 RST11) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I48 (RST1 net2) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I47 (net1 RSTT) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I46 (RST net1) not_gate vlogic_high=1.8 vlogic_low=0 vtrans=0.9 \
+        tdel=10p trise=10p tfall=10p
+    I103 (AGND AVDD RST11 VCM P) BS_VCM
+    I102 (AGND AVDD RST11 VCM N) BS_VCM
+    I105 (AGND AVDD RSTT VIP BITD\<1\> BITD\<2\> BITD\<3\> BITD\<4\> \
+        BITD\<5\> BITD\<6\> BITD\<7\> BITD\<8\> BITD\<9\> BITD\<10\> \
+        BITD\<11\> BITD\<12\>) BS_VIN
+    I104 (AGND AVDD RSTT VIN BITU\<1\> BITU\<2\> BITU\<3\> BITU\<4\> \
+        BITU\<5\> BITU\<6\> BITU\<7\> BITU\<8\> BITU\<9\> BITU\<10\> \
+        BITU\<11\> BITU\<12\>) BS_VIN
+    I215 (AGND AVDD net79 net78 net81 net70 net67 VCM BITD\<7\> VREFN \
+        VREFP) SW8
+    I137 (AGND AVDD net168 net171 net169 net170 net172 VCM BITU\<7\> VREFN \
+        VREFP) SW8
+    I252 (RSTT AGND AVDD SET\<11\> net82) NOR1
+    I246 (RSTT AGND AVDD SET\<10\> net91) NOR1
+    I240 (RSTT AGND AVDD SET\<9\> net93) NOR1
+    I234 (RSTT AGND AVDD SET\<8\> net110) NOR1
+    I228 (RSTT AGND AVDD SET\<7\> net121) NOR1
+    I222 (RSTT AGND AVDD SET\<6\> net130) NOR1
+    I216 (RSTT AGND AVDD SET\<5\> net79) NOR1
+    I210 (RSTT AGND AVDD SET\<4\> net87) NOR1
+    I204 (RSTT AGND AVDD SET\<3\> net102) NOR1
+    I198 (RSTT AGND AVDD SET\<2\> net112) NOR1
+    I192 (RSTT AGND AVDD SET\<1\> net122) NOR1
+    I186 (RSTT AGND AVDD SET\<0\> net128) NOR1
+    I174 (RSTT AGND AVDD SET\<11\> net137) NOR1
+    I168 (RSTT AGND AVDD SET\<10\> net142) NOR1
+    I162 (RSTT AGND AVDD SET\<9\> net143) NOR1
+    I156 (RSTT AGND AVDD SET\<8\> net153) NOR1
+    I150 (RSTT AGND AVDD SET\<7\> net148) NOR1
+    I144 (RSTT AGND AVDD SET\<6\> net158) NOR1
+    I138 (RSTT AGND AVDD SET\<5\> net168) NOR1
+    I132 (RSTT AGND AVDD SET\<4\> net163) NOR1
+    I126 (RSTT AGND AVDD SET\<3\> net174) NOR1
+    I120 (RSTT AGND AVDD SET\<2\> net184) NOR1
+    I114 (RSTT AGND AVDD SET\<1\> net179) NOR1
+    I108 (RSTT AGND AVDD SET\<0\> net192) NOR1
+    I255 (SET\<11\> AGND AVDD BITN\<1\> net68) NAND1
+    I253 (SET\<11\> AGND AVDD BITP\<1\> net69) NAND1
+    I249 (SET\<10\> AGND AVDD BITN\<2\> net90) NAND1
+    I247 (SET\<10\> AGND AVDD BITP\<2\> net92) NAND1
+    I243 (SET\<9\> AGND AVDD BITN\<3\> net94) NAND1
+    I241 (SET\<9\> AGND AVDD BITP\<3\> net95) NAND1
+    I237 (SET\<8\> AGND AVDD BITN\<4\> net104) NAND1
+    I235 (SET\<8\> AGND AVDD BITP\<4\> net103) NAND1
+    I231 (SET\<7\> AGND AVDD BITN\<5\> net116) NAND1
+    I229 (SET\<7\> AGND AVDD BITP\<5\> net118) NAND1
+    I225 (SET\<6\> AGND AVDD BITN\<6\> net129) NAND1
+    I223 (SET\<6\> AGND AVDD BITP\<6\> net132) NAND1
+    I219 (SET\<5\> AGND AVDD BITN\<7\> net67) NAND1
+    I217 (SET\<5\> AGND AVDD BITP\<7\> net81) NAND1
+    I213 (SET\<4\> AGND AVDD BITN\<8\> net86) NAND1
+    I211 (SET\<4\> AGND AVDD BITP\<8\> net89) NAND1
+    I207 (SET\<3\> AGND AVDD BITN\<9\> net99) NAND1
+    I205 (SET\<3\> AGND AVDD BITP\<9\> net98) NAND1
+    I201 (SET\<2\> AGND AVDD BITN\<10\> net106) NAND1
+    I199 (SET\<2\> AGND AVDD BITP\<10\> net105) NAND1
+    I195 (SET\<1\> AGND AVDD BITN\<11\> net119) NAND1
+    I193 (SET\<1\> AGND AVDD BITP\<11\> net120) NAND1
+    I189 (SET\<0\> AGND AVDD BITN\<12\> net127) NAND1
+    I187 (SET\<0\> AGND AVDD BITP\<12\> net131) NAND1
+    I177 (SET\<11\> AGND AVDD BITP\<1\> net141) NAND1
+    I175 (SET\<11\> AGND AVDD BITN\<1\> net138) NAND1
+    I171 (SET\<10\> AGND AVDD BITP\<2\> net135) NAND1
+    I169 (SET\<10\> AGND AVDD BITN\<2\> net136) NAND1
+    I165 (SET\<9\> AGND AVDD BITP\<3\> net147) NAND1
+    I163 (SET\<9\> AGND AVDD BITN\<3\> net144) NAND1
+    I159 (SET\<8\> AGND AVDD BITP\<4\> net157) NAND1
+    I157 (SET\<8\> AGND AVDD BITN\<4\> net154) NAND1
+    I153 (SET\<7\> AGND AVDD BITP\<5\> net152) NAND1
+    I151 (SET\<7\> AGND AVDD BITN\<5\> net149) NAND1
+    I147 (SET\<6\> AGND AVDD BITP\<6\> net162) NAND1
+    I145 (SET\<6\> AGND AVDD BITN\<6\> net159) NAND1
+    I141 (SET\<5\> AGND AVDD BITP\<7\> net172) NAND1
+    I139 (SET\<5\> AGND AVDD BITN\<7\> net169) NAND1
+    I135 (SET\<4\> AGND AVDD BITP\<8\> net167) NAND1
+    I133 (SET\<4\> AGND AVDD BITN\<8\> net164) NAND1
+    I129 (SET\<3\> AGND AVDD BITP\<9\> net178) NAND1
+    I127 (SET\<3\> AGND AVDD BITN\<9\> net175) NAND1
+    I123 (SET\<2\> AGND AVDD BITP\<10\> net173) NAND1
+    I121 (SET\<2\> AGND AVDD BITN\<10\> net185) NAND1
+    I117 (SET\<1\> AGND AVDD BITP\<11\> net183) NAND1
+    I115 (SET\<1\> AGND AVDD BITN\<11\> net180) NAND1
+    I111 (SET\<0\> AGND AVDD BITP\<12\> net188) NAND1
+    I109 (SET\<0\> AGND AVDD BITN\<12\> net190) NAND1
+    I256 (net68 net77 AVDD AGND) INVX4
+    I254 (net69 net80 AVDD AGND) INVX4
+    I250 (net90 net85 AVDD AGND) INVX4
+    I248 (net92 net88 AVDD AGND) INVX4
+    I244 (net94 net96 AVDD AGND) INVX4
+    I242 (net95 net97 AVDD AGND) INVX4
+    I238 (net104 net107 AVDD AGND) INVX4
+    I236 (net103 net108 AVDD AGND) INVX4
+    I232 (net116 net113 AVDD AGND) INVX4
+    I230 (net118 net115 AVDD AGND) INVX4
+    I226 (net129 net124 AVDD AGND) INVX4
+    I224 (net132 net126 AVDD AGND) INVX4
+    I220 (net67 net70 AVDD AGND) INVX4
+    I218 (net81 net78 AVDD AGND) INVX4
+    I214 (net86 net83 AVDD AGND) INVX4
+    I212 (net89 net84 AVDD AGND) INVX4
+    I208 (net99 net100 AVDD AGND) INVX4
+    I206 (net98 net101 AVDD AGND) INVX4
+    I202 (net106 net109 AVDD AGND) INVX4
+    I200 (net105 net111 AVDD AGND) INVX4
+    I196 (net119 net114 AVDD AGND) INVX4
+    I194 (net120 net117 AVDD AGND) INVX4
+    I190 (net127 net123 AVDD AGND) INVX4
+    I188 (net131 net125 AVDD AGND) INVX4
+    I178 (net141 net139 AVDD AGND) INVX4
+    I176 (net138 net140 AVDD AGND) INVX4
+    I172 (net135 net134 AVDD AGND) INVX4
+    I170 (net136 net133 AVDD AGND) INVX4
+    I166 (net147 net145 AVDD AGND) INVX4
+    I164 (net144 net146 AVDD AGND) INVX4
+    I160 (net157 net155 AVDD AGND) INVX4
+    I158 (net154 net156 AVDD AGND) INVX4
+    I154 (net152 net150 AVDD AGND) INVX4
+    I152 (net149 net151 AVDD AGND) INVX4
+    I148 (net162 net160 AVDD AGND) INVX4
+    I146 (net159 net161 AVDD AGND) INVX4
+    I142 (net172 net170 AVDD AGND) INVX4
+    I140 (net169 net171 AVDD AGND) INVX4
+    I136 (net167 net165 AVDD AGND) INVX4
+    I134 (net164 net166 AVDD AGND) INVX4
+    I130 (net178 net176 AVDD AGND) INVX4
+    I128 (net175 net177 AVDD AGND) INVX4
+    I124 (net173 net186 AVDD AGND) INVX4
+    I122 (net185 net187 AVDD AGND) INVX4
+    I118 (net183 net181 AVDD AGND) INVX4
+    I116 (net180 net182 AVDD AGND) INVX4
+    I112 (net188 net189 AVDD AGND) INVX4
+    I110 (net190 net191 AVDD AGND) INVX4
+    I221 (AGND AVDD net130 net126 net132 net124 net129 VCM BITD\<6\> VREFN \
+        VREFP) SW7
+    I185 (AGND AVDD net128 net125 net131 net123 net127 VCM BITD\<12\> \
+        VREFN VREFP) SW7
+    I143 (AGND AVDD net158 net161 net159 net160 net162 VCM BITU\<6\> VREFN \
+        VREFP) SW7
+    I106 (AGND AVDD net192 net191 net190 net189 net188 VCM BITU\<12\> \
+        VREFN VREFP) SW7
+    I191 (AGND AVDD net122 net117 net120 net114 net119 VCM BITD\<11\> \
+        VREFN VREFP) SW5
+    I113 (AGND AVDD net179 net182 net180 net181 net183 VCM BITU\<11\> \
+        VREFN VREFP) SW5
+    I239 (AGND AVDD net93 net97 net95 net96 net94 VCM BITD\<3\> VREFN \
+        VREFP) SW3
+    I197 (AGND AVDD net112 net111 net105 net109 net106 VCM BITD\<10\> \
+        VREFN VREFP) SW3
+    I161 (AGND AVDD net143 net146 net144 net145 net147 VCM BITU\<3\> VREFN \
+        VREFP) SW3
+    I119 (AGND AVDD net184 net187 net185 net186 net173 VCM BITU\<10\> \
+        VREFN VREFP) SW3
+    I245 (AGND AVDD net91 net88 net92 net85 net90 VCM BITD\<2\> VREFN \
+        VREFP) SW2
+    I203 (AGND AVDD net102 net101 net98 net100 net99 VCM BITD\<9\> VREFN \
+        VREFP) SW2
+    I167 (AGND AVDD net142 net133 net136 net134 net135 VCM BITU\<2\> VREFN \
+        VREFP) SW2
+    I125 (AGND AVDD net174 net177 net175 net176 net178 VCM BITU\<9\> VREFN \
+        VREFP) SW2
+    I251 (AGND AVDD net82 net80 net69 net77 net68 VCM BITD\<1\> VREFN \
+        VREFP) SW1
+    I209 (AGND AVDD net87 net84 net89 net83 net86 VCM BITD\<8\> VREFN \
+        VREFP) SW1
+    I173 (AGND AVDD net137 net140 net138 net139 net141 VCM BITU\<1\> VREFN \
+        VREFP) SW1
+    I131 (AGND AVDD net163 net166 net164 net165 net167 VCM BITU\<8\> VREFN \
+        VREFP) SW1
+    I227 (AGND AVDD net121 net115 net118 net113 net116 VCM BITD\<5\> VREFN \
+        VREFP) SW6
+    I149 (AGND AVDD net148 net151 net149 net150 net152 VCM BITU\<5\> VREFN \
+        VREFP) SW6
+    I233 (AGND AVDD net110 net108 net103 net107 net104 VCM BITD\<4\> VREFN \
+        VREFP) SW4
+    I155 (AGND AVDD net153 net156 net154 net155 net157 VCM BITU\<4\> VREFN \
+        VREFP) SW4
+ends SWITCH
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SNDR_DAC
+// View name: schematic
+subckt SNDR_DAC AGND B\<11\> B\<10\> B\<9\> B\<8\> B\<7\> B\<6\> B\<5\> \
+        B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> OUT
+    E11 (net11 AGND B\<0\> AGND) vcvs gain=1/2048*Vref
+    E10 (net10 net11 B\<1\> AGND) vcvs gain=1/1024*Vref
+    E9 (net9 net10 B\<2\> AGND) vcvs gain=1/512*Vref
+    E8 (net8 net9 B\<3\> AGND) vcvs gain=1/256*Vref
+    E7 (net7 net8 B\<4\> AGND) vcvs gain=1/128*Vref
+    E6 (net6 net7 B\<5\> AGND) vcvs gain=1/64*Vref
+    E5 (net5 net6 B\<6\> AGND) vcvs gain=1/32*Vref
+    E4 (net4 net5 B\<7\> AGND) vcvs gain=1/16*Vref
+    E3 (net3 net4 B\<8\> AGND) vcvs gain=1/8*Vref
+    E2 (net2 net3 B\<9\> AGND) vcvs gain=1/4*Vref
+    E1 (net1 net2 B\<10\> AGND) vcvs gain=1/2*Vref
+    E0 (OUT net1 B\<11\> AGND) vcvs gain=Vref
+ends SNDR_DAC
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: DATA_DFF
+// View name: schematic
+subckt DATA_DFF CLK D DGND DVDD QN QP SET
+    M29 (CCLK INV_CLK DVDD DVDD) pch l=180.0n w=3u m=1 ad=1.44e-12 \
+        as=1.44e-12 pd=6.96u ps=6.96u nrd=0.09 nrs=0.09
+    M26 (INV_CLK CLK DVDD DVDD) pch l=180.0n w=3u m=1 ad=1.44e-12 \
+        as=1.44e-12 pd=6.96u ps=6.96u nrd=0.09 nrs=0.09
+    M25 (QP QN DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 as=2.88e-13 \
+        pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M22 (QN net2 DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M19 (net1 net2 DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M18 (net1 SET DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M14 (net9 INV_CLK net2 DVDD) pch l=180.0n w=1.2u m=1 ad=5.76e-13 \
+        as=5.76e-13 pd=3.36u ps=3.36u nrd=0.225 nrs=0.225
+    M13 (net2 CCLK net10 DVDD) pch l=180.0n w=1.2u m=1 ad=5.76e-13 \
+        as=5.76e-13 pd=3.36u ps=3.36u nrd=0.225 nrs=0.225
+    M12 (net10 net1 DVDD DVDD) pch l=180.0n w=1.2u m=1 ad=5.76e-13 \
+        as=5.76e-13 pd=3.36u ps=3.36u nrd=0.225 nrs=0.225
+    M8 (net4 INV_CLK net6 DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M7 (net6 net9 DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M6 (net6 SET DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M4 (net9 net4 DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M1 (net4 CCLK net3 DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 \
+        as=2.88e-13 pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M0 (net3 D DVDD DVDD) pch l=180.0n w=600n m=1 ad=2.88e-13 as=2.88e-13 \
+        pd=2.16u ps=2.16u nrd=0.45 nrs=0.45
+    M28 (CCLK INV_CLK DGND DGND) nch l=180n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+    M27 (INV_CLK CLK DGND DGND) nch l=180n w=2u m=1 ad=9.6e-13 as=9.6e-13 \
+        pd=4.96u ps=4.96u nrd=0.135 nrs=0.135
+    M24 (QP QN DGND DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M23 (QN net2 DGND DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M21 (net12 SET DGND DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 \
+        as=2.4e-13 pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M20 (net1 net2 net12 DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 \
+        as=2.4e-13 pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M17 (net11 net1 DGND DGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M16 (net2 INV_CLK net11 DGND) nch l=180.0n w=1u m=1 ad=4.8e-13 \
+        as=4.8e-13 pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M15 (net9 CCLK net2 DGND) nch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+    M11 (net8 SET DGND DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M10 (net7 net9 net8 DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 \
+        as=2.4e-13 pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M9 (net4 CCLK net7 DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M5 (net9 net4 DGND DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M3 (net5 D DGND DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M2 (net4 INV_CLK net5 DGND) nch l=180.0n w=500n m=1 ad=2.4e-13 \
+        as=2.4e-13 pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+ends DATA_DFF
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: full_adder
+// View name: schematic
+subckt full_adder A B Cin Cout DGND DVDD S
+    I0 (A DGND DVDD B net9) NAND1
+    I11 (net4 DGND DVDD Cin net12) NAND1
+    I15 (Cin DGND DVDD net4 net7) NAND1
+    I19 (A DGND DVDD B net1) NAND1
+    I22 (net3 Cout DVDD DGND) INVX4
+    I20 (net1 net2 DVDD DGND) INVX4
+    I16 (net7 net6 DVDD DGND) INVX4
+    I14 (net12 net10 DVDD DGND) INVX4
+    I8 (net9 net5 DVDD DGND) INVX4
+    I13 (net11 DGND DVDD net10 S) NOR1
+    I12 (net4 DGND DVDD Cin net11) NOR1
+    I10 (net8 DGND DVDD net5 net4) NOR1
+    I9 (A DGND DVDD B net8) NOR1
+    I21 (net6 DGND DVDD net2 net3) NOR1
+ends full_adder
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: DEC
+// View name: schematic
+subckt DEC B\<0\> B\<1\> B\<2\> B\<3\> B\<4\> B\<5\> B\<6\> B\<7\> B\<8\> \
+        B\<9\> B\<10\> B\<11\> D\<0\> D\<1\> D\<2\> D\<3\> D\<4\> D\<5\> \
+        D\<6\> D\<7\> D\<8\> D\<9\> D\<10\> D\<11\> D\<12\> DGND DVDD RST
+    I32 (RST D\<0\> DGND DVDD net20 B\<0\> DVDD) DATA_DFF
+    I54 (RST D\<12\> DGND DVDD net18 B\<11\> DVDD) DATA_DFF
+    I52 (RST D\<11\> DGND DVDD net15 B\<10\> DVDD) DATA_DFF
+    I51 (RST D\<10\> DGND DVDD net12 B\<9\> DVDD) DATA_DFF
+    I48 (RST D\<9\> DGND DVDD net11 B\<8\> DVDD) DATA_DFF
+    I44 (RST net2 DGND DVDD net10 B\<6\> DVDD) DATA_DFF
+    I43 (RST net19 DGND DVDD net7 B\<5\> DVDD) DATA_DFF
+    I40 (RST net16 DGND DVDD net6 B\<4\> DVDD) DATA_DFF
+    I39 (RST net13 DGND DVDD net3 B\<3\> DVDD) DATA_DFF
+    I47 (RST D\<8\> DGND DVDD net1 B\<7\> DVDD) DATA_DFF
+    I36 (RST net8 DGND DVDD net5 B\<2\> DVDD) DATA_DFF
+    I34 (RST D\<1\> DGND DVDD net4 B\<1\> DVDD) DATA_DFF
+    I31 (net17 D\<6\> D\<7\> net2 DGND DVDD net19) full_adder
+    I30 (net14 D\<5\> D\<7\> net17 DGND DVDD net16) full_adder
+    I29 (net9 D\<3\> D\<4\> net14 DGND DVDD net13) full_adder
+    I28 (D\<2\> D\<4\> D\<5\> net9 DGND DVDD net8) full_adder
+ends DEC
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: PN_BUF
+// View name: schematic
+subckt PN_BUF BITN\<12\> BITN\<11\> BITN\<10\> BITN\<9\> BITN\<8\> \
+        BITN\<7\> BITN\<6\> BITN\<5\> BITN\<4\> BITN\<3\> BITN\<2\> \
+        BITN\<1\> BITN\<0\> BITP\<12\> BITP\<11\> BITP\<10\> BITP\<9\> \
+        BITP\<8\> BITP\<7\> BITP\<6\> BITP\<5\> BITP\<4\> BITP\<3\> \
+        BITP\<2\> BITP\<1\> BITP\<0\> BN\<12\> BN\<11\> BN\<10\> BN\<9\> \
+        BN\<8\> BN\<7\> BN\<6\> BN\<5\> BN\<4\> BN\<3\> BN\<2\> BN\<1\> \
+        BN\<0\> BP\<12\> BP\<11\> BP\<10\> BP\<9\> BP\<8\> BP\<7\> BP\<6\> \
+        BP\<5\> BP\<4\> BP\<3\> BP\<2\> BP\<1\> BP\<0\>
+    I51 (BITN\<12\> net14) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I50 (BITN\<0\> net26) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I49 (net26 BN\<0\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I48 (BITN\<4\> net22) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I47 (BITN\<2\> net24) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I46 (BITN\<1\> net25) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I45 (net25 BN\<1\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I44 (net24 BN\<2\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I43 (BITN\<3\> net23) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I42 (net23 BN\<3\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I41 (net22 BN\<4\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I40 (BITN\<8\> net18) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I39 (BITN\<6\> net20) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I38 (BITN\<5\> net21) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I37 (net21 BN\<5\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I36 (net20 BN\<6\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I35 (BITN\<7\> net19) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I34 (net19 BN\<7\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I33 (net18 BN\<8\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I32 (BITN\<10\> net16) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I31 (BITN\<9\> net17) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I30 (net17 BN\<9\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I29 (net16 BN\<10\>) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I28 (BITN\<11\> net15) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I27 (net15 BN\<11\>) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I26 (net14 BN\<12\>) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I25 (BITP\<0\> net13) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I24 (net13 BP\<0\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I23 (BITP\<4\> net9) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I22 (BITP\<2\> net11) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I21 (BITP\<1\> net12) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I20 (net12 BP\<1\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I19 (net11 BP\<2\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I18 (BITP\<3\> net10) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I17 (net10 BP\<3\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I16 (net9 BP\<4\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I15 (BITP\<8\> net5) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I14 (BITP\<6\> net7) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I13 (BITP\<5\> net8) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I12 (net8 BP\<5\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I11 (net7 BP\<6\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I10 (BITP\<7\> net6) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I9 (net6 BP\<7\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I8 (net5 BP\<8\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I7 (BITP\<10\> net3) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I6 (BITP\<9\> net4) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I5 (net4 BP\<9\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I4 (net3 BP\<10\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I3 (BITP\<11\> net2) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+    I2 (net2 BP\<11\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I1 (net1 BP\<12\>) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=10p trise=10p tfall=10p
+    I0 (BITP\<12\> net1) not_gate vlogic_high=vdd vlogic_low=0 \
+        vtrans=vdd/2 tdel=10p trise=10p tfall=10p
+ends PN_BUF
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: INVX2
+// View name: schematic
+subckt INVX2 IN OUT VDD VSS
+    M1 (OUT IN VSS VSS) nch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M0 (OUT IN VDD VDD) pch l=180.0n w=1u m=1 ad=4.8e-13 as=4.8e-13 \
+        pd=2.96u ps=2.96u nrd=0.27 nrs=0.27
+ends INVX2
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: DFF
+// View name: schematic
+subckt DFF CCLK CLK1 COMN D DGND DVDD N P Q
+    M10 (P N DVDD DVDD) pch l=180.0n w=500n m=1 ad=2.4e-13 as=2.4e-13 \
+        pd=1.96u ps=1.96u nrd=0.54 nrs=0.54
+    M8 (P Q net3 DVDD) pch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M7 (net3 COMN net4 DVDD) pch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M6 (net4 CLK1 DVDD DVDD) pch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M4 (Q CCLK net2 DVDD) pch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M3 (net2 CLK1 DVDD DVDD) pch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M0 (CLK1 D DVDD DVDD) pch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M11 (P NN DGND DGND) nch l=180.0n w=300n m=1 ad=2.064e-13 as=2.064e-13 \
+        pd=1.88u ps=1.88u nrd=1.03333 nrs=1.03333
+    M9 (P CLK1 DGND DGND) nch l=180.0n w=1u m=2 ad=2.7e-13 as=4.8e-13 \
+        pd=1.54u ps=2.96u nrd=0.27 nrs=0.27
+    M5 (Q CLK1 DGND DGND) nch l=180.0n w=1u m=2 ad=2.7e-13 as=4.8e-13 \
+        pd=1.54u ps=2.96u nrd=0.27 nrs=0.27
+    M2 (net1 D DGND DGND) nch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    M1 (CLK1 CCLK net1 DGND) nch l=180.0n w=1u m=4 ad=2.7e-13 as=3.75e-13 \
+        pd=1.54u ps=2.25u nrd=0.27 nrs=0.27
+    I1 (N DGND DVDD Q net5) NAND1
+    I2 (net5 NN DVDD DGND) INVX2
+    I0 (P N DVDD DGND) INVX2
+ends DFF
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: INVX5
+// View name: schematic
+subckt INVX5 IN OUT VDD VSS
+    M1 (OUT IN VSS VSS) nch l=180.0n w=4u m=1 ad=1.92e-12 as=1.92e-12 \
+        pd=8.96u ps=8.96u nrd=0.0675 nrs=0.0675
+    M0 (OUT IN VDD VDD) pch l=180.0n w=8u m=1 ad=3.84e-12 as=3.84e-12 \
+        pd=16.96u ps=16.96u nrd=0.03375 nrs=0.03375
+ends INVX5
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SAR_LOGIC
+// View name: schematic
+subckt SAR_LOGIC BITN\<12\> BITN\<11\> BITN\<10\> BITN\<9\> BITN\<8\> \
+        BITN\<7\> BITN\<6\> BITN\<5\> BITN\<4\> BITN\<3\> BITN\<2\> \
+        BITN\<1\> BITN\<0\> BITP\<12\> BITP\<11\> BITP\<10\> BITP\<9\> \
+        BITP\<8\> BITP\<7\> BITP\<6\> BITP\<5\> BITP\<4\> BITP\<3\> \
+        BITP\<2\> BITP\<1\> BITP\<0\> CCLK COMN DGND DVDD PRST SET\<0\> \
+        SET\<1\> SET\<2\> SET\<3\> SET\<4\> SET\<5\> SET\<6\> SET\<7\> \
+        SET\<8\> SET\<9\> SET\<10\> SET\<11\> SET\<12\>
+    I53\<0\> (ST\<0\> DGND DVDD PRST net7\<0\>) NOR1
+    I53\<1\> (ST\<1\> DGND DVDD PRST net7\<1\>) NOR1
+    I53\<2\> (ST\<2\> DGND DVDD PRST net7\<2\>) NOR1
+    I53\<3\> (ST\<3\> DGND DVDD PRST net7\<3\>) NOR1
+    I53\<4\> (ST\<4\> DGND DVDD PRST net7\<4\>) NOR1
+    I53\<5\> (ST\<5\> DGND DVDD PRST net7\<5\>) NOR1
+    I53\<6\> (ST\<6\> DGND DVDD PRST net7\<6\>) NOR1
+    I53\<7\> (ST\<7\> DGND DVDD PRST net7\<7\>) NOR1
+    I53\<8\> (ST\<8\> DGND DVDD PRST net7\<8\>) NOR1
+    I53\<9\> (ST\<9\> DGND DVDD PRST net7\<9\>) NOR1
+    I53\<10\> (ST\<10\> DGND DVDD PRST net7\<10\>) NOR1
+    I53\<11\> (ST\<11\> DGND DVDD PRST net7\<11\>) NOR1
+    I53\<12\> (ST\<12\> DGND DVDD PRST net7\<12\>) NOR1
+    I47\<11\> (CCLK ST\<1\> COMN Q\<12\> DGND DVDD BITN\<11\> BITP\<11\> \
+        QQ\<11\>) DFF
+    I47\<10\> (CCLK ST\<2\> COMN Q\<11\> DGND DVDD BITN\<10\> BITP\<10\> \
+        QQ\<10\>) DFF
+    I47\<9\> (CCLK ST\<3\> COMN Q\<10\> DGND DVDD BITN\<9\> BITP\<9\> \
+        QQ\<9\>) DFF
+    I47\<8\> (CCLK ST\<4\> COMN Q\<9\> DGND DVDD BITN\<8\> BITP\<8\> \
+        QQ\<8\>) DFF
+    I47\<7\> (CCLK ST\<5\> COMN Q\<8\> DGND DVDD BITN\<7\> BITP\<7\> \
+        QQ\<7\>) DFF
+    I47\<6\> (CCLK ST\<6\> COMN Q\<7\> DGND DVDD BITN\<6\> BITP\<6\> \
+        QQ\<6\>) DFF
+    I47\<5\> (CCLK ST\<7\> COMN Q\<6\> DGND DVDD BITN\<5\> BITP\<5\> \
+        QQ\<5\>) DFF
+    I47\<4\> (CCLK ST\<8\> COMN Q\<5\> DGND DVDD BITN\<4\> BITP\<4\> \
+        QQ\<4\>) DFF
+    I47\<3\> (CCLK ST\<9\> COMN Q\<4\> DGND DVDD BITN\<3\> BITP\<3\> \
+        QQ\<3\>) DFF
+    I47\<2\> (CCLK ST\<10\> COMN Q\<3\> DGND DVDD BITN\<2\> BITP\<2\> \
+        QQ\<2\>) DFF
+    I47\<1\> (CCLK ST\<11\> COMN Q\<2\> DGND DVDD BITN\<1\> BITP\<1\> \
+        QQ\<1\>) DFF
+    I47\<0\> (CCLK ST\<12\> COMN Q\<1\> DGND DVDD BITN\<0\> BITP\<0\> \
+        QQ\<0\>) DFF
+    I46 (CCLK ST\<0\> COMN PRST_B DGND DVDD BITN\<12\> BITP\<12\> Q\<12\>) \
+        DFF
+    I51\<11\> (PRST_B DGND DVDD QQ\<11\> net3\<0\>) NAND1
+    I51\<10\> (PRST_B DGND DVDD QQ\<10\> net3\<1\>) NAND1
+    I51\<9\> (PRST_B DGND DVDD QQ\<9\> net3\<2\>) NAND1
+    I51\<8\> (PRST_B DGND DVDD QQ\<8\> net3\<3\>) NAND1
+    I51\<7\> (PRST_B DGND DVDD QQ\<7\> net3\<4\>) NAND1
+    I51\<6\> (PRST_B DGND DVDD QQ\<6\> net3\<5\>) NAND1
+    I51\<5\> (PRST_B DGND DVDD QQ\<5\> net3\<6\>) NAND1
+    I51\<4\> (PRST_B DGND DVDD QQ\<4\> net3\<7\>) NAND1
+    I51\<3\> (PRST_B DGND DVDD QQ\<3\> net3\<8\>) NAND1
+    I51\<2\> (PRST_B DGND DVDD QQ\<2\> net3\<9\>) NAND1
+    I51\<1\> (PRST_B DGND DVDD QQ\<1\> net3\<10\>) NAND1
+    I52\<11\> (net3\<0\> Q\<11\> DVDD DGND) INVX3
+    I52\<10\> (net3\<1\> Q\<10\> DVDD DGND) INVX3
+    I52\<9\> (net3\<2\> Q\<9\> DVDD DGND) INVX3
+    I52\<8\> (net3\<3\> Q\<8\> DVDD DGND) INVX3
+    I52\<7\> (net3\<4\> Q\<7\> DVDD DGND) INVX3
+    I52\<6\> (net3\<5\> Q\<6\> DVDD DGND) INVX3
+    I52\<5\> (net3\<6\> Q\<5\> DVDD DGND) INVX3
+    I52\<4\> (net3\<7\> Q\<4\> DVDD DGND) INVX3
+    I52\<3\> (net3\<8\> Q\<3\> DVDD DGND) INVX3
+    I52\<2\> (net3\<9\> Q\<2\> DVDD DGND) INVX3
+    I52\<1\> (net3\<10\> Q\<1\> DVDD DGND) INVX3
+    I48 (PRST net1 DVDD DGND) INVX3
+    I55\<0\> (net6\<0\> SET\<0\> DVDD DGND) INVX5
+    I55\<1\> (net6\<1\> SET\<1\> DVDD DGND) INVX5
+    I55\<2\> (net6\<2\> SET\<2\> DVDD DGND) INVX5
+    I55\<3\> (net6\<3\> SET\<3\> DVDD DGND) INVX5
+    I55\<4\> (net6\<4\> SET\<4\> DVDD DGND) INVX5
+    I55\<5\> (net6\<5\> SET\<5\> DVDD DGND) INVX5
+    I55\<6\> (net6\<6\> SET\<6\> DVDD DGND) INVX5
+    I55\<7\> (net6\<7\> SET\<7\> DVDD DGND) INVX5
+    I55\<8\> (net6\<8\> SET\<8\> DVDD DGND) INVX5
+    I55\<9\> (net6\<9\> SET\<9\> DVDD DGND) INVX5
+    I55\<10\> (net6\<10\> SET\<10\> DVDD DGND) INVX5
+    I55\<11\> (net6\<11\> SET\<11\> DVDD DGND) INVX5
+    I55\<12\> (net6\<12\> SET\<12\> DVDD DGND) INVX5
+    I50 (net2 PRST_B DVDD DGND) INVX5
+    I54\<0\> (net7\<0\> net6\<0\> DVDD DGND) INVX4
+    I54\<1\> (net7\<1\> net6\<1\> DVDD DGND) INVX4
+    I54\<2\> (net7\<2\> net6\<2\> DVDD DGND) INVX4
+    I54\<3\> (net7\<3\> net6\<3\> DVDD DGND) INVX4
+    I54\<4\> (net7\<4\> net6\<4\> DVDD DGND) INVX4
+    I54\<5\> (net7\<5\> net6\<5\> DVDD DGND) INVX4
+    I54\<6\> (net7\<6\> net6\<6\> DVDD DGND) INVX4
+    I54\<7\> (net7\<7\> net6\<7\> DVDD DGND) INVX4
+    I54\<8\> (net7\<8\> net6\<8\> DVDD DGND) INVX4
+    I54\<9\> (net7\<9\> net6\<9\> DVDD DGND) INVX4
+    I54\<10\> (net7\<10\> net6\<10\> DVDD DGND) INVX4
+    I54\<11\> (net7\<11\> net6\<11\> DVDD DGND) INVX4
+    I54\<12\> (net7\<12\> net6\<12\> DVDD DGND) INVX4
+    I49 (net1 net2 DVDD DGND) INVX4
+ends SAR_LOGIC
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: INVX6
+// View name: schematic
+subckt INVX6 IN OUT VDD VSS
+    M1 (OUT IN VSS VSS) nch l=180.0n w=8u m=1 ad=3.84e-12 as=3.84e-12 \
+        pd=16.96u ps=16.96u nrd=0.03375 nrs=0.03375
+    M0 (OUT IN VDD VDD) pch l=180.0n w=16.0u m=1 ad=7.68e-12 as=7.68e-12 \
+        pd=32.96u ps=32.96u nrd=0.016875 nrs=0.016875
+ends INVX6
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: INVX7
+// View name: schematic
+subckt INVX7 IN OUT VDD VSS
+    M1 (OUT IN VSS VSS) nch l=180.0n w=16.0u m=1 ad=7.68e-12 as=7.68e-12 \
+        pd=32.96u ps=32.96u nrd=0.016875 nrs=0.016875
+    M0 (OUT IN VDD VDD) pch l=180.0n w=32.0u m=1 ad=1.536e-11 as=1.536e-11 \
+        pd=64.96u ps=64.96u nrd=0.0084375 nrs=0.0084375
+ends INVX7
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: SYNC
+// View name: schematic
+subckt SYNC CCLK CLK CLK00 DGND DVDD SET\<12\>
+    I68 (net5 DGND DVDD net1 net10) NAND1
+    I69 (net18 DGND DVDD net5 net6) NAND1
+    I70 (A DGND DVDD net10 net18) NAND1
+    I33 (net9 DGND DVDD CLK00 EN) NAND1
+    I51 (net4 net8 DVDD DGND) INVX5
+    I65 (net17 net13 DVDD DGND) INVX6
+    I64 (net38 net17 DVDD DGND) INVX6
+    I36 (net3 net38 DVDD DGND) INVX6
+    I35 (net11 net3 DVDD DGND) INVX6
+    I52 (net8 net11 DVDD DGND) INVX6
+    I67 (EN net5 DVDD DGND) INVX4
+    I50 (PCLK net4 DVDD DGND) INVX4
+    I32 (SET\<12\> net9 DVDD DGND) INVX2
+    M9 (CLK net15 DGND DGND) nch l=180.0n w=1u m=24 ad=2.7e-13 \
+        as=2.875e-13 pd=1.54u ps=1.65833u nrd=0.27 nrs=0.27
+    M8 (net15 PCLK DGND DGND) nch l=180.0n w=1u m=8 ad=2.7e-13 \
+        as=3.225e-13 pd=1.54u ps=1.895u nrd=0.27 nrs=0.27
+    M12 (PCLK net6 DGND DGND) nch l=180.0n w=1u m=3 ad=3.4e-13 as=3.4e-13 \
+        pd=2.01333u ps=2.01333u nrd=0.27 nrs=0.27
+    M7 (CLK net15 DVDD DVDD) pch l=180.0n w=1u m=24 ad=2.7e-13 \
+        as=2.875e-13 pd=1.54u ps=1.65833u nrd=0.27 nrs=0.27
+    M6 (net15 PCLK DVDD DVDD) pch l=180.0n w=1u m=16 ad=2.7e-13 \
+        as=2.9625e-13 pd=1.54u ps=1.7175u nrd=0.27 nrs=0.27
+    M13 (PCLK net6 DVDD DVDD) pch l=180.0n w=1u m=6 ad=2.7e-13 as=3.4e-13 \
+        pd=1.54u ps=2.01333u nrd=0.27 nrs=0.27
+    I34 (net13 CCLK DVDD DGND) INVX7
+    I7 (PCLK A) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=tdel trise=10p tfall=10p
+    I72 (net5 net1) not_gate vlogic_high=vdd vlogic_low=0 vtrans=vdd/2 \
+        tdel=tdel/2 trise=10p tfall=10p
+ends SYNC
+// End of subcircuit definition.
+
+// Library name: 12bit_50M_SAR
+// Cell name: test_12bit50MSAR_AMS_final
+// View name: schematic
+I1 (BITD\<1\> BITD\<2\> BITD\<3\> BITD\<4\> BITD\<5\> BITD\<6\> BITD\<7\> \
+        BITD\<8\> BITD\<9\> BITD\<10\> BITD\<11\> BITD\<12\> BITU\<1\> \
+        BITU\<2\> BITU\<3\> BITU\<4\> BITU\<5\> BITU\<6\> BITU\<7\> \
+        BITU\<8\> BITU\<9\> BITU\<10\> BITU\<11\> BITU\<12\> N P) CDAC
+I28 (AGND AVDD CLK RST N P COMN COMP) COM_IAZ
+I14 (AGND AVDD BITD\<1\> BITD\<2\> BITD\<3\> BITD\<4\> BITD\<5\> BITD\<6\> \
+        BITD\<7\> BITD\<8\> BITD\<9\> BITD\<10\> BITD\<11\> BITD\<12\> \
+        BN\<1\> BN\<2\> BN\<3\> BN\<4\> BN\<5\> BN\<6\> BN\<7\> BN\<8\> \
+        BN\<9\> BN\<10\> BN\<11\> BN\<12\> BP\<1\> BP\<2\> BP\<3\> BP\<4\> \
+        BP\<5\> BP\<6\> BP\<7\> BP\<8\> BP\<9\> BP\<10\> BP\<11\> BP\<12\> \
+        BITU\<1\> BITU\<2\> BITU\<3\> BITU\<4\> BITU\<5\> BITU\<6\> \
+        BITU\<7\> BITU\<8\> BITU\<9\> BITU\<10\> BITU\<11\> BITU\<12\> N P \
+        RST RST1 SET\<0\> SET\<1\> SET\<2\> SET\<3\> SET\<4\> SET\<5\> \
+        SET\<6\> SET\<7\> SET\<8\> SET\<9\> SET\<10\> SET\<11\> VCM VIN \
+        VIP VREFN VREFP) SWITCH
+I34 (AGND net2\<0\> net2\<1\> net2\<2\> net2\<3\> net2\<4\> net2\<5\> \
+        net2\<6\> net2\<7\> net2\<8\> net2\<9\> net2\<10\> net2\<11\> OUT) \
+        SNDR_DAC
+I22 (B\<0\> B\<1\> B\<2\> B\<3\> B\<4\> B\<5\> B\<6\> B\<7\> B\<8\> B\<9\> \
+        B\<10\> B\<11\> BP\<0\> BP\<1\> BP\<2\> BP\<3\> BP\<4\> BP\<5\> \
+        BP\<6\> BP\<7\> BP\<8\> BP\<9\> BP\<10\> BP\<11\> BP\<12\> DGND \
+        DVDD SOUT) DEC
+V26 (AGND 0) vsource dc=0 type=dc
+V27 (DGND 0) vsource dc=0 type=dc
+V28 (VCM AGND) vsource dc=vdd/2 type=dc
+V29 (VREFP AGND) vsource dc=1.8 type=dc
+V30 (VREFN AGND) vsource dc=0 type=dc
+V31 (DVDD DGND) vsource dc=vdd type=dc
+V34 (AVDD AGND) vsource dc=vdd type=dc
+V7 (RST AGND) vsource type=pulse val0=0 val1=vdd period=100n delay=100p \
+        rise=10p fall=10p width=td
+V13 (PRST AGND) vsource type=pulse val0=0 val1=vdd period=100n delay=-2n \
+        rise=10p fall=10p width=30n
+V10 (RST1 AGND) vsource type=pulse val0=0 val1=vdd period=100n delay=100p \
+        rise=10p fall=10p width=24n
+V8 (SOUT AGND) vsource type=pulse val0=0 val1=vdd period=100n delay=-2n \
+        rise=10p fall=10p width=2n
+V40 (CLK00 AGND) vsource type=pulse val0=0 val1=vdd period=100n delay=30n \
+        rise=10p fall=10p width=69n
+V32 (VIN VCM) vsource type=sine ampl=va freq=N/128*10M
+V33 (VCM VIP) vsource type=sine ampl=va freq=N/128*10M
+I18 (BITN\<12\> BITN\<11\> BITN\<10\> BITN\<9\> BITN\<8\> BITN\<7\> \
+        BITN\<6\> BITN\<5\> BITN\<4\> BITN\<3\> BITN\<2\> BITN\<1\> \
+        BITN\<0\> BITP\<12\> BITP\<11\> BITP\<10\> BITP\<9\> BITP\<8\> \
+        BITP\<7\> BITP\<6\> BITP\<5\> BITP\<4\> BITP\<3\> BITP\<2\> \
+        BITP\<1\> BITP\<0\> BN\<12\> BN\<11\> BN\<10\> BN\<9\> BN\<8\> \
+        BN\<7\> BN\<6\> BN\<5\> BN\<4\> BN\<3\> BN\<2\> BN\<1\> BN\<0\> \
+        BP\<12\> BP\<11\> BP\<10\> BP\<9\> BP\<8\> BP\<7\> BP\<6\> BP\<5\> \
+        BP\<4\> BP\<3\> BP\<2\> BP\<1\> BP\<0\>) PN_BUF
+I15 (BITN\<12\> BITN\<11\> BITN\<10\> BITN\<9\> BITN\<8\> BITN\<7\> \
+        BITN\<6\> BITN\<5\> BITN\<4\> BITN\<3\> BITN\<2\> BITN\<1\> \
+        BITN\<0\> BITP\<12\> BITP\<11\> BITP\<10\> BITP\<9\> BITP\<8\> \
+        BITP\<7\> BITP\<6\> BITP\<5\> BITP\<4\> BITP\<3\> BITP\<2\> \
+        BITP\<1\> BITP\<0\> CCLK COMN DGND DVDD PRST SET\<0\> SET\<1\> \
+        SET\<2\> SET\<3\> SET\<4\> SET\<5\> SET\<6\> SET\<7\> SET\<8\> \
+        SET\<9\> SET\<10\> SET\<11\> SET\<12\>) SAR_LOGIC
+I21 (CCLK CLK CLK00 DGND DVDD SET\<12\>) SYNC
+inv\<11\> (B\<11\> net1\<0\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<10\> (B\<10\> net1\<1\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<9\> (B\<9\> net1\<2\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<8\> (B\<8\> net1\<3\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<7\> (B\<7\> net1\<4\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<6\> (B\<6\> net1\<5\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<5\> (B\<5\> net1\<6\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<4\> (B\<4\> net1\<7\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<3\> (B\<3\> net1\<8\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<2\> (B\<2\> net1\<9\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<1\> (B\<1\> net1\<10\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+inv\<0\> (B\<0\> net1\<11\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<11\> (net1\<0\> net2\<0\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<10\> (net1\<1\> net2\<1\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<9\> (net1\<2\> net2\<2\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<8\> (net1\<3\> net2\<3\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<7\> (net1\<4\> net2\<4\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<6\> (net1\<5\> net2\<5\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<5\> (net1\<6\> net2\<6\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<4\> (net1\<7\> net2\<7\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<3\> (net1\<8\> net2\<8\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<2\> (net1\<9\> net2\<9\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<1\> (net1\<10\> net2\<10\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+I33\<0\> (net1\<11\> net2\<11\>) not_gate vlogic_high=1.8 vlogic_low=0 \
+        vtrans=0.9 tdel=10p trise=10p tfall=10p
+simulatorOptions options psfversion="1.4.0" temp=27 tnom=27 homotopy=all \
+    limit=delta gmethod=dev dptran_gmethod=dev try_fast_op=yes scalem=1.0 \
+    scale=1.0 gmin=1e-12 rforce=1 maxnotes=5 maxwarns=5 digits=5 cols=80 \
+    pivrel=1e-3 sensfile="../psf/sens.output" checklimitdest=psf 
+dcOp dc write="spectre.dc" homotopy=gmin maxiters=150 maxsteps=10000 \
+    annotate=status
+dcOpInfo info what=oppoint where=rawfile
+tran tran stop=60u noisefmax=10G noisefmin=1 noiseseed=34351112345 \
+    noisescale=10 noiseon=[ I1 I14] maxstep=2p cmin=1.23364538742384a \
+    write="spectre.ic" writefinal="spectre.fc" annotate=status 
+finalTimeOP info what=oppoint where=rawfile
+modelParameter info what=models where=rawfile
+element info what=inst where=rawfile
+outputParameter info what=output where=rawfile
+designParamVals info what=parameters where=rawfile
+primitives info what=primitives where=rawfile
+subckts info what=subckts where=rawfile
+save N P CLK COMN COMP RST RST1 VIN VIP CLK00 PRST OUT SOUT BITN\<12\> \
+    BITN\<11\> BITN\<10\> BITN\<9\> BITN\<8\> BITN\<7\> BITN\<6\> \
+    BITN\<5\> BITN\<4\> BITN\<3\> BITN\<2\> BITN\<1\> BITN\<0\> BITP\<12\> \
+    BITP\<11\> BITP\<10\> BITP\<9\> BITP\<8\> BITP\<7\> BITP\<6\> \
+    BITP\<5\> BITP\<4\> BITP\<3\> BITP\<2\> BITP\<1\> BITP\<0\> SET\<0\> \
+    SET\<1\> SET\<2\> SET\<3\> SET\<4\> SET\<5\> SET\<6\> SET\<7\> \
+    SET\<8\> SET\<9\> SET\<10\> SET\<11\> SET\<12\> BITD\<1\> BITD\<2\> \
+    BITD\<3\> BITD\<4\> BITD\<5\> BITD\<6\> BITD\<7\> BITD\<8\> BITD\<9\> \
+    BITD\<10\> BITD\<11\> BITD\<12\> BITU\<1\> BITU\<2\> BITU\<3\> \
+    BITU\<4\> BITU\<5\> BITU\<6\> BITU\<7\> BITU\<8\> BITU\<9\> BITU\<10\> \
+    BITU\<11\> BITU\<12\> B\<11\> B\<10\> B\<9\> B\<8\> B\<7\> B\<6\> \
+    B\<5\> B\<4\> B\<3\> B\<2\> B\<1\> B\<0\> I28.VOP1 I28.net16 I28.VON1 \
+    I28:2 I14:2 I28.M23:d I14:1 I28.M379:d I22:27 I21:5 I15:30 I21.PCLK \
+    CCLK 
+saveOptions options save=selected currents=selected
+ahdl_include "/opt/cadence/IC618/tools/dfII/samples/artist/ahdlLib/not_gate/veriloga/veriloga.va"
