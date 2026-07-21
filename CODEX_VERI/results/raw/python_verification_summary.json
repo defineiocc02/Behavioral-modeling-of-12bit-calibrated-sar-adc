@@ -1,0 +1,206 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-07-21T23:48:40.276882+00:00",
+  "unit_tests": {
+    "tests_run": 35,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "configuration": {
+    "seed": 20260722,
+    "noise_mc_trials": 4000,
+    "algorithm_mc_samples": 1200,
+    "pair_counts": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
+    "quantizer_step_lsb": 1.0,
+    "quantizer_tie_policy": "away",
+    "candidate_max_abs_residual_code": 127.0,
+    "algorithm_mc_mismatch_sigma_relative": 0.01,
+    "algorithm_mc_offset_sigma_lsb": 0.5,
+    "algorithm_mc_noise_sigma_lsb": 0.75,
+    "algorithm_mc_pairs": 32
+  },
+  "seed": 20260722,
+  "mc_trials": 4000,
+  "baseline_target_means": {
+    "H1C-A": 65.0,
+    "H1C-R": 65.46875,
+    "H2C": 130.469,
+    "H4C": 260.9375,
+    "H8C": 521.875,
+    "H16C": 1043.75,
+    "H32C": 2087.5
+  },
+  "legacy_h1r": 65.46875,
+  "legacy_h32": 2087.5,
+  "wall_signed_candidate_max_ideal_error": 0.0,
+  "max_odd_symmetry_error": 0.0,
+  "noise_scaling_loglog_slope": -0.4944933039529321,
+  "sensitivity_diagonal_range": [
+    1.0000000000000087,
+    1.0000000000000087
+  ],
+  "sensitivity_max_offdiagonal": 0.0,
+  "algorithm_mc_h32_rmse": {
+    "legacy_magnitude": 28.71732662650924,
+    "wall_signed_candidate": 0.10092802924171669
+  },
+  "algorithm_mc_paired_statistics": {
+    "samples": 1200,
+    "h32_candidate_to_legacy_rmse_ratio": 0.0035145342933331773,
+    "h32_mean_paired_squared_error_improvement": 824.67466210653,
+    "h32_paired_squared_error_improvement_ci95_low": 755.9822257886269,
+    "h32_paired_squared_error_improvement_ci95_high": 893.3670984244332
+  },
+  "noise_max_absolute_bias_lsb": 0.01824999999999477,
+  "noise_std_n32_to_n1_ratio": 0.17845997217285717,
+  "noise_std_ratio_relative_error": 0.009522051950318966,
+  "internal_artifact_hashes": [
+    {
+      "path": "config/calibration_spec.json",
+      "bytes": 2253,
+      "sha256": "1F7479E45E0221D2076876D2353ECAAC82381653392EFFC0A8CB9CE7181FD913"
+    },
+    {
+      "path": "evidence/model_scope.md",
+      "bytes": 1397,
+      "sha256": "08369188FE6BD785DD5C994F59CC431086EB0FEF7FF03C52D69A8ED90C31D0B3"
+    },
+    {
+      "path": "evidence/requirement_matrix.md",
+      "bytes": 2801,
+      "sha256": "C3436B304CF43B630B51C01DB640FFB7B378368B8B8302CF8A0E69504F125310"
+    },
+    {
+      "path": "evidence/source_manifest.json",
+      "bytes": 2599,
+      "sha256": "57D6F8C3AC40965B34F8EA49B037B1BE21329D05DD2686CC4FB21E53C75AA157"
+    },
+    {
+      "path": "experiments/run_adc_performance_verification.py",
+      "bytes": 16207,
+      "sha256": "AB2C1AF9FBBC99C1AE698B3BD2DE675CAA4E4D5A626317D5CB90F05D5C7A666E"
+    },
+    {
+      "path": "experiments/run_python_verification.py",
+      "bytes": 20668,
+      "sha256": "EFF78A179AC82FC7AFFCB4835EF1CD6A222315D36B0FA408E394549F89403FDE"
+    },
+    {
+      "path": "figures/generate_figures.py",
+      "bytes": 14722,
+      "sha256": "96774496566E3D53DF1D4BE84F25C0837DFE2ABE869E2ABB1C475E9549AAD74A"
+    },
+    {
+      "path": "report/build_python_report.ps1",
+      "bytes": 1081,
+      "sha256": "B596FD944210EEC1FD6FB6514A9FD708EF906A501C12EF36BFA1AA6B3D16AF87"
+    },
+    {
+      "path": "report/python_stage_report_cn.tex",
+      "bytes": 12183,
+      "sha256": "536E66C0738399C728CC8ED1127767C2C6389E2A5B8EDC401F47FCB2F6EDB5FE"
+    },
+    {
+      "path": "report/render_pdf_qa.py",
+      "bytes": 1830,
+      "sha256": "BAEF5950D5B74B0EC35F5047D94E5931C426455233AAC481F14EFDA78DE7F19C"
+    },
+    {
+      "path": "run_python_gate.ps1",
+      "bytes": 1372,
+      "sha256": "1EE21813D4B97CF9FE093733EC3BB6223AC482E14C81BFA858D833ABF067D4C9"
+    },
+    {
+      "path": "src/codex_veri/__init__.py",
+      "bytes": 614,
+      "sha256": "D44BA4E7F120A16FBA4EDE0B68CA9851B7DCCADC506485E3B5EB780084ECF7F2"
+    },
+    {
+      "path": "src/codex_veri/adc_performance.py",
+      "bytes": 18261,
+      "sha256": "9A952E5BEDC4D2A6CE0C754A95D481970BA02586C88BCE0B5DBFDF93D63CFB9E"
+    },
+    {
+      "path": "src/codex_veri/evidence.py",
+      "bytes": 1024,
+      "sha256": "78B8E123722CD24FA5DF0D3821D1624F4D0172E7186AC1A0B00A6AF20A9EE8D7"
+    },
+    {
+      "path": "src/codex_veri/model.py",
+      "bytes": 13218,
+      "sha256": "0A897FF299F661B048DA1919736BE4DFD169A7C6D3A506E9942D2065E2742B9F"
+    },
+    {
+      "path": "src/codex_veri/parsers.py",
+      "bytes": 4016,
+      "sha256": "93A2A65D087ECAFB506305F3A3EA2EFCC8B58689707BE99FAA127F194E0EBBC8"
+    },
+    {
+      "path": "src/codex_veri/search.py",
+      "bytes": 2785,
+      "sha256": "59DACF820B81B86C84134853D8140CB6118C55BB4AEE3E57C93E62ACD45D6B01"
+    },
+    {
+      "path": "src/codex_veri/timing.py",
+      "bytes": 883,
+      "sha256": "6B346FC0E2F16292F77C77536DA324A54654B17AFAD2F2F5CC059399992CB874"
+    },
+    {
+      "path": "tests/test_adc_performance.py",
+      "bytes": 4143,
+      "sha256": "FEB00868D405599E94268EE252C4A584FBB477CF76A08ED73EFD71FC2FF60BB6"
+    },
+    {
+      "path": "tests/test_policy_and_timing.py",
+      "bytes": 3785,
+      "sha256": "97FB79ADB63803F29F272B437DFF8F676876AB85F5040803F0122169D9781BE1"
+    },
+    {
+      "path": "tests/test_python_gate.py",
+      "bytes": 4575,
+      "sha256": "7AB5DF7DE3164F8CF913C1671229F3806907B009478991C41CA7E3A4A00F74A1"
+    },
+    {
+      "path": "tests/test_statistical_and_sensitivity.py",
+      "bytes": 3238,
+      "sha256": "D3725426AB9AAA9FF43D1B4DCDEF327F757417B75F247AF97B40B173436D2893"
+    },
+    {
+      "path": "VERSION",
+      "bytes": 21,
+      "sha256": "6F685D9EC7CF855F4BFBB0424496B91B7AB5693D8F470A341D3EAB008B5DCCCC"
+    }
+  ],
+  "checks": {
+    "unit_tests_pass": true,
+    "manifest_integrity": true,
+    "baseline_complete_unique_7x32": true,
+    "baseline_diff_internal_consistency": true,
+    "historical_all_target_means_match": true,
+    "legacy_h1r_replay": true,
+    "legacy_h32_replay": true,
+    "wall_signed_candidate_ideal_exact": true,
+    "candidate_range_saturation_guard": true,
+    "odd_symmetry_exact": true,
+    "noise_slope_pass": true,
+    "noise_absolute_bias_bounded": true,
+    "noise_std_ratio_matches_oracle": true,
+    "continuous_sensitivity_identity": true,
+    "centered_mc_h32_rmse_ratio_pass": true,
+    "centered_mc_paired_mse_ci95_positive": true,
+    "noise_familywise95_contains_oracle": true,
+    "internal_artifact_hashes_present": true,
+    "complete_configuration_bound": true
+  },
+  "python_core_gate_pass": true,
+  "scope_warning": "This gate validates calibration mathematics only; it does not validate Verilog-A timing or analog settling."
+}
