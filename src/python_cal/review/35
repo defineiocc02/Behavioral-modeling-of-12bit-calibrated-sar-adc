@@ -1,0 +1,1114 @@
+# 审查结论
+
+**当前报告不能判定为 PASS，也不能判定“校准成功”。正确状态应改为 `NOT READY / FAIL`。**
+
+问题不是单纯“FFT 差一点没到 72 dB”，而是报告暴露出至少四类基础错误：
+
+1. 比较器输出与输入差分符号不一致；
+2. 异步事件报告和时序计算错误；
+3. 理想无噪声条件下校准权重明显错误，且校准普遍降低 SNDR；
+4. FFT 归因链存在不可能成立的结果，例如理想电路中 nominal decoder 与 physical decoder 相差 8.2 dB。
+
+因此，目前的 FFT 数字还不能用于评价真实异步 SAR 架构的性能。
+
+---
+
+# 一、为什么 FFT 不能超过 72 dB
+
+12-bit 理想量化器的经典满幅正弦 SNDR 约为：
+
+[
+6.02N+1.76=74.0\ {\rm dB}
+]
+
+输入为 (-0.5\ {\rm dBFS}) 时，合理上限约为：
+
+[
+73.5\ {\rm dB}
+]
+
+所以一个正确的无噪声 12-bit 行为模型，理想场景应当接近 **73.5 dB**。报告中的理想 nominal 只有 68.6 dB，已经损失约：
+
+[
+73.5-68.6=4.9\ {\rm dB}
+]
+
+校准后更降至 48.4 dB，相对于合理基线损失约 25.1 dB。报告却仍把 FFT/SNDR 标成 PASS。
+
+这不是正常的量化噪声限制，而是实现或测量链路错误。
+
+## 主要原因 1：比较器逻辑不自洽
+
+报告明确给出：
+
+```text
+noise = 0
+offset = 0
+```
+
+但转换 trace 中：
+
+| Stage |       VDIFF | CMP |
+| ----: | ----------: | --: |
+|     0 | −0.063229 V |   0 |
+|     1 | +0.155156 V |   0 |
+|     2 | +0.045964 V |   1 |
+|     3 | −0.008633 V |   1 |
+|     4 | +0.018665 V |   0 |
+|     5 | +0.005016 V |   1 |
+
+
+
+一个无噪声、无失调的固定极性比较器，只能采用一种关系，例如：
+
+```python
+cmp_raw = int(vtop_p > vtop_n)
+```
+
+或相反。
+
+当前数据中，正 VDIFF 有时输出 0、有时输出 1；负 VDIFF 也同样出现两种结果。这说明至少存在一种问题：
+
+* `CMP` 列实际不是原始比较器输出；
+* 比较器极性被按 stage 动态反转；
+* `VDIFF` 记录的不是比较时刻的节点电压；
+* decision、comparator output 和 commit policy 被混在了一起；
+* trace 使用了错误状态或错误时间点。
+
+只要比较器关系不确定，所有 SAR decisions、转换码和 FFT 都不可信。
+
+---
+
+## 主要原因 2：开关和解码映射疑似错误
+
+固定输入为：
+
+```text
+VINP = 1.15 V
+VINN = 0.65 V
+VIN_DIFF = 0.50 V
+```
+
+最终却输出：
+
+```text
+code = 4095
+clip_high = False
+```
+
+
+
+这至少存在两个问题：
+
+1. 一个并未明确证明为正满量程的输入，却直接得到最大码；
+2. 最大码和 `clip_high=False` 的语义不清楚。
+
+必须先明确：
+
+[
+V_{\rm FS,diff}
+]
+
+究竟是多少，以及：
+
+```text
+VIN_DIFF = 0
+应输出什么码
+VIN_DIFF = +0.5 V
+应输出什么码
+VIN_DIFF = 正满量程
+应输出什么码
+```
+
+在这个映射没有通过 DC transfer curve 验证前，FFT 没有意义。
+
+---
+
+## 主要原因 3：理想 nominal decoder 和 physical decoder 不一致
+
+报告的理想场景：
+
+| Decoder    |    SNDR |
+| ---------- | ------: |
+| Nominal    | 68.6 dB |
+| Calibrated | 48.4 dB |
+| Physical   | 60.4 dB |
+
+
+
+对于理想 CDAC，应满足：
+
+```python
+physical_weights == nominal_weights
+```
+
+因此，在**同一组 decisions**上：
+
+```python
+codes_nominal == codes_physical
+```
+
+理想 nominal SNDR 和 physical-decoder SNDR 必须完全相同或只存在浮点尾差。
+
+现在却相差：
+
+[
+68.6-60.4=8.2\ {\rm dB}
+]
+
+这是逻辑不变量被破坏，常见原因包括：
+
+* nominal、calibrated、physical 三列没有复用同一组 decisions；
+* physical weights 的 stage 顺序错误；
+* P/N 权重错误地平均或翻转；
+* H1C-A/H1C-R 索引交换；
+* SIGNAL/AUX stage 划分错误；
+* decoder scaling 或 redundancy offset 不一致；
+* physical decoder 使用了不同转换实例。
+
+在这个问题解决之前，所谓 `calibration gap` 也不可信。
+
+---
+
+## 主要原因 4：FFT 配置可能低估 SNDR
+
+报告使用：
+
+```text
+FFT_N = 512
+FFT_K = 17
+Window = Hann
+```
+
+
+
+对于相干采样 SAR ADC 测试，最直接、最容易审计的设置应是：
+
+```text
+N = 4096 或 8192
+gcd(k, N) = 1
+矩形窗
+输入幅度 = -0.5 dBFS
+```
+
+如果使用 Hann 窗，必须同时正确处理：
+
+* coherent gain；
+* equivalent noise bandwidth；
+* 信号主瓣多个 bin 的能量；
+* 谐波主瓣多个 bin；
+* 边带和 DC 排除。
+
+如果代码仍然只把 `k` 单个 bin 当作信号功率，那么 Hann 窗扩散到相邻 bin 的能量会被错误计入噪声。
+
+这未必是全部 4.9 dB 损失的唯一原因，但必须首先用一个**独立理想 12-bit 均匀量化器**验证 FFT 分析器。
+
+---
+
+# 二、校准真的成功了吗？
+
+## 结论：流程运行了，但校准没有成功
+
+必须区分三种“成功”。
+
+| 层级                    | 当前状态   |
+| --------------------- | ------ |
+| 校准 FSM 完成 7 个 target  | 是      |
+| 没有 saturation/timeout | 是      |
+| 权重估计准确                | 否      |
+| 校准后性能改善               | 大部分场景否 |
+| 可称为校准成功               | **否**  |
+
+报告中的 `CalibrationReport.valid=True` 目前只证明：
+
+```text
+7/7 target 完成
+没有 saturation
+没有 timeout
+```
+
+它不证明权重正确，也不证明性能改善。
+
+---
+
+## 1. 理想无噪声校准已经明显失败
+
+条件是：
+
+```text
+ideal CDAC
+noise = 0
+offset = 0
+ideal settling
+```
+
+但测量结果为：
+
+| Target | Physical | Measured |     有符号误差 |
+| ------ | -------: | -------: | --------: |
+| H1C-A  |    65.00 |    62.56 | −2.44 LSB |
+| H1C-R  |    65.00 |    67.69 | +2.69 LSB |
+| H2C    |   130.00 |   130.88 | +0.88 LSB |
+| H4C    |   260.00 |   258.56 | −1.44 LSB |
+| H8C    |   520.00 |   521.56 | +1.56 LSB |
+| H16C   |  1040.00 |  1039.50 | −0.50 LSB |
+| H32C   |  2080.00 |  2075.44 | −4.56 LSB |
+
+
+
+计算得到：
+
+```text
+最大绝对误差：4.56 LSB
+RMS 权重误差：约 2.38 LSB
+```
+
+对于理想、无噪声、理想 settling 的确定性模型，这个结果不能接受。
+
+即使 calDAC 最小分辨率有限，合理误差也应该处于约 ±0.5 LSB 的量化范围，而不是 2–4.5 LSB。
+
+---
+
+## 2. 校准在大多数场景中使性能显著恶化
+
+报告结果：
+
+| 场景              |  校准前 |  校准后 |                      变化 |
+| --------------- | ---: | ---: | ----------------------: |
+| ideal           | 68.6 | 48.4 |            **−20.2 dB** |
+| H32C +5%        | 34.4 | 56.0 |                +21.6 dB |
+| common +2%      | 65.3 | 40.2 |            **−25.0 dB** |
+| common −2%      | 63.4 | 48.3 |            **−15.1 dB** |
+| alternating ±2% | 33.9 | 33.9 | 0，且 calibration invalid |
+| P/N asymmetric  | 68.4 | 48.9 |            **−19.5 dB** |
+| bridge +2%      | 63.9 | 48.3 |            **−15.6 dB** |
+| MC #1           | 51.3 | 39.0 |            **−12.2 dB** |
+| MC #2           | 53.8 | 39.7 |            **−14.1 dB** |
+| MC #3           | 51.4 | 43.4 |             **−8.1 dB** |
+
+
+
+只有 H32C 单点 +5% 场景改善。
+
+因此 JSON 中的：
+
+```json
+"any_perf_gain": true
+```
+
+不能作为通过条件。
+
+`any_perf_gain` 只需要一个场景改善，就会掩盖其余场景严重退化。
+
+正确 Gate 应要求：
+
+```text
+所有强制场景均不得退化
+ideal 必须基本不变
+common ±2% 必须改善或接近 physical decoder
+alternating ±2% 必须 calibration valid
+Monte Carlo 中位数必须改善
+```
+
+---
+
+## 3. H4C 校准 trace 不像真实有效的 calDAC 搜索
+
+H4C 的 D+ trace：
+
+```text
+L16C trial 后 VDIFF = -6.720 mV
+之后 L8C、L4C、L2C、L1C 多个步骤，
+VDIFF 始终保持 -6.720 mV
+```
+
+D− trace 也出现不同低段 trial 后节点电压不随若干开关步骤变化的情况。
+
+如果不同物理电容真实切换，且每次都重新调用电荷求解器，VDIFF 应当产生对应的增量。
+
+可能问题：
+
+* trial state 没有真正应用；
+* reject 后没有恢复 committed state；
+* keep/reject 语义反了；
+* trace 记录了旧 solution；
+* 多个 calDAC stage 指向同一个电容；
+* switch-state dataclass 更新失败；
+* charge solver 缓存没有失效；
+* 仍有 arithmetic `accepted_sum` 在决定结果。
+
+需要逐步打印：
+
+```text
+committed_before
+trial_state
+state_delta
+trial_solution
+comparator_output
+committed_after
+```
+
+并断言：
+
+```python
+trial_state != committed_before
+```
+
+对于非零物理电容，还应断言：
+
+```python
+abs(trial_vdiff - committed_vdiff) > numerical_tolerance
+```
+
+---
+
+# 三、异步模型的运行报告也存在错误
+
+## 1. 报告宣称的严格时序不成立
+
+报告要求：
+
+[
+t_{\rm trial}
+<
+t_{\rm settled}
+<
+t_{\rm cmpdone}
+<
+t_{\rm commit}
+]
+
+但实际事件为：
+
+```text
+dac_trial_start = dac_settled = cmp_request
+cmp_done = bit_commit
+```
+
+
+
+因此严格不等式实际上失败。
+
+如果当前是 ideal settling 模式，可以允许：
+
+[
+t_{\rm trial}=t_{\rm settled}
+]
+
+但报告和测试必须改成与建模假设一致：
+
+```text
+ideal settling:
+trial <= settled <= cmp_request < cmp_done <= commit
+
+non-ideal settling:
+trial < settled <= cmp_request < cmp_done <= commit
+```
+
+不能数据使用等号，结论却写严格小于。
+
+---
+
+## 2. Stage latency 算错了
+
+报告把绝对时间戳直接当成 stage latency：
+
+```text
+Stage 0 latency = 17.29 ns
+Stage 13 latency = 77.10 ns
+```
+
+
+
+正确应为：
+
+[
+t_{\rm latency,k}
+=================
+
+t_{\rm commit,k}-t_{\rm trial,k}
+]
+
+根据报告事件时间重新计算：
+
+```text
+最短 stage latency ≈ 2.29 ns
+最长 stage latency ≈ 6.24 ns
+平均 stage latency ≈ 4.44 ns
+```
+
+报告中的 17–77 ns 是累计转换时间，不是每级 latency。
+
+此外，报告说“所有 stage 延迟相同”，但实际时间差明显不同，也与数据矛盾。
+
+---
+
+## 3. 单电容测试没有验证差分响应
+
+报告所有电容的：
+
+```text
+P ΔVTOP = N ΔVTOP
+Differential step = 0
+方向正确 = YES
+```
+
+
+
+这说明测试同时以相同方向切换了 P/N 两侧，因此只产生共模变化。
+
+这种测试无法验证：
+
+* 差分极性；
+* bit decision 方向；
+* P/N 互补切换；
+* 高低段差分权重；
+* comparator 输入变化。
+
+正确测试应包含三种：
+
+### P-side only
+
+```text
+P capacitor: VCM → VREFP
+N capacitor: 保持 VCM
+```
+
+应得到一个方向的非零 (\Delta V_{\rm diff})。
+
+### N-side only
+
+```text
+N capacitor: VCM → VREFP
+P capacitor: 保持 VCM
+```
+
+应得到相反方向。
+
+### Complementary differential
+
+```text
+P → VREFP
+N → VREFN
+```
+
+应得到约为单侧两倍的差分步进。
+
+当前 “Diff step = 0、方向正确 YES” 应判定为**测试无效**。
+
+---
+
+## 4. 电荷守恒覆盖不足
+
+报告只列出：
+
+```text
+复位后
+H32C trial
+L32C trial
+```
+
+三个检查点。
+
+这不足以证明完整转换和完整校准中的所有切换都守恒。
+
+应覆盖：
+
+```text
+13 个物理 stage
+trial 状态
+commit 状态
+reject 后恢复状态
+D+ 校准
+D− 校准
+随机 switch states
+P/N 不对称失配
+bridge mismatch
+```
+
+并报告最坏 stage 和最坏开关组合。
+
+---
+
+# 四、完整修改指导方案
+
+## P0：立即修改报告判定
+
+当前报告中的：
+
+```text
+总体状态 PASS
+FFT/SNDR PASS
+校准流程 PASS
+Known failures: None
+READY FOR REVIEW
+```
+
+必须撤销。报告虽然承认 DNL/INL、低段失配、settling 等未实现，却将它们全部标成非阻塞，同时忽略校准普遍降低性能。
+
+改为：
+
+```text
+Overall: NOT READY
+
+Blocking failures:
+B-001 Comparator output inconsistent with VDIFF
+B-002 Ideal nominal and physical decoder mismatch
+B-003 Ideal calibration weight error up to 4.56 LSB
+B-004 Calibration degrades ideal SNDR by 20.2 dB
+B-005 Calibration degrades common ±2% and all MC samples
+B-006 alt ±2% calibration invalid
+B-007 Asynchronous latency calculation invalid
+B-008 Single-cap differential test invalid
+B-009 FFT analyzer not independently validated
+B-010 DNL/INL not implemented
+```
+
+---
+
+## P1：先修比较器和决策语义
+
+比较器必须只产生原始输出：
+
+```python
+effective_vdiff = (
+    vtop_p
+    - vtop_n
+    + input_offset_v
+    + noise_sample_v
+)
+
+raw_cmp = 1 if effective_vdiff >= 0 else 0
+```
+
+如果开关策略需要逻辑反相，必须分开：
+
+```python
+logical_decision = raw_cmp ^ stage_polarity_invert
+```
+
+trace 中同时保存：
+
+```text
+raw_vdiff
+offset
+noise
+effective_vdiff
+raw_cmp
+polarity_invert
+logical_decision
+commit_action
+```
+
+强制测试：
+
+```python
+@pytest.mark.parametrize(
+    "vdiff, expected",
+    [
+        (-0.1, 0),
+        (-1e-6, 0),
+        (+1e-6, 1),
+        (+0.1, 1),
+    ],
+)
+def test_zero_noise_comparator_sign(vdiff, expected):
+    ...
+```
+
+然后对 10,000 个随机 VDIFF 验证固定极性。
+
+---
+
+## P2：修正开关 trial/commit
+
+每一级必须明确维护：
+
+```python
+committed_before
+trial_state
+trial_solution
+raw_cmp
+committed_after
+committed_solution
+```
+
+必须验证：
+
+```python
+assert trial_state != committed_before
+```
+
+如果比较器拒绝 trial：
+
+```python
+committed_after == committed_before
+```
+
+如果接受：
+
+```python
+committed_after == trial_state
+```
+
+不能用 `accepted_sum` 替代物理状态。
+
+对每一级加入：
+
+```python
+state_delta = diff_switch_states(
+    committed_before,
+    trial_state,
+)
+```
+
+并确保只有当前目标电容发生预期变化。
+
+---
+
+## P3：先建立正确的 DC transfer curve
+
+在重新跑 FFT 前，先运行至少 4097 点无噪声扫描：
+
+```python
+vin_diff = np.linspace(-vfs_diff, vfs_diff, 4097)
+```
+
+输出并 Gate：
+
+```text
+code(vin=0) 接近 midscale
+code(-VFS) 接近 0
+code(+VFS) 接近 4095
+non-monotonic transitions = 0
+missing codes = 0（理想场景）
+clip flag 与码值一致
+```
+
+必须新增：
+
+```python
+assert code_at_zero in range(2047, 2049)
+assert codes[0] <= 1
+assert codes[-1] >= 4094
+assert np.all(np.diff(codes) >= 0)
+```
+
+如果模型采用非传统映射，应给出明确数学定义，不能靠最终 FFT 反推。
+
+---
+
+## P4：修复 decoder attribution 不变量
+
+理想场景必须强制：
+
+```python
+nominal_weights_q == physical_weights_q
+```
+
+同一组 decisions：
+
+```python
+nominal_result = nominal_decoder.decode_batch(decisions)
+physical_result = physical_decoder.decode_batch(decisions)
+
+assert np.array_equal(
+    nominal_result,
+    physical_result,
+)
+```
+
+attribution 测试必须只转换一次：
+
+```python
+physical_results = [
+    adc.convert_physical(vinp, vinn)
+    for vinp, vinn in inputs
+]
+
+decisions = [
+    result.decisions
+    for result in physical_results
+]
+```
+
+然后分别解码。
+
+禁止分别构造三个 ADC 并分别转换，因为比较器、事件状态或 reset 差异会污染归因。
+
+---
+
+## P5：重构校准有效性定义
+
+将当前单一 `valid` 拆为：
+
+```python
+@dataclass(frozen=True)
+class CalibrationValidity:
+    protocol_valid: bool
+    complete: bool
+    no_saturation: bool
+    no_timeout: bool
+    repeatable: bool
+    symmetry_valid: bool
+```
+
+测试报告额外增加：
+
+```python
+accuracy_valid: bool       # test-only oracle
+performance_valid: bool
+```
+
+生产校准控制器不能读取物理权重，但仿真测试可以用物理 oracle 评价精度。
+
+建议 Gate：
+
+### Ideal、无噪声
+
+```text
+7/7 complete
+pair-to-pair variance = 0
+max abs weight error <= 0.5 LSB
+RMS weight error <= 0.25 LSB
+calibrated SNDR degradation <= 0.1 dB
+```
+
+### Common ±2%
+
+```text
+max abs error <= 0.5 LSB
+calibration gap <= 0.2 dB
+calibrated SNDR >= nominal SNDR
+```
+
+### Alternating ±2%
+
+第一阶段：
+
+```text
+calibration valid
+calibration gap < 2 dB
+```
+
+最终目标：
+
+```text
+calibration gap < 0.5 dB
+```
+
+### Monte Carlo
+
+```text
+valid yield >= 99%（按目标 PVT 决定）
+median calibration gain > 0
+P5 calibration gain >= 0
+不得出现系统性退化
+```
+
+---
+
+## P6：修复 D+/D− 校准搜索
+
+必须增加以下逐 pair 数据：
+
+```text
+target excitation only VDIFF
+wall only VDIFF
+calDAC committed VDIFF
+每个 trial 的 ΔVDIFF
+D+ code
+D− code
+pair estimate
+```
+
+理想、无噪声、固定初态下：
+
+```python
+assert all(dplus_codes == dplus_codes[0])
+assert all(dminus_codes == dminus_codes[0])
+```
+
+如果 16 个相同 pair 得到不同码，说明存在：
+
+* 状态未 reset；
+* 事件残留；
+* comparator metastability 随机性；
+* switch-state 泄漏；
+* pair index 影响逻辑。
+
+另外必须验证 D+/D− 对称：
+
+```python
+abs(abs(dplus_residual) - abs(dminus_residual)) <= tolerance
+```
+
+每个 calDAC bit 必须真实改变 trial solution，除非该 bit 的 trial 状态确实等于当前状态；这种情况应显式标记，而不是继续记录为正常 trial。
+
+---
+
+## P7：独立验证 FFT 分析器
+
+先不要用 SAR ADC 输出验证 FFT。
+
+构造一个独立理想 12-bit uniform quantizer：
+
+```python
+x = amplitude * np.sin(
+    2 * np.pi * k * np.arange(N) / N
+)
+
+codes = ideal_quantize_12bit(x)
+metrics = compute_fft_metrics(codes)
+```
+
+推荐配置：
+
+```text
+N = 4096
+k = 127
+gcd(N, k) = 1
+amplitude = -0.5 dBFS
+window = rectangular
+```
+
+Gate：
+
+```text
+73.2 dB < SNDR < 73.8 dB
+```
+
+如果必须使用 Hann：
+
+* 信号功率必须积分主瓣；
+* harmonic power 也必须积分对应主瓣；
+* 应用 coherent-gain correction；
+* 应用 ENBW correction；
+* 防止相邻信号 bin 被计入噪声。
+
+在分析器自测通过前，任何 ADC FFT 都只能标为 `UNVERIFIED`。
+
+---
+
+## P8：修复异步时序统计
+
+事件验证分两种模式。
+
+### Ideal settling
+
+允许：
+
+```text
+trial_time == settled_time
+settled_time == cmp_request_time
+```
+
+但必须：
+
+```text
+cmp_done_time > cmp_request_time
+commit_time >= cmp_done_time
+next_trial_time >= commit_time
+```
+
+### Non-ideal settling
+
+要求：
+
+```text
+settled_time > trial_time
+cmp_request_time >= settled_time
+```
+
+正确 latency：
+
+```python
+stage_latency = commit_time - trial_start_time
+```
+
+不要把绝对 timestamp 当 latency。
+
+同时应测试：
+
+```text
+|VDIFF| 较小 → comparator decision time 较长
+|VDIFF| 较大 → comparator decision time 较短
+```
+
+---
+
+## P9：重做单电容物理验证
+
+每个电容至少执行：
+
+```text
+P-only switch
+N-only switch
+P/N complementary switch
+```
+
+输出：
+
+```text
+ΔVTOP_P
+ΔVTOP_N
+ΔVBRIDGE_P
+ΔVBRIDGE_N
+ΔVDIFF
+```
+
+必须验证：
+
+```python
+p_only_diff ≈ -n_only_diff
+complementary_diff ≈ 2 * p_only_diff
+```
+
+高段比例应接近：
+
+```text
+32 : 16 : 8 : 4 : 2 : 1 : 1
+```
+
+低段经 bridge 的比例应接近：
+
+```text
+32 : 16 : 8 : 4 : 2 : 1
+```
+
+这里只比较比例，不允许把预置 effective weights 写回 solver。
+
+---
+
+# 五、建议的修复执行顺序
+
+不要立即调校准参数或增加 dither。按下面顺序执行：
+
+### Step 1：建立失败测试
+
+先把当前问题固化为 failing tests：
+
+```text
+比较器符号一致性
+ideal nominal == physical decoder
+ideal calibration max error <= 0.5 LSB
+ideal calibration 不退化
+DC transfer monotonic
+正确 stage latency
+单电容 differential step 非零
+FFT analyzer ideal quantizer 73.5 dB
+```
+
+### Step 2：修比较器和 trace
+
+保证：
+
+```text
+VDIFF
+raw CMP
+logical decision
+commit action
+```
+
+完全可解释。
+
+### Step 3：修开关状态和 charge solver 调用
+
+确认每个 trial 都真实改变物理状态并重新求解。
+
+### Step 4：修 decoder/full-scale mapping
+
+先通过 DC transfer curve，再讨论 FFT。
+
+### Step 5：修 D+/D− calibration FSM
+
+重点检查：
+
+```text
+pair reset
+target excitation
+wall application
+calDAC trial/restore
+terminal
+测量单位换算
+stage index
+```
+
+### Step 6：修 FFT 分析器
+
+先通过独立量化器测试。
+
+### Step 7：重新运行校准归因
+
+顺序必须是：
+
+```text
+同一批 physical decisions
+→ nominal decoder
+→ calibrated decoder
+→ physical decoder
+```
+
+### Step 8：最后运行场景矩阵
+
+至少：
+
+```text
+ideal
+H32C +5%
+common ±2%
+alternating ±2%
+P/N asymmetric
+bridge ±2%
+low-segment mismatch
+100 个 MC 样本
+```
+
+---
+
+# 六、下一版必须达到的最低验收数据
+
+| 指标                              |                   最低要求 |
+| ------------------------------- | ---------------------: |
+| Ideal nominal SNDR              |              > 73.0 dB |
+| Ideal physical SNDR             | 与 nominal 相差 < 0.05 dB |
+| Ideal calibrated SNDR           |  不低于 nominal 0.1 dB 以上 |
+| Ideal max weight error          |              ≤ 0.5 LSB |
+| Comparator sign mismatches      |                      0 |
+| DC non-monotonic transitions    |                      0 |
+| Ideal missing codes             |                      0 |
+| Decoder decision mismatches     |                      0 |
+| Charge conservation max error   |              < 1e-24 C |
+| Calibration target completion   |                    7/7 |
+| Calibration timeout             |                      0 |
+| Common ±2% calibration gap      |               < 0.2 dB |
+| Alternating ±2% calibration gap |            最终 < 0.5 dB |
+| MC calibration median gain      |                 > 0 dB |
+
+---
+
+# 最终判断
+
+## FFT 为什么不能超过 72 dB？
+
+不是因为 12-bit SAR 的理论上限低于 72 dB，而是当前模型同时存在：
+
+* comparator/decision 映射不一致；
+* 开关 trace 可疑；
+* decoder/full-scale 映射错误；
+* ideal nominal 与 physical decoder 不一致；
+* 校准权重严重偏差；
+* 校准在多数场景中降低性能；
+* FFT 窗函数和功率统计尚未独立验证。
+
+## 校准成功了吗？
+
+**没有。**
+
+更准确地说：
+
+> 校准 FSM 完成了，但校准测量没有达到正确性要求；`valid=True` 只是流程完成标志，不是校准精度或性能成功标志。
+
+在理想无噪声条件下最大权重误差达到 4.56 LSB，而且校准使 ideal SNDR 从 68.6 dB 降到 48.4 dB，这已经足以判定校准失败。
+
+下一步不应调 dither 或追 72 dB，而应先修复**比较器—开关状态—decoder—校准测量—FFT 分析器**这条基础链路。

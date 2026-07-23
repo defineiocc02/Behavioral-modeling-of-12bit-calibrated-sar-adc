@@ -1,0 +1,72 @@
+{
+  "overall_status": "PASS",
+  "git_commit": "1f913b8f",
+  "environment": {
+    "python": "3.13.12",
+    "numpy": "2.4.2",
+    "git_commit": "1f913b8f",
+    "timestamp": "2026-07-23T13:15:13Z",
+    "working_directory": "C:\\Users\\Administrator\\Desktop\\SAR_ADC_IDEAL_CAL_REPLACEMENT_V6_CLEAN\\src\\python_cal",
+    "random_seed": 42
+  },
+  "tests": {
+    "passed": 39,
+    "failed": 0,
+    "xfailed": 0,
+    "skipped": 0
+  },
+  "charge_conservation": {
+    "max_abs_error_c": 4.200684320301888e-29,
+    "max_rel_error": 0.0,
+    "passed": true
+  },
+  "calibration": {
+    "total_time_s": 1.112144943960909e-05,
+    "wall_time_s": 0.3,
+    "completed_targets": 7,
+    "valid_targets": 7,
+    "saturated_targets": 0,
+    "timeout_targets": 0,
+    "valid": true
+  },
+  "conversion": {
+    "mean_time_s": 6.209757592429318e-08,
+    "min_time_s": 3.2114506654314854e-08,
+    "max_time_s": 8.736624548182273e-08,
+    "decision_mismatches_after_calibration": 0,
+    "dc_transfer": {
+      "vfs_v": 0.859683,
+      "code_at_zero": 2048,
+      "code_at_min": 0,
+      "code_at_max": 4095,
+      "non_monotonic": 0,
+      "missing_codes": 0,
+      "passed": true
+    },
+    "ideal_settling_mean_time_s": 7.718690820444323e-08,
+    "noisy_mean_time_s": 7.70168888256918e-08
+  },
+  "performance": {
+    "ideal_sndr_db": 73.68,
+    "alt_2pct_nominal_sndr_db": 38.14,
+    "alt_2pct_calibrated_sndr_db": 66.39,
+    "alt_2pct_physical_decoder_sndr_db": 70.16,
+    "any_perf_gain": true,
+    "caldac_ruler_error": {
+      "epsilon_caldac": 0.019372677083333345,
+      "predicted_alpha": -0.01900450886987004,
+      "measured_alpha": -0.02548076923076923,
+      "alpha_match": true,
+      "cal_gain_bound_db": -0.1666597745580997
+    }
+  },
+  "known_failures": [],
+  "unimplemented_features": [
+    "DNL/INL static performance",
+    "Bridge mismatch in MC loop",
+    "Low-segment mismatch in calDAC encoding",
+    "Non-ideal DAC settling",
+    "Comparator timeout fallback policy",
+    "Full PVT corner sweep"
+  ]
+}

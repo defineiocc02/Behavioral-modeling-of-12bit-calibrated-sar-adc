@@ -1,0 +1,798 @@
+# 强制交付：异步 SAR ADC 行为模型运行状态报告
+
+代码完成后，必须提交一份完整的运行状态报告。
+
+该报告的目的不是描述实现过程，而是让我能够根据实际运行数据判断：
+
+```text
+模型是否真的运行
+校准是否真的执行
+开关是否真的切换
+电荷是否守恒
+异步事件顺序是否正确
+校准结果是否有效
+正常转换是否使用了校准权重
+失配补偿是否有效
+是否存在饱和、超时、亚稳态或隐藏失败
+```
+
+禁止只回复：
+
+```text
+已实现
+全部测试通过
+模型运行正常
+校准有效
+SNDR 有提升
+```
+
+所有结论必须附带数据、测试命令和实际输出。
+
+---
+
+## 一、报告顶部必须提供总体状态
+
+报告第一部分使用固定格式：
+
+```text
+项目版本：
+Git commit：
+Python 版本：
+NumPy 版本：
+测试时间：
+随机种子：
+工作目录：
+
+总体状态：PASS / CONDITIONAL PASS / FAIL
+
+源码编译：
+单元测试：
+电荷守恒：
+异步握手：
+校准流程：
+正常转换：
+Decoder 隔离：
+失配场景：
+FFT/SNDR：
+```
+
+每一项必须填写：
+
+```text
+PASS
+FAIL
+NOT RUN
+PARTIAL
+```
+
+禁止使用“基本完成”“应该正确”“大致通过”等模糊描述。
+
+---
+
+## 二、必须列出实际执行命令
+
+报告必须原样列出所有执行命令，例如：
+
+```bash
+python -m compileall -q python_cal
+
+python -m pytest python_cal/tests/test_charge_conservation.py -v --tb=short
+
+python -m pytest python_cal/tests/test_async_handshake.py -v --tb=short
+
+python -m pytest python_cal/tests/test_calibration_fsm.py -v --tb=short
+
+python -m pytest python_cal/ -v --tb=short
+
+python -m python_cal.scripts.run_full_behavioral_audit
+```
+
+每条命令后必须附带：
+
+```text
+exit code
+passed
+failed
+xfailed
+xpassed
+skipped
+warnings
+运行时间
+```
+
+示例：
+
+```text
+Command:
+python -m pytest python_cal/ -q
+
+Exit code: 0
+Passed: 86
+Failed: 0
+XFailed: 2
+XPassed: 0
+Skipped: 0
+Warnings: 0
+Runtime: 18.42 s
+```
+
+如果测试未执行，必须写：
+
+```text
+NOT RUN
+原因：
+```
+
+---
+
+## 三、必须证明实际使用了物理开关模型
+
+至少选一个正常转换样本，输出完整 14-stage 数据。
+
+固定测试输入：
+
+```text
+VINP = VCM + 0.25 V
+VINN = VCM - 0.25 V
+比较器噪声 = 0
+比较器 offset = 0
+理想 settling
+```
+
+输出表：
+
+| Stage | 电容名称 | P-side trial rail | N-side trial rail | VTOP_P | VTOP_N | VDIFF | Comparator | Commit | Decision |
+| ----: | ---- | ----------------- | ----------------- | -----: | -----: | ----: | ---------: | ------ | -------: |
+
+必须包含全部 14 个阶段。
+
+其中每一级必须有真实数值，例如：
+
+```text
+Stage 0
+Capacitor: H32C
+P trial: VREFP
+N trial: VREFN
+VTOP_P: 0.842731 V
+VTOP_N: 0.957284 V
+VDIFF: -0.114553 V
+Comparator: 0
+Committed state: opposite
+Decision: 0
+```
+
+不能只输出最终 decisions。
+
+报告还必须提供：
+
+```text
+最终 switch state
+最终 decisions
+最终 code
+总转换时间
+clip_low
+clip_high
+```
+
+---
+
+## 四、必须提供异步事件时间线
+
+同一个转换必须输出事件级时间线：
+
+| Event # | Time | Stage | Event | 说明 |
+| ------: | ---: | ----: | ----- | -- |
+
+至少包含：
+
+```text
+SAMPLE_START
+SAMPLE_DONE
+DAC_TRIAL_START
+DAC_SETTLED
+CMP_REQUEST
+CMP_DONE
+BIT_COMMIT
+CONVERSION_DONE
+```
+
+并提供每一级时序检查：
+
+[
+t_{\text{trial}}
+<
+t_{\text{settled}}
+<
+t_{\text{cmp done}}
+<
+t_{\text{commit}}
+<
+t_{\text{next trial}}
+]
+
+输出：
+
+| Stage | Trial start | DAC settled | CMP done | Commit | Stage latency |
+| ----: | ----------: | ----------: | -------: | -----: | ------------: |
+
+还必须输出：
+
+```text
+最短 stage latency
+最长 stage latency
+平均 stage latency
+总转换时间
+```
+
+如果所有 stage 延迟完全相同，必须说明原因。
+
+如果比较器决策时间与差分输入无关，则异步模型判定为未完成。
+
+---
+
+## 五、必须提供电荷守恒误差数据
+
+对至少以下三类操作进行检查：
+
+```text
+采样完成
+单个高段电容切换
+单个低段电容切换
+完整转换每一级切换
+```
+
+输出：
+
+| 检查点 | P-top 电荷误差 | P-bridge 电荷误差 | N-top 电荷误差 | N-bridge 电荷误差 | 最大误差 |
+| --- | ---------: | ------------: | ---------: | ------------: | ---: |
+
+必须给出单位：
+
+```text
+Coulomb
+```
+
+并给出允许阈值，例如：
+
+```text
+absolute charge error < 1e-24 C
+relative charge error < 1e-10
+```
+
+报告必须明确列出：
+
+```text
+最大绝对电荷误差
+最大相对电荷误差
+对应场景
+对应 stage
+PASS / FAIL
+```
+
+不能只说“电荷守恒测试通过”。
+
+---
+
+## 六、必须提供单电容切换响应
+
+逐个切换所有物理电容：
+
+```text
+H32C
+H16C
+H8C
+H4C
+H2C
+H1C-A
+H1C-R
+L32C
+L16C
+L8C
+L4C
+L2C
+L1C
+```
+
+输出：
+
+| 电容 | Capacitance | P-side ΔVTOP | N-side ΔVTOP | Differential step | 方向正确 |
+| -- | ----------: | -----------: | -----------: | ----------------: | ---- |
+
+该表用来判断：
+
+```text
+桥接网络是否正确
+高低段比例是否合理
+P/N 极性是否正确
+电容失配是否真实反映到节点电压
+```
+
+禁止直接使用预设 effective weights 填表。
+
+所有数据必须来自 charge solver 的实际节点解。
+
+---
+
+## 七、必须提供完整校准运行摘要
+
+必须运行一次完整的 7-target 校准，并输出：
+
+```text
+AVG_PAIRS
+比较器 noise sigma
+比较器 offset
+DAC settling 模式
+随机种子
+校准开始时间
+校准结束时间
+总校准时间
+```
+
+目标结果表：
+
+| Target | Stage | Physical reference | Measured weight | Error LSB | Error % | Pairs | Valid | Saturated | Timeout |
+| ------ | ----: | -----------------: | --------------: | --------: | ------: | ----: | ----- | --------- | ------- |
+
+目标顺序必须是：
+
+```text
+H1C-A
+H1C-R
+H2C
+H4C
+H8C
+H16C
+H32C
+```
+
+必须输出：
+
+```text
+Completed targets: 7/7
+Valid targets: x/7
+Saturated targets: x/7
+Timeout targets: x/7
+Calibration valid: True/False
+```
+
+“Physical reference”只能由测试审计代码读取。
+
+校准控制器本身不得读取该值。
+
+---
+
+## 八、必须提供一个目标的完整 D+/D− 校准 trace
+
+至少选择误差最大的目标，例如 H4C，输出一个完整 pair。
+
+### D+ trace
+
+| calDAC stage | 电容 | Trial state | VTOP_P | VTOP_N | VDIFF | CMP | Commit |
+| -----------: | -- | ----------- | -----: | -----: | ----: | --: | ------ |
+
+### D− trace
+
+| calDAC stage | 电容 | Trial state | VTOP_P | VTOP_N | VDIFF | CMP | Commit |
+| -----------: | -- | ----------- | -----: | -----: | ----: | --: | ------ |
+
+之后输出：
+
+```text
+D+ code:
+D− code:
+Pair difference:
+Pair weight estimate:
+Target accumulated mean:
+Final measured weight:
+```
+
+这样才能确认校准不是直接计算物理权重，而是真正运行了开关搜索和比较器。
+
+---
+
+## 九、必须提供校准寄存器内容
+
+校准完成后输出完整 14-stage 寄存器：
+
+| Stage | Name | Register Q value | Weight Q0 | Source |
+| ----: | ---- | ---------------: | --------: | ------ |
+
+`Source` 只能是：
+
+```text
+calibrated
+fixed nominal
+terminal
+```
+
+必须明确：
+
+```text
+哪些权重由校准得到
+哪些低段权重保持固定
+terminal 如何处理
+寄存器版本号
+calibration_done 标志
+```
+
+---
+
+## 十、必须证明校准不改变物理 decisions
+
+固定至少 257 个输入点：
+
+```python
+vin = np.linspace(-full_scale, full_scale, 257)
+```
+
+分别执行：
+
+```text
+校准前物理转换
+校准后物理转换
+```
+
+比较：
+
+```text
+switch states
+comparator results
+decisions
+事件时间
+```
+
+输出：
+
+```text
+Input points checked: 257
+Decision mismatches: x
+Switch-state mismatches: x
+Comparator mismatches: x
+Timing mismatches: x
+```
+
+理想、无噪声模式下必须满足：
+
+```text
+Decision mismatches = 0
+Switch-state mismatches = 0
+Comparator mismatches = 0
+```
+
+数字 code 可以变化，因为 decoder weights 已改变。
+
+---
+
+## 十一、必须提供校准前后性能归因表
+
+对每个场景，使用同一批物理 decisions，分别使用：
+
+```text
+nominal decoder
+calibrated decoder
+test-only physical decoder
+```
+
+输出：
+
+| 场景 | Calibration valid | Nominal SNDR | Calibrated SNDR | Physical-decoder SNDR | Calibration gain | Calibration gap |
+| -- | ----------------- | -----------: | --------------: | --------------------: | ---------------: | --------------: |
+
+至少包含：
+
+```text
+ideal
+H32C +5%
+common +2%
+common −2%
+alternating ±2%
+P/N asymmetric mismatch
+bridge mismatch
+low-segment mismatch
+3 个 Monte Carlo 样本
+```
+
+定义：
+
+[
+\text{Calibration gain}
+=======================
+
+## SNDR_{\text{calibrated}}
+
+SNDR_{\text{nominal}}
+]
+
+[
+\text{Calibration gap}
+======================
+
+## SNDR_{\text{physical decoder}}
+
+SNDR_{\text{calibrated}}
+]
+
+所有 FFT 参数必须在报告中列出：
+
+```text
+FFT_N
+FFT_K
+input amplitude dBFS
+window
+noise configuration
+random seed
+```
+
+---
+
+## 十二、必须提供转换静态性能
+
+至少扫描：
+
+```text
+4097 个均匀输入点
+```
+
+输出：
+
+```text
+最小 code
+最大 code
+missing codes 数量
+non-monotonic transitions 数量
+最大 DNL
+最小 DNL
+最大 INL
+最小 INL
+```
+
+表格：
+
+| 场景 | Missing codes | Non-monotonic | Max DNL | Min DNL | Max INL | Min INL |
+| -- | ------------: | ------------: | ------: | ------: | ------: | ------: |
+
+如果当前阶段尚未实现 DNL/INL，必须明确写 `NOT IMPLEMENTED`，不能省略。
+
+---
+
+## 十三、必须提供异步时间统计
+
+对至少 4096 次转换统计：
+
+```text
+平均转换时间
+最短转换时间
+最长转换时间
+标准差
+平均比较器决策时间
+最长比较器决策时间
+metastable 次数
+timeout 次数
+```
+
+输出：
+
+| 场景 | Mean conversion time | Min | Max | Std | Metastable | Timeout |
+| -- | -------------------: | --: | --: | --: | ---------: | ------: |
+
+还必须验证：
+
+```text
+接近比较器决策边界的输入，平均转换时间更长
+远离决策边界的输入，平均转换时间更短
+```
+
+给出两组实际统计数据。
+
+---
+
+## 十四、必须提供异常和边界测试
+
+报告必须列出以下测试结果：
+
+| 测试                     | 预期                 | 实际 | 状态 |
+| ---------------------- | ------------------ | -- | -- |
+| 未校准直接 convert          | 抛异常或显式 nominal 模式  |    |    |
+| 非法电容值                  | 拒绝                 |    |    |
+| NaN 电容值                | 拒绝                 |    |    |
+| 负噪声 sigma              | 拒绝                 |    |    |
+| comparator timeout     | 进入 ERROR 或标记失败     |    |    |
+| calibration saturation | valid=False        |    |    |
+| 不完整 7-target 校准        | report.valid=False |    |    |
+| decoder 权重长度错误         | 拒绝                 |    |    |
+| 事件时间倒序                 | 拒绝                 |    |    |
+
+---
+
+## 十五、必须列出所有失败和已知问题
+
+报告中必须单独设置：
+
+```text
+Known failures
+Expected failures
+Skipped tests
+Known model limitations
+Unimplemented features
+```
+
+每个问题必须包含：
+
+```text
+编号
+影响范围
+复现命令
+实际结果
+预期结果
+是否阻塞下一阶段
+```
+
+禁止把失败隐藏在：
+
+```text
+xfail
+skip
+warning
+continue
+try/except
+```
+
+中而不说明。
+
+---
+
+## 十六、必须输出机器可读摘要
+
+除人类可读报告外，同时生成：
+
+```text
+behavioral_sar_run_report.json
+```
+
+最低结构：
+
+```json
+{
+  "overall_status": "PASS",
+  "git_commit": "...",
+  "environment": {
+    "python": "...",
+    "numpy": "..."
+  },
+  "tests": {
+    "passed": 0,
+    "failed": 0,
+    "xfailed": 0,
+    "skipped": 0
+  },
+  "charge_conservation": {
+    "max_abs_error_c": 0.0,
+    "max_rel_error": 0.0,
+    "passed": true
+  },
+  "calibration": {
+    "completed_targets": 7,
+    "valid_targets": 7,
+    "saturated_targets": 0,
+    "timeout_targets": 0,
+    "total_time_s": 0.0,
+    "valid": true
+  },
+  "conversion": {
+    "decision_mismatches_after_calibration": 0,
+    "mean_time_s": 0.0,
+    "min_time_s": 0.0,
+    "max_time_s": 0.0
+  },
+  "performance": {
+    "ideal_sndr_db": 0.0,
+    "alt_2pct_nominal_sndr_db": 0.0,
+    "alt_2pct_calibrated_sndr_db": 0.0,
+    "alt_2pct_physical_decoder_sndr_db": 0.0
+  },
+  "known_failures": []
+}
+```
+
+同时生成：
+
+```text
+behavioral_sar_run_report.md
+behavioral_sar_run_report.json
+```
+
+---
+
+## 十七、最终判定规则
+
+报告最后必须根据数据明确给出：
+
+```text
+READY FOR REVIEW
+NOT READY
+BLOCKED
+```
+
+只有同时满足以下条件，才能写 `READY FOR REVIEW`：
+
+```text
+源码可编译
+无非预期测试失败
+电荷守恒误差低于阈值
+异步事件顺序全部正确
+7/7 校准目标完成
+CalibrationReport.valid=True
+校准控制器未读取物理权重
+校准前后物理 decisions 完全一致
+至少一个失配场景校准后性能改善
+没有隐藏 timeout
+没有隐藏 saturation
+输出了完整校准和转换 trace
+```
+
+如果任何一项不满足，必须写：
+
+```text
+NOT READY
+Blocking reasons:
+1. ...
+2. ...
+```
+
+---
+
+## 十八、回复格式要求
+
+最终回复必须按此顺序：
+
+```text
+1. Overall verdict
+2. Environment
+3. Commands executed
+4. Test summary
+5. Charge-conservation data
+6. Full asynchronous conversion example
+7. Asynchronous timing statistics
+8. Calibration summary
+9. D+/D− target trace
+10. Calibration-register dump
+11. Decoder-isolation result
+12. Calibration attribution table
+13. Static and dynamic performance
+14. Failures and limitations
+15. Generated report files
+```
+
+所有表格必须填写真实运行数据。
+
+禁止填写：
+
+```text
+TBD
+大约
+预计
+理论上
+应该
+看起来正常
+```
+
+无法完成的项目必须填写：
+
+```text
+NOT IMPLEMENTED
+NOT RUN
+FAILED
+```
+
+并说明原因。
+
+最终必须提供生成文件路径，例如：
+
+```text
+reports/behavioral_sar_run_report.md
+reports/behavioral_sar_run_report.json
+reports/calibration_trace.csv
+reports/conversion_trace.csv
+```
+
+没有数据报告，不视为任务完成。

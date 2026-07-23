@@ -1,0 +1,781 @@
+# 修正指令：异步 SAR ADC 行为模型必须完整包含后台/前台校准
+
+上一版任务不完整。
+
+最终模型必须同时实现两个真实工作模式：
+
+```text
+1. CALIBRATION：上电后通过真实 CDAC 开关、比较器和异步 SAR 搜索测量电容权重
+2. CONVERSION：使用校准寄存器中的权重，对正常异步 SAR 转换结果进行数字解码
+```
+
+校准不是外部脚本，不是预先读取物理权重，也不是数学拟合。
+
+校准必须是 ADC 行为模型自身的一部分。
+
+---
+
+## 一、总体闭环
+
+完整工作流必须是：
+
+```text
+物理电容实例化
+    ↓
+注入 P/N 电容失配
+    ↓
+上电 / Reset
+    ↓
+进入 CALIBRATION 模式
+    ↓
+真实开关执行 D+ / D− 测量
+    ↓
+真实电荷重分配
+    ↓
+真实异步比较器输出
+    ↓
+低段 calDAC 逐级搜索
+    ↓
+计算并写入校准权重寄存器
+    ↓
+Calibration Done
+    ↓
+进入 NORMAL CONVERSION 模式
+    ↓
+真实异步 SAR 开关转换
+    ↓
+产生物理 decisions
+    ↓
+使用校准权重寄存器数字解码
+    ↓
+输出 ADC code
+```
+
+模型必须能够完整执行：
+
+```python
+adc.power_on()
+cal_report = adc.run_calibration(rng=cal_rng)
+result = adc.convert(vinp, vinn, rng=conv_rng)
+```
+
+正常转换前必须存在明确的校准状态。
+
+---
+
+## 二、同一个物理模型必须同时服务校准和正常转换
+
+校准和正常转换必须共享以下对象：
+
+```text
+同一个 P-side CDAC
+同一个 N-side CDAC
+同一组实际失配电容值
+同一个底板开关系统
+同一个电荷守恒求解器
+同一个 DAC settling 模型
+同一个动态比较器
+同一个异步事件调度器
+```
+
+严禁为校准另外创建一个“等效权重模型”。
+
+禁止：
+
+```text
+calibration 直接读取 get_physical_weights()
+calibration 根据已知失配计算答案
+calibration 使用 effective weight 作为比较器输入
+calibration 绕过真实开关状态
+calibration 使用理想目标权重反推结果
+```
+
+校准控制器只能观察：
+
+```text
+比较器输出
+比较器完成时间
+当前 calibration target
+当前 calDAC switch state
+当前 accumulated calibration register
+valid / saturation / timeout
+```
+
+它不能观察真实物理权重。
+
+---
+
+## 三、模型状态必须包含校准模式
+
+新增全局工作模式：
+
+```python
+class ADCOperatingMode(Enum):
+    RESET = "reset"
+    CALIBRATION = "calibration"
+    READY = "ready"
+    CONVERSION = "conversion"
+    ERROR = "error"
+```
+
+ADC 在上电后必须经过：
+
+```text
+RESET
+→ CALIBRATION
+→ READY
+```
+
+只有在：
+
+```python
+adc.mode == ADCOperatingMode.READY
+```
+
+时才允许正常转换。
+
+未校准时调用 `convert()`：
+
+* 默认应抛出明确异常；
+* 或必须显式指定使用 nominal decoder。
+
+不得静默假装已经校准。
+
+---
+
+## 四、实现真实校准控制器
+
+新增：
+
+```text
+python_cal/
+└── calibration/
+    ├── calibration_fsm.py
+    ├── calibration_switching.py
+    ├── calibration_registers.py
+    ├── huang_calibration_controller.py
+    ├── calibration_trace.py
+    └── calibration_result.py
+```
+
+核心类：
+
+```python
+class AsyncCalibrationController:
+    def run(
+        self,
+        physical_cdac,
+        charge_solver,
+        comparator,
+        event_scheduler,
+        rng=None,
+    ) -> CalibrationReport:
+        ...
+```
+
+该控制器必须像正常异步 SAR 一样，由事件驱动。
+
+---
+
+## 五、校准目标顺序
+
+实现 7 个高段目标的递归校准：
+
+```text
+1. H1C-A
+2. H1C-R
+3. H2C
+4. H4C
+5. H8C
+6. H16C
+7. H32C
+```
+
+定义：
+
+```python
+@dataclass(frozen=True)
+class CalibrationTarget:
+    target_id: int
+    name: str
+    physical_stage: int
+    nominal_weight_q0: float
+    wall_stages: tuple[int, ...]
+```
+
+后一级目标必须使用之前已经测得并写入寄存器的校准权重构造递归 wall。
+
+不能用真实物理权重构造 wall。
+
+---
+
+## 六、D+ / D− 校准必须通过真实开关完成
+
+每一个 target 必须进行成对的两个方向测量：
+
+```text
+D+：目标电容按正方向激励
+D−：目标电容按反方向激励
+```
+
+两次测量必须交换或反转相关 P/N 开关连接，使比较器 offset 在平均后抵消。
+
+最终估计：
+
+[
+\hat W=
+\frac{\sum D^+ - \sum D^-}{2N_{\mathrm{pairs}}}
+]
+
+但这里的 `D+` 和 `D−` 不能是直接计算出的数值。
+
+它们必须由以下过程得到：
+
+```text
+设置校准采样状态
+保存初始节点电荷
+切换目标电容
+建立递归 wall
+启动低段 calDAC 异步搜索
+等待 DAC settling
+发起 comparator request
+等待 comparator done
+commit calDAC bit
+继续下一 calDAC bit
+执行 terminal 判决
+得到本方向测量码
+```
+
+---
+
+## 七、低段 calDAC 必须真实切换
+
+校准搜索使用真实低段物理电容：
+
+```text
+L32C
+L16C
+L8C
+L4C
+L2C
+L1C
+```
+
+这些低段电容必须通过 `DifferentialSwitchState` 实际切换。
+
+每个 calibration bit 都必须经历：
+
+```text
+CAL_DAC_TRIAL
+→ CAL_DAC_SETTLING
+→ CAL_CMP_REQUEST
+→ CAL_CMP_DONE
+→ CAL_DAC_COMMIT
+```
+
+禁止用：
+
+```python
+accepted_sum += nominal_weight
+```
+
+代替真实开关。
+
+`accepted_sum` 只能是根据已经提交的 calDAC 开关状态派生的数字记录；比较器输入必须来自电荷求解器计算出的顶板差分电压。
+
+---
+
+## 八、校准必须使用物理 P/N 失配
+
+P-side 和 N-side 必须拥有独立的实际电容值：
+
+```text
+C_P[i]
+C_N[i]
+```
+
+D+ 和 D− 方向必须分别经过真实 P/N 网络。
+
+不得把 P/N 权重先平均后再校准。
+
+例如：
+
+```python
+p_solution = solver.solve_p(...)
+n_solution = solver.solve_n(...)
+v_diff = p_solution.vtop - n_solution.vtop
+```
+
+比较器只观察最终差分：
+
+[
+V_{\text{cmp}}=V_{\text{top,P}}-V_{\text{top,N}}
+]
+
+校准应自然包含：
+
+```text
+P/N 随机失配
+桥接电容失配
+低段失配
+高段失配
+比较器 offset
+比较器 noise
+有限 DAC settling
+异步决策时间
+```
+
+---
+
+## 九、校准寄存器
+
+定义独立寄存器组：
+
+```python
+@dataclass
+class CalibrationRegisters:
+    weights_q: list[int]
+    valid_bits: list[bool]
+    saturation_bits: list[bool]
+    target_complete: list[bool]
+    calibration_done: bool
+```
+
+每完成一个 target，立即写入：
+
+```python
+registers.weights_q[target_stage] = measured_weight_q
+registers.valid_bits[target_id] = valid
+registers.target_complete[target_id] = True
+```
+
+低段及 terminal 权重根据数字架构规范保留标称值或固定值。
+
+禁止在正常转换时直接调用 calibration 对象重新计算权重。
+
+正常转换 decoder 只能读取校准寄存器的最终快照。
+
+---
+
+## 十、校准 FSM
+
+新增状态：
+
+```python
+class CalibrationState(Enum):
+    IDLE = "idle"
+    TARGET_SETUP = "target_setup"
+    DPLUS_SAMPLE = "dplus_sample"
+    DPLUS_SEARCH = "dplus_search"
+    DMINUS_SAMPLE = "dminus_sample"
+    DMINUS_SEARCH = "dminus_search"
+    PAIR_ACCUMULATE = "pair_accumulate"
+    TARGET_ESTIMATE = "target_estimate"
+    TARGET_VALIDATE = "target_validate"
+    TARGET_COMMIT = "target_commit"
+    NEXT_TARGET = "next_target"
+    DONE = "done"
+    FAILED = "failed"
+```
+
+每个 pair 的异步顺序必须明确：
+
+```text
+TARGET_SETUP
+→ DPLUS_SAMPLE
+→ DPLUS calDAC async search
+→ DPLUS result
+→ DMINUS_SAMPLE
+→ DMINUS calDAC async search
+→ DMINUS result
+→ PAIR_ACCUMULATE
+```
+
+达到 `AVG_PAIRS` 后：
+
+```text
+TARGET_ESTIMATE
+→ TARGET_VALIDATE
+→ TARGET_COMMIT
+```
+
+---
+
+## 十一、校准事件
+
+新增事件类型：
+
+```python
+class CalibrationEventType(Enum):
+    CAL_START = "cal_start"
+    TARGET_START = "target_start"
+    DPLUS_START = "dplus_start"
+    DPLUS_DONE = "dplus_done"
+    DMINUS_START = "dminus_start"
+    DMINUS_DONE = "dminus_done"
+    CAL_DAC_TRIAL = "cal_dac_trial"
+    CAL_DAC_SETTLED = "cal_dac_settled"
+    CAL_CMP_REQUEST = "cal_cmp_request"
+    CAL_CMP_DONE = "cal_cmp_done"
+    CAL_BIT_COMMIT = "cal_bit_commit"
+    PAIR_DONE = "pair_done"
+    TARGET_ESTIMATED = "target_estimated"
+    TARGET_COMMITTED = "target_committed"
+    CAL_DONE = "cal_done"
+    CAL_FAILED = "cal_failed"
+```
+
+校准也是异步过程，不得假装固定周期运行。
+
+总校准时间应由：
+
+```text
+DAC settling
+比较器决策时间
+pair 数量
+target 数量
+```
+
+共同决定。
+
+---
+
+## 十二、校准 trace
+
+每个 D+/D− 方向必须保存完整 trace：
+
+```python
+@dataclass(frozen=True)
+class CalibrationSearchStepTrace:
+    target_id: int
+    target_name: str
+    pair_index: int
+    direction: int
+    caldac_stage: int
+
+    committed_before: DifferentialSwitchState
+    trial_state: DifferentialSwitchState
+    committed_after: DifferentialSwitchState
+
+    vtop_p: float
+    vtop_n: float
+    vbridge_p: float
+    vbridge_n: float
+    differential_v: float
+
+    comparator_output: int
+    trial_start_time_s: float
+    dac_settled_time_s: float
+    comparator_done_time_s: float
+    commit_time_s: float
+```
+
+每个 target 输出：
+
+```python
+@dataclass(frozen=True)
+class TargetCalibrationResult:
+    target_id: int
+    target_name: str
+    measured_weight_q: int
+    measured_weight_q0: float
+
+    dplus_mean_q0: float
+    dminus_mean_q0: float
+
+    valid: bool
+    saturated: bool
+    completed_pairs: int
+
+    start_time_s: float
+    done_time_s: float
+    traces: tuple[CalibrationSearchStepTrace, ...]
+```
+
+完整报告：
+
+```python
+@dataclass(frozen=True)
+class CalibrationReport:
+    weights_q: tuple[int, ...]
+    weights_q0: tuple[float, ...]
+    targets: tuple[TargetCalibrationResult, ...]
+
+    all_targets_complete: bool
+    valid: bool
+    calibration_start_time_s: float
+    calibration_done_time_s: float
+```
+
+---
+
+## 十三、正常转换必须使用校准结果
+
+校准完成后：
+
+```python
+adc.decoder.load_calibration(adc.calibration_registers)
+```
+
+正常转换链：
+
+```python
+physical_result = adc.convert_physical(vinp, vinn, rng)
+digital_result = adc.decoder.decode_one_detailed(
+    physical_result.decisions
+)
+```
+
+必须验证：
+
+```text
+校准权重只影响 digital code
+校准权重不影响 physical switch decisions
+校准权重不影响 comparator events
+校准权重不影响转换时间
+```
+
+---
+
+## 十四、必须同时支持校准开和关
+
+模型必须支持三种实验：
+
+```python
+adc.reset()
+
+# 1. 不校准，使用 nominal decoder
+adc.enable_nominal_decode()
+result_nominal = adc.convert(...)
+
+# 2. 运行真实校准，使用 calibrated decoder
+report = adc.run_calibration(...)
+result_calibrated = adc.convert(...)
+
+# 3. 仅测试环境中的物理 oracle
+result_physical_oracle = test_only_decode_with_physical_weights(...)
+```
+
+第三种只能放在测试或研究目录中。
+
+生产 ADC API 不得暴露真实物理权重。
+
+---
+
+## 十五、校准验证不得只检查 valid
+
+必须同时检查四层结果。
+
+### G-CAL-1：校准流程完整
+
+```text
+7/7 targets complete
+每个 target 完成规定数量的 D+/D− pairs
+没有事件顺序错误
+没有 comparator timeout
+```
+
+### G-CAL-2：权重测量误差
+
+测试环境可以读取真实电容并计算参考物理权重，用于验证：
+
+```text
+physical weight
+measured weight
+absolute error
+relative error
+```
+
+但这个 oracle 只能用于测试断言，不能进入校准控制器。
+
+### G-CAL-3：相同 decisions 下的解码差距
+
+对同一批真实异步转换 decisions，分别使用：
+
+```text
+nominal decoder
+calibrated decoder
+test-only physical decoder
+```
+
+计算：
+
+```text
+nominal SNDR
+calibrated SNDR
+physical-decoder SNDR
+calibration gap
+```
+
+### G-CAL-4：校准不得改变物理转换
+
+同一输入、同一物理 ADC、无噪声时：
+
+```python
+before = adc.convert_physical(vinp, vinn)
+
+adc.run_calibration(...)
+after = adc.convert_physical(vinp, vinn)
+
+assert before.decisions == after.decisions
+assert before.final_switch_state == after.final_switch_state
+```
+
+校准只能改变最终数字解码。
+
+---
+
+## 十六、必须测试的失配场景
+
+至少包含：
+
+```text
+ideal
+单个 H32C +5%
+高段全部 +2%
+高段全部 −2%
+高段 alternating ±2%
+P/N 不对称高段失配
+低段随机失配
+bridge 电容失配
+全电容 Monte Carlo
+比较器 offset
+比较器 noise
+有限 settling
+```
+
+每个场景必须输出：
+
+```text
+calibration valid
+每级校准权重
+每级物理参考权重
+每级误差
+nominal decode SNDR
+calibrated decode SNDR
+physical decode reference SNDR
+总校准时间
+平均单次转换时间
+```
+
+---
+
+## 十七、Dither 只能作为真实比较器噪声出现
+
+不得人为向最终权重添加随机数。
+
+若 calibration noise 改善量化偏置，它必须来自：
+
+```text
+动态比较器输入等效噪声
+真实异步 D+/D− 多次测量
+真实 calDAC 量化
+```
+
+需要扫描：
+
+```text
+noise_sigma
+AVG_PAIRS
+校准误差
+calibration gap
+校准时间
+```
+
+不能因为 `noise_sigma=0.5` 的 SNDR 更高，就直接把它写死为修复。
+
+---
+
+## 十八、禁止事项
+
+严禁校准代码执行：
+
+```text
+读取真实 physical weights
+直接把 physical weights 写入 calibration registers
+调用 nearest-level 或 codebook search
+使用旧 WeightedGreedySAR
+通过目标 SNDR 调整校准输出
+直接修正 H4C 使结果接近 oracle
+在 D+/D− 搜索外人工添加补偿项
+跳过真实 P/N 开关网络
+跳过异步 comparator request/done
+```
+
+---
+
+## 十九、最终统一 API
+
+```python
+adc = AsyncBehavioralSARADC(
+    topology=topology,
+    switching_policy=switching_policy,
+    comparator=comparator,
+    timing=timing,
+)
+
+adc.reset()
+
+cal_report = adc.run_calibration(
+    avg_pairs=128,
+    rng=calibration_rng,
+)
+
+assert cal_report.valid
+assert adc.mode == ADCOperatingMode.READY
+
+conversion = adc.convert(
+    vinp=vinp,
+    vinn=vinn,
+    rng=conversion_rng,
+)
+
+print(conversion.code)
+print(conversion.decisions)
+print(conversion.total_conversion_time_s)
+```
+
+转换结果必须包含：
+
+```python
+@dataclass(frozen=True)
+class ADCConversionResult:
+    physical: AsyncSARConversionResult
+    decoded: DecodeResult
+    calibration_version: int
+```
+
+---
+
+## 二十、最终完成标准
+
+只有同时满足以下条件，才算完成：
+
+```text
+1. 校准使用真实物理 CDAC 开关
+2. 校准使用真实电荷守恒节点求解
+3. 校准使用同一个动态比较器
+4. 校准是异步事件驱动过程
+5. D+ / D− 通过真实 P/N 开关反转实现
+6. calDAC 每一级都真实 trial / settle / compare / commit
+7. 校准控制器无法读取真实物理权重
+8. 7 个 target 权重写入校准寄存器
+9. 正常转换 decoder 使用校准寄存器
+10. 校准不改变物理 SAR decisions
+11. 输出完整校准 trace 和转换 trace
+12. 完成校准前后 SNDR 与 physical-decoder gap 分析
+```
+
+最终交付物必须同时包含：
+
+```text
+一份完整的 7-target 异步校准事件日志
+一个 target 的完整 D+ / D− 开关 trace
+最终 14 级校准权重寄存器
+一份正常异步转换 trace
+校准前后数字输出性能对比
+```
+
+这不是“先做 ADC，再以后补校准”。
+
+**校准、物理 CDAC、异步比较器、SAR 转换和数字解码必须作为一个完整闭环一次性实现。**

@@ -1,0 +1,343 @@
+你提出：
+
+> SNDR 约 67.5 dB 的根因是桥接 CDAC 电荷重分布造成 65/64 Q0 不对称，约 50% 码点不可达；这是桥接架构固有特性，不是建模 bug。
+
+这个结论目前不能直接接受。请提供完整审查文件和原始运行数据，以便独立判断到底是桥接架构限制，还是拓扑、开关策略、物理权重归一化、decoder 或 DC/FFT 分析实现错误。
+
+请一次性提交以下材料。
+
+一、完整源代码文件
+
+请提供本次分析实际运行使用的最新版文件，不要只发代码片段：
+
+* `cdac_topology.py`
+* `capacitor.py`
+* `switch_state.py`
+* `switching_policy.py`
+* `charge_state.py`
+* `charge_solver.py`
+* `differential_cdac.py`
+* `dynamic_comparator.py`
+* `handshake.py`
+* `async_sar_adc.py`
+* `sar_decoder.py`
+* DC sweep 分析脚本
+* harmonic/FFT analysis 脚本
+* reachable-level 或 missing-code 分析脚本
+* 本次测试对应的全部 pytest 文件
+* 所有配置文件，包括电容值、桥接电容、VREF、VCM、stage map 和 signal/aux stage 定义
+
+必须保证这些文件就是生成 67.5 dB 结果的版本。
+
+二、运行命令和环境
+
+请提供原样执行命令及完整 stdout：
+
+```text
+Python 版本
+NumPy 版本
+Git commit
+随机种子
+工作目录
+FFT_N
+FFT_K
+输入幅度
+窗口函数
+VREF/VCM
+比较器噪声和 offset
+settling 配置
+```
+
+请同时提供：
+
+```bash
+python -m compileall ...
+python -m pytest ...
+python <dc_sweep_script>.py
+python <fft_script>.py
+python <reachable_level_script>.py
+```
+
+三、DC sweep 原始数据
+
+请提供 CSV，不只提供总结：
+
+```text
+vin_diff
+decisions[0:14]
+final_switch_state
+decoded_code_nominal
+decoded_code_physical
+final_residual_v
+clip_low
+clip_high
+```
+
+至少覆盖：
+
+```text
+4097 或更多均匀输入点
+完整差分满量程
+无噪声
+无 offset
+理想 settling
+理想电容
+```
+
+另提供汇总：
+
+```text
+unique output codes
+missing codes
+non-monotonic transitions
+code histogram
+每个输出码对应的输入区间
+```
+
+如果声称约 50% 码点不可达，请提供明确数字：
+
+```text
+总输出码数
+实际出现的 unique codes 数
+缺失 code 数
+缺失 code 列表
+缺失码是偶数、奇数还是其他模式
+```
+
+四、reachable-level 审计文件
+
+请枚举或系统扫描所有物理开关状态，并提供：
+
+```text
+switch-state bit pattern
+对应 VTOP_P
+对应 VTOP_N
+对应 VDIFF
+对应 nominal decoded code
+对应 physical decoded code
+```
+
+需要分别统计：
+
+```text
+全部 13 个物理电容的可达状态数
+unique VDIFF level 数
+duplicate level 数
+最大 level gap
+最小 level gap
+按 1 LSB 网格映射后的 missing bins
+```
+
+重要：必须区分以下概念：
+
+```text
+物理 DAC level 不均匀
+多个 switch state 对应同一 level
+标准 12-bit code 缺失
+固定顺序 SAR 状态机没有访问某些可达 level
+decoder 将不同 physical levels 映射到同一 code
+```
+
+不能把这几种现象统称为“桥接 CDAC 固有缺码”。
+
+五、单电容物理响应
+
+请对每个电容提供三种实际 charge-solver 结果：
+
+```text
+P-side only
+N-side only
+P/N complementary
+```
+
+包括：
+
+```text
+H32C
+H16C
+H8C
+H4C
+H2C
+H1C-A
+H1C-R
+L32C
+L16C
+L8C
+L4C
+L2C
+L1C
+```
+
+每个记录：
+
+```text
+baseline VDIFF
+trial VDIFF
+ΔVDIFF
+归一化 Q0 权重
+```
+
+尤其要证明：
+
+```text
+H1C-A = 65 Q0
+L32C = 64 Q0
+```
+
+是由真实 charge solver 得出的，并说明 Q0 标度如何定义。
+
+请明确回答：
+
+```text
+Q0 标度是否只用 signal stages 定标？
+H1C-R 和低段是否被错误纳入 4095 归一化分母？
+physical oracle 是否使用了与正常转换完全相同的 decision switch states？
+```
+
+六、decoder 审计
+
+请提供相同 decisions 下三套解码的逐样本结果：
+
+```text
+nominal decoder
+physical decoder
+calibrated decoder
+```
+
+理想电容场景必须证明：
+
+```text
+nominal physical weights == nominal weights
+nominal codes == physical-decoder codes
+```
+
+如果理想场景中 nominal 与 physical decoder 不一致，必须先解释该问题，不能把 FFT 差距归因于桥接结构。
+
+七、固定输入完整转换 trace
+
+至少提供以下输入的完整 14-stage trace：
+
+```text
+Vin_diff = 0
+Vin_diff = +0.25 FS
+Vin_diff = -0.25 FS
+一个出现 missing-code 边界附近的输入
+```
+
+每一级需要：
+
+```text
+committed_before
+trial_state
+VTOP_P_trial
+VTOP_N_trial
+VDIFF_trial
+raw comparator output
+commit/reject
+committed_after
+VDIFF_commit
+decision
+```
+
+必须保证 CMP 对应的是 trial VDIFF，而不是 commit 后 VDIFF。
+
+八、FFT 原始审计文件
+
+请提供以下频谱数据 CSV：
+
+```text
+bin
+frequency
+magnitude
+power
+是否计入 signal
+是否计入 harmonic
+是否计入 noise
+```
+
+并提供两组对照：
+
+1. 独立理想 12-bit uniform quantizer；
+2. 当前异步 SAR ADC 理想模型。
+
+相同参数下，理想均匀量化器应接近 73.5 dB。若分析器本身不能达到该结果，则先修 FFT，不得讨论桥接架构上限。
+
+请提供：
+
+```text
+noise floor 计算方法
+信号 bin 积分范围
+harmonic bin 积分范围
+窗口 coherent gain
+ENBW 修正
+DC 排除方式
+```
+
+九、必须执行的架构/模型区分实验
+
+请至少完成以下 A/B 测试。
+
+A. 保持全部逻辑不变，仅将 bridge 网络替换为等效理想低段权重模型。
+
+B. 保持 bridge 网络不变，使用 exhaustive reachable-level nearest reference，仅作为诊断。
+
+C. 保持物理 decisions 不变，分别使用 nominal、physical、calibrated decoder。
+
+D. 将 H1C-A 从 65 调整为 64，仅用于敏感度实验。
+
+E. 将 bridge capacitor 调整到理论最佳值，扫描：
+
+```text
+0.95×CB
+0.975×CB
+1.0×CB
+1.025×CB
+1.05×CB
+```
+
+每组输出：
+
+```text
+unique physical levels
+missing codes
+DNL
+INL
+SNDR
+THD
+noise floor
+```
+
+判断标准：
+
+* 如果 exhaustive physical levels 本身完整，但固定顺序 SAR 缺码，则是 switching/state-machine 问题；
+* 如果 physical levels 完整，但 decoder 缺码，则是 decoder/归一化问题；
+* 如果调整 Q0 定标后缺码消失，则是 physical-weight oracle 问题；
+* 只有在正确拓扑、正确开关、正确 decoder、正确 FFT 下，physical level 集合本身仍必然缺少约 50% 目标网格，才能称为桥接架构固有限制。
+
+十、最终回复必须包含
+
+请提交以下文件：
+
+```text
+bridge_root_cause_report.md
+bridge_root_cause_report.json
+dc_sweep_raw.csv
+reachable_levels.csv
+single_cap_steps.csv
+conversion_trace_zero.csv
+conversion_trace_boundary.csv
+fft_spectrum_ideal_quantizer.csv
+fft_spectrum_bridge_sar.csv
+test_output.txt
+```
+
+并在报告中明确给出：
+
+```text
+结论：ARCHITECTURE LIMIT / MODELING BUG / MIXED / INCONCLUSIVE
+证据：
+反证实验：
+仍未排除的问题：
+```
+
+在这些文件和数据提交前，“约 50% 码点不可达是桥接 CDAC 固有特性”只能视为假设，不能视为已证实结论。
