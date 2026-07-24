@@ -17,7 +17,6 @@ from python_cal.topology.switching_policy import DifferentialSwitchingPolicy
 from python_cal.topology.cdac_topology import VCM, VREF
 from python_cal.decode.sar_decoder import SARDecoder
 from python_cal.calibration.calibration_registers import CalibrationRegisters
-from python_cal.calibration.calibration_controller import AsyncCalibrationController
 from python_cal.calibration.shen_calibrator import ShenCalibrationController
 from python_cal.calibration.calibration_trace import CalibrationReport
 from python_cal.calibration.calibration_fsm import ADCOperatingMode
@@ -119,6 +118,13 @@ class AsyncBehavioralSARADC:
             DeprecationWarning, stacklevel=2
         )
         self.mode = ADCOperatingMode.CALIBRATION
+
+        # Lazy import keeps the deprecated calDAC-search implementation out of
+        # the active package import path. Only callers of this compatibility
+        # method load it, and they receive the deprecation warning above.
+        from python_cal.calibration.calibration_controller import (
+            AsyncCalibrationController,
+        )
 
         cal_controller = AsyncCalibrationController(
             cdac=self.cdac,

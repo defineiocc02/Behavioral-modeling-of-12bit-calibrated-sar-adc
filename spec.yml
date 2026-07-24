@@ -1,0 +1,37 @@
+block: 12bit-asynchronous-sar-adc-python
+version: 2.1.0
+process: behavioral-model
+supply: 1.8
+eda_mode: review
+
+architecture:
+  converter: differential split-CDAC asynchronous SAR
+  decisions: 14
+  physical_trials: 13
+  terminal: comparator-only digital rounding decision
+  calibration: Shen-derived 7-target force-0/force-1 half-difference
+  production_output: Q2 fixed-point
+
+specs:
+  ideal_physical_enob: { min: 11.9, unit: bit }
+  calibrated_mc_enob_p50: { min: 11.5, unit: bit }
+  calibrated_mc_sndr_p50: { min: 70.99, unit: dB }
+  oracle_gap_p50: { max: 0.5, unit: dB }
+  oracle_gap_p95: { max: 2.0, unit: dB }
+  calibration_valid_yield: { min: 100, unit: percent }
+  full_static_missing_codes: { max: 0, unit: code }
+  full_static_non_monotonic_steps: { max: 0, unit: step }
+
+verification:
+  dynamic_mc_seeds: 100
+  unit_cap_sigma: 0.005
+  calibration_pairs: 512
+  calibration_noise_sigma_v: 0.001
+  fft_points: 4096
+  coherent_bin: 127
+  amplitude_dbfs: -0.5
+
+scope_limits:
+  - Python behavioral evidence only; no transistor-level or silicon claim.
+  - Dynamic acceptance passes, while strict full static monotonicity fails.
+  - The architecture is Shen-derived, not a paper-exact implementation.

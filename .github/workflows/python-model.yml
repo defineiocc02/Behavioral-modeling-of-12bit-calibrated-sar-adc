@@ -1,0 +1,46 @@
+name: Python behavioral model
+
+on:
+  push:
+    paths:
+      - "src/python_cal/**"
+      - "docs/figures/**"
+      - "pyproject.toml"
+      - ".github/workflows/python-model.yml"
+  pull_request:
+    paths:
+      - "src/python_cal/**"
+      - "docs/figures/**"
+      - "pyproject.toml"
+      - ".github/workflows/python-model.yml"
+
+jobs:
+  test-and-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install model and documentation dependencies
+        run: python -m pip install -e ".[dev,docs]"
+
+      - name: Run regression tests
+        run: python -m pytest
+
+      - name: Render all documentation figures
+        run: |
+          python docs/figures/generate_modeling_figures.py \
+            --out-dir .artifacts/figures --formats png svg pdf
+          test "$(find .artifacts/figures -type f | wc -l)" -eq 33
+
+      - name: Upload rendered figures
+        uses: actions/upload-artifact@v4
+        with:
+          name: modeling-figures
+          path: .artifacts/figures

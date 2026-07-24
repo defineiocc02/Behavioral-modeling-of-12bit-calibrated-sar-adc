@@ -151,6 +151,7 @@ def generate_manifest(
         "python_cal.async_control.events",
         "python_cal.async_control.sar_fsm",
         "python_cal.calibration.shen_calibrator",
+        "python_cal.calibration.shen_switching",
         "python_cal.calibration.calibration_switching",
         "python_cal.calibration.calibration_controller",
         "python_cal.calibration.calibration_registers",

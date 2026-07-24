@@ -27,4 +27,4 @@ from python_cal.calibration.calibration_trace import (
     CalibrationReport, TargetCalibrationResult, CalibrationSearchStepTrace
 )
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"

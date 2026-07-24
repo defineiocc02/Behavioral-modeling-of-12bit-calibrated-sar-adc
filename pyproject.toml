@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "behavioral-12bit-sar-adc"
+version = "2.1.0"
+description = "Reproducible Python behavioral model and Shen-derived calibration audit for a 12-bit asynchronous SAR ADC"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+docs = [
+  "matplotlib>=3.8",
+]
+dev = [
+  "pytest>=8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["python_cal*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["src/python_cal/tests"]
+addopts = "-q"

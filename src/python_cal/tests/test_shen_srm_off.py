@@ -12,6 +12,8 @@ from python_cal.calibration.shen_calibrator import ShenCalibrationController
 from python_cal.comparator.dynamic_comparator import DynamicComparator
 from python_cal.physical.differential_cdac import DifferentialCDAC
 from python_cal.async_control.timing import TimingParams
+from python_cal.calibration.calibration_fsm import ShenCalibrationState
+from python_cal.calibration.shen_switching import STAGE_TO_CAP
 
 
 def _controller(cdac, pairs=1):
@@ -32,6 +34,28 @@ def test_srm_symbols_are_absent_from_active_controller():
     assert not hasattr(ShenCalibrationController, "srm_samples")
 
 
+def test_frozen_alpha_path_is_absent_from_active_controller():
+    """The rejected observable-alpha experiment must not silently return."""
+    source = inspect.getsource(ShenCalibrationController)
+    module_source = inspect.getsource(
+        inspect.getmodule(ShenCalibrationController)
+    )
+    assert not hasattr(ShenCalibrationController, "run_with_alpha_pre")
+    assert "alpha_estimator" not in module_source
+    assert "estimate_alpha" not in source
+
+
+def test_active_shen_switching_has_no_physical_terminal_or_legacy_search():
+    """Active Shen switching is isolated from deprecated calDAC helpers."""
+    assert set(STAGE_TO_CAP) == set(range(13))
+    assert 13 not in STAGE_TO_CAP
+    module_source = inspect.getsource(
+        inspect.getmodule(ShenCalibrationController)
+    )
+    assert "calibration_switching" not in module_source
+    assert "apply_caldac_trial" not in module_source
+
+
 def test_shen_does_not_read_physical_oracle(monkeypatch):
     cdac = DifferentialCDAC.ideal()
 
@@ -47,7 +71,8 @@ def test_shen_does_not_read_physical_oracle(monkeypatch):
 
 
 def test_ideal_shen_is_direction_symmetric_without_srm():
-    targets, wp, wn = _controller(DifferentialCDAC.ideal(), pairs=2).run(
+    controller = _controller(DifferentialCDAC.ideal(), pairs=2)
+    targets, wp, wn = controller.run(
         rng=np.random.default_rng(11)
     )
     assert all(t["valid"] for t in targets)
@@ -56,6 +81,7 @@ def test_ideal_shen_is_direction_symmetric_without_srm():
     for stage in range(14):
         assert abs((wp[stage] + wn[stage]) / 2.0 - nominal[stage]) < 1e-9
         assert abs(wp[stage] - wn[stage]) <= 2.0
+    assert controller.state is ShenCalibrationState.DONE
 
 
 def test_half_difference_and_fixed_dither_cancel_offset():

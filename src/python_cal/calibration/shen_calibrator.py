@@ -16,7 +16,7 @@ P/N 分侧扩展:
   W_P = mean(P0 - P1) / 2
   W_N = mean(N1 - N0) / 2
 
-基础尺子 (BASE_RULER): L32C..T1C (仅低段), 不通过递归算法自校准.
+基础尺子 (BASE_RULER): L32C..L1C + 数字 terminal，不通过递归算法自校准.
 H1R (stage 5) 已从基础尺子中移除, 改为由 Shen 校准直接测量.
 校准顺序: H1R → H1A → H2C → H4C → H8C → H16C → H32C.
 
@@ -31,63 +31,17 @@ from dataclasses import dataclass, field
 from python_cal import config as cfg
 from python_cal.physical.differential_cdac import DifferentialCDAC
 from python_cal.comparator.dynamic_comparator import DynamicComparator
-from python_cal.topology.switch_state import Rail, SideSwitchState, DifferentialSwitchState
+from python_cal.topology.switch_state import Rail, DifferentialSwitchState
 from python_cal.topology.switching_policy import DifferentialSwitchingPolicy
 from python_cal.async_control.timing import TimingParams
 from python_cal.decode.sar_decoder import SARDecoder
 
-from .calibration_switching import STAGE_TO_CAP
-
-# ===========================================================================
-# force-state 构建
-# ===========================================================================
-
-def build_force_baseline_state(target_stage: int, lower_stages: list[int],
-                               higher_stages: list[int]) -> DifferentialSwitchState:
-    """Legacy one-sided diagnostic state; active Shen run() does not use it."""
-    p_state = SideSwitchState.all_vcm()
-    n_state = SideSwitchState.all_vcm()
-    return DifferentialSwitchState(p_side=p_state, n_side=n_state)
-
-
-def build_force_p_active_state(target_stage: int, lower_stages: list[int],
-                               higher_stages: list[int]) -> DifferentialSwitchState:
-    """Legacy VCM→VREFP diagnostic; active Shen run() uses VREFN/VREFP."""
-    cap_name = STAGE_TO_CAP[target_stage]
-    p_state = SideSwitchState.all_vcm().with_rail(cap_name, Rail.VREFP)
-    n_state = SideSwitchState.all_vcm()
-    return DifferentialSwitchState(p_side=p_state, n_side=n_state)
-
-
-def build_force_n_active_state(target_stage: int, lower_stages: list[int],
-                               higher_stages: list[int]) -> DifferentialSwitchState:
-    """Legacy VCM→VREFP diagnostic; active Shen run() uses VREFN/VREFP."""
-    cap_name = STAGE_TO_CAP[target_stage]
-    p_state = SideSwitchState.all_vcm()
-    n_state = SideSwitchState.all_vcm().with_rail(cap_name, Rail.VREFP)
-    return DifferentialSwitchState(p_side=p_state, n_side=n_state)
-
-
-def build_force_p_state(target_stage: int, rail: Rail) -> DifferentialSwitchState:
-    """P 侧待校电容 force 到 VREFN/VREFP，N 侧保持 VCM。"""
-    if rail not in (Rail.VREFN, Rail.VREFP):
-        raise ValueError("force rail must be VREFN or VREFP")
-    cap_name = STAGE_TO_CAP[target_stage]
-    return DifferentialSwitchState(
-        p_side=SideSwitchState.all_vcm().with_rail(cap_name, rail),
-        n_side=SideSwitchState.all_vcm(),
-    )
-
-
-def build_force_n_state(target_stage: int, rail: Rail) -> DifferentialSwitchState:
-    """N 侧待校电容 force 到 VREFN/VREFP，P 侧保持 VCM。"""
-    if rail not in (Rail.VREFN, Rail.VREFP):
-        raise ValueError("force rail must be VREFN or VREFP")
-    cap_name = STAGE_TO_CAP[target_stage]
-    return DifferentialSwitchState(
-        p_side=SideSwitchState.all_vcm(),
-        n_side=SideSwitchState.all_vcm().with_rail(cap_name, rail),
-    )
+from .calibration_fsm import ShenCalibrationState
+from .shen_switching import (
+    STAGE_TO_CAP,
+    build_force_n_state,
+    build_force_p_state,
+)
 
 
 # ===========================================================================
@@ -257,6 +211,9 @@ class ShenCalibrationController:
     cal_noise_sigma: float = 0.0
     fixed_dither_lsb: tuple[float, ...] = (-1.5, -0.5, 0.5, 1.5)
     current_time_s: float = 0.0
+    state: ShenCalibrationState = field(
+        init=False, default=ShenCalibrationState.IDLE
+    )
 
     def run(
         self, rng=None, base_ruler_wp=None, base_ruler_wn=None
@@ -274,6 +231,7 @@ class ShenCalibrationController:
               keys: target_name, stage, W_P, W_N, W_avg, valid
         """
         results = []
+        self.state = ShenCalibrationState.TARGET_SETUP
 
         # 校准用比较器 (含校准噪声)
         cal_cmp = DynamicComparator(
@@ -295,6 +253,7 @@ class ShenCalibrationController:
         init_wn = list(base_ruler_wn) if base_ruler_wn is not None else list(cfg.NOMINAL_WEIGHTS_Q0)
 
         for target_info in cfg.SHEN_CAL_TARGETS:
+            self.state = ShenCalibrationState.TARGET_SETUP
             target_stage = target_info['stage']
             target_name = target_info['name']
             target_nominal = target_info['nominal_q0']
@@ -307,10 +266,6 @@ class ShenCalibrationController:
                 decoder_wp[s] = wp
                 decoder_wn[s] = calibrated_wn.get(s, wp)
             decoder = SARDecoder(weights_p=decoder_wp, weights_n=decoder_wn)
-
-            # 高于 target 的阶段 (不参与): 所有权重 > target 的阶段, 排除 target 本身
-            higher_stages = [s for s in range(cfg.N_STAGES)
-                             if cfg.NOMINAL_WEIGHTS_Q0[s] > target_nominal and s != target_stage]
 
             # P0/P1/N0/N1 累加器 (仅 signed_sum 差分)
             wp_sum = 0.0   # Σ (ss_P0 - ss_P1)
@@ -326,6 +281,7 @@ class ShenCalibrationController:
                 dither_v = dither_lsb * cfg.VREF / (1 << cfg.N_BITS)
 
                 # --- P0/P1: target P 从 VREFN force 到 VREFP ---
+                self.state = ShenCalibrationState.P0_SUBCONVERSION
                 force_p0 = build_force_p_state(target_stage, Rail.VREFN)
                 _, ss_p0, elapsed, _ = run_lower_sar_subconversion(
                     self.cdac, cal_cmp, self.timing,
@@ -334,6 +290,7 @@ class ShenCalibrationController:
                 )
                 self.current_time_s += elapsed
 
+                self.state = ShenCalibrationState.P1_SUBCONVERSION
                 force_p1 = build_force_p_state(target_stage, Rail.VREFP)
                 _, ss_p1, elapsed, _ = run_lower_sar_subconversion(
                     self.cdac, cal_cmp, self.timing,
@@ -345,6 +302,7 @@ class ShenCalibrationController:
                 wp_sum += (ss_p0 - ss_p1) / 2.0
 
                 # --- N0/N1: target N 从 VREFN force 到 VREFP ---
+                self.state = ShenCalibrationState.N0_SUBCONVERSION
                 force_n0 = build_force_n_state(target_stage, Rail.VREFN)
                 _, ss_n0, elapsed, _ = run_lower_sar_subconversion(
                     self.cdac, cal_cmp, self.timing,
@@ -353,6 +311,7 @@ class ShenCalibrationController:
                 )
                 self.current_time_s += elapsed
 
+                self.state = ShenCalibrationState.N1_SUBCONVERSION
                 force_n1 = build_force_n_state(target_stage, Rail.VREFP)
                 _, ss_n1, elapsed, _ = run_lower_sar_subconversion(
                     self.cdac, cal_cmp, self.timing,
@@ -362,13 +321,16 @@ class ShenCalibrationController:
                 self.current_time_s += elapsed
 
                 wn_sum += (ss_n1 - ss_n0) / 2.0
+                self.state = ShenCalibrationState.PAIR_ACCUMULATE
 
             # 计算 P/N 分侧权重
+            self.state = ShenCalibrationState.TARGET_ESTIMATE
             wp = wp_sum / self.avg_pairs
             wn = wn_sum / self.avg_pairs
             w_avg = (wp + wn) / 2.0
 
             # 有效性检查
+            self.state = ShenCalibrationState.TARGET_VALIDATE
             valid = True
             if target_nominal > 0:
                 dev = abs(w_avg - target_nominal) / target_nominal
@@ -376,6 +338,7 @@ class ShenCalibrationController:
                     valid = False
 
             # 写入已校准寄存器
+            self.state = ShenCalibrationState.TARGET_COMMIT
             calibrated_wp[target_stage] = wp
             calibrated_wn[target_stage] = wn
 
@@ -391,7 +354,9 @@ class ShenCalibrationController:
             })
 
             if not valid:
+                self.state = ShenCalibrationState.FAILED
                 break
+            self.state = ShenCalibrationState.NEXT_TARGET
 
         # 构建完整权重数组
         full_wp = list(cfg.NOMINAL_WEIGHTS_Q0)
@@ -400,4 +365,10 @@ class ShenCalibrationController:
             full_wp[s] = wp
             full_wn[s] = calibrated_wn.get(s, wp)
 
+        self.state = (
+            ShenCalibrationState.DONE
+            if all(result["valid"] for result in results)
+            and len(results) == len(cfg.SHEN_CAL_TARGETS)
+            else ShenCalibrationState.FAILED
+        )
         return results, full_wp, full_wn

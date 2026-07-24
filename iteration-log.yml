@@ -1,0 +1,86 @@
+project: 12bit-asynchronous-sar-adc-python
+started: 2026-07-24T00:00:00+08:00
+architecture: differential split-CDAC with Shen-derived foreground calibration
+eda_mode: review
+
+blocks:
+  behavioral-model:
+    iterations:
+      - iteration: 1
+        timestamp: 2026-07-24T17:00:00+08:00
+        designer_changes:
+          - param: terminal_model
+            from: synthetic_low_term_capacitor
+            to: comparator_only_digital_decision
+            reason: preserve the 63Cu low segment and avoid a fictitious physical cap
+          - param: physical_weight_oracle
+            from: averaged_PN_weight
+            to: independent_P_and_N_weights
+            reason: retain side-specific mismatch
+          - param: output_precision
+            from: integer_12bit
+            to: Q2
+            reason: avoid a second quantization of fractional calibrated weights
+        optimizer_used: false
+        verification_level: L2-behavioral
+        verification_redo: true
+        results:
+          - spec: ideal_physical_enob
+            target: ">= 11.9 bit"
+            measured: 11.944 bit
+            status: pass
+          - spec: calibrated_mc_enob_p50
+            target: ">= 11.5 bit"
+            measured: 11.852 bit
+            status: pass
+          - spec: full_static_missing_codes
+            target: "0"
+            measured: "2 at 2048 pairs, seed 70000"
+            status: fail
+        outcome: dynamic-pass-static-fail
+      - iteration: 2
+        timestamp: 2026-07-24T20:00:00+08:00
+        designer_changes:
+          - param: github_documentation
+            from: fragmented
+            to: versioned_readme_guides_and_11_figure_sets
+            reason: make the Python modeling process and claim boundaries reproducible
+          - param: project_version
+            from: 2.0.0
+            to: 2.1.0
+            reason: documentation and reproducibility release
+        optimizer_used: false
+        verification_level: delivery
+        verification_redo: true
+        results:
+          - spec: regression_tests
+            target: "all pass"
+            measured: "60/60"
+            status: pass
+          - spec: figure_font_embedding
+            target: "0 Type 3; all embedded"
+            measured: "11/11 PDF sets pass"
+            status: pass
+          - spec: static_claim_integrity
+            target: "failure stated explicitly"
+            measured: "README, status matrix and figures agree"
+            status: pass
+        outcome: documentation-ready
+
+    total_iterations: 2
+    total_verification_redos: 2
+    optimizer_invocations: 0
+    converged: true
+    final_level: L2-behavioral-with-explicit-static-failure
+
+summary:
+  total_blocks: 1
+  total_iterations: 2
+  total_verification_redos: 2
+  optimizer_invocations: 0
+  escalations_to_user: 0
+  lessons_learned:
+    - Integer output precision can hide successful analog weight calibration.
+    - P/N averaging is not a valid physical upper-bound oracle under independent mismatch.
+    - More averaging cannot repair a codebook with negative carry margin.
+    - Behavioral completion and full specification sign-off must be reported separately.
