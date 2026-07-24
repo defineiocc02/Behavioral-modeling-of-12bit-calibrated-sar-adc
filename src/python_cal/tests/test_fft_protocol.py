@@ -9,6 +9,7 @@ from python_cal.validation.fft_protocol import (
     measure_positive_vfs,
     validate_fft_stimulus,
 )
+from python_cal.fft_metrics import compute_fft_coherent
 
 
 def test_default_protocol_is_coherent_and_safe_at_minus_half_dbfs():
@@ -42,3 +43,15 @@ def test_measure_positive_vfs_uses_code_threshold_not_vref_magic():
 def test_protocol_rejects_noncoherent_bin():
     with pytest.raises(ValueError, match="coprime"):
         FFTProtocol(n_fft=4096, signal_bin=128).validate()
+
+
+def test_sfdr_includes_harmonics_in_spur_search():
+    n = 4096
+    k = 127
+    sample = np.arange(n)
+    waveform = (
+        np.sin(2.0 * np.pi * k * sample / n)
+        + 0.1 * np.sin(2.0 * np.pi * 2 * k * sample / n)
+    )
+    metrics = compute_fft_coherent(waveform, n_fft=n, signal_bin=k)
+    assert metrics["sfdr_db"] == pytest.approx(20.0, abs=0.05)

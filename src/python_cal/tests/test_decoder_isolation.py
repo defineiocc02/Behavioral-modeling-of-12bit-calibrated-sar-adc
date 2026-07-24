@@ -10,6 +10,7 @@ import numpy as np
 from python_cal.topology.cdac_topology import VCM, VREF
 from python_cal.conversion.async_sar_adc import AsyncBehavioralSARADC
 from python_cal.decode.sar_decoder import SARDecoder
+from python_cal.physical.differential_cdac import DifferentialCDAC
 
 
 @pytest.fixture
@@ -161,3 +162,26 @@ def test_signed_sum_is_always_odd():
             f"  decisions: {decisions}\n"
             f"  signed_sum: {signed_sum}"
         )
+
+
+def test_q2_decoder_preserves_fractional_calibrated_reconstruction():
+    """Q2 误差不超过 1/8 LSB，整数接口仍保持兼容。"""
+    weights_p = [w * 1.003 for w in SARDecoder().weights]
+    weights_n = [w * 0.997 for w in SARDecoder().weights]
+    decoder = SARDecoder(weights_p=weights_p, weights_n=weights_n)
+    decisions = [0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1]
+    code_float = decoder.decode_float(decisions)
+    code_q2 = decoder.decode_fixed(decisions, fractional_bits=2)
+    assert abs(code_q2 - code_float) <= 0.125 + 1e-12
+    assert isinstance(decoder.decode(decisions), int)
+
+
+def test_physical_oracle_is_per_side_and_terminal_is_digital():
+    cdac = DifferentialCDAC.from_mismatch(
+        md=[1.02] * 7,
+        mu=[0.98] * 7,
+    )
+    wp, wn = cdac.get_physical_weights_per_side_q0()
+    assert wp[:7] != wn[:7]
+    assert wp[13] == 1.0 and wn[13] == 1.0
+    assert cdac.p_topology.get_cap_by_stage(13) is None

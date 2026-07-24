@@ -1,0 +1,107 @@
+{
+  "run_id": "a3330136",
+  "timestamp": 0,
+  "mode": "7-Target Shen half-difference + fixed dither + Q2 output",
+  "experimental_alpha_pre": false,
+  "mc_seeds": 100,
+  "mc_sigma": 0.005,
+  "cal_noise_sigma_v": 0.001,
+  "avg_pairs": 512,
+  "output_fractional_bits": 2,
+  "static_test": "sampled_every_64_codes",
+  "oracle_gap_verdict": "PASS",
+  "absolute_dynamic_verdict": "PASS",
+  "acceptance_verdict": "FAIL",
+  "min_cal_enob_bits": 11.5,
+  "min_cal_sndr_db": 70.99,
+  "static_verdict": "CONDITIONAL (full=0/100; sampled remainder)",
+  "n_valid": 100,
+  "n_total": 100,
+  "gap_p50_db": 0.2215,
+  "gap_p95_db": 0.5242,
+  "gap_pass_05db": 94,
+  "gap_pass_10db": 99,
+  "sndr_cal_p50_db": 73.112,
+  "sndr_phy_p50_db": 73.322,
+  "enob_cal_p50": 11.852,
+  "enob_phy_p50": 11.887,
+  "negative_gain_pct": 0.0,
+  "dnl_peak_p95_lsb": 0.0226,
+  "inl_peak_p95_lsb": 1.7353,
+  "total_missing_codes": 0,
+  "elapsed_s": 1288.3,
+  "weight_errors": {
+    "H1C-R": {
+      "P50": 0.1797,
+      "P95": 0.3765,
+      "mean": 0.1947
+    },
+    "H1C-A": {
+      "P50": 0.1783,
+      "P95": 0.4271,
+      "mean": 0.2001
+    },
+    "H2C": {
+      "P50": 0.2663,
+      "P95": 0.7726,
+      "mean": 0.3157
+    },
+    "H4C": {
+      "P50": 0.496,
+      "P95": 1.4442,
+      "mean": 0.6001
+    },
+    "H8C": {
+      "P50": 0.8672,
+      "P95": 2.8114,
+      "mean": 1.1049
+    },
+    "H16C": {
+      "P50": 1.7687,
+      "P95": 5.5258,
+      "mean": 2.1388
+    },
+    "H32C": {
+      "P50": 3.2743,
+      "P95": 10.8503,
+      "mean": 4.1875
+    }
+  },
+  "ratio_errors": {
+    "H1C-R": {
+      "P50": 0.001105,
+      "P95": 0.00255,
+      "mean": 0.001158
+    },
+    "H1C-A": {
+      "P50": 0.000968,
+      "P95": 0.002922,
+      "mean": 0.001133
+    },
+    "H2C": {
+      "P50": 0.000417,
+      "P95": 0.001264,
+      "mean": 0.000524
+    },
+    "H4C": {
+      "P50": 0.00021,
+      "P95": 0.000701,
+      "mean": 0.000296
+    },
+    "H8C": {
+      "P50": 0.000147,
+      "P95": 0.000376,
+      "mean": 0.00016
+    },
+    "H16C": {
+      "P50": 7.4e-05,
+      "P95": 0.000234,
+      "mean": 9.5e-05
+    },
+    "H32C": {
+      "P50": 6.5e-05,
+      "P95": 0.000177,
+      "mean": 7.6e-05
+    }
+  }
+}

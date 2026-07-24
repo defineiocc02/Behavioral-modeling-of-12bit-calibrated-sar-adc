@@ -37,14 +37,26 @@ def test_vin_positive_vs_negative_symmetry(adc_ideal):
                 f"vd=±{vd}*VREF, stage={s}: pos={r_pos.decisions[s]}, neg={r_neg.decisions[s]}"
 
 
-def test_initial_vdiff_equals_vin_diff(adc_ideal):
-    """复位后初始 Vdiff = -Vin_diff (bottom-plate sampling inversion)"""
+def test_initial_vdiff_matches_signal_sampling_gain(adc_ideal):
+    """仅 signal caps 采输入时，初始 Vdiff 包含无源采样衰减。"""
+    top = adc_ideal.cdac.p_topology
+    signal_cap = sum(
+        top.get_cap_by_name(name).capacitance_f
+        for name in (
+            "high_32c", "high_16c", "high_8c",
+            "high_4c", "high_2c", "high_1c_a",
+        )
+    )
+    bridge_series = top.c_bridge * top.c_low_total / (
+        top.c_bridge + top.c_low_total
+    )
+    sampling_gain = signal_cap / (top.c_high_total + bridge_series)
     for vd in [0.0, 0.1, -0.1, 0.25, -0.25]:
         vd_v = vd * VREF
         result = adc_ideal.convert_diff(vd_v)
-        # bottom-plate sampling: Vtop = 2*VCM - VIN → Vdiff = -(vin_diff)
-        assert result.initial_vdiff == pytest.approx(-vd_v, abs=1e-9), \
-            f"vd={vd_v}: initial_vdiff={result.initial_vdiff}, expected={-vd_v}"
+        expected = -sampling_gain * vd_v
+        assert result.initial_vdiff == pytest.approx(expected, abs=1e-9), \
+            f"vd={vd_v}: initial_vdiff={result.initial_vdiff}, expected={expected}"
 
 
 def test_conversion_time_nonzero(adc_ideal):
@@ -68,3 +80,11 @@ def test_noise_does_not_crash(adc_ideal):
     adc_ideal.comparator = DynamicComparator(noise_sigma_v=0.001)
     result = adc_ideal.convert_diff(0.1 * VREF, rng=rng)
     assert len(result.decisions) == 14
+
+
+def test_terminal_is_comparator_only_decision(adc_ideal):
+    result = adc_ideal.convert_diff(0.137 * VREF)
+    terminal = result.steps[13]
+    assert terminal.trial_state == terminal.committed_before
+    assert terminal.committed_after == terminal.committed_before
+    assert result.decisions[13] == terminal.comparator_output

@@ -1,0 +1,115 @@
+{
+  "model": "DifferentialCDAC.ideal()",
+  "srm_used": false,
+  "n_fft": 4096,
+  "fft_bin": 127,
+  "fft_amplitude_dbfs": -0.5,
+  "measured_vfs": 0.8993407487869263,
+  "stimulus_peak_v": 0.8490324153794241,
+  "metrics": {
+    "mathematical_ideal": {
+      "sndr_db": 73.592,
+      "sfdr_db": 95.191,
+      "enob": 11.932,
+      "signal_bin": 127
+    },
+    "physical_ideal_nominal_decoder": {
+      "sndr_db": 73.666,
+      "sfdr_db": 95.759,
+      "enob": 11.944,
+      "signal_bin": 127
+    },
+    "physical_ideal_physical_weight_decoder": {
+      "sndr_db": 73.666,
+      "sfdr_db": 95.759,
+      "enob": 11.944,
+      "signal_bin": 127
+    }
+  },
+  "legacy_fixed_0p45_vref": {
+    "stimulus_peak_v": 0.764689309791598,
+    "metrics": {
+      "mathematical_ideal": {
+        "sndr_db": 72.726,
+        "sfdr_db": 93.819,
+        "enob": 11.788,
+        "signal_bin": 127
+      },
+      "physical_ideal_nominal_decoder": {
+        "sndr_db": 72.657,
+        "sfdr_db": 93.899,
+        "enob": 11.777,
+        "signal_bin": 127
+      },
+      "physical_ideal_physical_weight_decoder": {
+        "sndr_db": 72.657,
+        "sfdr_db": 93.899,
+        "enob": 11.777,
+        "signal_bin": 127
+      }
+    },
+    "note": "Diagnostic only; not the current dynamic-VFS pipeline reference."
+  },
+  "physical_weights_q0": [
+    2080.0,
+    1040.0,
+    520.0,
+    260.0,
+    130.0,
+    65.0,
+    65.0,
+    64.0,
+    32.0,
+    16.0,
+    8.0,
+    4.0,
+    2.0,
+    1.0
+  ],
+  "low_segment": [
+    {
+      "stage": "L32C",
+      "nominal_q0": 64.0,
+      "effective_q0": 64.0,
+      "ratio": 1.0
+    },
+    {
+      "stage": "L16C",
+      "nominal_q0": 32.0,
+      "effective_q0": 32.0,
+      "ratio": 1.0
+    },
+    {
+      "stage": "L8C",
+      "nominal_q0": 16.0,
+      "effective_q0": 16.0,
+      "ratio": 1.0
+    },
+    {
+      "stage": "L4C",
+      "nominal_q0": 8.0,
+      "effective_q0": 8.0,
+      "ratio": 1.0
+    },
+    {
+      "stage": "L2C",
+      "nominal_q0": 4.0,
+      "effective_q0": 4.0,
+      "ratio": 1.0
+    },
+    {
+      "stage": "L1C",
+      "nominal_q0": 2.0,
+      "effective_q0": 2.0,
+      "ratio": 1.0
+    },
+    {
+      "stage": "T1C",
+      "nominal_q0": 1.0,
+      "effective_q0": 1.0,
+      "ratio": 1.0
+    }
+  ],
+  "sndr_gap_math_to_physical_db": -0.07399999999999807,
+  "interpretation": "The physical cases retain the analog charge/decision path; the gap is therefore a deterministic baseline diagnostic, not evidence of random mismatch or an SRM requirement."
+}

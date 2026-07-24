@@ -1,0 +1,56 @@
+{
+  "scenario": "high-only mismatch; low segment and bridge exact nominal",
+  "production_path": "Shen force-0/force-1, SRM-off",
+  "seeds": 1,
+  "seed_start": 70000,
+  "avg_pairs": 2048,
+  "cal_noise_sigma_v": 0.001,
+  "rows": [
+    {
+      "seed": 70000,
+      "calibration_valid": true,
+      "nominal": {
+        "sampled": false,
+        "n_transitions": 4094,
+        "n_missing": 0,
+        "missing_codes": [],
+        "n_non_monotonic": 0,
+        "non_monotonic": [],
+        "dnl_peak_lsb": 2.5959083773195744,
+        "dnl_peak_code": 1009,
+        "dnl_at_peak_lsb": 2.5959083773195744,
+        "dnl_min_lsb": -0.4249756261706352,
+        "dnl_max_lsb": 2.5959083773195744,
+        "dnl_rms_lsb": 0.08064860489208045,
+        "inl_peak_lsb": 2.7028490658847995,
+        "inl_rms_lsb": 1.2120617895725354,
+        "v_neg": -0.8996872194111347,
+        "v_pos": 0.899686973541975
+      },
+      "calibrated": {
+        "sampled": false,
+        "n_transitions": 4094,
+        "n_missing": 2,
+        "missing_codes": [
+          551,
+          1380
+        ],
+        "n_non_monotonic": 2,
+        "non_monotonic": [
+          552,
+          1381
+        ],
+        "dnl_peak_lsb": 1.0,
+        "dnl_peak_code": 551,
+        "dnl_at_peak_lsb": -1.0,
+        "dnl_min_lsb": -1.0,
+        "dnl_max_lsb": 0.6591407358646393,
+        "dnl_rms_lsb": 0.056591468070523024,
+        "inl_peak_lsb": 1.5802742037916853,
+        "inl_rms_lsb": 0.7782832626259796,
+        "v_neg": -0.8996872194111347,
+        "v_pos": 0.899686973541975
+      }
+    }
+  ]
+}

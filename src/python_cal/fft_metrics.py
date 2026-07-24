@@ -119,9 +119,13 @@ def compute_fft_metrics(digital_codes, n_bits=12, n_fft=None,
 
     sndr = 10.0 * math.log10(signal_power / total_error)
 
-    # SFDR: 最大杂散 (排除 DC 和信号 bin±span)
-    sfdr_mask = noise_mask.copy()
-    sfdr_mask[signal_bin] = False
+    # SFDR: 最大杂散必须包含谐波。不能复用 noise_mask，因为该 mask
+    # 为噪声积分排除了 H2-H7，复用会系统性高估 SFDR。
+    sfdr_mask = np.ones(len(spectrum_mag), dtype=bool)
+    sfdr_mask[0] = False
+    sfdr_lo = max(1, signal_bin - exclude_span)
+    sfdr_hi = min(len(spectrum_mag) - 1, signal_bin + exclude_span)
+    sfdr_mask[sfdr_lo:sfdr_hi + 1] = False
     peak_spur = np.max(spectrum_mag[sfdr_mask]) if np.any(sfdr_mask) else 0
     sfdr = 20.0 * math.log10(spectrum_mag[signal_bin] / (peak_spur + 1e-30))
 

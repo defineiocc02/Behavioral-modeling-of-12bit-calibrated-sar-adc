@@ -18,7 +18,7 @@ VREF = 1.8          # 参考电压 VREFP (V)
 VREFN_ = 0.0        # 参考电压 VREFN (V)
 VCM = 0.9           # 共模电压 (V)
 N_STAGES = 14       # 总阶段数 (含 terminal)
-N_PHYSICAL = 13     # 物理电容阶段数 (stage 0..12)
+N_PHYSICAL = 13     # 物理电容阶段数 (stage 0..12); stage 13 是数字终端判决
 N_BITS = 12         # 输出分辨率
 
 
@@ -69,8 +69,6 @@ class CDACTopology:
         raise KeyError(f"Capacitor '{name}' not found")
 
     def get_cap_by_stage(self, stage: int) -> Capacitor | None:
-        if stage == 13:  # terminal
-            return None
         for c in self.capacitors:
             if c.stage == stage:
                 return c

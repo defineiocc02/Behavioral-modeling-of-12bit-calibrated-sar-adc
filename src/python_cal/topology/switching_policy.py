@@ -27,7 +27,7 @@ class DifferentialSwitchingPolicy:
       - stage 0..6: 高段电容 (H32C → H1C-A)
       - stage 5: H1C-R (冗余电容)
       - stage 7..12: 低段 calDAC 电容 (L32C → L1C)
-      - stage 13: terminal (无物理电容)
+      - stage 13: terminal 残差比较（无物理电容）
 
     比较器极性 (固定, 需求文档 §9):
       output = 1 ⇔ VTOP_P > VTOP_N
@@ -46,9 +46,9 @@ class DifferentialSwitchingPolicy:
     def sampling_state(self, vinp: float, vinn: float) -> DifferentialSwitchState:
         """采样阶段开关状态
 
-        信号电容 (高段 H32C..H1C-A + 低段 L32C..L1C + H1C-R):
-          底板接对应输入: P侧→VINP, N侧→VINN
-        桥接电容: 底板接 VCM
+        只有信号电容 H32C..H2C 与 H1C-A 采输入。
+        H1C-R、低段 calDAC 与数字 terminal 均保持 VCM。
+        这与 config.VCM_SAMPLE_MASK=382 和 SWITCH_CAL.va 一致。
         """
         p_side = _make_side_sampling('P')
         n_side = _make_side_sampling('N')
@@ -73,8 +73,8 @@ class DifferentialSwitchingPolicy:
           output=0 (P<N) → 保留 P侧VREFP, N侧回VCM (提高 Vdiff)
         """
         if stage == 13:
-            return committed_state  # terminal: 无物理电容
-
+            # 终端位由比较器对残差再判一次，不存在对应物理电容。
+            return committed_state
         cap_name = self.STAGE_TO_CAP[stage]
         p_trial = committed_state.p_side.with_rail(cap_name, Rail.VREFP)
         n_trial = committed_state.n_side.with_rail(cap_name, Rail.VREFP)
@@ -99,7 +99,6 @@ class DifferentialSwitchingPolicy:
         """
         if stage == 13:
             return committed_state
-
         cap_name = self.STAGE_TO_CAP[stage]
 
         if comparator_output == 1:
@@ -123,7 +122,7 @@ class DifferentialSwitchingPolicy:
         decision=0: P侧电容为VREFP (BITP=1)
         """
         decisions = []
-        for stage in range(13):  # stage 0..12
+        for stage in range(13):  # stage 0..12 physical switches
             cap_name = SideSwitchState.STAGE_TO_FIELD[stage]
             p_rail = final_state.p_side.get_rail(cap_name)
             n_rail = final_state.n_side.get_rail(cap_name)
@@ -135,14 +134,20 @@ class DifferentialSwitchingPolicy:
             else:
                 decisions.append(0)  # VCM → 默认 0
 
-        # terminal (stage 13): 从最后一次比较器结果派生
-        # 此处仅填充占位, 实际由 SAR 控制器在 terminal 阶段填入
+        # terminal 不能从最终开关状态恢复；实际转换由控制器保存比较结果。
         decisions.append(0)
         return tuple(decisions)
 
 
 def _make_side_sampling(side: str) -> SideSwitchState:
-    """采样阶段单侧开关状态: 所有电容底板接 VIN (P或N)"""
+    """采样阶段单侧状态：仅 signal stages 接 VIN，其余保持 VCM。"""
     rail = Rail.VINP if side == 'P' else Rail.VINN
-    kwargs = {name: rail for name in SideSwitchState.CAP_NAMES}
+    signal_caps = {
+        'high_32c', 'high_16c', 'high_8c',
+        'high_4c', 'high_2c', 'high_1c_a',
+    }
+    kwargs = {
+        name: rail if name in signal_caps else Rail.VCM
+        for name in SideSwitchState.CAP_NAMES
+    }
     return SideSwitchState(**kwargs)

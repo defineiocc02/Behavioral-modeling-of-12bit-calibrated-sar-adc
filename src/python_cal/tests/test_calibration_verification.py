@@ -76,16 +76,16 @@ def test_pn_asym_calibration_accuracy():
 
     # 链首 H1C-A (stage 6): 严格 ±1 Q0
     h1ca = rep.targets[0]
-    assert abs(h1ca.measured_weight_q0 - h1ca.physical_weight_q0) <= 1.0, (
+    assert abs(h1ca.measured_weight_q0 - phys_w[h1ca.stage]) <= 1.0, (
         f"H1C-A (chain start): measured={h1ca.measured_weight_q0:.2f}, "
-        f"physical={h1ca.physical_weight_q0:.2f}"
+        f"physical={phys_w[h1ca.stage]:.2f}"
     )
 
     # Wall 链 target: 允许偏差随 stage 增大 (递归传播因子 ~2^step)
     cal_order = [6, 5, 4, 3, 2, 1, 0]
     for i, stage in enumerate(cal_order):
         t = rep.targets[i]
-        err = abs(t.measured_weight_q0 - t.physical_weight_q0)
+        err = abs(t.measured_weight_q0 - phys_w[t.stage])
         # 每步允许 ~1 Q0 噪声积累 + 传播
         max_err = max(1.0, 1.0 * (2 ** i) * 0.5)
         assert err <= max_err + 0.1, (
@@ -165,11 +165,11 @@ def test_bridge_2pct_calibration_accuracy():
     # 高段 target 应接近物理 (在增益缩放后)
     for t in rep.targets:
         if t.stage <= 6:  # 高段被校 target
-            err = t.measured_weight_q0 - t.physical_weight_q0
+            err = t.measured_weight_q0 - phys_w[t.stage]
             # bridge +2% 允许略大偏差 (低段尺子误差传播)
-            assert abs(err) < max(5.0, t.physical_weight_q0 * 0.03), (
+            assert abs(err) < max(5.0, phys_w[t.stage] * 0.03), (
                 f"{t.target_name}: measured={t.measured_weight_q0:.1f}, "
-                f"physical={t.physical_weight_q0:.1f}, err={err:.1f} Q0"
+                f"physical={phys_w[t.stage]:.1f}, err={err:.1f} Q0"
             )
 
 

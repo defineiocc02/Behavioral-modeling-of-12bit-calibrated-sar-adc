@@ -3,12 +3,12 @@ run_final_calibration_pipeline.py — SAR ADC 校准验收管线
 
 完整流程:
   1. 生成 MC 失配场景 (unit-cap sigma from config.MC_SIGMA)
-  2. Shen 7-target 校准 (force-0/force-1 协议, P/N 分侧)
+  2. Shen 7-target 校准 (VREFN/VREFP force-0/force-1 半差, P/N 分侧)
      校准顺序: H1R→H1A→H2C→H4C→H8C→H16C→H32C
      基础尺子: 低段 L32C..T1C (标称权重), H1R 已从尺子移除
      高段递归: 使用已校准高段 + 标称低段作为 ruler
   3. 静态验证: DNL/INL (每64码采样二进制搜索)
-  4. 动态验证: SNDR/SFDR/ENOB (coherent sine FFT)
+  4. 动态验证: SNDR/SFDR/ENOB (coherent sine FFT, Q2 production output)
   5. 归一化权重比例误差: e_ratio = (Ŵ_i/ΣŴ)/(W_i/ΣW) - 1
   6. Monte Carlo yield: config.MC_SEEDS_PIPELINE seeds
   7. 输出: CSV + JSON + Markdown 报告
@@ -23,7 +23,7 @@ run_final_calibration_pipeline.py — SAR ADC 校准验收管线
   - v2: 7-target Shen 校准 (H1R 直接校准, AVG_PAIRS=128) — CONDITIONAL PASS (gap P50=0.984 dB)
   - v3: 7-target Shen 校准 (H1R 直接校准, AVG_PAIRS=512) — PASS (gap P50=0.289 dB, P95=1.238 dB)
   - v4: 全 4095-transition 静态验证 + 归一化比例误差分析
-  - v5: 13-target 低段逐位 + 高段递归校准 (MC_SEEDS=100, AVG_PAIRS=512)
+  - v5: 7-target 半差 + 固定 dither + P/N 分侧 + Q2 输出
 """
 import sys, os, math, csv, json, hashlib, time
 import numpy as np
@@ -43,11 +43,6 @@ from python_cal.conversion.async_sar_adc import AsyncBehavioralSARADC
 from python_cal.decode.sar_decoder import SARDecoder
 from python_cal.topology.cdac_topology import VCM, VREF, CU, N_STAGES, N_BITS
 from python_cal.calibration.shen_calibrator import ShenCalibrationController
-from python_cal.calibration.alpha_estimator import (
-    estimate_alpha_from_calibration,
-    estimate_alpha_from_physical_low,
-    build_alpha_corrected_ruler,
-)
 from python_cal.calibration.calibration_fsm import ADCOperatingMode
 from python_cal.provenance import generate_manifest, save_manifest_compact
 from python_cal.fft_metrics import compute_fft_coherent
@@ -59,14 +54,9 @@ from python_cal.validation.fft_protocol import (
 )
 
 # ===================================================================
-# 交付模式开关
-# ===================================================================
-EXPERIMENTAL_ALPHA_PRE = False  # True = 使用 observable-alpha-pre (实验性, 已冻结)
-
-# ===================================================================
 # 参数 (全部从 config 引用, 不硬编码)
 # ===================================================================
-MC_SEEDS   = cfg.MC_SEEDS_PIPELINE
+MC_SEEDS   = int(os.environ.get("SAR_MC_SEEDS", cfg.MC_SEEDS_PIPELINE))
 MC_SIGMA   = cfg.MC_SIGMA
 CAL_NOISE  = cfg.CAL_NOISE_SIGMA_V
 AVG_PAIRS  = cfg.AVG_PAIRS
@@ -281,7 +271,8 @@ def run_one_seed(seed, seed_idx):
     """
     p_caps, n_caps = gen_mc_caps(seed)
     cdac = DifferentialCDAC.from_mismatch(p_caps=p_caps, n_caps=n_caps)
-    pw = cdac.get_physical_weights_q0()
+    pw_p, pw_n = cdac.get_physical_weights_per_side_q0()
+    pw = [(p + n) / 2.0 for p, n in zip(pw_p, pw_n)]
     rng = np.random.default_rng(seed + 50000)
 
     # --- 标准 Shen 校准 ---
@@ -294,30 +285,13 @@ def run_one_seed(seed, seed_idx):
     valid = False
     wp = wn = list(cfg.NOMINAL_WEIGHTS_Q0)
     targets = []
-    alpha_info = None
-
     calibration_error = None
     try:
-        if EXPERIMENTAL_ALPHA_PRE:
-            # [EXPERIMENTAL/FROZEN] Observable-alpha-pre
-            result = shen.run_with_alpha_pre(rng=rng)
-            alpha_info = result['alpha_est']
-            valid = result['passes'][1]['all_valid']
-            wp = result['final_wp']
-            wn = result['final_wn']
-            targets = result['final_targets']
-        else:
-            # 标准 Shen
-            targets, wp, wn = shen.run(rng=rng)
-            valid = all(t['valid'] for t in targets)
+        targets, wp, wn = shen.run(rng=rng)
+        valid = all(t['valid'] for t in targets)
     except Exception as exc:
         valid = False
         calibration_error = f"{type(exc).__name__}: {exc}"
-
-    # --- Oracle alpha (仅供参考) ---
-    oracle_alpha = estimate_alpha_from_physical_low(
-        [pw[s] for s in [7,8,9,10,11,12,13]]
-    )['alpha']
 
     # --- Dynamic VFS measurement and one auditable FFT stimulus ---
     adc = _make_adc(cdac, cfg.NOMINAL_WEIGHTS_Q0, cfg.NOMINAL_WEIGHTS_Q0)
@@ -336,21 +310,51 @@ def run_one_seed(seed, seed_idx):
         r = adc.convert(VCM + vd/2, VCM - vd/2)
         decisions.append(list(r.decisions))
 
-    met_nom = compute_fft_coherent([SARDecoder().decode(d) for d in decisions],
-                                   n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K)
-    met_phy = compute_fft_coherent([SARDecoder(weights_p=list(pw), weights_n=list(pw)).decode(d) for d in decisions],
-                                   n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K)
+    nominal_decoder = SARDecoder()
+    physical_decoder = SARDecoder(
+        weights_p=list(pw_p), weights_n=list(pw_n)
+    )
+    met_nom_int = compute_fft_coherent(
+        [nominal_decoder.decode(d) for d in decisions],
+        n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
+    )
+    met_phy_int = compute_fft_coherent(
+        [physical_decoder.decode(d) for d in decisions],
+        n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
+    )
+    met_phy = compute_fft_coherent(
+        [physical_decoder.decode_fixed(d, fractional_bits=2)
+         for d in decisions],
+        n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
+    )
 
     if valid:
-        met_cal = compute_fft_coherent([SARDecoder(weights_p=list(wp), weights_n=list(wn)).decode(d) for d in decisions],
-                                       n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K)
+        calibrated_decoder = SARDecoder(
+            weights_p=list(wp), weights_n=list(wn)
+        )
+        met_cal_int = compute_fft_coherent(
+            [calibrated_decoder.decode(d) for d in decisions],
+            n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
+        )
+        met_cal = compute_fft_coherent(
+            [calibrated_decoder.decode_fixed(d, fractional_bits=2)
+             for d in decisions],
+            n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
+        )
     else:
         met_cal = {"sndr_db": -999, "sfdr_db": -999, "enob": 0}
+        met_cal_int = dict(met_cal)
 
     # --- Weight errors (absolute Q0) ---
     h_errors = {}
     for ts in TARGET_STAGES:
-        h_errors[f"err_{STAGE_NAMES[ts]}"] = round(float(abs(wp[ts] - pw[ts])), 4) if valid else 999
+        h_errors[f"err_{STAGE_NAMES[ts]}"] = (
+            round(float(max(
+                abs(wp[ts] - pw_p[ts]),
+                abs(wn[ts] - pw_n[ts]),
+            )), 4)
+            if valid else 999
+        )
 
     # --- Normalized weight ratio errors ---
     # e_ratio = (Ŵ_i / ΣŴ) / (W_i / ΣW) - 1
@@ -358,10 +362,10 @@ def run_one_seed(seed, seed_idx):
     ratio_errors = {}
     if valid:
         sum_wp_cal = sum(wp)
-        sum_wp_phy = sum(pw)
+        sum_wp_phy = sum(pw_p)
         for ts in TARGET_STAGES:
             ri_cal = wp[ts] / sum_wp_cal if sum_wp_cal > 0 else 0
-            ri_phy = pw[ts] / sum_wp_phy if sum_wp_phy > 0 else 1e-30
+            ri_phy = pw_p[ts] / sum_wp_phy if sum_wp_phy > 0 else 1e-30
             e_ratio = (ri_cal / ri_phy - 1.0) if ri_phy > 0 else 999
             ratio_errors[f"ratio_{STAGE_NAMES[ts]}"] = round(float(e_ratio), 6)
     else:
@@ -382,22 +386,26 @@ def run_one_seed(seed, seed_idx):
 
     # --- Result ---
     gap = round(met_phy["sndr_db"] - met_cal["sndr_db"], 3) if valid else -999
-    gain = round(met_cal["sndr_db"] - met_nom["sndr_db"], 3) if valid else -999
+    gain = round(
+        met_cal["sndr_db"] - met_nom_int["sndr_db"], 3
+    ) if valid else -999
 
     return {
         "seed": seed,
         "valid": valid,
-        "oracle_alpha": round(oracle_alpha, 6),
-        "obs_alpha": round(alpha_info['alpha_avg'], 6) if alpha_info else 1.0,
-        "nominal_sndr": met_nom["sndr_db"],
+        "nominal_sndr": met_nom_int["sndr_db"],
         "physical_sndr": met_phy["sndr_db"],
         "calibrated_sndr": met_cal["sndr_db"],
+        "physical_sndr_int12": met_phy_int["sndr_db"],
+        "calibrated_sndr_int12": met_cal_int["sndr_db"],
         "oracle_gap_db": gap,
         "cal_gain_db": gain,
-        "nominal_enob": met_nom["enob"],
+        "nominal_enob": met_nom_int["enob"],
         "physical_enob": met_phy["enob"],
         "calibrated_enob": met_cal["enob"],
-        "nominal_sfdr": met_nom["sfdr_db"],
+        "physical_enob_int12": met_phy_int["enob"],
+        "calibrated_enob_int12": met_cal_int["enob"],
+        "nominal_sfdr": met_nom_int["sfdr_db"],
         "physical_sfdr": met_phy["sfdr_db"],
         "calibrated_sfdr": met_cal["sfdr_db"],
         "calibration_error": calibration_error or "",
@@ -415,7 +423,7 @@ def run_one_seed(seed, seed_idx):
 # ===================================================================
 ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 run_id = hashlib.md5(ts.encode()).hexdigest()[:8]
-mode_label = "Observable-alpha-pre Shen" if EXPERIMENTAL_ALPHA_PRE else "7-Target Shen (H1R-Calibrated + High-Segment Recursive)"
+mode_label = "7-Target Shen half-difference + fixed dither + Q2 output"
 
 print("=" * 70)
 print(f"  SAR ADC Final Calibration Pipeline")
@@ -461,6 +469,12 @@ sndr_cal = np.array([r["calibrated_sndr"] for r in valid_r])
 sndr_phy = np.array([r["physical_sndr"] for r in valid_r])
 enob_cal = np.array([r["calibrated_enob"] for r in valid_r])
 enob_phy = np.array([r["physical_enob"] for r in valid_r])
+sndr_cal_int12 = np.array([
+    r["calibrated_sndr_int12"] for r in valid_r
+])
+enob_cal_int12 = np.array([
+    r["calibrated_enob_int12"] for r in valid_r
+])
 
 n_neg_gain = sum(1 for g in gains if g < 0)
 
@@ -544,8 +558,10 @@ print(f"  Oracle gap P95:      {gap_p95:.3f} dB")
 print(f"  Gap <= 0.5 dB:       {gap_pass_05}/{MC_SEEDS}")
 print(f"  Gap <= 1.0 dB:       {gap_pass_10}/{MC_SEEDS}")
 print(f"  SNDR cal P50:        {np.percentile(sndr_cal,50):.2f} dB")
+print(f"  SNDR int12 P50:      {np.percentile(sndr_cal_int12,50):.2f} dB")
 print(f"  SNDR phy P50:        {np.percentile(sndr_phy,50):.2f} dB")
 print(f"  ENOB cal P50:        {np.percentile(enob_cal,50):.2f} bit")
+print(f"  ENOB int12 P50:      {np.percentile(enob_cal_int12,50):.2f} bit")
 print(f"  ENOB phy P50:        {np.percentile(enob_phy,50):.2f} bit")
 print(f"  Negative gain:       {n_neg_gain}/{nv} ({n_neg_gain/nv*100:.1f}%)")
 if len(dnl_peaks) > 0:
@@ -593,9 +609,11 @@ print(f"  Provenance saved: {OUT_DIR}/run_manifest.json")
 # Save CSV
 # ===================================================================
 csv_path = os.path.join(OUT_DIR, f"final_pipeline_{run_id}.csv")
-base_fields = ["seed","valid","calibration_error","oracle_alpha","obs_alpha",
+base_fields = ["seed","valid","calibration_error",
                "nominal_sndr","physical_sndr","calibrated_sndr","oracle_gap_db","cal_gain_db",
                "nominal_enob","physical_enob","calibrated_enob",
+               "physical_sndr_int12","calibrated_sndr_int12",
+               "physical_enob_int12","calibrated_enob_int12",
                "nominal_sfdr","physical_sfdr","calibrated_sfdr"]
 fields = base_fields + ["dnl_peak","dnl_rms","inl_peak","inl_rms","n_missing"]
 for ts in TARGET_STAGES:
@@ -627,11 +645,11 @@ summary = {
     "run_id": run_id,
     "timestamp": ts,
     "mode": mode_label,
-    "experimental_alpha_pre": EXPERIMENTAL_ALPHA_PRE,
     "mc_seeds": MC_SEEDS,
     "mc_sigma": MC_SIGMA,
     "cal_noise_sigma_v": CAL_NOISE,
     "avg_pairs": AVG_PAIRS,
+    "output_fractional_bits": 2,
     "static_test": f"sampled_every_{STATIC_SAMPLE_INTERVAL}_codes",
     "oracle_gap_verdict": oracle_gap_verdict,
     "absolute_dynamic_verdict": absolute_dynamic_verdict,
@@ -646,8 +664,14 @@ summary = {
     "gap_pass_05db": gap_pass_05,
     "gap_pass_10db": gap_pass_10,
     "sndr_cal_p50_db": round(float(np.percentile(sndr_cal, 50)), 3),
+    "sndr_cal_int12_p50_db": round(
+        float(np.percentile(sndr_cal_int12, 50)), 3
+    ),
     "sndr_phy_p50_db": round(float(np.percentile(sndr_phy, 50)), 3),
     "enob_cal_p50": round(float(np.percentile(enob_cal, 50)), 3),
+    "enob_cal_int12_p50": round(
+        float(np.percentile(enob_cal_int12, 50)), 3
+    ),
     "enob_phy_p50": round(float(np.percentile(enob_phy, 50)), 3),
     "negative_gain_pct": round(n_neg_gain / nv * 100, 1) if nv > 0 else 100,
     "dnl_peak_p95_lsb": round(float(np.percentile(dnl_peaks, 95)), 4) if len(dnl_peaks) > 0 else -1,
@@ -686,8 +710,10 @@ report = [
     f"| Oracle gap P95 | {gap_p95:.3f} dB |",
     f"| Gap <= 0.5 dB | {gap_pass_05}/{MC_SEEDS} ({gap_pass_05/MC_SEEDS*100:.0f}%) |",
     f"| Gap <= 1.0 dB | {gap_pass_10}/{MC_SEEDS} ({gap_pass_10/MC_SEEDS*100:.0f}%) |",
-    f"| SNDR cal P50 | {np.percentile(sndr_cal,50):.2f} dB |",
-    f"| ENOB cal P50 | {np.percentile(enob_cal,50):.2f} bit |",
+    f"| SNDR cal P50 (Q2) | {np.percentile(sndr_cal,50):.2f} dB |",
+    f"| SNDR cal P50 (integer 12b diagnostic) | {np.percentile(sndr_cal_int12,50):.2f} dB |",
+    f"| ENOB cal P50 (Q2) | {np.percentile(enob_cal,50):.2f} bit |",
+    f"| ENOB cal P50 (integer 12b diagnostic) | {np.percentile(enob_cal_int12,50):.2f} bit |",
     f"| Negative gain | {n_neg_gain}/{nv} ({n_neg_gain/nv*100:.1f}%) |",
     f"| DNL peak P95 | {round(float(np.percentile(dnl_peaks,95)),4) if len(dnl_peaks)>0 else 'N/A'} LSB |",
     f"| INL peak P95 | {round(float(np.percentile(inl_peaks,95)),4) if len(inl_peaks)>0 else 'N/A'} LSB |",
@@ -739,36 +765,20 @@ report += [
     f"",
 ]
 
-if EXPERIMENTAL_ALPHA_PRE:
-    report += [
-        f"## Experimental: Observable-α-pre",
-        f"",
-        f"**WARNING: Experimental mode. Oracle-α tests have shown that the current α",
-        f"definition/application logic has fundamental errors (bridge-only: 0.365->1.645 dB).**",
-        f"",
-        f"1. **α Estimation:** From Pass-1 standard Shen calibration, compute",
-        f"   alpha = 4095 / sum(W_cal(Hi)). Uses only comparator-observable information.",
-        f"2. **Ruler Correction:** Apply alpha to low-segment nominal weights (L32C..T1C).",
-        f"   H1R remains nominal (not alpha-affected).",
-        f"3. **Re-calibration:** Run Shen calibration with alpha-corrected base ruler.",
-        f"",
-    ]
-else:
-    report += [
-        f"## Known Limitations",
-        f"",
-        f"- **Low-segment nominal weights:** L32C..T1C use nominal weights as the base ruler.",
-        f"  Low-segment shape error contributes ~0.2 dB to the SNDR gap through H1R calibration error.",
-        f"- **Bridge attribution:** Not assigned from this run. Bridge-only and high-only",
-        f"  mismatch must be separated by A/B experiments; a pure common gain error is not",
-        f"  sufficient evidence for an SNDR loss.",
-        f"- **Recursive noise accumulation:** Noise propagates through the 7-stage calibration chain.",
-        f"  512 avg pairs (~0.033 LSB per measurement) provides sufficient statistical suppression.",
-        f"- **Strict binary weighting:** Low-segment bit-by-bit calibration is mathematically impossible",
-        f"  because sum(lower) = target - 1 in binary-weighted arrays. The low segment cannot be",
-        f"  self-calibrated using the Shen force-0/force-1 protocol.",
-        f"",
-    ]
+report += [
+    f"## Known Limitations",
+    f"",
+    f"- **Dynamic output:** Acceptance uses Q2 reconstruction. Integer 12-bit output",
+    f"  is retained as a diagnostic because it adds a second quantization.",
+    f"- **Static sign-off:** The fast pipeline samples every {STATIC_SAMPLE_INTERVAL} codes.",
+    f"  It cannot claim full DNL/monotonic sign-off.",
+    f"- **Single-H1R codebook:** Independent full-transition checks found H4 carry",
+    f"  backsteps even with exact P/N physical weights. More averaging is not a fix.",
+    f"- **Shen scope:** This is a Shen-derived 12-bit split-CDAC calibration, not",
+    f"  the paper's flash + three redundancy + reservoir + LSB-repeat/SRM architecture.",
+    f"- **Detailed evidence:** See review/2026-07-24_12bit_shen_root_cause_report.md.",
+    f"",
+]
 
 with open(report_path, 'w', encoding='utf-8') as f:
     f.write("\n".join(report))

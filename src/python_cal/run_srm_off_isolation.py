@@ -68,14 +68,17 @@ def _high_only_caps(seed: int) -> tuple[dict[str, float], dict[str, float]]:
 
 def _run_calibration(cdac, avg_pairs: int, noise_sigma_v: float,
                      rng_seed: int, low_ruler_oracle: bool = False):
-    physical = cdac.get_physical_weights_q0()
+    physical_p, physical_n = cdac.get_physical_weights_per_side_q0()
+    physical = [
+        (p + n) / 2.0 for p, n in zip(physical_p, physical_n)
+    ]
     base_wp = base_wn = None
     if low_ruler_oracle:
         base_wp = list(cfg.NOMINAL_WEIGHTS_Q0)
         base_wn = list(cfg.NOMINAL_WEIGHTS_Q0)
         for stage in LOW_STAGES:
-            base_wp[stage] = physical[stage]
-            base_wn[stage] = physical[stage]
+            base_wp[stage] = physical_p[stage]
+            base_wn[stage] = physical_n[stage]
 
     ctrl = ShenCalibrationController(
         cdac=cdac,
@@ -133,8 +136,10 @@ def _dynamic_metrics(cdac, wp, wn, vfs: float) -> dict[str, float]:
     for vd in vin:
         result = cdac_adc.convert(VCM + vd / 2, VCM - vd / 2)
         decisions.append(list(result.decisions))
-    decoded = [SARDecoder(weights_p=list(wp), weights_n=list(wn)).decode(d)
-               for d in decisions]
+    decoder = SARDecoder(weights_p=list(wp), weights_n=list(wn))
+    decoded = [
+        decoder.decode_fixed(d, fractional_bits=2) for d in decisions
+    ]
     metrics = compute_fft_coherent(
         decoded,
         n_bits=N_BITS,
@@ -146,6 +151,7 @@ def _dynamic_metrics(cdac, wp, wn, vfs: float) -> dict[str, float]:
         "fft_amplitude_v": float(metadata["amplitude_v"]),
         "fft_peak_ratio_to_vfs": float(metadata["peak_ratio_to_vfs"]),
         "fft_clipping": bool(metadata["clipping"]),
+        "output_fractional_bits": 2,
     })
     return metrics
 

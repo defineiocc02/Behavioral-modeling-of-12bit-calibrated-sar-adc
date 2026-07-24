@@ -44,7 +44,7 @@ STAGE_SPECS: tuple[StageSpec, ...] = tuple([
     StageSpec(index=10, name="L4C",    nominal_weight=8,    is_physical=True,  role="cal_dac"),
     StageSpec(index=11, name="L2C",    nominal_weight=4,    is_physical=True,  role="cal_dac"),
     StageSpec(index=12, name="L1C",    nominal_weight=2,    is_physical=True,  role="cal_dac"),
-    StageSpec(index=13, name="T1C",    nominal_weight=1,    is_physical=True,  role="cal_dac"),
+    StageSpec(index=13, name="TERM",    nominal_weight=1,    is_physical=False, role="rounding"),
 ])
 
 # === 派生常量 (从 STAGE_SPECS 推导) ===
@@ -63,6 +63,7 @@ CU = 4e-15            # 单位电容 (F)
 VREF = 1.8            # 参考电压 VREFP (V)
 VREFN = 0.0           # 参考电压 VREFN (V)
 VCM = 0.9             # 共模电压 (V)
+N_BITS = 12           # 标称输出分辨率
 
 # CDAC 拓扑常量
 C_B_NOMINAL = 2       # 桥接电容 (单位 Cu)
@@ -78,7 +79,6 @@ CAP_NOMINAL_CU = {
     # 低段 (behind bridge): k=1..6
     'low_1c':  1,  'low_2c':  2,  'low_4c':  4,
     'low_8c':  8,  'low_16c': 16, 'low_32c': 32,
-    'low_term': 0.5,
     # 桥接: k=7 (internal)
     'bridge':  2,
     # 高段 (direct to top plate): k=8..14
@@ -88,7 +88,7 @@ CAP_NOMINAL_CU = {
 
 # 所有电容名称列表 (按物理顺序, 供 MC 失配生成遍历)
 ALL_CAP_NAMES = [
-    'low_1c', 'low_2c', 'low_4c', 'low_8c', 'low_16c', 'low_32c', 'low_term',
+    'low_1c', 'low_2c', 'low_4c', 'low_8c', 'low_16c', 'low_32c',
     'bridge',
     'high_1c_a', 'high_1c_r', 'high_2c', 'high_4c', 'high_8c', 'high_16c', 'high_32c',
 ]
@@ -96,7 +96,7 @@ ALL_CAP_NAMES = [
 # 阶段名称列表 (索引 0..13)
 STAGE_NAMES = [
     "H32C", "H16C", "H8C", "H4C", "H2C", "H1C-R", "H1C-A",
-    "L32C", "L16C", "L8C", "L4C", "L2C", "L1C", "T1C",
+    "L32C", "L16C", "L8C", "L4C", "L2C", "L1C", "TERM",
 ]
 
 # ============================================================================
@@ -137,15 +137,15 @@ CAL_TARGETS = [
 ]
 
 # [DEPRECATED] calDAC 搜索阶段: 仅用于 AsyncCalibrationController
-CAL_DAC_STAGES = [7, 8, 9, 10, 11, 12, 13]  # L32C..T1C
+CAL_DAC_STAGES = [7, 8, 9, 10, 11, 12, 13]  # L32C..L1C + digital terminal
 CAL_DAC_SEARCH_COUNT = 7
 
 # ============================================================================
 # Shen 2018 式校准配置
 # ============================================================================
-# 基础尺子: L32C..T1C (7个低段电容, stage 7-13), 总范围 127 Q0
+# 基础尺子: 6个低段物理电容 + 1次数字 terminal 比较, 总范围 127 Q0
 # 不会被递归算法自校准。H1R 已从尺子移除，作为第0个校准目标。
-BASE_RULER_STAGES = (7, 8, 9, 10, 11, 12, 13)  # L32C..T1C (仅低段标称)
+BASE_RULER_STAGES = (7, 8, 9, 10, 11, 12, 13)
 
 # Shen 校准目标: 7 个 (H1R 最优先, 用低段尺子测量)
 # 校准顺序: H1R → H1A → H2C → H4C → H8C → H16C → H32C
@@ -221,9 +221,10 @@ PHYSICAL_TO_WEIGHT_STAGE = {
 # 注意: CAL_NOISE_SIGMA_V 是权威值 (V)，ShenCalibrationController 的 cal_noise_sigma
 # 参数接收 V 单位。CAL_NOISE_SIGMA_LSB 仅供旧版 AsyncCalibrationController 参考。
 CAL_NOISE_SIGMA_V = 0.001    # 校准期间比较器噪声 RMS (V), ≈2.3 LSB@VREF=1.8V
-CAL_OFFSET_SIGMA_V = 0.5     # 失调标准差 (V)  — 需确认是否为 LSB 单位
 CAL_NOISE_SIGMA_LSB = 0.50   # [DEPRECATED] 校准噪声 RMS (LSB), 仅旧控制器使用
 CAL_OFFSET_SIGMA_LSB = 0.5   # [DEPRECATED] 失调标准差 (LSB), 仅旧控制器使用
+CAL_OFFSET_SIGMA_V = CAL_OFFSET_SIGMA_LSB * VREF / (1 << N_BITS)
+# 0.5 LSB input-referred comparator offset = 0.2197 mV, not 0.5 V.
 CAL_ZERO_TIE_THRESHOLD = 0.2 # 零残差检测阈值 (LSB), 对齐 VA ~0.003*VFS
 CONV_NOISE_SIGMA_LSB = 0.15  # 正常转换期间比较器噪声 RMS (LSB)
 

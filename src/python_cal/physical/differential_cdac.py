@@ -85,11 +85,26 @@ class DifferentialCDAC:
         self.current_switch_state = state
 
     def get_physical_weights_q0(self) -> list[float]:
-        """通过电荷求解器测量每个物理阶段的差分权重 (Q0)
+        """返回 P/N 物理权重的逐阶段均值 (Q0)。
 
-        方法: 测量每个电容的 complementary ΔVdiff (P→VREFP, N→VREFN),
-        按信号阶段总 ΔVdiff 归一化使 signal_weight = 4095 Q0,
-        确保理想 CDAC 下 physical == nominal。
+        兼容旧分析接口。需要真实分侧 oracle 时使用
+        :meth:`get_physical_weights_per_side_q0`，不能把本方法的均值同时
+        填入 P/N 解码器。
+        """
+        weights_p, weights_n = self.get_physical_weights_per_side_q0()
+        return [
+            round(float((wp + wn) / 2.0), 6)
+            for wp, wn in zip(weights_p, weights_n)
+        ]
+
+    def get_physical_weights_per_side_q0(self) -> tuple[list[float], list[float]]:
+        """通过电荷求解器独立测量 P/N 两侧物理权重 (Q0)。
+
+        每侧从 VCM 向 VREFP 切换，测得正常转换实际使用的半参考步进。
+        P/N 共用一个比例因子，使两侧 signal-weight 的均值为 4095；
+        因而不会抹掉真实的 P/N 总电容/增益不对称。
+
+        stage 13 是数字 terminal 判决，不是电容，权重固定为 1 Q0。
 
         这是测试 oracle — 校准控制器不得调用此方法。
         """
@@ -104,42 +119,57 @@ class DifferentialCDAC:
         sampling_sw = policy.sampling_state(VCM, VCM)
         self.sample(VCM, VCM, sampling_sw, VCM)
 
-        # 所有物理阶段 (0..12)，每个测量 complementary ΔVdiff
-        all_physical = list(range(13))  # 0..12
-        complementary_delta = {}
+        # 13 个物理阶段；stage 13 是 comparator-only terminal。
+        all_physical = list(range(13))
+        delta_p = {}
+        delta_n = {}
 
         for stage in all_physical:
             cap_name = policy.STAGE_TO_CAP[stage]
 
-            # Baseline: all VCM
+            # Baseline: all VCM.
             self.apply_switch_state(DifferentialSwitchState.all_vcm())
             sol_base = self.solve_current()
 
-            # Complementary: P→VREFP, N→VREFN
-            p_comp = DifferentialSwitchState.all_vcm().p_side.with_rail(cap_name, Rail.VREFP)
-            n_comp = DifferentialSwitchState.all_vcm().n_side.with_rail(cap_name, Rail.VREFN)
-            comp_sw = DifferentialSwitchState(p_side=p_comp, n_side=n_comp)
-            self.apply_switch_state(comp_sw)
-            sol_comp = self.solve_current()
+            p_active = DifferentialSwitchState(
+                p_side=DifferentialSwitchState.all_vcm().p_side.with_rail(
+                    cap_name, Rail.VREFP
+                ),
+                n_side=DifferentialSwitchState.all_vcm().n_side,
+            )
+            self.apply_switch_state(p_active)
+            sol_p = self.solve_current()
+            delta_p[stage] = sol_p.differential_input - sol_base.differential_input
 
-            complementary_delta[stage] = sol_comp.differential_input - sol_base.differential_input
+            n_active = DifferentialSwitchState(
+                p_side=DifferentialSwitchState.all_vcm().p_side,
+                n_side=DifferentialSwitchState.all_vcm().n_side.with_rail(
+                    cap_name, Rail.VREFP
+                ),
+            )
+            self.apply_switch_state(n_active)
+            sol_n = self.solve_current()
+            delta_n[stage] = sol_base.differential_input - sol_n.differential_input
 
-        # 信号阶段 (0..4, 6): sum=4095 for ideal CDAC
+        # 信号阶段 (0..4, 6): P/N 总量的均值归一到 4095 Q0。
         signal_stages = [0, 1, 2, 3, 4, 6]
-        total_signal_delta = sum(complementary_delta[s] for s in signal_stages)
+        total_p = sum(delta_p[s] for s in signal_stages)
+        total_n = sum(delta_n[s] for s in signal_stages)
+        common_scale = 4095.0 / ((total_p + total_n) / 2.0)
 
-        # 所有权重按比例归一化: signal_weight 恒为 4095
-        weights = [0.0] * 14
+        weights_p = [0.0] * 14
+        weights_n = [0.0] * 14
         for stage in all_physical:
-            weights[stage] = complementary_delta[stage] / total_signal_delta * 4095.0
+            weights_p[stage] = delta_p[stage] * common_scale
+            weights_n[stage] = delta_n[stage] * common_scale
+        weights_p[13] = 1.0
+        weights_n[13] = 1.0
 
-        # Terminal 权重 = 1 Q0 (标称值, 无物理电容, 不会参与失配)
-        weights[13] = 1.0
-
-        weights = [round(float(w), 6) for w in weights]
+        weights_p = [round(float(w), 6) for w in weights_p]
+        weights_n = [round(float(w), 6) for w in weights_n]
 
         # Restore
         self.sampled_charge = saved_charge
         self.current_switch_state = saved_sw
 
-        return weights
+        return weights_p, weights_n

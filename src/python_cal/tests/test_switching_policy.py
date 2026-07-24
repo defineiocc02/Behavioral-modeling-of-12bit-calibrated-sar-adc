@@ -15,16 +15,20 @@ def policy():
     return DifferentialSwitchingPolicy()
 
 
-def test_sampling_state_all_caps_to_input():
-    """采样阶段: 所有电容底板接 VINP 或 VINN"""
+def test_sampling_state_only_signal_caps_to_input():
+    """采样阶段: signal caps 接输入，calDAC/冗余/terminal 接 VCM。"""
     p = DifferentialSwitchingPolicy()
     state = p.sampling_state(1.0, 0.8)
 
+    signal_caps = {
+        "high_32c", "high_16c", "high_8c",
+        "high_4c", "high_2c", "high_1c_a",
+    }
     for name in SideSwitchState.CAP_NAMES:
-        assert state.p_side.get_rail(name) == Rail.VINP, \
-            f"P-side {name} should be VINP"
-        assert state.n_side.get_rail(name) == Rail.VINN, \
-            f"N-side {name} should be VINN"
+        expected_p = Rail.VINP if name in signal_caps else Rail.VCM
+        expected_n = Rail.VINN if name in signal_caps else Rail.VCM
+        assert state.p_side.get_rail(name) == expected_p
+        assert state.n_side.get_rail(name) == expected_n
 
 
 def test_reset_state_all_vcm(policy):
