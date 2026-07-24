@@ -59,16 +59,16 @@ def test_conversion_has_start_and_done(controller):
     assert AsyncEventType.CONVERSION_DONE in event_types
 
 
-def test_14_decisions_produced(controller):
-    """产生 14 个 decisions"""
+def test_15_decisions_produced(controller):
+    """Produce fourteen physical decisions plus one terminal decision."""
     result = controller.start_conversion(1.0, 0.8)
-    assert len(result.decisions) == 14
+    assert len(result.decisions) == 15
 
 
-def test_14_steps_in_trace(controller):
-    """trace 包含 14 个 step"""
+def test_15_steps_in_trace(controller):
+    """Trace contains all fifteen comparisons."""
     result = controller.start_conversion(1.0, 0.8)
-    assert len(result.steps) == 14
+    assert len(result.steps) == 15
 
 
 def test_final_state_is_done(controller):

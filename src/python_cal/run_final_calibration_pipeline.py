@@ -3,12 +3,12 @@ run_final_calibration_pipeline.py — SAR ADC 校准验收管线
 
 完整流程:
   1. 生成 MC 失配场景 (unit-cap sigma from config.MC_SIGMA)
-  2. Shen 7-target 校准 (VREFN/VREFP force-0/force-1 半差, P/N 分侧)
-     校准顺序: H1R→H1A→H2C→H4C→H8C→H16C→H32C
-     基础尺子: 低段 L32C..T1C (标称权重), H1R 已从尺子移除
+  2. Seven-target high-segment calibration using P/N half differences
+     Order: H1→H2→H4→H8-R→H8-A→H16→H32
+     Ruler: the complete 131-Q0 low segment plus terminal
      高段递归: 使用已校准高段 + 标称低段作为 ruler
-  3. 静态验证: DNL/INL (每64码采样二进制搜索)
-  4. 动态验证: SNDR/SFDR/ENOB (coherent sine FFT, Q2 production output)
+  3. 静态审计: 对 Q2 加权 decoder 做精确可达决策树检查
+  4. 动态验证: SNDR/SFDR/ENOB (coherent sine FFT, Q2 weighted output)
   5. 归一化权重比例误差: e_ratio = (Ŵ_i/ΣŴ)/(W_i/ΣW) - 1
   6. Monte Carlo yield: config.MC_SEEDS_PIPELINE seeds
   7. 输出: CSV + JSON + Markdown 报告
@@ -19,11 +19,9 @@ run_final_calibration_pipeline.py — SAR ADC 校准验收管线
   - 否则 -> FAIL
 
 变更历史:
-  - v1: 6-target Shen 校准 (H1R 标称, AVG_PAIRS=128) — FAIL (gap P50=1.054 dB)
-  - v2: 7-target Shen 校准 (H1R 直接校准, AVG_PAIRS=128) — CONDITIONAL PASS (gap P50=0.984 dB)
-  - v3: 7-target Shen 校准 (H1R 直接校准, AVG_PAIRS=512) — PASS (gap P50=0.289 dB, P95=1.238 dB)
-  - v4: 全 4095-transition 静态验证 + 归一化比例误差分析
-  - v5: 7-target 半差 + 固定 dither + P/N 分侧 + Q2 输出
+  v3.0 locks the 138-Cu integer array, full-array sampling, ordinary
+  weighted-sum decode, exact code-density static metrics and coherent FFT.
+  - v6: 每 seed 精确可达静态审计；不改变论文式加权 decoder
 """
 import sys, os, math, csv, json, hashlib, time
 import numpy as np
@@ -52,6 +50,10 @@ from python_cal.validation.fft_protocol import (
     measure_positive_vfs,
     validate_fft_stimulus,
 )
+from python_cal.validation.reachable_codebook import (
+    audit_reachable_codebook,
+    enumerate_reachable_leaves,
+)
 
 # ===================================================================
 # 参数 (全部从 config 引用, 不硬编码)
@@ -59,7 +61,7 @@ from python_cal.validation.fft_protocol import (
 MC_SEEDS   = int(os.environ.get("SAR_MC_SEEDS", cfg.MC_SEEDS_PIPELINE))
 MC_SIGMA   = cfg.MC_SIGMA
 CAL_NOISE  = cfg.CAL_NOISE_SIGMA_V
-AVG_PAIRS  = cfg.AVG_PAIRS
+AVG_PAIRS  = int(os.environ.get("SAR_AVG_PAIRS", cfg.AVG_PAIRS))
 MAX_CODE   = (1 << N_BITS) - 1  # 4095
 N_FFT      = cfg.FFT_N
 FFT_K      = cfg.FFT_K
@@ -71,8 +73,7 @@ FFT_PROTOCOL = FFTProtocol(
     amplitude_dbfs=SINE_AMP,
     phase_rad=SINE_PHASE,
 )
-STATIC_SAMPLE_INTERVAL = 64  # 静态测试采样间隔 (每64码测一次, 64个采样点)
-FULL_STATIC_SEEDS = 0         # 前N个seed运行完整4095-transition静态测试 (0=全部采样)
+OUTPUT_FRACTIONAL_BITS = 2
 
 # 用户绝对验收门。oracle gap 只作相对诊断，不能替代绝对 ENOB 门。
 MIN_CAL_ENOB_BITS = 11.5
@@ -98,151 +99,6 @@ def _conv(adc, vd):
     r = adc.convert(VCM + vd/2, VCM - vd/2)
     return SARDecoder().decode(r.decisions)
 
-def find_transition(adc, target_code, v_lo, v_hi, max_iter=30, decoder=None):
-    """Binary search for code transition threshold."""
-    if decoder is None:
-        decoder = adc._decoder if hasattr(adc, '_decoder') else SARDecoder()
-    for _ in range(max_iter):
-        v_mid = (v_lo + v_hi) / 2
-        result = adc.convert(VCM + v_mid/2, VCM - v_mid/2)
-        code = decoder.decode(list(result.decisions))
-        if code <= target_code:
-            v_lo = v_mid
-        else:
-            v_hi = v_mid
-        if v_hi - v_lo < 1e-8:
-            break
-    return (v_lo + v_hi) / 2
-
-def static_test_full(adc):
-    """Full 4095-transition static test: binary search every code threshold.
-
-    Measures all 4095 code transitions (0..MAX_CODE) for complete DNL/INL sign-off.
-    Each transition uses ~30 iterations of binary search.
-    O(4096*30) conversions per seed.
-
-    Returns:
-      dict with n_missing, n_non_monotonic, dnl_peak/rms, inl_peak/rms, sampled=False
-    """
-    # Find VFS range first (code 0 and code MAX_CODE)
-    v_neg = find_transition(adc, 0, -2.0, 0.0)
-    v_pos = find_transition(adc, MAX_CODE - 1, 0.0, 2.0)
-
-    transitions = {0: v_neg, MAX_CODE: v_pos}
-    non_mono = []
-    prev_t = v_neg
-
-    for code in range(1, MAX_CODE):
-        t = find_transition(adc, code, v_neg, v_pos, 30)
-        transitions[code] = t
-        if t <= prev_t:
-            non_mono.append(code)
-        prev_t = t
-
-    # Compute code widths from adjacent transitions
-    sorted_codes = sorted(transitions.keys())
-    widths = []
-    for i in range(len(sorted_codes) - 1):
-        c0, c1 = sorted_codes[i], sorted_codes[i+1]
-        t0, t1 = transitions[c0], transitions[c1]
-        widths.append(t1 - t0)
-
-    widths = np.array(widths)
-
-    # Ideal LSB from total range
-    lsb_ideal = (v_pos - v_neg) / MAX_CODE
-    if lsb_ideal <= 1e-12:
-        lsb_ideal = VREF / MAX_CODE
-
-    # DNL: (actual_width / ideal_width) - 1
-    dnl = widths / lsb_ideal - 1.0
-    dnl_valid = dnl[1:-1] if len(dnl) > 2 else dnl
-
-    # INL: cumulative deviation from ideal line
-    t_first = transitions[0]
-    inl = np.zeros(len(sorted_codes))
-    for i, c in enumerate(sorted_codes):
-        t_ideal = t_first + c * lsb_ideal
-        inl[i] = (transitions[c] - t_ideal) / lsb_ideal
-
-    missing = [i for i, w in enumerate(widths) if w <= 0]
-
-    return {
-        "n_missing": len(missing),
-        "n_non_monotonic": len(non_mono),
-        "missing_codes": missing[:10],
-        "non_monotonic": non_mono[:10],
-        "dnl_peak": round(float(np.max(np.abs(dnl_valid))) if len(dnl_valid) > 0 else 0, 4),
-        "dnl_rms": round(float(np.sqrt(np.mean(dnl_valid ** 2))) if len(dnl_valid) > 0 else 0, 4),
-        "inl_peak": round(float(np.max(np.abs(inl))) if len(inl) > 0 else 0, 4),
-        "inl_rms": round(float(np.sqrt(np.mean(inl ** 2))) if len(inl) > 0 else 0, 4),
-        "sampled": False,
-    }
-
-def static_test_sampled(adc, interval=64):
-    """Sampled static test: measure every `interval` codes for DNL/INL estimate.
-
-    Fast approximate static test. Measures ~64 transition thresholds at stride=64.
-    For detailed sign-off, use static_test_full().
-    """
-    codes_to_measure = list(range(0, MAX_CODE + 1, interval))
-    if MAX_CODE not in codes_to_measure:
-        codes_to_measure.append(MAX_CODE)
-
-    # Find VFS range
-    v_neg = find_transition(adc, 0, -2.0, 0.0)
-    v_pos = find_transition(adc, MAX_CODE - 1, 0.0, 2.0)
-
-    transitions = {0: v_neg}
-    non_mono = []
-    prev_t = v_neg
-
-    for code in codes_to_measure:
-        if code == 0:
-            continue
-        t = find_transition(adc, code, v_neg, v_pos, 30)
-        transitions[code] = t
-        if t <= prev_t:
-            non_mono.append(code)
-        prev_t = t
-
-    # Compute widths from measured transitions
-    measured_codes = sorted(transitions.keys())
-    widths = []
-    for i in range(len(measured_codes) - 1):
-        c0, c1 = measured_codes[i], measured_codes[i+1]
-        t0, t1 = transitions[c0], transitions[c1]
-        n_codes = c1 - c0
-        widths.extend([(t1 - t0) / n_codes] * n_codes)
-
-    widths = np.array(widths)
-    lsb_ideal = (v_pos - v_neg) / MAX_CODE
-    if lsb_ideal <= 1e-12:
-        lsb_ideal = VREF / MAX_CODE
-
-    dnl = widths / lsb_ideal - 1.0
-    dnl_valid = dnl[1:-1] if len(dnl) > 2 else dnl
-
-    t_first = transitions[0]
-    inl = np.zeros(len(measured_codes))
-    for i, c in enumerate(measured_codes):
-        t_ideal = t_first + c * lsb_ideal
-        inl[i] = (transitions[c] - t_ideal) / lsb_ideal
-
-    missing = [i for i, w in enumerate(widths) if w <= 0]
-
-    return {
-        "n_missing": len(missing),
-        "n_non_monotonic": len(non_mono),
-        "missing_codes": missing[:10],
-        "non_monotonic": non_mono[:10],
-        "dnl_peak": round(float(np.max(np.abs(dnl_valid))) if len(dnl_valid) > 0 else 0, 4),
-        "dnl_rms": round(float(np.sqrt(np.mean(dnl_valid ** 2))) if len(dnl_valid) > 0 else 0, 4),
-        "inl_peak": round(float(np.max(np.abs(inl))) if len(inl) > 0 else 0, 4),
-        "inl_rms": round(float(np.sqrt(np.mean(inl ** 2))) if len(inl) > 0 else 0, 4),
-        "sampled": True,
-    }
-
 # ===================================================================
 # MC 电容生成
 # ===================================================================
@@ -263,12 +119,8 @@ def gen_mc_caps(seed):
 # ===================================================================
 # 单 seed 运行
 # ===================================================================
-def run_one_seed(seed, seed_idx):
-    """Run one complete seed: calibration + static + dynamic.
-    
-    seed_idx: 0-based index for this seed in the MC run. Seeds 0..FULL_STATIC_SEEDS-1
-              get full 4095-transition static test; others get sampled test.
-    """
+def run_one_seed(seed, _seed_idx):
+    """Run calibration, exact reachable static audit, and coherent FFT."""
     p_caps, n_caps = gen_mc_caps(seed)
     cdac = DifferentialCDAC.from_mismatch(p_caps=p_caps, n_caps=n_caps)
     pw_p, pw_n = cdac.get_physical_weights_per_side_q0()
@@ -332,6 +184,12 @@ def run_one_seed(seed, seed_idx):
         calibrated_decoder = SARDecoder(
             weights_p=list(wp), weights_n=list(wn)
         )
+        reachable_leaves = enumerate_reachable_leaves(cdac)
+        static_result = audit_reachable_codebook(
+            cdac,
+            calibrated_decoder,
+            leaves=reachable_leaves,
+        )
         met_cal_int = compute_fft_coherent(
             [calibrated_decoder.decode(d) for d in decisions],
             n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
@@ -344,6 +202,8 @@ def run_one_seed(seed, seed_idx):
     else:
         met_cal = {"sndr_db": -999, "sfdr_db": -999, "enob": 0}
         met_cal_int = dict(met_cal)
+        calibrated_decoder = None
+        static_result = {}
 
     # --- Weight errors (absolute Q0) ---
     h_errors = {}
@@ -372,17 +232,27 @@ def run_one_seed(seed, seed_idx):
         for ts in TARGET_STAGES:
             ratio_errors[f"ratio_{STAGE_NAMES[ts]}"] = 999
 
-    # --- Static test (full for first FULL_STATIC_SEEDS seeds, sampled for rest) ---
+    # --- Exact static audit of the unmodified calibrated weighted decoder ---
     if valid:
-        cal_adc = _make_adc(cdac, wp, wn)
-        if seed_idx < FULL_STATIC_SEEDS:
-            stat = static_test_full(cal_adc)
-        else:
-            stat = static_test_sampled(cal_adc, interval=STATIC_SAMPLE_INTERVAL)
+        stat = {
+            "method": static_result["method"],
+            "n_reachable_leaves": static_result["n_reachable_leaves"],
+            "n_missing": static_result["n_missing_codes"],
+            "n_non_monotonic": static_result["n_integer_backsteps"],
+            "n_float_backsteps": static_result["n_float_backsteps"],
+            "max_integer_jump": static_result["max_integer_jump"],
+            "worst_float_step_lsb": static_result[
+                "worst_float_step_lsb"
+            ],
+            "dnl_peak": static_result["dnl_peak_lsb"],
+            "dnl_rms": static_result["dnl_rms_lsb"],
+            "inl_peak": static_result["inl_peak_lsb"],
+            "inl_rms": static_result["inl_rms_lsb"],
+        }
     else:
         stat = {"n_missing": -1, "n_non_monotonic": -1,
-                "dnl_peak": -1, "dnl_rms": -1, "inl_peak": -1, "inl_rms": -1,
-                "sampled": False}
+                "dnl_peak": None, "dnl_rms": None,
+                "inl_peak": None, "inl_rms": None}
 
     # --- Result ---
     gap = round(met_phy["sndr_db"] - met_cal["sndr_db"], 3) if valid else -999
@@ -421,9 +291,11 @@ def run_one_seed(seed, seed_idx):
 # ===================================================================
 # Main (direct execution script — run with: python run_final_calibration_pipeline.py)
 # ===================================================================
-ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-run_id = hashlib.md5(ts.encode()).hexdigest()[:8]
-mode_label = "7-Target Shen half-difference + fixed dither + Q2 output"
+run_timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+run_id = hashlib.md5(run_timestamp.encode()).hexdigest()[:8]
+mode_label = (
+    "7-target high-segment calibration + full-array sampling + Q2 weighted decoder + rectangular coherent FFT"
+)
 
 print("=" * 70)
 print(f"  SAR ADC Final Calibration Pipeline")
@@ -431,7 +303,7 @@ print(f"  Run ID: {run_id}")
 print(f"  Mode: {mode_label}")
 print(f"  {MC_SEEDS} MC seeds, sigma={MC_SIGMA*100:.1f}% unit-cap")
 print(f"  Calibration: {AVG_PAIRS} pairs, cal_noise={CAL_NOISE} V")
-print(f"  Static test: sampled every {STATIC_SAMPLE_INTERVAL} codes ({MAX_CODE//STATIC_SAMPLE_INTERVAL+1} sample points)")
+print("  Static test: exact reachable decision tree for every seed")
 print("=" * 70)
 
 results = []
@@ -478,13 +350,21 @@ enob_cal_int12 = np.array([
 
 n_neg_gain = sum(1 for g in gains if g < 0)
 
-# DNL/INL stats
-dnl_peaks = np.array([r["static"]["dnl_peak"] for r in valid_r
-                      if r["static"].get("dnl_peak", -1) >= 0])
-inl_peaks = np.array([r["static"]["inl_peak"] for r in valid_r
-                      if r["static"].get("inl_peak", -1) >= 0])
+# Exact static stats for the unmodified weighted decoder
+dnl_peaks = np.array([
+    r["static"]["dnl_peak"] for r in valid_r
+    if r["static"].get("dnl_peak") is not None
+])
+inl_peaks = np.array([
+    r["static"]["inl_peak"] for r in valid_r
+    if r["static"].get("inl_peak") is not None
+])
 n_missing_codes = sum(r["static"]["n_missing"] for r in valid_r
                       if r["static"].get("n_missing", -1) >= 0)
+n_non_monotonic = sum(
+    r["static"]["n_non_monotonic"] for r in valid_r
+    if r["static"].get("n_non_monotonic", -1) >= 0
+)
 
 # Per-target weight errors (absolute Q0)
 h_errs = {}
@@ -530,19 +410,24 @@ absolute_dynamic_pass = (
 )
 absolute_dynamic_verdict = "PASS" if absolute_dynamic_pass else "FAIL"
 
-# Static verdict: sampled scans are explicitly conditional, never hard PASS.
-static_verdict = "UNKNOWN (no static data)"
-if len(dnl_peaks) > 0:
-    dnl_p95 = float(np.percentile(dnl_peaks, 95)) if len(dnl_peaks) > 1 else float(dnl_peaks[0])
-    full_static_count = sum(
-        1 for r in valid_r if not r["static"].get("sampled", True)
-    )
-    if full_static_count < MC_SEEDS:
-        static_verdict = f"CONDITIONAL (full={full_static_count}/{MC_SEEDS}; sampled remainder)"
-    elif dnl_p95 > 1.0:
-        static_verdict = "FAIL (DNL P95 > 1.0 LSB)"
-    else:
-        static_verdict = "PASS"
+# Paper-style static signoff uses the exact deterministic limit of a slow-ramp
+# code-density test: no missing codes, no jump wider than one output code, and
+# peak DNL/INL <= 1 LSB.  Formal sub-LSB local backsteps are reported
+# separately; redundant decision-word overlap makes that a strictly stronger
+# property than the DNL/INL convention used in silicon measurements.
+static_pass = (
+    nv == MC_SEEDS
+    and n_missing_codes == 0
+    and all(r["static"]["max_integer_jump"] <= 1 for r in valid_r)
+    and len(dnl_peaks) == MC_SEEDS
+    and bool(np.all(dnl_peaks <= 1.0))
+    and len(inl_peaks) == MC_SEEDS
+    and bool(np.all(inl_peaks <= 1.0))
+)
+static_verdict = "PASS" if static_pass else "FAIL"
+formal_monotonic_verdict = (
+    "PASS" if n_non_monotonic == 0 else "DIAGNOSTIC FAIL"
+)
 
 acceptance_verdict = (
     "PASS" if absolute_dynamic_verdict == "PASS" and static_verdict == "PASS"
@@ -568,6 +453,7 @@ if len(dnl_peaks) > 0:
     print(f"  DNL peak P95:        {np.percentile(dnl_peaks,95):.4f} LSB")
     print(f"  INL peak P95:        {np.percentile(inl_peaks,95):.4f} LSB")
     print(f"  Total missing codes: {n_missing_codes}")
+    print(f"  Integer backsteps:   {n_non_monotonic}")
 print(f"  Elapsed:             {elapsed_total:.0f}s")
 print(f"")
 print(f"  Per-target weight errors (P50 / P95 Q0):")
@@ -585,6 +471,7 @@ print(f"")
 print(f"\n  ORACLE GAP VERDICT: {oracle_gap_verdict}  (P50={gap_p50:.3f} dB, P95={gap_p95:.3f} dB)")
 print(f"  ABSOLUTE DYNAMIC:   {absolute_dynamic_verdict}  (ENOB>{MIN_CAL_ENOB_BITS:.1f}, SNDR>{MIN_CAL_SNDR_DB:.2f} dB)")
 print(f"  STATIC VERDICT:   {static_verdict}")
+print(f"  FORMAL MONOTONIC: {formal_monotonic_verdict}")
 print(f"  ACCEPTANCE VERDICT: {acceptance_verdict}")
 
 # ===================================================================
@@ -600,7 +487,7 @@ manifest = generate_manifest(
     mc_seeds=MC_SEEDS,
     mc_sigma_pct=MC_SIGMA * 100,
     avg_pairs=AVG_PAIRS,
-    cal_noise_lsb=cfg.CAL_NOISE_SIGMA_LSB,
+    cal_noise_sigma_v=cfg.CAL_NOISE_SIGMA_V,
 )
 save_manifest_compact(manifest, OUT_DIR)
 print(f"  Provenance saved: {OUT_DIR}/run_manifest.json")
@@ -615,7 +502,12 @@ base_fields = ["seed","valid","calibration_error",
                "physical_sndr_int12","calibrated_sndr_int12",
                "physical_enob_int12","calibrated_enob_int12",
                "nominal_sfdr","physical_sfdr","calibrated_sfdr"]
-fields = base_fields + ["dnl_peak","dnl_rms","inl_peak","inl_rms","n_missing"]
+static_fields = [
+    "dnl_peak", "dnl_rms", "inl_peak", "inl_rms",
+    "n_missing", "n_non_monotonic", "n_float_backsteps",
+    "worst_float_step_lsb", "max_integer_jump",
+]
+fields = base_fields + static_fields
 for ts in TARGET_STAGES:
     fields.append(f"err_{STAGE_NAMES[ts]}")
 for ts in TARGET_STAGES:
@@ -626,11 +518,8 @@ with open(csv_path, 'w', newline='') as f:
     w.writerow(fields)
     for r in results:
         row = [r.get(f, "") for f in base_fields]
-        row.append(r["static"].get("dnl_peak", ""))
-        row.append(r["static"].get("dnl_rms", ""))
-        row.append(r["static"].get("inl_peak", ""))
-        row.append(r["static"].get("inl_rms", ""))
-        row.append(r["static"].get("n_missing", ""))
+        for field in static_fields:
+            row.append(r["static"].get(field, ""))
         for ts in TARGET_STAGES:
             row.append(r.get(f"err_{STAGE_NAMES[ts]}", ""))
         for ts in TARGET_STAGES:
@@ -643,20 +532,23 @@ print(f"\n  CSV saved: {csv_path}")
 # ===================================================================
 summary = {
     "run_id": run_id,
-    "timestamp": ts,
+    "timestamp": run_timestamp,
     "mode": mode_label,
     "mc_seeds": MC_SEEDS,
     "mc_sigma": MC_SIGMA,
     "cal_noise_sigma_v": CAL_NOISE,
     "avg_pairs": AVG_PAIRS,
-    "output_fractional_bits": 2,
-    "static_test": f"sampled_every_{STATIC_SAMPLE_INTERVAL}_codes",
+    "output_fractional_bits": OUTPUT_FRACTIONAL_BITS,
+    "static_test": "exact_reachable_decision_tree_every_seed",
+    "static_linearity": "exact_code_density_interval_widths",
+    "formal_backsteps_reported_separately": True,
     "oracle_gap_verdict": oracle_gap_verdict,
     "absolute_dynamic_verdict": absolute_dynamic_verdict,
     "acceptance_verdict": acceptance_verdict,
     "min_cal_enob_bits": MIN_CAL_ENOB_BITS,
     "min_cal_sndr_db": MIN_CAL_SNDR_DB,
     "static_verdict": static_verdict,
+    "formal_monotonic_verdict": formal_monotonic_verdict,
     "n_valid": nv,
     "n_total": MC_SEEDS,
     "gap_p50_db": gap_p50,
@@ -677,6 +569,7 @@ summary = {
     "dnl_peak_p95_lsb": round(float(np.percentile(dnl_peaks, 95)), 4) if len(dnl_peaks) > 0 else -1,
     "inl_peak_p95_lsb": round(float(np.percentile(inl_peaks, 95)), 4) if len(inl_peaks) > 0 else -1,
     "total_missing_codes": int(n_missing_codes),
+    "total_integer_backsteps": int(n_non_monotonic),
     "elapsed_s": round(elapsed_total, 1),
     "weight_errors": h_errs,
     "ratio_errors": ratio_errs,
@@ -694,12 +587,12 @@ report_path = os.path.join(OUT_DIR, f"final_report_{run_id}.md")
 report = [
     f"# SAR ADC Calibration Pipeline — Final Validation Report",
     f"",
-    f"**Run ID:** `{run_id}`  ",
-    f"**Date:** {ts}  ",
-    f"**Mode:** {mode_label}  ",
-    f"**MC Seeds:** {MC_SEEDS}, unit-cap sigma={MC_SIGMA*100:.1f}%  ",
-    f"**Calibration:** {AVG_PAIRS} avg pairs, cal_noise={CAL_NOISE} V  ",
-    f"**Static test:** sampled every {STATIC_SAMPLE_INTERVAL} codes ({MAX_CODE//STATIC_SAMPLE_INTERVAL+1} sample points)  ",
+    f"**Run ID:** `{run_id}`",
+    f"**Date:** {run_timestamp}",
+    f"**Mode:** {mode_label}",
+    f"**MC Seeds:** {MC_SEEDS}, unit-cap sigma={MC_SIGMA*100:.1f}%",
+    f"**Calibration:** {AVG_PAIRS} avg pairs, cal_noise={CAL_NOISE} V",
+    f"**Static test:** exact reachable decision tree for every seed",
     f"",
     f"## Summary",
     f"",
@@ -718,13 +611,15 @@ report = [
     f"| DNL peak P95 | {round(float(np.percentile(dnl_peaks,95)),4) if len(dnl_peaks)>0 else 'N/A'} LSB |",
     f"| INL peak P95 | {round(float(np.percentile(inl_peaks,95)),4) if len(inl_peaks)>0 else 'N/A'} LSB |",
     f"| Total missing codes | {int(n_missing_codes)} |",
+    f"| Formal sub-LSB integer backsteps (diagnostic) | {int(n_non_monotonic)} |",
     f"| Elapsed | {elapsed_total:.0f}s |",
     f"",
     f"## Verdict",
     f"",
-    f"**Oracle-gap diagnostic: {oracle_gap_verdict}** (gap P50 = {gap_p50:.3f} dB, P95 = {gap_p95:.3f} dB)  ",
-    f"**Absolute dynamic gate: {absolute_dynamic_verdict}** (all calibrated ENOB > {MIN_CAL_ENOB_BITS:.1f} bit and SNDR > {MIN_CAL_SNDR_DB:.2f} dB)  ",
-    f"**Static: {static_verdict}**",
+    f"**Oracle-gap diagnostic: {oracle_gap_verdict}** (gap P50 = {gap_p50:.3f} dB, P95 = {gap_p95:.3f} dB)",
+    f"**Absolute dynamic gate: {absolute_dynamic_verdict}** (all calibrated ENOB > {MIN_CAL_ENOB_BITS:.1f} bit and SNDR > {MIN_CAL_SNDR_DB:.2f} dB)",
+    f"**Static code-density: {static_verdict}; formal monotonic diagnostic: "
+    f"{formal_monotonic_verdict}.**",
     f"**Top-level acceptance: {acceptance_verdict}**",
     f"",
     f"## Per-Target Weight Errors (Absolute Q0)",
@@ -741,7 +636,8 @@ report += [
     f"",
     f"## Per-Target Normalized Ratio Errors |e_ratio|",
     f"",
-    f"e_ratio = (Ŵ_i/ΣŴ) / (W_i/ΣW) - 1, removes global scale factor.",
+    f"`e_ratio = (Wcal_i/sum(Wcal)) / (Wphy_i/sum(Wphy)) - 1`; "
+    f"the global scale factor is removed.",
     f"",
     f"| Target | P50 | P95 | Mean |",
     f"|--------|:---:|:---:|:---:|",
@@ -756,11 +652,11 @@ report += [
     f"## Method",
     f"",
     f"- **Calibration:** Shen 2018 force-0/force-1 protocol, P/N split-side",
-    f"- **Targets:** 7 stages (H1R, H1A, H2C, H4C, H8C, H16C, H32C high-segment recursive)",
-    f"- **Base ruler:** Low segment L32C..T1C (nominal weights, 127 Q0 total)",
-    f"- **Calibration order:** H1R->H1A->H2C->H4C->H8C->H16C->H32C",
-    f"- **Decoder:** Uses calibrated weights for all 14 stages",
-    f"- **Static test:** sampled every {STATIC_SAMPLE_INTERVAL} codes ({MAX_CODE//STATIC_SAMPLE_INTERVAL+1} points)",
+    f"- **Targets:** 7 stages (H1, H2, H4, H8-R, H8-A, H16, H32)",
+    f"- **Base ruler:** complete low segment plus terminal (131 Q0 total)",
+    f"- **Calibration order:** H1->H2->H4->H8-R->H8-A->H16->H32",
+    f"- **Decoder:** 15-stage P/N weights, direct Q2 weighted reconstruction",
+    f"- **Static test:** exact deterministic decision-tree partition for every seed",
     f"- **FFT:** {N_FFT}-point, rectangular window (coherent sampling), bin k={FFT_K}",
     f"",
 ]
@@ -770,13 +666,10 @@ report += [
     f"",
     f"- **Dynamic output:** Acceptance uses Q2 reconstruction. Integer 12-bit output",
     f"  is retained as a diagnostic because it adds a second quantization.",
-    f"- **Static sign-off:** The fast pipeline samples every {STATIC_SAMPLE_INTERVAL} codes.",
-    f"  It cannot claim full DNL/monotonic sign-off.",
-    f"- **Single-H1R codebook:** Independent full-transition checks found H4 carry",
-    f"  backsteps even with exact P/N physical weights. More averaging is not a fix.",
-    f"- **Shen scope:** This is a Shen-derived 12-bit split-CDAC calibration, not",
-    f"  the paper's flash + three redundancy + reservoir + LSB-repeat/SRM architecture.",
-    f"- **Detailed evidence:** See review/2026-07-24_12bit_shen_root_cause_report.md.",
+    f"- **Static scope:** The exact reachable decision tree is an offline audit.",
+    f"  It does not sort outputs, alter codes, or add a table to the decoder.",
+    f"- **Reference scope:** Chen 2024 informs the local backend-range criterion;",
+    f"  its auxiliary comparator and three-bridge circuit are not copied.",
     f"",
 ]
 

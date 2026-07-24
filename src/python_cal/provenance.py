@@ -122,8 +122,8 @@ def generate_manifest(
     dnl_iter: int = 15,
     mc_seeds: int = 100,
     mc_sigma_pct: float = 0.5,
-    avg_pairs: int = 128,
-    cal_noise_lsb: float = 0.5,
+    avg_pairs: int = 512,
+    cal_noise_sigma_v: float = 0.001,
 ) -> RunManifest:
     """生成运行溯源清单"""
     if repo_dir is None:
@@ -152,9 +152,8 @@ def generate_manifest(
         "python_cal.async_control.sar_fsm",
         "python_cal.calibration.shen_calibrator",
         "python_cal.calibration.shen_switching",
-        "python_cal.calibration.calibration_switching",
-        "python_cal.calibration.calibration_controller",
-        "python_cal.calibration.calibration_registers",
+        "python_cal.validation.reachable_codebook",
+        "python_cal.validation.fft_protocol",
         "python_cal.conversion.async_sar_adc",
     ]:
         module_hashes[mod_name] = _hash_module(mod_name)
@@ -185,15 +184,16 @@ def generate_manifest(
             "amplitude_dbfs": amp_dbfs,
         },
         dc_config={
-            "binary_search_iter": dnl_iter,
-            "method": "binary_search_per_transition",
-            "n_transitions": 4095,
+            "method": "exact_reachable_decision_tree",
+            "static_linearity": "exact_code_density_interval_widths",
+            "formal_backsteps_reported_separately": True,
+            "binary_search_iter": None,
         },
         mc_config={
             "n_seeds": mc_seeds,
             "sigma_pct": mc_sigma_pct,
             "avg_pairs": avg_pairs,
-            "cal_noise_lsb": cal_noise_lsb,
+            "cal_noise_sigma_v": cal_noise_sigma_v,
         },
         system_info={
             "python_version": sys.version,

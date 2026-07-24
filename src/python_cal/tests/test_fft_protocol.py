@@ -9,7 +9,7 @@ from python_cal.validation.fft_protocol import (
     measure_positive_vfs,
     validate_fft_stimulus,
 )
-from python_cal.fft_metrics import compute_fft_coherent
+from python_cal.fft_metrics import compute_fft_coherent, compute_fft_metrics
 
 
 def test_default_protocol_is_coherent_and_safe_at_minus_half_dbfs():
@@ -17,6 +17,7 @@ def test_default_protocol_is_coherent_and_safe_at_minus_half_dbfs():
     vin, metadata = build_coherent_differential_sine(0.8, protocol)
     assert math.gcd(protocol.n_fft, protocol.signal_bin) == 1
     assert metadata["coherent"]
+    assert metadata["window"] == "rectangular"
     assert not metadata["clipping"]
     assert metadata["peak_ratio_to_vfs"] < 1.0
     assert validate_fft_stimulus(vin, 0.8, protocol)["clipping"] is False
@@ -55,3 +56,16 @@ def test_sfdr_includes_harmonics_in_spur_search():
     )
     metrics = compute_fft_coherent(waveform, n_fft=n, signal_bin=k)
     assert metrics["sfdr_db"] == pytest.approx(20.0, abs=0.05)
+    assert metrics["window"] == "rectangular"
+    assert metrics["enbw_bins"] == 1.0
+
+
+def test_signoff_rejects_unknown_bin_instead_of_changing_window():
+    waveform = np.sin(2.0 * np.pi * 7 * np.arange(64) / 64)
+    with pytest.raises(ValueError, match="signal_bin_known is required"):
+        compute_fft_metrics(waveform, n_fft=64)
+
+
+def test_protocol_rejects_non_rectangular_window():
+    with pytest.raises(ValueError, match="rectangular"):
+        FFTProtocol(window="blackman").validate()

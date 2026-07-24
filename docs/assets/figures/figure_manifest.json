@@ -1,0 +1,17 @@
+{
+  "summary": "src\\python_cal\\validation_results\\final_pipeline\\final_summary_dbac69f3.json",
+  "table": "src\\python_cal\\validation_results\\final_pipeline\\final_pipeline_dbac69f3.csv",
+  "figures": [
+    "fig01",
+    "fig02",
+    "fig03",
+    "fig04",
+    "fig05",
+    "fig06",
+    "fig07",
+    "fig08",
+    "fig09"
+  ],
+  "window": "rectangular",
+  "generated_from_code": true
+}

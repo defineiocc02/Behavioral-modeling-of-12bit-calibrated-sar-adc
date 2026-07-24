@@ -14,6 +14,7 @@ from python_cal.topology.cdac_topology import (
 from python_cal.physical.charge_state import SampledChargeState
 from python_cal.physical.charge_solver import DifferentialChargeSolver, CDACNodeSolution
 from python_cal.topology.switch_state import DifferentialSwitchState
+from python_cal import config as cfg
 
 
 @dataclass
@@ -104,7 +105,7 @@ class DifferentialCDAC:
         P/N 共用一个比例因子，使两侧 signal-weight 的均值为 4095；
         因而不会抹掉真实的 P/N 总电容/增益不对称。
 
-        stage 13 是数字 terminal 判决，不是电容，权重固定为 1 Q0。
+        stage 14 is the comparator-only terminal decision (1 Q0).
 
         这是测试 oracle — 校准控制器不得调用此方法。
         """
@@ -119,8 +120,7 @@ class DifferentialCDAC:
         sampling_sw = policy.sampling_state(VCM, VCM)
         self.sample(VCM, VCM, sampling_sw, VCM)
 
-        # 13 个物理阶段；stage 13 是 comparator-only terminal。
-        all_physical = list(range(13))
+        all_physical = list(range(cfg.N_PHYSICAL))
         delta_p = {}
         delta_n = {}
 
@@ -151,19 +151,23 @@ class DifferentialCDAC:
             sol_n = self.solve_current()
             delta_n[stage] = sol_base.differential_input - sol_n.differential_input
 
-        # 信号阶段 (0..4, 6): P/N 总量的均值归一到 4095 Q0。
-        signal_stages = [0, 1, 2, 3, 4, 6]
+        # Every physical stage samples the input.  Use one common scale so P/N
+        # gain asymmetry remains observable while the mean signal sum equals
+        # the nominal 4887-Q0 reconstruction range.
+        signal_stages = list(cfg.SIGNAL_STAGES)
         total_p = sum(delta_p[s] for s in signal_stages)
         total_n = sum(delta_n[s] for s in signal_stages)
-        common_scale = 4095.0 / ((total_p + total_n) / 2.0)
+        common_scale = cfg.SIGNAL_WEIGHT_NOMINAL / (
+            (total_p + total_n) / 2.0
+        )
 
-        weights_p = [0.0] * 14
-        weights_n = [0.0] * 14
+        weights_p = [0.0] * cfg.N_STAGES
+        weights_n = [0.0] * cfg.N_STAGES
         for stage in all_physical:
             weights_p[stage] = delta_p[stage] * common_scale
             weights_n[stage] = delta_n[stage] * common_scale
-        weights_p[13] = 1.0
-        weights_n[13] = 1.0
+        weights_p[-1] = cfg.NOMINAL_WEIGHTS_Q0[-1]
+        weights_n[-1] = cfg.NOMINAL_WEIGHTS_Q0[-1]
 
         weights_p = [round(float(w), 6) for w in weights_p]
         weights_n = [round(float(w), 6) for w in weights_n]

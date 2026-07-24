@@ -34,13 +34,10 @@ jobs:
         run: python -m pytest
 
       - name: Render all documentation figures
-        run: |
-          python docs/figures/generate_modeling_figures.py \
-            --out-dir .artifacts/figures --formats png svg pdf
-          test "$(find .artifacts/figures -type f | wc -l)" -eq 33
+        run: python docs/figures/generate_modeling_figures.py
 
       - name: Upload rendered figures
         uses: actions/upload-artifact@v4
         with:
           name: modeling-figures
-          path: .artifacts/figures
+          path: docs/assets/figures

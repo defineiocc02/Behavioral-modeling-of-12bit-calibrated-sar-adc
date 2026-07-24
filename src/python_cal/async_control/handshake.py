@@ -88,17 +88,17 @@ class AsyncSARController:
         for stage in range(N_STAGES):
             self.current_stage = stage
 
-            if stage == 13:
-                # terminal: 仅比较, 无物理切换
+            if stage == N_STAGES - 1:
+                # Digital terminal: one residual comparison, no capacitor.
                 trial_start_time = self.current_time_s
                 self._log_event(AsyncEventType.DAC_TRIAL_START, stage)
                 sol = self.cdac.solve_current()
-                # ideal settling: trial=settled=cmp_request
                 self._log_event(AsyncEventType.DAC_SETTLED, stage)
                 self._log_event(AsyncEventType.CMP_REQUEST, stage)
                 cmp_request_time = self.current_time_s
                 cmp_result = self.comparator.request(
-                    sol.vtop_p, sol.vtop_n,
+                    sol.vtop_p,
+                    sol.vtop_n,
                     request_time_s=self.current_time_s,
                     rng=rng,
                 )
@@ -107,15 +107,20 @@ class AsyncSARController:
                 self._log_event(AsyncEventType.CMP_DONE, stage)
                 commit_time = self.current_time_s
                 self._log_event(AsyncEventType.BIT_COMMIT, stage)
-
                 self.decisions.append(cmp_result.output)
-                self._record_step(stage, sol, cmp_result, self.committed_state,
-                                  self.committed_state, sol,
-                                  trial_start_time=trial_start_time,
-                                  dac_settled_time=trial_start_time,
-                                  cmp_request_time=cmp_request_time,
-                                  cmp_done_time=cmp_done_time,
-                                  commit_time=commit_time)
+                self._record_step(
+                    stage,
+                    sol,
+                    cmp_result,
+                    self.committed_state,
+                    self.committed_state,
+                    sol,
+                    trial_start_time=trial_start_time,
+                    dac_settled_time=trial_start_time,
+                    cmp_request_time=cmp_request_time,
+                    cmp_done_time=cmp_done_time,
+                    commit_time=commit_time,
+                )
                 continue
 
             # ---- trial ----

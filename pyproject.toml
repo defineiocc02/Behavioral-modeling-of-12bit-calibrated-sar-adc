@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "behavioral-12bit-sar-adc"
-version = "2.1.0"
-description = "Reproducible Python behavioral model and Shen-derived calibration audit for a 12-bit asynchronous SAR ADC"
+version = "3.0.0"
+description = "12-bit asynchronous SAR ADC behavioral model with a 138-Cu integer split CDAC and foreground calibration"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

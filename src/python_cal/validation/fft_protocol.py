@@ -23,6 +23,8 @@ from typing import Callable
 
 import numpy as np
 
+FFT_WINDOW = "rectangular"
+
 
 @dataclass(frozen=True)
 class FFTProtocol:
@@ -33,6 +35,7 @@ class FFTProtocol:
     amplitude_dbfs: float = -0.5
     phase_rad: float = 0.123
     max_code_guard: int = 1
+    window: str = FFT_WINDOW
 
     def validate(self) -> None:
         if self.n_fft <= 0:
@@ -43,6 +46,10 @@ class FFTProtocol:
             raise ValueError("signal_bin and n_fft must be coprime for coherent sampling")
         if self.max_code_guard < 0:
             raise ValueError("max_code_guard must be non-negative")
+        if self.window != FFT_WINDOW:
+            raise ValueError(
+                "project FFT sign-off requires window='rectangular'"
+            )
 
     def as_dict(self) -> dict:
         self.validate()

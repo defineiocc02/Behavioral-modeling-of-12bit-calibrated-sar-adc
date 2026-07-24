@@ -1,26 +1,34 @@
 block: 12bit-asynchronous-sar-adc-python
-version: 2.1.0
+version: 3.0.0
 process: behavioral-model
 supply: 1.8
 eda_mode: review
 
 architecture:
   converter: differential split-CDAC asynchronous SAR
-  decisions: 14
-  physical_trials: 13
-  terminal: comparator-only digital rounding decision
-  calibration: Shen-derived 7-target force-0/force-1 half-difference
-  production_output: Q2 fixed-point
+  cdac_per_side_cu:
+    high: [32, 16, 8, 8, 4, 2, 1]
+    bridge: 2
+    low: [32, 16, 8, 4, 2, 2, 1]
+    total: 138
+  input_sampling: all 14 high-and-low physical capacitors
+  decisions: 15
+  physical_trials: 14
+  terminal: comparator-only rounding decision
+  calibration: 7-target high-segment force-0/force-1 half-difference
+  production_output: Q2 ordinary weighted sum
+  codebook_lut: none
 
-specs:
-  ideal_physical_enob: { min: 11.9, unit: bit }
-  calibrated_mc_enob_p50: { min: 11.5, unit: bit }
-  calibrated_mc_sndr_p50: { min: 70.99, unit: dB }
-  oracle_gap_p50: { max: 0.5, unit: dB }
-  oracle_gap_p95: { max: 2.0, unit: dB }
-  calibration_valid_yield: { min: 100, unit: percent }
-  full_static_missing_codes: { max: 0, unit: code }
-  full_static_non_monotonic_steps: { max: 0, unit: step }
+acceptance:
+  calibrated_mc_enob_each_seed: {min: 11.5, unit: bit}
+  calibrated_mc_sndr_each_seed: {min: 70.99, unit: dB}
+  oracle_gap_p50: {max: 0.5, unit: dB}
+  oracle_gap_p95: {max: 2.0, unit: dB}
+  calibration_valid_yield: {min: 100, unit: percent}
+  full_static_missing_codes: {max: 0, unit: code}
+  full_static_max_integer_jump: {max: 1, unit: code}
+  code_density_dnl_peak: {max: 1.0, unit: LSB}
+  code_density_inl_peak: {max: 1.0, unit: LSB}
 
 verification:
   dynamic_mc_seeds: 100
@@ -29,9 +37,12 @@ verification:
   calibration_noise_sigma_v: 0.001
   fft_points: 4096
   coherent_bin: 127
+  fft_phase_rad: 0.123
   amplitude_dbfs: -0.5
+  window: rectangular
+  vfs: dynamically measured per seed
 
 scope_limits:
   - Python behavioral evidence only; no transistor-level or silicon claim.
-  - Dynamic acceptance passes, while strict full static monotonicity fails.
-  - The architecture is Shen-derived, not a paper-exact implementation.
+  - Formal sub-LSB local backsteps are reported as a separate diagnostic.
+  - Chen 2024 informs redundancy criteria only; this is not its circuit.

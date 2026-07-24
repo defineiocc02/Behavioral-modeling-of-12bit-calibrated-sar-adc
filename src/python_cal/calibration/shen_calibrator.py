@@ -17,14 +17,14 @@ P/N 分侧扩展:
   W_N = mean(N1 - N0) / 2
 
 基础尺子 (BASE_RULER): L32C..L1C + 数字 terminal，不通过递归算法自校准.
-H1R (stage 5) 已从基础尺子中移除, 改为由 Shen 校准直接测量.
-校准顺序: H1R → H1A → H2C → H4C → H8C → H16C → H32C.
+The complete low segment is the matched seed ruler.
+Calibration order: H1 -> H2 -> H4 -> H8-R -> H8-A -> H16 -> H32.
 
 与旧 calDAC balance-search 方案的差异:
   - 残差通过正常 SAR 低位转换的完整输出码读出, 而非 calDAC 搜索
   - 不需要 calDAC 自校准或 calDAC 尺子精度
   - force 状态关于 VCM 对称，并用成对固定 dither 平均失调/锁码
-  - stage 13 是数字 terminal 比较，不是虚构的 0.5Cu 物理电容
+  - stage 14 is a comparator-only terminal decision
 """
 from dataclasses import dataclass, field
 
@@ -117,7 +117,7 @@ def run_lower_sar_subconversion(
     trial_stages = _lower_sar_trial_stages_sorted(lower_stages)
 
     for trial_stage in trial_stages:
-        if trial_stage == 13:
+        if trial_stage == cfg.N_STAGES - 1:
             # Digital terminal decision: compare the residual without toggling
             # any capacitor.  This must not depend on a synthetic low_term
             # entry in either the switch state or the CDAC topology.
@@ -218,7 +218,7 @@ class ShenCalibrationController:
     def run(
         self, rng=None, base_ruler_wp=None, base_ruler_wn=None
     ) -> tuple[list[dict], list[float], list[float]]:
-        """执行完整 7-target 校准 (H1R, H1A, H2C, H4C, H8C, H16C, H32C).
+        """Run the seven-target high-segment calibration.
 
         参数:
             rng: numpy.random.Generator

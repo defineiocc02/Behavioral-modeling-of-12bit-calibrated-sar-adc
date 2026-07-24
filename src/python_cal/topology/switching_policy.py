@@ -2,7 +2,7 @@
 switching_policy.py — 差分开关策略
 
 需求文档 §8: 实现明确的开关策略。
-开关策略必须明确写清楚 trial/commit 逻辑和 H1C-R 的角色。
+All fourteen high/low capacitors participate in normal conversion.
 
 SAR 开关策略 (compare-then-commit):
   1. 采样阶段: 信号电容底板接对应输入, 其余接 VCM
@@ -24,10 +24,9 @@ class DifferentialSwitchingPolicy:
     """全差分 SAR 开关策略
 
     固定规则:
-      - stage 0..6: 高段电容 (H32C → H1C-A)
-      - stage 5: H1C-R (冗余电容)
-      - stage 7..12: 低段 calDAC 电容 (L32C → L1C)
-      - stage 13: terminal 残差比较（无物理电容）
+      - stage 0..6: high segment (including the duplicate 8-Cu branch)
+      - stage 7..13: low segment (including the duplicate 2-Cu branch)
+      - stage 14: comparator-only terminal decision
 
     比较器极性 (固定, 需求文档 §9):
       output = 1 ⇔ VTOP_P > VTOP_N
@@ -46,9 +45,7 @@ class DifferentialSwitchingPolicy:
     def sampling_state(self, vinp: float, vinn: float) -> DifferentialSwitchState:
         """采样阶段开关状态
 
-        只有信号电容 H32C..H2C 与 H1C-A 采输入。
-        H1C-R、低段 calDAC 与数字 terminal 均保持 VCM。
-        这与 config.VCM_SAMPLE_MASK=382 和 SWITCH_CAL.va 一致。
+        Every physical high/low bottom plate samples its side input.
         """
         p_side = _make_side_sampling('P')
         n_side = _make_side_sampling('N')
@@ -72,7 +69,7 @@ class DifferentialSwitchingPolicy:
           output=1 (P>N) → 保留 N侧VREFP, P侧回VCM (降低 Vdiff)
           output=0 (P<N) → 保留 P侧VREFP, N侧回VCM (提高 Vdiff)
         """
-        if stage == 13:
+        if stage == 14:
             # 终端位由比较器对残差再判一次，不存在对应物理电容。
             return committed_state
         cap_name = self.STAGE_TO_CAP[stage]
@@ -97,7 +94,7 @@ class DifferentialSwitchingPolicy:
           P 侧电容保留 VREFP, N 侧电容回 VCM
           → Vdiff 增大
         """
-        if stage == 13:
+        if stage == 14:
             return committed_state
         cap_name = self.STAGE_TO_CAP[stage]
 
@@ -122,7 +119,7 @@ class DifferentialSwitchingPolicy:
         decision=0: P侧电容为VREFP (BITP=1)
         """
         decisions = []
-        for stage in range(13):  # stage 0..12 physical switches
+        for stage in range(14):  # stage 0..13 physical switches
             cap_name = SideSwitchState.STAGE_TO_FIELD[stage]
             p_rail = final_state.p_side.get_rail(cap_name)
             n_rail = final_state.n_side.get_rail(cap_name)
@@ -140,14 +137,11 @@ class DifferentialSwitchingPolicy:
 
 
 def _make_side_sampling(side: str) -> SideSwitchState:
-    """采样阶段单侧状态：仅 signal stages 接 VIN，其余保持 VCM。"""
+    """Connect every normal-conversion capacitor to the side input.
+
+    The bridge is an internal series element and therefore has no bottom
+    plate.  No low-segment capacitor is hidden at VCM.
+    """
     rail = Rail.VINP if side == 'P' else Rail.VINN
-    signal_caps = {
-        'high_32c', 'high_16c', 'high_8c',
-        'high_4c', 'high_2c', 'high_1c_a',
-    }
-    kwargs = {
-        name: rail if name in signal_caps else Rail.VCM
-        for name in SideSwitchState.CAP_NAMES
-    }
+    kwargs = {name: rail for name in SideSwitchState.CAP_NAMES}
     return SideSwitchState(**kwargs)

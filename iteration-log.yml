@@ -66,17 +66,53 @@ blocks:
             measured: "README, status matrix and figures agree"
             status: pass
         outcome: documentation-ready
+      - iteration: 3
+        timestamp: 2026-07-25T01:00:00+08:00
+        designer_changes:
+          - param: cdac_per_side
+            from: "64Cu high + 2Cu bridge + 63Cu low"
+            to: "71Cu high + 2Cu bridge + 65Cu low"
+            reason: eliminate missing codes without LUT or constrained remapping
+          - param: input_sampling
+            from: selected high caps only
+            to: all 14 high-and-low conversion capacitors
+            reason: include the complete physical CDAC in the sampled signal
+          - param: normal_comparisons
+            from: 14
+            to: 15
+            reason: add one integer low-redundancy decision
+          - param: project_version
+            from: 2.1.0
+            to: 3.0.0
+            reason: architecture-breaking release
+        optimizer_used: false
+        verification_level: L2-behavioral
+        verification_redo: true
+        results:
+          - spec: regression_tests
+            target: all pass
+            measured: 63/63
+            status: pass
+          - spec: final_100_seed_pipeline
+            target: acceptance pass
+            measured: "100/100 valid; SNDR P50 74.482 dB; gap P95 0.412 dB; zero missing codes"
+            status: pass
+          - spec: formal_local_monotonicity
+            target: diagnostic only
+            measured: "27065 integer backsteps across 100 seeds"
+            status: diagnostic-fail
+        outcome: release-pass-with-formal-monotonicity-limitation
 
-    total_iterations: 2
-    total_verification_redos: 2
+    total_iterations: 3
+    total_verification_redos: 3
     optimizer_invocations: 0
     converged: true
-    final_level: L2-behavioral-with-explicit-static-failure
+    final_level: L2-behavioral-release-signoff
 
 summary:
   total_blocks: 1
-  total_iterations: 2
-  total_verification_redos: 2
+  total_iterations: 3
+  total_verification_redos: 3
   optimizer_invocations: 0
   escalations_to_user: 0
   lessons_learned:
@@ -84,3 +120,5 @@ summary:
     - P/N averaging is not a valid physical upper-bound oracle under independent mismatch.
     - More averaging cannot repair a codebook with negative carry margin.
     - Behavioral completion and full specification sign-off must be reported separately.
+    - Redundancy must be checked per target against local backend range, not only as total extra capacitance.
+    - Code-density static metrics and formal local monotonicity are distinct acceptance claims.

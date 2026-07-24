@@ -2,6 +2,42 @@
 
 All notable changes to the public Python behavioral model are recorded here.
 
+## 3.0.0 — 2026-07-25
+
+### Architecture
+
+- Replaced the retired 128-Cu single-redundancy array with the locked integer
+  `71 Cu high / 2 Cu bridge / 65 Cu low` topology (138 Cu per side).
+- Added duplicate 8-Cu high and duplicate 2-Cu low branches.
+- Connected all fourteen high/low capacitors to VIN during normal sampling.
+- Increased normal conversion from fourteen to fifteen comparisons (+1).
+
+### Calibration and decode
+
+- Uses the full 131-Q0 low segment as the matched calibration ruler.
+- Calibrates H1, H2, H4, H8-R, H8-A, H16 and H32 with the existing
+  force-0/force-1 half-difference method.
+- Keeps 512 pairs and 14336 calibration sub-conversions, equal to v2.1.
+- Removed the unused centroid LUT decoder; active decode is only a P/N
+  weighted sum with Q2 rounding.
+
+### Verification and documentation
+
+- Passes 63/63 active Python regression tests.
+- Passes the 100/100-seed release pipeline: calibrated SNDR/ENOB P50
+  `74.482 dB / 12.080 bit`, oracle-gap P50/P95 `0.156/0.412 dB`,
+  zero missing codes, DNL/INL peak P95 `0.8663/0.9234 LSB`.
+- Retains 27065 formal local integer backsteps as a diagnostic limitation;
+  no LUT, sorting or remapping is used to conceal them.
+- Added exact code-density DNL/INL alongside the stronger formal local
+  backstep diagnostic.
+- Locked coherent FFT to N=4096, k=127, phase=0.123, -0.5 dBFS, dynamic VFS
+  and a rectangular window.
+- Replaced stale documentation and figures with v3.0 sources and generated
+  evidence.
+- Removed old active-tree Verilog-A, RTL, Spectre, report and review copies;
+  Git history and release tags remain the archive.
+
 ## 2.1.0 — 2026-07-24
 
 ### Added

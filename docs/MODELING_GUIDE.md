@@ -1,226 +1,157 @@
-# 12 位异步 SAR ADC Python 建模方案
+# v3.0 建模与实现指南
 
-## 1. 建模目标与证据等级
+## 1. 设计边界
 
-本模型的目标是把以下三条路径明确分开，并允许独立验证：
+模型把三条路径严格分离：
 
-1. **物理路径**：输入采样、P/N split-CDAC、电荷守恒、比较器与异步逐次逼近；
-2. **校准路径**：只能使用 comparator decisions 和数字重构，禁止读取真实物理权重；
-3. **验收路径**：物理 P/N oracle 仅用于离线误差归因，不参与校准或转换。
+- 物理路径：采样、split-CDAC、电荷守恒、比较器和异步 SAR；
+- 校准路径：只观察 comparator decisions，不读取物理 oracle；
+- 验证路径：允许读取真实 P/N 权重，用于误差归因和上限比较。
 
-当前证据等级是 Python behavioral L2：理想基线、失配 Monte Carlo、相干
-FFT、分侧 oracle 和静态 codebook 检查均可复现。它不是晶体管级 L3 PVT
-签核，也不是硅片结果。
+校准权重不会反馈改变物理 decision。测试会把 oracle API 替换成异常函数，
+确保生产校准没有偷读真实电容。
 
-## 2. 顶层架构
+## 2. 电容与桥接权重
 
-![Architecture](assets/figures/fig01_model_architecture.png)
-
-顶层类为
-[`AsyncBehavioralSARADC`](../src/python_cal/conversion/async_sar_adc.py)，
-其主要组成如下：
-
-| 模块 | 代码 | 责任 |
-|---|---|---|
-| 拓扑 | `topology/cdac_topology.py` | split-CDAC 电容与 bridge |
-| 开关策略 | `topology/switching_policy.py` | sampling、trial、commit、terminal |
-| 电荷求解 | `physical/charge_solver.py` | 依据电荷守恒求顶板电压 |
-| 差分 CDAC | `physical/differential_cdac.py` | P/N 独立电容与物理 oracle |
-| 比较器 | `comparator/dynamic_comparator.py` | 极性、offset、noise、decision time |
-| 异步控制 | `async_control/handshake.py` | 逐 stage trial/compare/commit |
-| 校准 | `calibration/shen_calibrator.py` | 七目标分侧权重估计 |
-| Shen 开关 | `calibration/shen_switching.py` | active force state；与 legacy calDAC 隔离 |
-| Shen 状态 | `calibration/calibration_fsm.py` | P0/P1/N0/N1 active 状态词汇 |
-| 解码 | `decode/sar_decoder.py` | int12、float、Q2 分侧重构 |
-| FFT 协议 | `validation/fft_protocol.py` | VFS、相干输入、削顶检查 |
-
-## 3. Split-CDAC 和 decision weights
-
-模型使用 13 个物理 trial stages 和一个数字 terminal decision：
-
-![Decision weights](assets/figures/fig02_cdac_decision_weights.png)
-
-标称 decision weights 为：
+每侧：
 
 ```text
-[2080, 1040, 520, 260, 130, 65, 65,
-   64,   32,  16,   8,   4,  2,  1]
+CH = 32+16+8+8+4+2+1 = 71 Cu
+CB = 2 Cu
+CL = 32+16+8+4+2+2+1 = 65 Cu
 ```
 
-其中：
-
-- stages 0–6：高段 H32、H16、H8、H4、H2、H1R、H1A；
-- stages 7–12：低段 L32、L16、L8、L4、L2、L1；
-- stage 13：数字 terminal，固定解码权重 1 Q0，没有物理电容。
-
-之前为了补出 1 Q0 而加入 `0.5Cu low_term` 的做法会改变低段总电容和
-bridge 缩放，属于模型过度物理化。当前拓扑低段是六个真实电容，terminal
-只比较当前残差。
-
-## 4. 输入采样与异步转换
-
-![Async sequence](assets/figures/fig03_async_conversion_sequence.png)
-
-一次转换包含：
-
-1. P/N 顶板分别采样 `vinp`/`vinn`；
-2. stage 0 开始执行差分 trial；
-3. 比较器输出决定 P 或 N 侧保留 VREFP；
-4. commit 后进入下一 stage；
-5. stage 13 只比较当前残差，不改变任何开关；
-6. 14 个 decisions 交给独立 decoder。
-
-这种结构保证数字权重变化不会反向改变物理 decision 序列。测试
-`test_decoder_weights_do_not_change_decisions` 明确约束了这一隔离。
-
-## 5. P/N 独立物理权重
-
-P/N 电容失配是独立的，因此真实上限不能用两侧平均权重代替。离线
-oracle 通过 `get_physical_weights_per_side_q0()` 分别测量：
+对两节点 split array，低段单位权重取 `CB = 2 Q0`，高段单位权重为
+`CL + CB = 67 Q0`，因此：
 
 ```text
-P side: P capacitor VCM -> VREFP, N side held
-N side: N capacitor VCM -> VREFP, P side held
+High: 32×67, 16×67, 8×67, 8×67, 4×67, 2×67, 1×67
+Low:  32×2,  16×2,  8×2,  4×2,  2×2,  2×2,  1×2
+Term:  1 Q0 comparator-only rounding decision
 ```
 
-两侧使用同一个 Q0 scale，得到 `weights_p` 和 `weights_n`。该 API 仅供
-验证脚本使用；生产 Shen 校准测试会 monkeypatch 该方法并在任何调用时失败，
-以防 oracle leakage。
+物理 signal-weight 总量是 `4887 Q0`。输出仍为 12-bit，decoder 统一缩放到
+`0..4095`。
 
-## 6. Shen-derived 七目标校准
+## 3. 全阵列采样
 
-![Calibration flow](assets/figures/fig04_shen_calibration_flow.png)
-
-目标顺序：
+采样阶段：
 
 ```text
-H1R -> H1A -> H2 -> H4 -> H8 -> H16 -> H32
+P-side all high/low bottom plates -> VINP
+N-side all high/low bottom plates -> VINN
+bridge capacitor -> internal floating series element
+top plates -> VCM
 ```
 
-对每个目标和每个 calibration pair，运行四个 lower-SAR 子转换：
+复位后所有 14 个 bottom plates 回到 VCM，保存的电荷产生满幅差分输入。
+低段不再被当成只供校准的隐藏 DAC，因此理想初始差分增益为 1。
+
+## 4. 普通异步 SAR
+
+每个物理 stage：
+
+1. 当前 P/N 电容同时 trial 到 VREFP；
+2. 求解 P/N top 与 bridge 节点；
+3. comparator 决定保留 P 侧或 N 侧；
+4. commit 后进入下一 stage。
+
+最后 stage 14 只比较当前残差，不切换物理电容。一次转换有 15 次比较，
+比退役版本多 1 次。
+
+## 5. 校准量尺与冗余
+
+Chen 等 2024 给出的通用判据是：被测位以下的可用权重之和减去被测权重，
+必须覆盖 comparator offset 与最大噪声。它说明冗余不能只看“总共多了多少
+电容”，而应逐目标检查 backend coverage。
+
+本设计的关键 nominal margin：
 
 ```text
-P0: P target forced to VREFN
-P1: P target forced to VREFP
-N0: N target forced to VREFN
-N1: N target forced to VREFP
+H32/H16/H8-A: 600 Q0
+H8-R/H4/H2/H1: 64 Q0
+L32..L4: 3 Q0
 ```
 
-分侧估计公式：
+主比较器足以从 H1 开始校准，但不适合从 L4 开始校准；因此完整低段作为
+匹配基准尺。这个取舍不复制 Chen 的 auxiliary comparator，只采用其
+“按局部 backend range 检查冗余”的思想。
 
-\[
-\hat W_P = \frac{1}{N}\sum_{j=1}^{N}\frac{S_{P0,j}-S_{P1,j}}{2}
-\]
+校准公式：
 
-\[
-\hat W_N = \frac{1}{N}\sum_{j=1}^{N}\frac{S_{N1,j}-S_{N0,j}}{2}
-\]
+```text
+W_P = mean(S_P0 - S_P1) / 2
+W_N = mean(S_N1 - S_N0) / 2
+```
 
-`/2` 来自全差分 force 的两倍变化；缺少它会把权重放大两倍。固定 dither
-序列 `[-1.5, -0.5, +0.5, +1.5] LSB` 在输入等效域对称注入，避免零噪声
-比较器锁在单一码，并使恒定 offset 在 VREFN/VREFP 半差中抵消。
+固定对称 dither 为 `[-1.5, -0.5, 0.5, 1.5] LSB`。高段 7 targets、
+512 pairs，总子转换次数 14336。
 
-H1R 首先使用标称低段 ruler 校准；后续高段使用已经校准的较低高段与低段
-共同递归。生产路径不使用 SRM，也不读取 physical weights。
+## 6. 解码
 
-## 7. 分侧数字解码与 Q2
+对 decision `d_i`：
 
-对于 decision \(d_i\)：
+```text
+signed_sum += W_P[i]   if d_i == 0
+signed_sum -= W_N[i]   if d_i == 1
+```
 
-\[
-s = \sum_i
-\begin{cases}
-W_{P,i}, & d_i=0 \\
--W_{N,i}, & d_i=1
-\end{cases}
-\]
+所有 14 个物理 stage 都是 signal stage。P/N 中心为：
 
-信号范围只由 signal stages `[0,1,2,3,4,6]` 决定：
+```text
+center = (sum(W_P_signal) + sum(W_N_signal)) / 2
+code_f = (signed_sum + center) * 4095 / total_signal_range
+```
 
-\[
-code_f =
-\frac{(s + W_{N,\mathrm{signal}})\,(2^{12}-1)}
-     {W_{P,\mathrm{signal}} + W_{N,\mathrm{signal}}}
-\]
+活动 decoder 只有上述加权和。Q2 仅保留两个小数位，避免把校准后的分数
+权重再次粗暴量化成整数；它不增加 CDAC 或比较周期。
 
-三个接口具有不同用途：
+## 7. 静态验证
 
-| 接口 | 输出 | 用途 |
-|---|---|---|
-| `decode()` | integer 0…4095 | 兼容旧 12-bit 接口 |
-| `decode_float()` | 浮点码 | 算法参考 |
-| `decode_fixed(..., 2)` | 0.25 LSB 步长 | 当前生产动态输出 |
+`validation/reachable_codebook.py` 不假设传递函数单调，而是递归求解每个
+可达 decision prefix 的输入区间。报告：
 
-物理 SAR 已经产生一次量化。将分数加权和再次舍入为整数会增加第二份近似
-独立的量化噪声，因此 Q2 不是“虚构 ADC 位数”，而是避免数字后处理丢掉
-校准信息所需的最小内部精度。
+- reachable leaves；
+- unique/missing integer codes；
+- float/integer local backsteps；
+- maximum integer jump；
+- exact code-density DNL/INL。
 
-![Output precision](assets/figures/fig07_q2_output_precision.png)
+code-density DNL 把同一 code 的所有不相交输入区间宽度相加，等价于无限
+慢、无限样本 ramp histogram。形式化 backstep 是更强的诊断，两者分别报告。
 
-## 8. FFT 验证协议
+## 8. 动态验证
 
-所有生产验证统一使用：
+正式 FFT 先用 nominal decoder 二分测量每个 seed 的正向 VFS，再生成：
 
-| 参数 | 值 |
+```text
+N = 4096
+k = 127, gcd(k,N)=1
+phase = 0.123 rad
+amplitude = VFS × 10^(-0.5/20)
+window = rectangular
+```
+
+输入先检查 clipping。SNDR、SFDR、ENOB 的 calibrated、integer-12 和
+physical-oracle 版本均由同一组物理 decisions 解码，避免不同 stimulus
+或旧 VFS 混用。
+
+## 9. 硬件资源
+
+相对退役的 128 Cu / 14-comparison 模型：
+
+| 资源 | v3.0 |
 |---|---:|
-| FFT points | 4096 |
-| Coherent signal bin | 127 |
-| Phase | 0.173 rad |
-| Amplitude | -0.5 dBFS |
-| Window | rectangular |
-| VFS | 每个模型动态测量 |
-| Clipping | 每次运行显式检查 |
+| CDAC | 138 Cu/side，+7.8% |
+| normal comparisons | 15，+1 |
+| calibration sub-conversions | 14336，不变 |
+| calibrated registers | 14 P/N weights + terminal constant |
+| decoder | signed MAC + common normalization + Q2 round |
+| LUT / CAM / SRAM exception table | 0 |
+| auxiliary calibration comparator | 0 |
 
-输入为：
+## 10. 不能外推的结论
 
-\[
-v_d[n] = A\sin(2\pi k n/N+\phi)
-\]
-
-其中 \(A=V_{FS}\,10^{-0.5/20}\)。旧 `VREF × 0.45` 只保留为诊断对照，
-不再与生产 pipeline 混用。SFDR spur 搜索包含 H2–H7；noise mask 不会
-错误地屏蔽谐波。
-
-## 9. 验证分层
-
-| 层级 | 方法 | 结论 |
-|---|---|---|
-| 理想基线 | 数学量化器 vs 物理 CDAC | 物理模型达到 11.944 bit |
-| 高段隔离 | 低段/bridge 理想 | 校准链本身可达约 11.86 bit |
-| 全 CDAC MC | 100 seeds，0.5% | 动态门通过 |
-| P/N oracle | 独立真实权重 | 校准接近物理上限 |
-| sampled static | 每 64 codes | 只能筛查，不能签核 |
-| full static | 4094 transitions | 发现缺码与回退 |
-| carry audit | 100 P/N weight sets | 91/100 H4 margin 为负 |
-
-## 10. 为什么不是完整 Shen 论文复现
-
-当前项目只采用了 Shen 的 comparator-observable force 与递归权重思想。
-论文级架构还包含当前模型没有实现的：
-
-- 三组 trial-group redundancy，而不是单一 H1R；
-- 每 bit reservoir charge-sharing；
-- 非采样 bit dither；
-- 最多 10 次 LSB repeat；
-- SRM 残差估计路径；
-- flash 前端和论文对应的三段 DAC 划分。
-
-因此准确表述是 **Shen-derived 12-bit split-CDAC calibration**。完整论文复现
-应另建 paper-exact profile，并分别验证 calibration-only、
-LSB-repeat-on/SRM-off 和 SRM-on。
-
-## 11. 已确认的静态根因
-
-![Static risk](assets/figures/fig10_static_codebook_risk.png)
-
-权重估计误差降低并不保证 codebook 单调。单 H1R 的 H4 carry margin 在
-100-seed 中 P50 为 -1.916 Q0，91/100 为负。2048 pairs 时权重更接近
-oracle，但仍出现 2 缺码和 2 回退，证明这不是平均噪声问题。
-
-可能的工程方向：
-
-1. 增加与 carry group 对应的可观测冗余；
-2. 增加 monotonic codebook/LUT 校准；
-3. 重构为 paper-exact 三冗余 profile。
-
-在其中一种方案实现并重新跑 full-static MC 之前，不能宣称全规格通过。
+当前结果不包含 comparator transistor noise model、settling PVT、reference
+droop、switch charge injection、layout parasitics 或 silicon histogram。
+这些必须在 Verilog-A/transistor/post-layout 阶段重新验证。

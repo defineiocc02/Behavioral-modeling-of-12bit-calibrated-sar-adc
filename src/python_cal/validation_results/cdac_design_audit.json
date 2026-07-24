@@ -1,0 +1,122 @@
+{
+  "method": "closed-form split-CDAC exact reachable interval audit",
+  "unit_cap_sigma": 0.005,
+  "seed_start": 50000,
+  "seed_count": 1000,
+  "candidates": {
+    "retired_95cu": {
+      "high": [
+        16,
+        8,
+        4,
+        2,
+        1
+      ],
+      "bridge": 1,
+      "low": [
+        24,
+        16,
+        10,
+        6,
+        4,
+        2,
+        1
+      ],
+      "terminal": 0.5,
+      "total_cu": 95,
+      "summary": {
+        "seeds": 1000,
+        "missing_codes": {
+          "min": 1.0,
+          "p50": 22.0,
+          "p95": 40.049999999999955,
+          "max": 84.0
+        },
+        "integer_backsteps": {
+          "min": 0.0,
+          "p50": 32.0,
+          "p95": 250.0,
+          "max": 380.0
+        },
+        "max_integer_jump": {
+          "min": 2.0,
+          "p50": 3.0,
+          "p95": 5.0,
+          "max": 9.0
+        },
+        "dnl_peak_lsb": {
+          "min": 1.0,
+          "p50": 1.6624941017879824,
+          "p95": 3.6374904999205118,
+          "max": 5.781063823509289
+        },
+        "inl_peak_lsb": {
+          "min": 0.8587753241732757,
+          "p50": 1.955961858483204,
+          "p95": 3.8646212178724637,
+          "max": 6.175044035549024
+        },
+        "zero_missing_yield": 0,
+        "paper_static_yield": 0
+      }
+    },
+    "v3_138cu": {
+      "high": [
+        32,
+        16,
+        8,
+        8,
+        4,
+        2,
+        1
+      ],
+      "bridge": 2,
+      "low": [
+        32,
+        16,
+        8,
+        4,
+        2,
+        2,
+        1
+      ],
+      "terminal": 1.0,
+      "total_cu": 138,
+      "summary": {
+        "seeds": 1000,
+        "missing_codes": {
+          "min": 0.0,
+          "p50": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "integer_backsteps": {
+          "min": 0.0,
+          "p50": 142.0,
+          "p95": 720.05,
+          "max": 1018.0
+        },
+        "max_integer_jump": {
+          "min": 1.0,
+          "p50": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "dnl_peak_lsb": {
+          "min": 0.6760638821208711,
+          "p50": 0.7303638300548285,
+          "p95": 0.8062235717335129,
+          "max": 0.8378761572888682
+        },
+        "inl_peak_lsb": {
+          "min": 0.7093014815985141,
+          "p50": 0.7457449091674775,
+          "p95": 0.7584648546778904,
+          "max": 0.7703681422676366
+        },
+        "zero_missing_yield": 1000,
+        "paper_static_yield": 1000
+      }
+    }
+  }
+}

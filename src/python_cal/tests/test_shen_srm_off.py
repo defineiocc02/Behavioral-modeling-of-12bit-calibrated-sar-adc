@@ -14,6 +14,7 @@ from python_cal.physical.differential_cdac import DifferentialCDAC
 from python_cal.async_control.timing import TimingParams
 from python_cal.calibration.calibration_fsm import ShenCalibrationState
 from python_cal.calibration.shen_switching import STAGE_TO_CAP
+from python_cal import config as cfg
 
 
 def _controller(cdac, pairs=1):
@@ -47,8 +48,8 @@ def test_frozen_alpha_path_is_absent_from_active_controller():
 
 def test_active_shen_switching_has_no_physical_terminal_or_legacy_search():
     """Active Shen switching is isolated from deprecated calDAC helpers."""
-    assert set(STAGE_TO_CAP) == set(range(13))
-    assert 13 not in STAGE_TO_CAP
+    assert set(STAGE_TO_CAP) == set(range(cfg.N_PHYSICAL))
+    assert cfg.N_STAGES - 1 not in STAGE_TO_CAP
     module_source = inspect.getsource(
         inspect.getmodule(ShenCalibrationController)
     )
@@ -65,8 +66,8 @@ def test_shen_does_not_read_physical_oracle(monkeypatch):
     monkeypatch.setattr(cdac, "get_physical_weights_q0", forbidden_oracle)
     targets, wp, wn = _controller(cdac, pairs=1).run(rng=np.random.default_rng(7))
 
-    assert len(targets) == 7
-    assert len(wp) == 14 and len(wn) == 14
+    assert len(targets) == len(cfg.SHEN_CAL_TARGETS)
+    assert len(wp) == cfg.N_STAGES and len(wn) == cfg.N_STAGES
     assert all(t["valid"] for t in targets)
 
 
@@ -76,9 +77,9 @@ def test_ideal_shen_is_direction_symmetric_without_srm():
         rng=np.random.default_rng(11)
     )
     assert all(t["valid"] for t in targets)
-    # H1C-R/H1C-A 的两侧量化结果可能互换 1 Q0，但平均值必须保持理想权重。
-    nominal = [2080, 1040, 520, 260, 130, 65, 65, 64, 32, 16, 8, 4, 2, 1]
-    for stage in range(14):
+    # Per-side quantization may differ by 1 Q0; the average remains nominal.
+    nominal = list(cfg.NOMINAL_WEIGHTS_Q0)
+    for stage in range(cfg.N_STAGES):
         assert abs((wp[stage] + wn[stage]) / 2.0 - nominal[stage]) < 1e-9
         assert abs(wp[stage] - wn[stage]) <= 2.0
     assert controller.state is ShenCalibrationState.DONE
@@ -95,7 +96,7 @@ def test_half_difference_and_fixed_dither_cancel_offset():
         fixed_dither_lsb=(-1.5, -0.5, 0.5, 1.5),
     )
     targets, wp, wn = controller.run(rng=np.random.default_rng(19))
-    nominal = [2080, 1040, 520, 260, 130, 65, 65, 64, 32, 16, 8, 4, 2, 1]
+    nominal = list(cfg.NOMINAL_WEIGHTS_Q0)
     assert all(t["valid"] for t in targets)
     assert wp == nominal
     assert wn == nominal
