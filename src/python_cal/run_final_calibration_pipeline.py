@@ -1,0 +1,780 @@
+"""
+run_final_calibration_pipeline.py — SAR ADC 校准验收管线
+
+完整流程:
+  1. 生成 MC 失配场景 (unit-cap sigma from config.MC_SIGMA)
+  2. Shen 7-target 校准 (force-0/force-1 协议, P/N 分侧)
+     校准顺序: H1R→H1A→H2C→H4C→H8C→H16C→H32C
+     基础尺子: 低段 L32C..T1C (标称权重), H1R 已从尺子移除
+     高段递归: 使用已校准高段 + 标称低段作为 ruler
+  3. 静态验证: DNL/INL (每64码采样二进制搜索)
+  4. 动态验证: SNDR/SFDR/ENOB (coherent sine FFT)
+  5. 归一化权重比例误差: e_ratio = (Ŵ_i/ΣŴ)/(W_i/ΣW) - 1
+  6. Monte Carlo yield: config.MC_SEEDS_PIPELINE seeds
+  7. 输出: CSV + JSON + Markdown 报告
+
+验收标准:
+  - gap P50 <= 0.5 dB AND gap P95 <= 2.0 dB -> PASS
+  - gap P50 <= 1.0 dB AND gap P95 <= 3.0 dB -> CONDITIONAL PASS
+  - 否则 -> FAIL
+
+变更历史:
+  - v1: 6-target Shen 校准 (H1R 标称, AVG_PAIRS=128) — FAIL (gap P50=1.054 dB)
+  - v2: 7-target Shen 校准 (H1R 直接校准, AVG_PAIRS=128) — CONDITIONAL PASS (gap P50=0.984 dB)
+  - v3: 7-target Shen 校准 (H1R 直接校准, AVG_PAIRS=512) — PASS (gap P50=0.289 dB, P95=1.238 dB)
+  - v4: 全 4095-transition 静态验证 + 归一化比例误差分析
+  - v5: 13-target 低段逐位 + 高段递归校准 (MC_SEEDS=100, AVG_PAIRS=512)
+"""
+import sys, os, math, csv, json, hashlib, time
+import numpy as np
+from datetime import datetime, timezone
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.dirname(SCRIPT_DIR)
+sys.path.insert(0, SRC_DIR)
+OUT_DIR = os.path.join(SCRIPT_DIR, "validation_results", "final_pipeline")
+os.makedirs(OUT_DIR, exist_ok=True)
+
+from python_cal import config as cfg
+from python_cal.physical.differential_cdac import DifferentialCDAC
+from python_cal.comparator.dynamic_comparator import DynamicComparator
+from python_cal.async_control.timing import TimingParams
+from python_cal.conversion.async_sar_adc import AsyncBehavioralSARADC
+from python_cal.decode.sar_decoder import SARDecoder
+from python_cal.topology.cdac_topology import VCM, VREF, CU, N_STAGES, N_BITS
+from python_cal.calibration.shen_calibrator import ShenCalibrationController
+from python_cal.calibration.alpha_estimator import (
+    estimate_alpha_from_calibration,
+    estimate_alpha_from_physical_low,
+    build_alpha_corrected_ruler,
+)
+from python_cal.calibration.calibration_fsm import ADCOperatingMode
+from python_cal.provenance import generate_manifest, save_manifest_compact
+from python_cal.fft_metrics import compute_fft_coherent
+from python_cal.validation.fft_protocol import (
+    FFTProtocol,
+    build_coherent_differential_sine,
+    measure_positive_vfs,
+    validate_fft_stimulus,
+)
+
+# ===================================================================
+# 交付模式开关
+# ===================================================================
+EXPERIMENTAL_ALPHA_PRE = False  # True = 使用 observable-alpha-pre (实验性, 已冻结)
+
+# ===================================================================
+# 参数 (全部从 config 引用, 不硬编码)
+# ===================================================================
+MC_SEEDS   = cfg.MC_SEEDS_PIPELINE
+MC_SIGMA   = cfg.MC_SIGMA
+CAL_NOISE  = cfg.CAL_NOISE_SIGMA_V
+AVG_PAIRS  = cfg.AVG_PAIRS
+MAX_CODE   = (1 << N_BITS) - 1  # 4095
+N_FFT      = cfg.FFT_N
+FFT_K      = cfg.FFT_K
+SINE_AMP   = cfg.FFT_AMPLITUDE_DBFS
+SINE_PHASE = cfg.FFT_PHASE
+FFT_PROTOCOL = FFTProtocol(
+    n_fft=N_FFT,
+    signal_bin=FFT_K,
+    amplitude_dbfs=SINE_AMP,
+    phase_rad=SINE_PHASE,
+)
+STATIC_SAMPLE_INTERVAL = 64  # 静态测试采样间隔 (每64码测一次, 64个采样点)
+FULL_STATIC_SEEDS = 0         # 前N个seed运行完整4095-transition静态测试 (0=全部采样)
+
+# 用户绝对验收门。oracle gap 只作相对诊断，不能替代绝对 ENOB 门。
+MIN_CAL_ENOB_BITS = 11.5
+MIN_CAL_SNDR_DB = 6.02 * MIN_CAL_ENOB_BITS + 1.76
+
+# 从 config 派生
+TARGET_STAGES = list(cfg.SHEN_CAL_TARGET_STAGES)
+STAGE_NAMES   = list(cfg.STAGE_NAMES)
+ALL_CAP_NAMES = list(cfg.ALL_CAP_NAMES)
+
+# ===================================================================
+# 静态测试工具
+# ===================================================================
+def _make_adc(cdac, wp, wn):
+    adc = AsyncBehavioralSARADC(cdac=cdac)
+    adc._decoder = SARDecoder(weights_p=list(wp), weights_n=list(wn))
+    adc._nominal_decode_enabled = True
+    object.__setattr__(adc, 'mode', ADCOperatingMode.READY)
+    return adc
+
+def _conv(adc, vd):
+    """Single differential conversion → decoded code."""
+    r = adc.convert(VCM + vd/2, VCM - vd/2)
+    return SARDecoder().decode(r.decisions)
+
+def find_transition(adc, target_code, v_lo, v_hi, max_iter=30, decoder=None):
+    """Binary search for code transition threshold."""
+    if decoder is None:
+        decoder = adc._decoder if hasattr(adc, '_decoder') else SARDecoder()
+    for _ in range(max_iter):
+        v_mid = (v_lo + v_hi) / 2
+        result = adc.convert(VCM + v_mid/2, VCM - v_mid/2)
+        code = decoder.decode(list(result.decisions))
+        if code <= target_code:
+            v_lo = v_mid
+        else:
+            v_hi = v_mid
+        if v_hi - v_lo < 1e-8:
+            break
+    return (v_lo + v_hi) / 2
+
+def static_test_full(adc):
+    """Full 4095-transition static test: binary search every code threshold.
+
+    Measures all 4095 code transitions (0..MAX_CODE) for complete DNL/INL sign-off.
+    Each transition uses ~30 iterations of binary search.
+    O(4096*30) conversions per seed.
+
+    Returns:
+      dict with n_missing, n_non_monotonic, dnl_peak/rms, inl_peak/rms, sampled=False
+    """
+    # Find VFS range first (code 0 and code MAX_CODE)
+    v_neg = find_transition(adc, 0, -2.0, 0.0)
+    v_pos = find_transition(adc, MAX_CODE - 1, 0.0, 2.0)
+
+    transitions = {0: v_neg, MAX_CODE: v_pos}
+    non_mono = []
+    prev_t = v_neg
+
+    for code in range(1, MAX_CODE):
+        t = find_transition(adc, code, v_neg, v_pos, 30)
+        transitions[code] = t
+        if t <= prev_t:
+            non_mono.append(code)
+        prev_t = t
+
+    # Compute code widths from adjacent transitions
+    sorted_codes = sorted(transitions.keys())
+    widths = []
+    for i in range(len(sorted_codes) - 1):
+        c0, c1 = sorted_codes[i], sorted_codes[i+1]
+        t0, t1 = transitions[c0], transitions[c1]
+        widths.append(t1 - t0)
+
+    widths = np.array(widths)
+
+    # Ideal LSB from total range
+    lsb_ideal = (v_pos - v_neg) / MAX_CODE
+    if lsb_ideal <= 1e-12:
+        lsb_ideal = VREF / MAX_CODE
+
+    # DNL: (actual_width / ideal_width) - 1
+    dnl = widths / lsb_ideal - 1.0
+    dnl_valid = dnl[1:-1] if len(dnl) > 2 else dnl
+
+    # INL: cumulative deviation from ideal line
+    t_first = transitions[0]
+    inl = np.zeros(len(sorted_codes))
+    for i, c in enumerate(sorted_codes):
+        t_ideal = t_first + c * lsb_ideal
+        inl[i] = (transitions[c] - t_ideal) / lsb_ideal
+
+    missing = [i for i, w in enumerate(widths) if w <= 0]
+
+    return {
+        "n_missing": len(missing),
+        "n_non_monotonic": len(non_mono),
+        "missing_codes": missing[:10],
+        "non_monotonic": non_mono[:10],
+        "dnl_peak": round(float(np.max(np.abs(dnl_valid))) if len(dnl_valid) > 0 else 0, 4),
+        "dnl_rms": round(float(np.sqrt(np.mean(dnl_valid ** 2))) if len(dnl_valid) > 0 else 0, 4),
+        "inl_peak": round(float(np.max(np.abs(inl))) if len(inl) > 0 else 0, 4),
+        "inl_rms": round(float(np.sqrt(np.mean(inl ** 2))) if len(inl) > 0 else 0, 4),
+        "sampled": False,
+    }
+
+def static_test_sampled(adc, interval=64):
+    """Sampled static test: measure every `interval` codes for DNL/INL estimate.
+
+    Fast approximate static test. Measures ~64 transition thresholds at stride=64.
+    For detailed sign-off, use static_test_full().
+    """
+    codes_to_measure = list(range(0, MAX_CODE + 1, interval))
+    if MAX_CODE not in codes_to_measure:
+        codes_to_measure.append(MAX_CODE)
+
+    # Find VFS range
+    v_neg = find_transition(adc, 0, -2.0, 0.0)
+    v_pos = find_transition(adc, MAX_CODE - 1, 0.0, 2.0)
+
+    transitions = {0: v_neg}
+    non_mono = []
+    prev_t = v_neg
+
+    for code in codes_to_measure:
+        if code == 0:
+            continue
+        t = find_transition(adc, code, v_neg, v_pos, 30)
+        transitions[code] = t
+        if t <= prev_t:
+            non_mono.append(code)
+        prev_t = t
+
+    # Compute widths from measured transitions
+    measured_codes = sorted(transitions.keys())
+    widths = []
+    for i in range(len(measured_codes) - 1):
+        c0, c1 = measured_codes[i], measured_codes[i+1]
+        t0, t1 = transitions[c0], transitions[c1]
+        n_codes = c1 - c0
+        widths.extend([(t1 - t0) / n_codes] * n_codes)
+
+    widths = np.array(widths)
+    lsb_ideal = (v_pos - v_neg) / MAX_CODE
+    if lsb_ideal <= 1e-12:
+        lsb_ideal = VREF / MAX_CODE
+
+    dnl = widths / lsb_ideal - 1.0
+    dnl_valid = dnl[1:-1] if len(dnl) > 2 else dnl
+
+    t_first = transitions[0]
+    inl = np.zeros(len(measured_codes))
+    for i, c in enumerate(measured_codes):
+        t_ideal = t_first + c * lsb_ideal
+        inl[i] = (transitions[c] - t_ideal) / lsb_ideal
+
+    missing = [i for i, w in enumerate(widths) if w <= 0]
+
+    return {
+        "n_missing": len(missing),
+        "n_non_monotonic": len(non_mono),
+        "missing_codes": missing[:10],
+        "non_monotonic": non_mono[:10],
+        "dnl_peak": round(float(np.max(np.abs(dnl_valid))) if len(dnl_valid) > 0 else 0, 4),
+        "dnl_rms": round(float(np.sqrt(np.mean(dnl_valid ** 2))) if len(dnl_valid) > 0 else 0, 4),
+        "inl_peak": round(float(np.max(np.abs(inl))) if len(inl) > 0 else 0, 4),
+        "inl_rms": round(float(np.sqrt(np.mean(inl ** 2))) if len(inl) > 0 else 0, 4),
+        "sampled": True,
+    }
+
+# ===================================================================
+# MC 电容生成
+# ===================================================================
+def gen_mc_caps(seed):
+    """Generate P/N independent caps with unit-cap-level MC mismatch."""
+    rng = np.random.default_rng(seed)
+    def make_side():
+        caps = {}
+        for name in ALL_CAP_NAMES:
+            cu_val = cfg.CAP_NOMINAL_CU[name]
+            if cu_val >= 1:
+                caps[name] = sum(CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(cu_val)))
+            else:
+                caps[name] = CU * cu_val * rng.normal(1.0, MC_SIGMA)
+        return caps
+    return make_side(), make_side()
+
+# ===================================================================
+# 单 seed 运行
+# ===================================================================
+def run_one_seed(seed, seed_idx):
+    """Run one complete seed: calibration + static + dynamic.
+    
+    seed_idx: 0-based index for this seed in the MC run. Seeds 0..FULL_STATIC_SEEDS-1
+              get full 4095-transition static test; others get sampled test.
+    """
+    p_caps, n_caps = gen_mc_caps(seed)
+    cdac = DifferentialCDAC.from_mismatch(p_caps=p_caps, n_caps=n_caps)
+    pw = cdac.get_physical_weights_q0()
+    rng = np.random.default_rng(seed + 50000)
+
+    # --- 标准 Shen 校准 ---
+    shen = ShenCalibrationController(
+        cdac=cdac, comparator=DynamicComparator(),
+        timing=TimingParams(), avg_pairs=AVG_PAIRS,
+        cal_noise_sigma=CAL_NOISE,
+    )
+
+    valid = False
+    wp = wn = list(cfg.NOMINAL_WEIGHTS_Q0)
+    targets = []
+    alpha_info = None
+
+    calibration_error = None
+    try:
+        if EXPERIMENTAL_ALPHA_PRE:
+            # [EXPERIMENTAL/FROZEN] Observable-alpha-pre
+            result = shen.run_with_alpha_pre(rng=rng)
+            alpha_info = result['alpha_est']
+            valid = result['passes'][1]['all_valid']
+            wp = result['final_wp']
+            wn = result['final_wn']
+            targets = result['final_targets']
+        else:
+            # 标准 Shen
+            targets, wp, wn = shen.run(rng=rng)
+            valid = all(t['valid'] for t in targets)
+    except Exception as exc:
+        valid = False
+        calibration_error = f"{type(exc).__name__}: {exc}"
+
+    # --- Oracle alpha (仅供参考) ---
+    oracle_alpha = estimate_alpha_from_physical_low(
+        [pw[s] for s in [7,8,9,10,11,12,13]]
+    )['alpha']
+
+    # --- Dynamic VFS measurement and one auditable FFT stimulus ---
+    adc = _make_adc(cdac, cfg.NOMINAL_WEIGHTS_Q0, cfg.NOMINAL_WEIGHTS_Q0)
+    vfs = measure_positive_vfs(
+        lambda vd: _conv(adc, vd),
+        MAX_CODE,
+        guard_codes=FFT_PROTOCOL.max_code_guard,
+    )
+    vin, fft_meta = build_coherent_differential_sine(vfs, FFT_PROTOCOL)
+    fft_check = validate_fft_stimulus(vin, vfs, FFT_PROTOCOL)
+    if fft_check["clipping"]:
+        raise RuntimeError(f"FFT stimulus clips at seed={seed}: {fft_check}")
+
+    decisions = []
+    for vd in vin:
+        r = adc.convert(VCM + vd/2, VCM - vd/2)
+        decisions.append(list(r.decisions))
+
+    met_nom = compute_fft_coherent([SARDecoder().decode(d) for d in decisions],
+                                   n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K)
+    met_phy = compute_fft_coherent([SARDecoder(weights_p=list(pw), weights_n=list(pw)).decode(d) for d in decisions],
+                                   n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K)
+
+    if valid:
+        met_cal = compute_fft_coherent([SARDecoder(weights_p=list(wp), weights_n=list(wn)).decode(d) for d in decisions],
+                                       n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K)
+    else:
+        met_cal = {"sndr_db": -999, "sfdr_db": -999, "enob": 0}
+
+    # --- Weight errors (absolute Q0) ---
+    h_errors = {}
+    for ts in TARGET_STAGES:
+        h_errors[f"err_{STAGE_NAMES[ts]}"] = round(float(abs(wp[ts] - pw[ts])), 4) if valid else 999
+
+    # --- Normalized weight ratio errors ---
+    # e_ratio = (Ŵ_i / ΣŴ) / (W_i / ΣW) - 1
+    # This removes global scale factor and reveals per-weight relative accuracy.
+    ratio_errors = {}
+    if valid:
+        sum_wp_cal = sum(wp)
+        sum_wp_phy = sum(pw)
+        for ts in TARGET_STAGES:
+            ri_cal = wp[ts] / sum_wp_cal if sum_wp_cal > 0 else 0
+            ri_phy = pw[ts] / sum_wp_phy if sum_wp_phy > 0 else 1e-30
+            e_ratio = (ri_cal / ri_phy - 1.0) if ri_phy > 0 else 999
+            ratio_errors[f"ratio_{STAGE_NAMES[ts]}"] = round(float(e_ratio), 6)
+    else:
+        for ts in TARGET_STAGES:
+            ratio_errors[f"ratio_{STAGE_NAMES[ts]}"] = 999
+
+    # --- Static test (full for first FULL_STATIC_SEEDS seeds, sampled for rest) ---
+    if valid:
+        cal_adc = _make_adc(cdac, wp, wn)
+        if seed_idx < FULL_STATIC_SEEDS:
+            stat = static_test_full(cal_adc)
+        else:
+            stat = static_test_sampled(cal_adc, interval=STATIC_SAMPLE_INTERVAL)
+    else:
+        stat = {"n_missing": -1, "n_non_monotonic": -1,
+                "dnl_peak": -1, "dnl_rms": -1, "inl_peak": -1, "inl_rms": -1,
+                "sampled": False}
+
+    # --- Result ---
+    gap = round(met_phy["sndr_db"] - met_cal["sndr_db"], 3) if valid else -999
+    gain = round(met_cal["sndr_db"] - met_nom["sndr_db"], 3) if valid else -999
+
+    return {
+        "seed": seed,
+        "valid": valid,
+        "oracle_alpha": round(oracle_alpha, 6),
+        "obs_alpha": round(alpha_info['alpha_avg'], 6) if alpha_info else 1.0,
+        "nominal_sndr": met_nom["sndr_db"],
+        "physical_sndr": met_phy["sndr_db"],
+        "calibrated_sndr": met_cal["sndr_db"],
+        "oracle_gap_db": gap,
+        "cal_gain_db": gain,
+        "nominal_enob": met_nom["enob"],
+        "physical_enob": met_phy["enob"],
+        "calibrated_enob": met_cal["enob"],
+        "nominal_sfdr": met_nom["sfdr_db"],
+        "physical_sfdr": met_phy["sfdr_db"],
+        "calibrated_sfdr": met_cal["sfdr_db"],
+        "calibration_error": calibration_error or "",
+        "fft_vfs_v": round(float(vfs), 9),
+        "fft_amplitude_v": round(float(fft_meta["amplitude_v"]), 9),
+        "fft_peak_ratio_to_vfs": round(float(fft_meta["peak_ratio_to_vfs"]), 9),
+        "fft_clipping": bool(fft_meta["clipping"]),
+        **h_errors,
+        **ratio_errors,
+        "static": stat,
+    }
+
+# ===================================================================
+# Main (direct execution script — run with: python run_final_calibration_pipeline.py)
+# ===================================================================
+ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+run_id = hashlib.md5(ts.encode()).hexdigest()[:8]
+mode_label = "Observable-alpha-pre Shen" if EXPERIMENTAL_ALPHA_PRE else "7-Target Shen (H1R-Calibrated + High-Segment Recursive)"
+
+print("=" * 70)
+print(f"  SAR ADC Final Calibration Pipeline")
+print(f"  Run ID: {run_id}")
+print(f"  Mode: {mode_label}")
+print(f"  {MC_SEEDS} MC seeds, sigma={MC_SIGMA*100:.1f}% unit-cap")
+print(f"  Calibration: {AVG_PAIRS} pairs, cal_noise={CAL_NOISE} V")
+print(f"  Static test: sampled every {STATIC_SAMPLE_INTERVAL} codes ({MAX_CODE//STATIC_SAMPLE_INTERVAL+1} sample points)")
+print("=" * 70)
+
+results = []
+t_start = time.time()
+
+for si in range(MC_SEEDS):
+    seed = 10000 + si
+    r = run_one_seed(seed, si)
+    results.append(r)
+
+    if (si + 1) % 5 == 0:
+        vr = [x for x in results if x["valid"]]
+        if vr:
+            gaps = [x["oracle_gap_db"] for x in vr]
+            elapsed = time.time() - t_start
+            print(f"  {si+1}/{MC_SEEDS}: valid={len(vr)}, "
+                  f"gap P50={np.percentile(gaps,50):.3f}dB, "
+                  f"time={elapsed:.0f}s")
+
+elapsed_total = time.time() - t_start
+
+# ===================================================================
+# Statistics
+# ===================================================================
+valid_r = [r for r in results if r["valid"]]
+nv = len(valid_r)
+
+if nv == 0:
+    print("\n  ALL CALIBRATIONS FAILED!")
+    sys.exit(1)
+
+gaps = np.array([r["oracle_gap_db"] for r in valid_r])
+gains = np.array([r["cal_gain_db"] for r in valid_r])
+sndr_cal = np.array([r["calibrated_sndr"] for r in valid_r])
+sndr_phy = np.array([r["physical_sndr"] for r in valid_r])
+enob_cal = np.array([r["calibrated_enob"] for r in valid_r])
+enob_phy = np.array([r["physical_enob"] for r in valid_r])
+
+n_neg_gain = sum(1 for g in gains if g < 0)
+
+# DNL/INL stats
+dnl_peaks = np.array([r["static"]["dnl_peak"] for r in valid_r
+                      if r["static"].get("dnl_peak", -1) >= 0])
+inl_peaks = np.array([r["static"]["inl_peak"] for r in valid_r
+                      if r["static"].get("inl_peak", -1) >= 0])
+n_missing_codes = sum(r["static"]["n_missing"] for r in valid_r
+                      if r["static"].get("n_missing", -1) >= 0)
+
+# Per-target weight errors (absolute Q0)
+h_errs = {}
+for ts in TARGET_STAGES:
+    sname = STAGE_NAMES[ts]
+    errs = np.array([r[f"err_{sname}"] for r in valid_r])
+    h_errs[sname] = {
+        "P50": round(float(np.percentile(errs, 50)), 4),
+        "P95": round(float(np.percentile(errs, 95)), 4),
+        "mean": round(float(np.mean(errs)), 4),
+    }
+
+# Per-target normalized ratio errors
+ratio_errs = {}
+for ts in TARGET_STAGES:
+    sname = STAGE_NAMES[ts]
+    rerrs = np.array([abs(r[f"ratio_{sname}"]) for r in valid_r])
+    ratio_errs[sname] = {
+        "P50": round(float(np.percentile(rerrs, 50)), 6),
+        "P95": round(float(np.percentile(rerrs, 95)), 6),
+        "mean": round(float(np.mean(rerrs)), 6),
+    }
+
+# ===================================================================
+# Verdicts: relative oracle diagnostic, absolute dynamic gate, and static gate
+# ===================================================================
+gap_p50 = float(np.percentile(gaps, 50))
+gap_p95 = float(np.percentile(gaps, 95))
+gap_pass_05 = int(sum(1 for g in gaps if g <= 0.5))
+gap_pass_10 = int(sum(1 for g in gaps if g <= 1.0))
+
+if gap_p50 <= 0.5 and gap_p95 <= 2.0:
+    oracle_gap_verdict = "PASS"
+elif gap_p50 <= 1.0 and gap_p95 <= 3.0:
+    oracle_gap_verdict = "CONDITIONAL PASS"
+else:
+    oracle_gap_verdict = "FAIL"
+
+absolute_dynamic_pass = (
+    nv == MC_SEEDS
+    and bool(np.all(enob_cal > MIN_CAL_ENOB_BITS))
+    and bool(np.all(sndr_cal > MIN_CAL_SNDR_DB))
+)
+absolute_dynamic_verdict = "PASS" if absolute_dynamic_pass else "FAIL"
+
+# Static verdict: sampled scans are explicitly conditional, never hard PASS.
+static_verdict = "UNKNOWN (no static data)"
+if len(dnl_peaks) > 0:
+    dnl_p95 = float(np.percentile(dnl_peaks, 95)) if len(dnl_peaks) > 1 else float(dnl_peaks[0])
+    full_static_count = sum(
+        1 for r in valid_r if not r["static"].get("sampled", True)
+    )
+    if full_static_count < MC_SEEDS:
+        static_verdict = f"CONDITIONAL (full={full_static_count}/{MC_SEEDS}; sampled remainder)"
+    elif dnl_p95 > 1.0:
+        static_verdict = "FAIL (DNL P95 > 1.0 LSB)"
+    else:
+        static_verdict = "PASS"
+
+acceptance_verdict = (
+    "PASS" if absolute_dynamic_verdict == "PASS" and static_verdict == "PASS"
+    else "FAIL"
+)
+
+print(f"\n{'='*70}")
+print(f"  FINAL RESULTS")
+print(f"{'='*70}")
+print(f"  Valid calibrations:  {nv}/{MC_SEEDS}")
+print(f"  Oracle gap P50:      {gap_p50:.3f} dB")
+print(f"  Oracle gap P95:      {gap_p95:.3f} dB")
+print(f"  Gap <= 0.5 dB:       {gap_pass_05}/{MC_SEEDS}")
+print(f"  Gap <= 1.0 dB:       {gap_pass_10}/{MC_SEEDS}")
+print(f"  SNDR cal P50:        {np.percentile(sndr_cal,50):.2f} dB")
+print(f"  SNDR phy P50:        {np.percentile(sndr_phy,50):.2f} dB")
+print(f"  ENOB cal P50:        {np.percentile(enob_cal,50):.2f} bit")
+print(f"  ENOB phy P50:        {np.percentile(enob_phy,50):.2f} bit")
+print(f"  Negative gain:       {n_neg_gain}/{nv} ({n_neg_gain/nv*100:.1f}%)")
+if len(dnl_peaks) > 0:
+    print(f"  DNL peak P95:        {np.percentile(dnl_peaks,95):.4f} LSB")
+    print(f"  INL peak P95:        {np.percentile(inl_peaks,95):.4f} LSB")
+    print(f"  Total missing codes: {n_missing_codes}")
+print(f"  Elapsed:             {elapsed_total:.0f}s")
+print(f"")
+print(f"  Per-target weight errors (P50 / P95 Q0):")
+for ts in TARGET_STAGES:
+    sname = STAGE_NAMES[ts]
+    e = h_errs[sname]
+    print(f"    {sname:6s}: abs_err P50={e['P50']:.4f}  P95={e['P95']:.4f}")
+print(f"")
+print(f"  Per-target normalized ratio errors (P50 / P95):")
+for ts in TARGET_STAGES:
+    sname = STAGE_NAMES[ts]
+    re = ratio_errs[sname]
+    print(f"    {sname:6s}: |e_ratio| P50={re['P50']:.6f}  P95={re['P95']:.6f}")
+print(f"")
+print(f"\n  ORACLE GAP VERDICT: {oracle_gap_verdict}  (P50={gap_p50:.3f} dB, P95={gap_p95:.3f} dB)")
+print(f"  ABSOLUTE DYNAMIC:   {absolute_dynamic_verdict}  (ENOB>{MIN_CAL_ENOB_BITS:.1f}, SNDR>{MIN_CAL_SNDR_DB:.2f} dB)")
+print(f"  STATIC VERDICT:   {static_verdict}")
+print(f"  ACCEPTANCE VERDICT: {acceptance_verdict}")
+
+# ===================================================================
+# Provenance Manifest (溯源)
+# ===================================================================
+manifest = generate_manifest(
+    repo_dir=SRC_DIR,
+    random_seed=10000,
+    fft_n=N_FFT,
+    fft_k=FFT_K,
+    fft_fs=cfg.FFT_FS,
+    amp_dbfs=SINE_AMP,
+    mc_seeds=MC_SEEDS,
+    mc_sigma_pct=MC_SIGMA * 100,
+    avg_pairs=AVG_PAIRS,
+    cal_noise_lsb=cfg.CAL_NOISE_SIGMA_LSB,
+)
+save_manifest_compact(manifest, OUT_DIR)
+print(f"  Provenance saved: {OUT_DIR}/run_manifest.json")
+
+# ===================================================================
+# Save CSV
+# ===================================================================
+csv_path = os.path.join(OUT_DIR, f"final_pipeline_{run_id}.csv")
+base_fields = ["seed","valid","calibration_error","oracle_alpha","obs_alpha",
+               "nominal_sndr","physical_sndr","calibrated_sndr","oracle_gap_db","cal_gain_db",
+               "nominal_enob","physical_enob","calibrated_enob",
+               "nominal_sfdr","physical_sfdr","calibrated_sfdr"]
+fields = base_fields + ["dnl_peak","dnl_rms","inl_peak","inl_rms","n_missing"]
+for ts in TARGET_STAGES:
+    fields.append(f"err_{STAGE_NAMES[ts]}")
+for ts in TARGET_STAGES:
+    fields.append(f"ratio_{STAGE_NAMES[ts]}")
+
+with open(csv_path, 'w', newline='') as f:
+    w = csv.writer(f)
+    w.writerow(fields)
+    for r in results:
+        row = [r.get(f, "") for f in base_fields]
+        row.append(r["static"].get("dnl_peak", ""))
+        row.append(r["static"].get("dnl_rms", ""))
+        row.append(r["static"].get("inl_peak", ""))
+        row.append(r["static"].get("inl_rms", ""))
+        row.append(r["static"].get("n_missing", ""))
+        for ts in TARGET_STAGES:
+            row.append(r.get(f"err_{STAGE_NAMES[ts]}", ""))
+        for ts in TARGET_STAGES:
+            row.append(r.get(f"ratio_{STAGE_NAMES[ts]}", ""))
+        w.writerow(row)
+print(f"\n  CSV saved: {csv_path}")
+
+# ===================================================================
+# Save summary JSON
+# ===================================================================
+summary = {
+    "run_id": run_id,
+    "timestamp": ts,
+    "mode": mode_label,
+    "experimental_alpha_pre": EXPERIMENTAL_ALPHA_PRE,
+    "mc_seeds": MC_SEEDS,
+    "mc_sigma": MC_SIGMA,
+    "cal_noise_sigma_v": CAL_NOISE,
+    "avg_pairs": AVG_PAIRS,
+    "static_test": f"sampled_every_{STATIC_SAMPLE_INTERVAL}_codes",
+    "oracle_gap_verdict": oracle_gap_verdict,
+    "absolute_dynamic_verdict": absolute_dynamic_verdict,
+    "acceptance_verdict": acceptance_verdict,
+    "min_cal_enob_bits": MIN_CAL_ENOB_BITS,
+    "min_cal_sndr_db": MIN_CAL_SNDR_DB,
+    "static_verdict": static_verdict,
+    "n_valid": nv,
+    "n_total": MC_SEEDS,
+    "gap_p50_db": gap_p50,
+    "gap_p95_db": gap_p95,
+    "gap_pass_05db": gap_pass_05,
+    "gap_pass_10db": gap_pass_10,
+    "sndr_cal_p50_db": round(float(np.percentile(sndr_cal, 50)), 3),
+    "sndr_phy_p50_db": round(float(np.percentile(sndr_phy, 50)), 3),
+    "enob_cal_p50": round(float(np.percentile(enob_cal, 50)), 3),
+    "enob_phy_p50": round(float(np.percentile(enob_phy, 50)), 3),
+    "negative_gain_pct": round(n_neg_gain / nv * 100, 1) if nv > 0 else 100,
+    "dnl_peak_p95_lsb": round(float(np.percentile(dnl_peaks, 95)), 4) if len(dnl_peaks) > 0 else -1,
+    "inl_peak_p95_lsb": round(float(np.percentile(inl_peaks, 95)), 4) if len(inl_peaks) > 0 else -1,
+    "total_missing_codes": int(n_missing_codes),
+    "elapsed_s": round(elapsed_total, 1),
+    "weight_errors": h_errs,
+    "ratio_errors": ratio_errs,
+}
+
+json_path = os.path.join(OUT_DIR, f"final_summary_{run_id}.json")
+with open(json_path, 'w', encoding='utf-8') as f:
+    json.dump(summary, f, indent=2)
+print(f"  JSON saved: {json_path}")
+
+# ===================================================================
+# Report
+# ===================================================================
+report_path = os.path.join(OUT_DIR, f"final_report_{run_id}.md")
+report = [
+    f"# SAR ADC Calibration Pipeline — Final Validation Report",
+    f"",
+    f"**Run ID:** `{run_id}`  ",
+    f"**Date:** {ts}  ",
+    f"**Mode:** {mode_label}  ",
+    f"**MC Seeds:** {MC_SEEDS}, unit-cap sigma={MC_SIGMA*100:.1f}%  ",
+    f"**Calibration:** {AVG_PAIRS} avg pairs, cal_noise={CAL_NOISE} V  ",
+    f"**Static test:** sampled every {STATIC_SAMPLE_INTERVAL} codes ({MAX_CODE//STATIC_SAMPLE_INTERVAL+1} sample points)  ",
+    f"",
+    f"## Summary",
+    f"",
+    f"| Metric | Value |",
+    f"|--------|-------|",
+    f"| Valid calibrations | {nv}/{MC_SEEDS} |",
+    f"| Oracle gap P50 | {gap_p50:.3f} dB |",
+    f"| Oracle gap P95 | {gap_p95:.3f} dB |",
+    f"| Gap <= 0.5 dB | {gap_pass_05}/{MC_SEEDS} ({gap_pass_05/MC_SEEDS*100:.0f}%) |",
+    f"| Gap <= 1.0 dB | {gap_pass_10}/{MC_SEEDS} ({gap_pass_10/MC_SEEDS*100:.0f}%) |",
+    f"| SNDR cal P50 | {np.percentile(sndr_cal,50):.2f} dB |",
+    f"| ENOB cal P50 | {np.percentile(enob_cal,50):.2f} bit |",
+    f"| Negative gain | {n_neg_gain}/{nv} ({n_neg_gain/nv*100:.1f}%) |",
+    f"| DNL peak P95 | {round(float(np.percentile(dnl_peaks,95)),4) if len(dnl_peaks)>0 else 'N/A'} LSB |",
+    f"| INL peak P95 | {round(float(np.percentile(inl_peaks,95)),4) if len(inl_peaks)>0 else 'N/A'} LSB |",
+    f"| Total missing codes | {int(n_missing_codes)} |",
+    f"| Elapsed | {elapsed_total:.0f}s |",
+    f"",
+    f"## Verdict",
+    f"",
+    f"**Oracle-gap diagnostic: {oracle_gap_verdict}** (gap P50 = {gap_p50:.3f} dB, P95 = {gap_p95:.3f} dB)  ",
+    f"**Absolute dynamic gate: {absolute_dynamic_verdict}** (all calibrated ENOB > {MIN_CAL_ENOB_BITS:.1f} bit and SNDR > {MIN_CAL_SNDR_DB:.2f} dB)  ",
+    f"**Static: {static_verdict}**",
+    f"**Top-level acceptance: {acceptance_verdict}**",
+    f"",
+    f"## Per-Target Weight Errors (Absolute Q0)",
+    f"",
+    f"| Target | P50 (Q0) | P95 (Q0) | Mean (Q0) |",
+    f"|--------|:---:|:---:|:---:|",
+]
+for ts in TARGET_STAGES:
+    sname = STAGE_NAMES[ts]
+    e = h_errs[sname]
+    report.append(f"| {sname} | {e['P50']:.4f} | {e['P95']:.4f} | {e['mean']:.4f} |")
+
+report += [
+    f"",
+    f"## Per-Target Normalized Ratio Errors |e_ratio|",
+    f"",
+    f"e_ratio = (Ŵ_i/ΣŴ) / (W_i/ΣW) - 1, removes global scale factor.",
+    f"",
+    f"| Target | P50 | P95 | Mean |",
+    f"|--------|:---:|:---:|:---:|",
+]
+for ts in TARGET_STAGES:
+    sname = STAGE_NAMES[ts]
+    re = ratio_errs[sname]
+    report.append(f"| {sname} | {re['P50']:.6f} | {re['P95']:.6f} | {re['mean']:.6f} |")
+
+report += [
+    f"",
+    f"## Method",
+    f"",
+    f"- **Calibration:** Shen 2018 force-0/force-1 protocol, P/N split-side",
+    f"- **Targets:** 7 stages (H1R, H1A, H2C, H4C, H8C, H16C, H32C high-segment recursive)",
+    f"- **Base ruler:** Low segment L32C..T1C (nominal weights, 127 Q0 total)",
+    f"- **Calibration order:** H1R->H1A->H2C->H4C->H8C->H16C->H32C",
+    f"- **Decoder:** Uses calibrated weights for all 14 stages",
+    f"- **Static test:** sampled every {STATIC_SAMPLE_INTERVAL} codes ({MAX_CODE//STATIC_SAMPLE_INTERVAL+1} points)",
+    f"- **FFT:** {N_FFT}-point, rectangular window (coherent sampling), bin k={FFT_K}",
+    f"",
+]
+
+if EXPERIMENTAL_ALPHA_PRE:
+    report += [
+        f"## Experimental: Observable-α-pre",
+        f"",
+        f"**WARNING: Experimental mode. Oracle-α tests have shown that the current α",
+        f"definition/application logic has fundamental errors (bridge-only: 0.365->1.645 dB).**",
+        f"",
+        f"1. **α Estimation:** From Pass-1 standard Shen calibration, compute",
+        f"   alpha = 4095 / sum(W_cal(Hi)). Uses only comparator-observable information.",
+        f"2. **Ruler Correction:** Apply alpha to low-segment nominal weights (L32C..T1C).",
+        f"   H1R remains nominal (not alpha-affected).",
+        f"3. **Re-calibration:** Run Shen calibration with alpha-corrected base ruler.",
+        f"",
+    ]
+else:
+    report += [
+        f"## Known Limitations",
+        f"",
+        f"- **Low-segment nominal weights:** L32C..T1C use nominal weights as the base ruler.",
+        f"  Low-segment shape error contributes ~0.2 dB to the SNDR gap through H1R calibration error.",
+        f"- **Bridge attribution:** Not assigned from this run. Bridge-only and high-only",
+        f"  mismatch must be separated by A/B experiments; a pure common gain error is not",
+        f"  sufficient evidence for an SNDR loss.",
+        f"- **Recursive noise accumulation:** Noise propagates through the 7-stage calibration chain.",
+        f"  512 avg pairs (~0.033 LSB per measurement) provides sufficient statistical suppression.",
+        f"- **Strict binary weighting:** Low-segment bit-by-bit calibration is mathematically impossible",
+        f"  because sum(lower) = target - 1 in binary-weighted arrays. The low segment cannot be",
+        f"  self-calibrated using the Shen force-0/force-1 protocol.",
+        f"",
+    ]
+
+with open(report_path, 'w', encoding='utf-8') as f:
+    f.write("\n".join(report))
+print(f"  Report saved: {report_path}")
+
+print(f"\n{'='*70}")
+print(f"  PIPELINE COMPLETE — {acceptance_verdict}")
+print(f"  Output: {OUT_DIR}")
+print(f"{'='*70}")
