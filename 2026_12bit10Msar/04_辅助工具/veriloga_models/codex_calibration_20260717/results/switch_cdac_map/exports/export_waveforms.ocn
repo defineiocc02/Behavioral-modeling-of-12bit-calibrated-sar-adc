@@ -1,4 +1,0 @@
-openResults("/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/switch_cdac_map/psf")
-selectResult('tran)
-ocnPrint(v("P") ?numberNotation (quote scientific) ?numSpaces 1 ?output "/home/meow/jxy/codex_sandbox/sar0716_calibration_20260717/switch_cdac_map/exports/P.txt")
-exit()

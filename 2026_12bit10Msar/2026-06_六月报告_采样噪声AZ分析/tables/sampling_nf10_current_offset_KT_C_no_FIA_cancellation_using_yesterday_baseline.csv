@@ -1,8 +1,0 @@
-﻿corner,baseline_td,td,baseline_snr_db,snr_db,delta_snr_db,residual_noise_power_pct_of_yesterday_24p05n,cancelled_noise_power_pct,baseline_enob,enob,delta_enob
-tt,24.05n_yesterday,28n_current_offset_KT_C_no_FIA,53.822000,63.328532,9.506532,11.203321,88.796679,8.696800,10.181978,1.485178
-ff,24.05n_yesterday,28n_current_offset_KT_C_no_FIA,54.678900,64.113611,9.434711,11.390135,88.609865,8.809200,10.309454,1.500254
-ss,24.05n_yesterday,28n_current_offset_KT_C_no_FIA,55.494900,63.353738,7.858838,16.372547,83.627453,8.874200,10.154093,1.279893
-sf,24.05n_yesterday,28n_current_offset_KT_C_no_FIA,53.710600,64.110533,10.399933,9.120250,90.879750,8.664500,10.298682,1.634182
-fs,24.05n_yesterday,28n_current_offset_KT_C_no_FIA,53.991400,65.168519,11.177119,7.625847,92.374153,8.717000,10.430659,1.713659
-average_by_corner_residual,24.05n_yesterday,28n_current_offset_KT_C_no_FIA,54.339600,64.014987,9.675387,11.142420,88.857580,8.752400,10.274973,1.522573
-average_by_avg_SNR,24.05n_yesterday,28n_current_offset_KT_C_no_FIA,54.339600,64.014987,9.675387,10.776093,89.223907,8.752400,10.274973,1.522573

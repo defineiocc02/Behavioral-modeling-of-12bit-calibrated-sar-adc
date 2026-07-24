@@ -1,5 +1,0 @@
-variant=0716_corrected
-decoder=D:\ReedZhao\Document\Obsidian\日常\10_项目区\2026_12bit10Msar\04_辅助工具\veriloga_models\codex_calibration_20260717\variants\DEC_CAL_PHY_FRAME_SYNC.va
-expected=[2048, 1024, 512, 256, 256, 128, 48, 32, 20, 12, 8, 4, 2, 1]
-observed=[2048, 1024, 512, 256, 256, 128, 48, 32, 20, 12, 8, 4, 2, 1]
-pass=True

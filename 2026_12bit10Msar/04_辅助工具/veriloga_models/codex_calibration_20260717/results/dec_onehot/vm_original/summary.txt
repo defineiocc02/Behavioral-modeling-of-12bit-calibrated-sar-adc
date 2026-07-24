@@ -1,5 +1,0 @@
-variant=vm_original
-decoder=D:\ReedZhao\Document\Obsidian\日常\10_项目区\2026_12bit10Msar\04_辅助工具\veriloga_models\codex_calibration_20260717\source_ro\DEC_CAL_PHY_original.va
-expected=[1, 2, 4, 8, 12, 20, 32, 48, 128, 256, 256, 512, 1024, 2048]
-observed=[1, 2, 4, 8, 12, 20, 32, 48, 128, 256, 256, 512, 1024, 2048]
-pass=True
