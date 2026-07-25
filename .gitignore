@@ -20,6 +20,25 @@ __pycache__/
 # Local documentation and CI artifacts
 .artifacts/
 
+# IDE internal files
+.trae/
+.trae-html-share-packages/
+
+# Separate modules (maintained in their own repos or not part of this release)
+rtl/
+va/
+
+# Generated HTML/audit/delivery output
+sar-adc-cal-delivery/
+sar-adc-calibration-audit/
+tsmc180-analysis/
+
+# Auto-generated provenance (re-created on every run)
+**/run_manifest.json
+
+# Pipeline output (reproducible, not source)
+src/python_cal/validation_results/
+
 # Simulation temp files
 psf_*/
 raw_*/
