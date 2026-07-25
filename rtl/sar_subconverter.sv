@@ -101,7 +101,6 @@ module sar_subconverter #(
   logic [3:0] trial_idx;        // index into lower_stages[tgt]
   logic [3:0] trial_stage;      // current stage being trialed
   logic [3:0] n_lower_cur;      // number of lower stages for current target
-  logic [14:0] decisions;       // stored decisions (1 bit per stage)
 
   // Accumulated signed sum
   logic [15:0] accum_sum;
@@ -156,11 +155,15 @@ module sar_subconverter #(
   // ── SAR FSM ──
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      sar_state  <= SAR_IDLE;
-      done       <= 1'b0;
-      trial_idx  <= '0;
-      decisions  <= '0;
-      accum_sum  <= '0;
+      sar_state   <= SAR_IDLE;
+      done        <= 1'b0;
+      trial_idx   <= '0;
+      accum_sum   <= '0;
+      force_is_p  <= 1'b0;
+      force_rail  <= SW_VCM;
+      n_lower_cur <= '0;
+      trial_stage <= '0;
+      signed_sum  <= '0;
       for (int i = 0; i < 7; i++) begin
         sw_p_h[i] <= SW_VCM;
         sw_n_h[i] <= SW_VCM;
@@ -178,7 +181,6 @@ module sar_subconverter #(
             // P0: P→VREFN | P1: P→VREFP | N0: N→VREFN | N1: N→VREFP
             n_lower_cur <= n_lower[target_idx];
             trial_idx   <= '0;
-            decisions   <= '0;
             accum_sum   <= '0;
             sar_state   <= SAR_SAMPLE;
           end
@@ -250,7 +252,6 @@ module sar_subconverter #(
             end else if (trial_stage != 4'd14) begin
               sw_p_l[low_stage_to_lidx(trial_stage)] <= SW_VCM;
             end
-            decisions[trial_stage] <= 1'b1;
             accum_sum <= accum_sum - $signed({1'b0, NOM_Q0[trial_stage]});
           end else begin
             // VTOP_P < VTOP_N: keep P side at VREFP, N side back to VCM
@@ -260,7 +261,6 @@ module sar_subconverter #(
             end else if (trial_stage != 4'd14) begin
               sw_n_l[low_stage_to_lidx(trial_stage)] <= SW_VCM;
             end
-            decisions[trial_stage] <= 1'b0;
             accum_sum <= accum_sum + $signed({1'b0, NOM_Q0[trial_stage]});
           end
 

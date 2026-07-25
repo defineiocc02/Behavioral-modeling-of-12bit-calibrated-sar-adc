@@ -46,6 +46,7 @@ raw_*/
 # Vivado / XSIM artifacts
 sim_work/
 xsim.dir/
+.Xil/
 *.wdb
 *.vcd
 *.jou

@@ -41,6 +41,28 @@ module cal_fsm #(
   localparam int TARGET_NOMINAL_Q0 [0:6] = '{67, 134, 268, 536, 536, 1072, 2144};
   localparam int WEIGHT_TOL_PCT = 20;  // ±20% validity check
 
+  // ── Precomputed tolerance bounds in Q8 (avoid DSP48E1 multiplier on timing path) ──
+  // tol_low  = NOMINAL_Q0 * (100 - TOL_PCT) / 100 << 8
+  // tol_high = NOMINAL_Q0 * (100 + TOL_PCT) / 100 << 8
+  localparam logic [WEIGHT_WIDTH-1:0] TOL_LOW_Q8 [0:6] = '{
+    16'd67    * (100 - WEIGHT_TOL_PCT) / 100 << 8,   // H1C
+    16'd134   * (100 - WEIGHT_TOL_PCT) / 100 << 8,   // H2C
+    16'd268   * (100 - WEIGHT_TOL_PCT) / 100 << 8,   // H4C
+    16'd536   * (100 - WEIGHT_TOL_PCT) / 100 << 8,   // H8C-R
+    16'd536   * (100 - WEIGHT_TOL_PCT) / 100 << 8,   // H8C-A
+    16'd1072  * (100 - WEIGHT_TOL_PCT) / 100 << 8,   // H16C
+    16'd2144  * (100 - WEIGHT_TOL_PCT) / 100 << 8    // H32C
+  };
+  localparam logic [WEIGHT_WIDTH-1:0] TOL_HIGH_Q8 [0:6] = '{
+    16'd67    * (100 + WEIGHT_TOL_PCT) / 100 << 8,   // H1C
+    16'd134   * (100 + WEIGHT_TOL_PCT) / 100 << 8,   // H2C
+    16'd268   * (100 + WEIGHT_TOL_PCT) / 100 << 8,   // H4C
+    16'd536   * (100 + WEIGHT_TOL_PCT) / 100 << 8,   // H8C-R
+    16'd536   * (100 + WEIGHT_TOL_PCT) / 100 << 8,   // H8C-A
+    16'd1072  * (100 + WEIGHT_TOL_PCT) / 100 << 8,   // H16C
+    16'd2144  * (100 + WEIGHT_TOL_PCT) / 100 << 8    // H32C
+  };
+
   // FSM states
   typedef enum logic [3:0] {
     IDLE           = 4'h0,
@@ -68,13 +90,8 @@ module cal_fsm #(
   logic [$clog2(N_PAIRS)-1:0]   pair_idx;
   logic [ACCUM_WIDTH-1:0]       accum_wp, accum_wn;  // per-target accumulator
   logic [15:0]                  ss_p0, ss_p1, ss_n0, ss_n1;  // saved signed sums
-  logic [15:0]                  ss_p0_q8, ss_p1_q8, ss_n0_q8, ss_n1_q8;
   logic [WEIGHT_WIDTH-1:0]      wp_avg, wn_avg;
-  logic [WEIGHT_WIDTH-1:0]      target_nom_q8;
   logic                         valid;
-
-  // Tolerances in Q8
-  logic [WEIGHT_WIDTH-1:0] tol_low, tol_high;
 
   // =========================================================================
   //  FSM Sequential Logic
@@ -92,6 +109,7 @@ module cal_fsm #(
       ss_n1        <= '0;
       wp_avg       <= '0;
       wn_avg       <= '0;
+      valid        <= 1'b0;
     end else begin
       state <= state_next;
 
@@ -111,15 +129,9 @@ module cal_fsm #(
         N1_WAIT: if (subconv_done) ss_n1 <= subconv_signed_sum;
 
         ACCUMULATE: begin
-          // W_P += (P0 - P1) / 2  →  Q0 raw, convert to Q8 for accumulation
+          // W_P += (P0 - P1) / 2
           // W_N += (N1 - N0) / 2
-          ss_p0_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_p0, 8'b0};  // Q0 → Q8
-          ss_p1_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_p1, 8'b0};
-          ss_n0_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_n0, 8'b0};
-          ss_n1_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_n1, 8'b0};
-
           if (pair_idx == 0) begin
-            // First pair: initialize accumulator
             accum_wp <= (ss_p0 - ss_p1) >>> 1;
             accum_wn <= (ss_n1 - ss_n0) >>> 1;
           end else begin
@@ -128,8 +140,6 @@ module cal_fsm #(
           end
 
           if (pair_idx == N_PAIRS - 1) begin
-            // Final pair: compute average (÷N_PAIRS via shift)
-            // N_PAIRS=128 → >>7, N_PAIRS=16 → >>4, N_PAIRS=4 → >>2
             wp_avg <= accum_wp >>> $clog2(N_PAIRS);
             wn_avg <= accum_wn >>> $clog2(N_PAIRS);
           end
@@ -137,10 +147,8 @@ module cal_fsm #(
         end
 
         TARGET_VALIDATE: begin
-          target_nom_q8 <= TARGET_NOMINAL_Q0[tgt_idx] << 8;
-          tol_low  <= (TARGET_NOMINAL_Q0[tgt_idx] * (100 - WEIGHT_TOL_PCT) / 100) << 8;
-          tol_high <= (TARGET_NOMINAL_Q0[tgt_idx] * (100 + WEIGHT_TOL_PCT) / 100) << 8;
-          valid <= (wp_avg >= tol_low) && (wp_avg <= tol_high);
+          // Use precomputed constants — no multiplier on timing path
+          valid <= (wp_avg >= TOL_LOW_Q8[tgt_idx]) && (wp_avg <= TOL_HIGH_Q8[tgt_idx]);
         end
 
         NEXT_TARGET: begin
@@ -222,12 +230,11 @@ module cal_fsm #(
       end
 
       ACCUMULATE: begin
-        if (pair_idx == N_PAIRS - 1) begin
+        // pair_idx incremented in sequential block; read current value for next-state decision
+        if (pair_idx == N_PAIRS - 1)
           state_next = TARGET_DONE;
-          pair_idx     = N_PAIRS;  // force overflow to trigger next state
-        end else begin
+        else
           state_next = P0_FORCE;    // next pair
-        end
       end
 
       TARGET_DONE: begin
