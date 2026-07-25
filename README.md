@@ -191,7 +191,7 @@ docs/
 
 ```bibtex
 @misc{sar12_cal_behavioral_2026,
-  author       = {{defineiocc02, Fleetandwood, CODEX, DEEPSEEK, and SAR ADC Calibration Project Contributors}},
+  author       = {{SAR ADC Calibration Project Contributors}},
   title        = {12-bit Calibrated Asynchronous SAR ADC -- Behavioral Model},
   year         = {2026},
   version      = {3.1.0},
@@ -204,11 +204,11 @@ Calibration protocol: Shen et al., "A 16-bit 16-MS/s SAR ADC With
 On-Chip Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
 pp. 1147&ndash;1154, Apr. 2018.
 
-### Contributors
+### AI Assistance Notice
 
-- [defineiocc02](https://github.com/defineiocc02)
-- [Fleetandwood](https://github.com/Fleetandwood)
-- CODEX & DEEPSEEK (AI-assisted design and verification)
+This project was developed with AI-assisted coding tools, including
+CODEX (Trae IDE) and DEEPSEEK.  All AI-generated code has been
+reviewed and validated by human contributors.
 
 ### License
 
@@ -392,7 +392,7 @@ docs/
 
 ```bibtex
 @misc{sar12_cal_behavioral_2026,
-  author       = {{defineiocc02, Fleetandwood, CODEX, DEEPSEEK, and SAR ADC Calibration Project Contributors}},
+  author       = {{SAR ADC Calibration Project Contributors}},
   title        = {12-bit Calibrated Asynchronous SAR ADC -- Behavioral Model},
   year         = {2026},
   version      = {3.1.0},
@@ -405,11 +405,10 @@ docs/
 Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
 pp. 1147&ndash;1154, Apr. 2018.
 
-### 贡献者
+### AI 辅助声明
 
-- [defineiocc02](https://github.com/defineiocc02)
-- [Fleetandwood](https://github.com/Fleetandwood)
-- CODEX & DEEPSEEK（AI 辅助设计与验证）
+本项目使用 AI 辅助编码工具开发，包括 CODEX (Trae IDE) 与 DEEPSEEK。
+所有 AI 生成代码已经人工审查与验证。
 
 ### 开源许可
 
