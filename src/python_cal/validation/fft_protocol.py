@@ -31,7 +31,7 @@ class FFTProtocol:
     """Explicit, hashable definition of a coherent dynamic test."""
 
     n_fft: int = 4096
-    signal_bin: int = 127
+    signal_bin: int = 1019  # ~2.49 MHz @ Fs=10 MHz, N=4096
     amplitude_dbfs: float = -0.5
     phase_rad: float = 0.123
     max_code_guard: int = 1

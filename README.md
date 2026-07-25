@@ -107,14 +107,14 @@ More: [v3.0 release notes](docs/RELEASE_RESULTS_V3.md),
 | Parameter | Value |
 |-----------|------:|
 | FFT points | 4096 |
-| Coherent bin | 127 |
+| Coherent bin | 1019 |
 | Phase | 0.123 rad |
 | Input amplitude | -0.5 dBFS |
 | VFS | per-seed dynamic measurement |
 | Window | **Rectangular** |
 | Clipping | explicit per-run check |
 
-Coherent sampling: signal on bin 127 (gcd(127,4096)=1).  No leakage —
+Coherent sampling: signal on bin 1019 (gcd(1019,4096)=1).  No leakage —
 rectangular window is correct (ENBW=1 bin).
 
 ### Quick Start
@@ -309,7 +309,7 @@ Dither:    关闭 (噪声 ≧ 1 LSB 即冗余)
 | 参数 | 值 |
 |------|------:|
 | FFT 点数 | 4096 |
-| 相干 bin | 127 |
+| 相干 bin | 1019 |
 | 相位 | 0.123 rad |
 | 输入幅度 | -0.5 dBFS |
 | VFS | 每 seed 动态测量 |
