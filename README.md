@@ -207,7 +207,7 @@ pp. 1147&ndash;1154, Apr. 2018.
 ### AI Assistance Notice
 
 This project was developed with AI-assisted coding tools, including
-CODEX (Trae IDE) and DEEPSEEK.  All AI-generated code has been
+CODEX and Trae (DeepSeek).  All AI-generated code has been
 reviewed and validated by human contributors.
 
 ### License
@@ -407,7 +407,7 @@ pp. 1147&ndash;1154, Apr. 2018.
 
 ### AI 辅助声明
 
-本项目使用 AI 辅助编码工具开发，包括 CODEX (Trae IDE) 与 DEEPSEEK。
+本项目使用 AI 辅助编码工具开发，包括 CODEX 与 Trae (DeepSeek)。
 所有 AI 生成代码已经人工审查与验证。
 
 ### 开源许可
