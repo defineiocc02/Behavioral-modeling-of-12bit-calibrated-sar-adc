@@ -58,8 +58,11 @@ def gen_mc_caps(seed, sigma):
             cu_val = cfg.CAP_NOMINAL_CU[name]
             if not cfg.should_mismatch(name):
                 caps[name] = cfg.CU * cu_val
-            elif mode == "per_cap":
+            elif mode in ("per_cap_flat_stress", "per_cap"):
                 caps[name] = cfg.CU * cu_val * rng.normal(1.0, sigma)
+            elif mode == "per_cap_scaled":
+                s = sigma / np.sqrt(cu_val)
+                caps[name] = cfg.CU * cu_val * rng.normal(1.0, s)
             elif cu_val >= 1:
                 caps[name] = sum(
                     cfg.CU * rng.normal(1.0, sigma) for _ in range(int(cu_val))
@@ -306,7 +309,7 @@ report = f"""
   ┌─────────────────────────────────────────────────────────────┐
   │ build_coherent_differential_sine(vfs, FFTProtocol)          │
   │   amplitude = vfs × 10^(dBFS/20)                            │
-  │   vin[i] = amplitude × sin(2π·k·i/N + φ)                   │
+  │   vin[i] = amplitude * sin(2*pi*k*i/N + phi)                │
   │   输出: 4096 点差分电压序列 + metadata                      │
   └───────────────────┬─────────────────────────────────────────┘
                       ↓
@@ -350,11 +353,11 @@ report = f"""
   │ compute_fft_coherent(codes_q2, N=4096, k=127)              │
   │   codes_centered = codes - mean(codes)                     │
   │   spectrum = |rFFT(codes_centered)| / N                    │
-  │   signal_power = |spectrum[127]|²                          │
-  │   harmonics ∑|spectrum[127×h]|²  for h=2..7               │
-  │   noise_power = ∑ spectrum²  excluding DC, signal, harmonics│
-  │   SNDR = 10·log₁₀(signal / (noise + harmonics))           │
-  │   SFDR = 20·log₁₀(signal_mag / max_spur)                  │
+  │   signal_power = |spectrum[127]|^2                          │
+  │   harmonics = sum(|spectrum[127*h]|^2) for h=2..7            │
+  │   noise_power = sum(spectrum^2) excluding DC, signal, harmonics │
+  │   SNDR = 10*log10(signal / (noise + harmonics))             │
+  │   SFDR = 20*log10(signal_mag / max_spur)                    │
   │   ENOB = (SNDR - 1.76) / 6.02                             │
   └───────────────────┬─────────────────────────────────────────┘
                       ↓

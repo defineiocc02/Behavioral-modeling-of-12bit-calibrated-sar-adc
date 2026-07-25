@@ -45,8 +45,11 @@ def gen():
             ncu = cfg.CAP_NOMINAL_CU[n]
             if not cfg.should_mismatch(n):
                 c[n] = cfg.CU * ncu
-            elif _mode == "per_cap":
+            elif _mode in ("per_cap_flat_stress", "per_cap"):
                 c[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
+            elif _mode == "per_cap_scaled":
+                s = MC_SIGMA / np.sqrt(ncu)
+                c[n] = cfg.CU * ncu * rng.normal(1.0, s)
             else:
                 c[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
         return c

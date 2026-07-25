@@ -49,8 +49,11 @@ def gen_mc_caps(seed, sigma):
             n_cu = cfg.CAP_NOMINAL_CU[name]
             if not cfg.should_mismatch(name):
                 caps[name] = cfg.CU * n_cu
-            elif mode == "per_cap":
+            elif mode in ("per_cap_flat_stress", "per_cap"):
                 caps[name] = cfg.CU * n_cu * rng.normal(1.0, sigma)
+            elif mode == "per_cap_scaled":
+                s = sigma / np.sqrt(n_cu)
+                caps[name] = cfg.CU * n_cu * rng.normal(1.0, s)
             else:
                 caps[name] = sum(cfg.CU * rng.normal(1.0, sigma) for _ in range(int(n_cu)))
         return caps

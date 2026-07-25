@@ -91,9 +91,13 @@ for n in cfg.ALL_CAP_NAMES:
     if not cfg.should_mismatch(n):
         p_caps[n] = cfg.CU * ncu
         n_caps[n] = cfg.CU * ncu
-    elif mode == "per_cap":
+    elif mode == "per_cap_flat_stress" or mode == "per_cap":
         p_caps[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
         n_caps[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
+    elif mode == "per_cap_scaled":
+        s = MC_SIGMA / np.sqrt(ncu)
+        p_caps[n] = cfg.CU * ncu * rng.normal(1.0, s)
+        n_caps[n] = cfg.CU * ncu * rng.normal(1.0, s)
     else:
         p_caps[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
         n_caps[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))

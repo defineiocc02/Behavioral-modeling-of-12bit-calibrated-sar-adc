@@ -107,7 +107,8 @@ def gen_mc_caps(seed):
 
     MISMATCH_MODE:
       "per_unit" — each unit cap independent N(CU, CU*σ), σ∝1/√N for N-Cu caps
-      "per_cap"  — whole cap N(Cnom, Cnom*σ), all caps same relative σ
+      "per_cap_scaled" — whole cap N(Cnom, Cnom*σ/√N), statistically equivalent
+      "per_cap_flat_stress" — whole cap N(Cnom, Cnom*σ), all caps same σ [stress only]
     """
     rng = np.random.default_rng(seed)
     mode = getattr(cfg, "MISMATCH_MODE", "per_unit")
@@ -117,9 +118,11 @@ def gen_mc_caps(seed):
             cu_val = cfg.CAP_NOMINAL_CU[name]
             if not cfg.should_mismatch(name):
                 caps[name] = CU * cu_val
-            elif mode == "per_cap":
-                # 整电容统一失配: C = N*CU * N(1, σ)
+            elif mode in ("per_cap_flat_stress", "per_cap"):
                 caps[name] = CU * cu_val * rng.normal(1.0, MC_SIGMA)
+            elif mode == "per_cap_scaled":
+                s = MC_SIGMA / np.sqrt(cu_val)
+                caps[name] = CU * cu_val * rng.normal(1.0, s)
             else:
                 # 逐Cu独立: C = Σ CU * N(1, σ)
                 if cu_val >= 1:

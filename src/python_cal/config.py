@@ -189,10 +189,17 @@ SCENARIOS = {
     },
 }
 
-# TSMC 180nm MOM 单元失配 σ ≈ 0.71% (保守) → 向上取 1% 作为 MC 默认
+# TSMC 180nm MOM 单元电容失配
+#
+# Pelgrom 系数: A_C = 1.0 %·μm → σ(ΔC/C)₁Cu_pair ≈ 1.0/√2 = 0.707%
+# 以下 σ 均为单个 Cu 的标准差 (不是 pair mismatch):
+#   0.71% — 典型 (optimised common-centroid + dummy)
+#   1.0%  — 保守 (minimal area, no dummy)
 MC_SIGMA = 0.01
-# 失配模式: "per_unit" = 逐Cu独立 N(CU, CU*σ), 大电容 σ 按 1/√N 缩小
-#           "per_cap"  = 整电容统一 N(Cnom, Cnom*σ), 大小电容 σ 相同
+# 失配实现模式:
+#   "per_unit"            — 逐 Cu 独立 N(CU, CU·σ), σ_cap = σ/√N   [默认, 物理]
+#   "per_cap_scaled"      — 整电容 N(Cnom, Cnom·σ/√N), 与 per_unit 统计等效, MC 加速
+#   "per_cap_flat_stress" — 整电容 N(Cnom, Cnom·σ), 大小电容 σ 相同 [非物理, 仅压力测试]
 MISMATCH_MODE = "per_unit"
 # 失配范围: "all"             = 全电容 (15 个) 失配
 #           "calibrated_only" = 仅校准目标 (高段 7 个) 失配, 低段+桥接标称
@@ -210,10 +217,7 @@ def should_mismatch(cap_name: str) -> bool:
     if scope == "base_ruler_only":
         return cap_name.startswith("low_") or cap_name == "bridge"
     raise ValueError(f"unknown MISMATCH_SCOPE: {scope}")
-# TSMC 180nm MOM 失配分析档位:
-#   0.3% — 优化版图 (common-centroid, dummy, 大间距)
-#   0.7% — 典型版图 (标准 common-centroid)
-#   1.0% — 保守估计 (最小面积, 无 dummy)
-#   3.0% — 极端工艺角 (仅 stress test)
+
+# ── 输入信号 ──
 MC_SEEDS_PIPELINE = 100
 MC_SEEDS_ISOLATION = 50
