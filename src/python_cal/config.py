@@ -194,6 +194,22 @@ MC_SIGMA = 0.01
 # 失配模式: "per_unit" = 逐Cu独立 N(CU, CU*σ), 大电容 σ 按 1/√N 缩小
 #           "per_cap"  = 整电容统一 N(Cnom, Cnom*σ), 大小电容 σ 相同
 MISMATCH_MODE = "per_unit"
+# 失配范围: "all"             = 全电容 (15 个) 失配
+#           "calibrated_only" = 仅校准目标 (高段 7 个) 失配, 低段+桥接标称
+#           "base_ruler_only" = 仅基准尺 (低段 7+桥接 1) 失配, 高段标称
+MISMATCH_SCOPE = "all"
+MC_SIGMA = 0.01
+
+def should_mismatch(cap_name: str) -> bool:
+    """是否对该电容加失配。"""
+    scope = MISMATCH_SCOPE
+    if scope == "all":
+        return True
+    if scope == "calibrated_only":
+        return cap_name.startswith("high_")
+    if scope == "base_ruler_only":
+        return cap_name.startswith("low_") or cap_name == "bridge"
+    raise ValueError(f"unknown MISMATCH_SCOPE: {scope}")
 # TSMC 180nm MOM 失配分析档位:
 #   0.3% — 优化版图 (common-centroid, dummy, 大间距)
 #   0.7% — 典型版图 (标准 common-centroid)

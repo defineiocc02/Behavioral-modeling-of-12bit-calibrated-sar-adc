@@ -115,7 +115,9 @@ def gen_mc_caps(seed):
         caps = {}
         for name in ALL_CAP_NAMES:
             cu_val = cfg.CAP_NOMINAL_CU[name]
-            if mode == "per_cap":
+            if not cfg.should_mismatch(name):
+                caps[name] = CU * cu_val
+            elif mode == "per_cap":
                 # 整电容统一失配: C = N*CU * N(1, σ)
                 caps[name] = CU * cu_val * rng.normal(1.0, MC_SIGMA)
             else:

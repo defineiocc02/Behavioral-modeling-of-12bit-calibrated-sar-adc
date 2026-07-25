@@ -42,7 +42,9 @@ def gen():
         c = {}
         for n in cfg.ALL_CAP_NAMES:
             ncu = cfg.CAP_NOMINAL_CU[n]
-            if _mode == "per_cap":
+            if not cfg.should_mismatch(n):
+                c[n] = cfg.CU * ncu
+            elif _mode == "per_cap":
                 c[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
             else:
                 c[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))

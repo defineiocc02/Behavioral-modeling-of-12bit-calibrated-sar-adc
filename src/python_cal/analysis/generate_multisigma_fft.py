@@ -47,7 +47,9 @@ def gen_mc_caps(seed, sigma):
         caps = {}
         for name in cfg.ALL_CAP_NAMES:
             n_cu = cfg.CAP_NOMINAL_CU[name]
-            if mode == "per_cap":
+            if not cfg.should_mismatch(name):
+                caps[name] = cfg.CU * n_cu
+            elif mode == "per_cap":
                 caps[name] = cfg.CU * n_cu * rng.normal(1.0, sigma)
             else:
                 caps[name] = sum(cfg.CU * rng.normal(1.0, sigma) for _ in range(int(n_cu)))

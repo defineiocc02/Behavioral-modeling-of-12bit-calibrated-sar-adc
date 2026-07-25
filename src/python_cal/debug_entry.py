@@ -88,7 +88,10 @@ p_caps, n_caps = {}, {}
 mode = getattr(cfg, "MISMATCH_MODE", "per_unit")
 for n in cfg.ALL_CAP_NAMES:
     ncu = cfg.CAP_NOMINAL_CU[n]
-    if mode == "per_cap":
+    if not cfg.should_mismatch(n):
+        p_caps[n] = cfg.CU * ncu
+        n_caps[n] = cfg.CU * ncu
+    elif mode == "per_cap":
         p_caps[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
         n_caps[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
     else:
