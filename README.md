@@ -1,4 +1,4 @@
-# 12-bit Calibrated Asynchronous SAR ADC 鈥?Behavioral Model<br><small>12浣嶆牎鍑嗗瀷寮傛SAR ADC 鈥?琛屼负绾фā鍨?/small>
+# 12-bit Calibrated Asynchronous SAR ADC 閳?Behavioral Model<br><small>12娴ｅ秵鐗庨崙鍡楃€峰鍌涱劄SAR ADC 閳?鐞涘奔璐熺痪褎膩閸?/small>
 
 [![Version](https://img.shields.io/badge/version-3.1.0-0072B2)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/releases)
 [![License](https://img.shields.io/badge/license-MIT-009E73)](LICENSE)
@@ -6,7 +6,7 @@
 [![FFT](https://img.shields.io/badge/FFT-coherent%20rectangular-009E73)](docs/MODELING_GUIDE.md)
 [![Cal](https://img.shields.io/badge/calibration-Shen%202018%20JSSC-E69F00)](https://ieeexplore.ieee.org/document/8248649)
 
-**[English](#english) | [涓枃](#chinese)**
+**[English](#english) | [娑擃厽鏋僝(#chinese)**
 
 ---
 
@@ -42,7 +42,7 @@ Nominal effective weights ($H = 67$):
   64,   32,  16,   8,   4,   4,  2, 1 terminal
 ```
 
-- All 14 high/low capacitors sample the input 鈥?no VCM-masked caps.
+- All 14 high/low capacitors sample the input 閳?no VCM-masked caps.
 - 15 comparator decisions: 14 physical trial/compare/commit + 1 terminal.
 - High-segment 8-Cu duplicate provides wide-range redundancy.
 - Decoder: **plain P/N calibrated weighted sum with Q2 rounding.**
@@ -55,27 +55,27 @@ Nominal effective weights ($H = 67$):
 Foreground force-0/force-1 half-difference protocol (Shen 2018 JSSC).
 
 The complete low segment (131 Q0) serves as the seed ruler and is **not
-self-calibrated** 鈥?the main comparator's ~3 mV offset cannot reliably cover
+self-calibrated** 閳?the main comparator's ~3 mV offset cannot reliably cover
 the lowest bits' backend margin.
 
 ```
-Calibration order:  H1 鈫?H2 鈫?H4 鈫?H8-R 鈫?H8-A 鈫?H16 鈫?H32
-Pairs per target:   128                    (v3.1, down from 512)
-Total sub-convs:    7 脳 4 脳 128 = 3584    (v3.1, down from 14336)
-Dither:             OFF (noise 鈮?1 LSB makes it redundant)
+Calibration order:  H1 閳?H2 閳?H4 閳?H8-R 閳?H8-A 閳?H16 閳?H32
+Pairs per target:   128                    (v3.0, down from 512)
+Total sub-convs:    7 鑴?4 鑴?128 = 3584    (v3.0, down from 14336)
+Dither:             OFF (noise 閳?1 LSB makes it redundant)
 ```
 
 | Parameter | Original | Current | Rationale |
 |-----------|--------|--------|-----------|
-| `AVG_PAIRS` | 512 | **128** | Oracle gap saturated by 128; 4脳 faster |
-| `SHEN_DITHER_LSB` | ON (hardcoded) | **OFF** (config) | Redundant when noise 鈮?1 LSB + N 鈮?32 |
-| Divider | 鈥?| **right-shift 7** | 128=2鈦? no hardware divider needed |
+| `AVG_PAIRS` | 512 | **128** | Oracle gap saturated by 128; 4鑴?faster |
+| `SHEN_DITHER_LSB` | ON (hardcoded) | **OFF** (config) | Redundant when noise 閳?1 LSB + N 閳?32 |
+| Divider | 閳?| **right-shift 7** | 128=2閳? no hardware divider needed |
 
 <p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="Calibration weights"></p>
 
 ### v3.0.0 Results
 
-100-seed Monte Carlo, TSMC 180nm conservative (`蟽 = 1%` unit-cap mismatch),
+100-seed Monte Carlo, TSMC 180nm conservative (`锜?= 1%` unit-cap mismatch),
 128 pairs, 1 mV RMS calibration noise, rectangular-window coherent FFT.
 
 | Metric | Pre-Cal | Post-Cal Q2 | Physical Oracle |
@@ -89,7 +89,7 @@ Dither:             OFF (noise 鈮?1 LSB makes it redundant)
 - DNL peak P95: 0.75 LSB; INL peak P95: 0.80 LSB
 - 100/100 zero missing codes, max jump = 1
 
-| 蟽 (MC_SIGMA) | Pre-SNDR | Post-SNDR | Oracle Gap | Verdict |
+| 锜?(MC_SIGMA) | Pre-SNDR | Post-SNDR | Oracle Gap | Verdict |
 |:------------:|--------:|--------:|----------:|:--------:|
 | 1% | 63.7 dB | 74.5 dB | 0.14 dB | Pass |
 | 2% | 50.1 dB | 73.3 dB | 1.34 dB | Pass |
@@ -114,7 +114,7 @@ More: [v3.0 release notes](docs/RELEASE_RESULTS_V3.md),
 | Window | **Rectangular** |
 | Clipping | explicit per-run check |
 
-Coherent sampling: signal on bin 1019 (gcd(1019,4096)=1).  No leakage 鈥?
+Coherent sampling: signal on bin 1019 (gcd(1019,4096)=1).  No leakage 閳?
 rectangular window is correct (ENBW=1 bin).
 
 ### Quick Start
@@ -127,7 +127,7 @@ python -m pip install -e ".[dev]"
 $env:PYTHONPATH = "src"
 python -m pytest src/python_cal/tests -q
 
-# One-click calibration debug 鈽?
+# One-click calibration debug 閳?
 python src/python_cal/debug_entry.py
 python src/python_cal/debug_entry.py --pairs 64 --mc 0.02
 python src/python_cal/debug_entry.py --noise 0.5 --pairs 32
@@ -144,13 +144,13 @@ python src/python_cal/analysis/generate_multisigma_fft.py
 
 | Block | Gates / Tr. | Area |
 |-------|:----------:|-----:|
-| CDAC capacitor array (30 caps) | passive | ~600 渭m虏 |
-| Bottom-plate switches (28脳4:1 MUX) | ~560 Tr | ~600 渭m虏 |
-| StrongArm comparator | ~24 Tr | ~200 渭m虏 |
-| SAR FSM | ~400 gates | ~1200 渭m虏 |
-| Calibration controller | ~1800 gates | ~4000 渭m虏 |
-| Weighted-sum decoder | ~2000 gates | ~4500 渭m虏 |
-| **Total** | **~4200 gates + ~600 Tr** | **~0.011 mm虏** |
+| CDAC capacitor array (30 caps) | passive | ~600 娓璵铏?|
+| Bottom-plate switches (28鑴?:1 MUX) | ~560 Tr | ~600 娓璵铏?|
+| StrongArm comparator | ~24 Tr | ~200 娓璵铏?|
+| SAR FSM | ~400 gates | ~1200 娓璵铏?|
+| Calibration controller | ~1800 gates | ~4000 娓璵铏?|
+| Weighted-sum decoder | ~2000 gates | ~4500 娓璵铏?|
+| **Total** | **~4200 gates + ~600 Tr** | **~0.011 mm铏?* |
 
 Full analysis: [DELIVERY.md](src/python_cal/DELIVERY.md)
 
@@ -172,7 +172,7 @@ Same 0.5% mismatch, 1000-seed codebook audit:
 ```text
 src/python_cal/
   config.py              single-source configuration
-  debug_entry.py         one-click calibration debug 鈽?
+  debug_entry.py         one-click calibration debug 閳?
   DELIVERY.md            handover document
   topology/              integer CDAC and explicit switch states
   physical/              charge-conservation solver
@@ -218,177 +218,177 @@ reviewed and validated by human contributors.
 
 <a id="chinese"></a>
 
-## 涓枃
+## 娑擃厽鏋?
 
-鍏ㄥ樊鍒嗐€佸紓姝?split-CDAC SAR ADC 琛屼负绾фā鍨嬨€傚寘鍚數鑽峰畧鎭掓眰瑙ｃ€?
-P/N 鍒嗕晶鐙珛鐢靛澶遍厤銆佸墠鏅潈閲嶆牎鍑嗐€傛湰椤圭洰**鍞竴鏈夋晥鐨?Python 琛屼负绾х増鏈?*銆?
+閸忋劌妯婇崚鍡愨偓浣哥磽濮?split-CDAC SAR ADC 鐞涘奔璐熺痪褎膩閸ㄥ鈧倸瀵橀崥顐ゆ暩閼藉嘲鐣ч幁鎺撶湴鐟欙絻鈧?
+P/N 閸掑棔鏅堕悪顒傜彌閻㈤潧顔愭径閬嶅帳閵嗕礁澧犻弲顖涙綀闁插秵鐗庨崙鍡愨偓鍌涙拱妞ゅ湱娲?*閸烆垯绔撮張澶嬫櫏閻?Python 鐞涘奔璐熺痪褏澧楅張?*閵?
 
-> 璇佹嵁绛夌骇: **Python behavioral L2.** 闈炴櫠浣撶绾?PVT銆侀潪鐗堝浘鍚庝豢銆侀潪纭呯墖娴嬮噺銆?
+> 鐠囦焦宓佺粵澶岄獓: **Python behavioral L2.** 闂堢偞娅犳担鎾额吀缁?PVT閵嗕線娼悧鍫濇禈閸氬簼璞㈤妴渚€娼涵鍛濞村鍣洪妴?
 
-<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="妯″瀷鏋舵瀯"></p>
+<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="濡€崇€烽弸鑸电€?></p>
 
-### 閿佸畾 v3.x CDAC 鎷撴墤
+### 闁夸礁鐣?v3.x CDAC 閹锋挻澧?
 
-姣忎晶浠呬娇鐢ㄦ暣鏁板崟浣嶇數瀹广€倂3.0.0 鏋舵瀯銆?
+濮ｅ繋鏅舵禒鍛▏閻劍鏆ｉ弫鏉垮礋娴ｅ秶鏁哥€瑰箍鈧€?.0.0 閺嬭埖鐎妴?
 
 ```text
-  楂樻:   32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
-  妗ユ帴:                             2 Cu
-  浣庢:   32, 16, 8, 4, 2, 2, 1 Cu  = 65 Cu
-  鍗曚晶鎬昏:                          138 Cu  (552 fF @ Cu=4 fF)
+  妤傛ɑ顔?   32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
+  濡椼儲甯?                             2 Cu
+  娴ｅ孩顔?   32, 16, 8, 4, 2, 2, 1 Cu  = 65 Cu
+  閸楁洑鏅堕幀鏄忣吀:                          138 Cu  (552 fF @ Cu=4 fF)
 ```
 
-鏍囩О鏈夋晥鏉冮噸 ($H = 67$):
+閺嶅洨袨閺堝鏅ラ弶鍐櫢 ($H = 67$):
 
 ```text
 2144, 1072, 536, 536, 268, 134, 67,
-  64,   32,  16,   8,   4,   4,  2, 1 缁堢浣?
+  64,   32,  16,   8,   4,   4,  2, 1 缂佸牏顏担?
 ```
 
-- 鍏ㄩ儴 14 涓珮/浣庢鐢靛鍙備笌閲囨牱杈撳叆鈥斺€旀棤灞忚斀鐢靛銆?
-- 15 娆℃瘮杈冨櫒鍒ゅ喅: 14 鐗╃悊 trial/compare/commit + 1 缁堢浣嶃€?
-- 楂樻 8-Cu 鍐椾綑鎻愪緵澶ц寖鍥村閿欍€?
-- 瑙ｇ爜鍣? **绾?P/N 鏍″噯鏉冮噸鍔犳潈鍜?+ Q2 鑸嶅叆銆?*
-  鏃?LUT銆佹棤 DP銆佹棤寮傚父琛ㄣ€佹棤鐘舵€侀挸浣嶃€?
+- 閸忋劑鍎?14 娑擃亪鐝?娴ｅ孩顔岄悽闈涱啇閸欏倷绗岄柌鍥ㄧ壉鏉堟挸鍙嗛垾鏂衡偓鏃€妫ょ仦蹇氭杸閻㈤潧顔愰妴?
+- 15 濞嗏剝鐦潏鍐ㄦ珤閸掋倕鍠? 14 閻椻晝鎮?trial/compare/commit + 1 缂佸牏顏担宥冣偓?
+- 妤傛ɑ顔?8-Cu 閸愭ぞ缍戦幓鎰返婢堆嗗瘱閸ユ潙顔愰柨娆嶁偓?
+- 鐟欙絿鐖滈崳? **缁?P/N 閺嶁€冲櫙閺夊啴鍣搁崝鐘虫綀閸?+ Q2 閼稿秴鍙嗛妴?*
+  閺?LUT閵嗕焦妫?DP閵嗕焦妫ゅ鍌氱埗鐞涖劊鈧焦妫ら悩鑸碘偓渚€鎸告担宥冣偓?
 
-<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC 鎷撴墤"></p>
+<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC 閹锋挻澧?></p>
 
-### 鏍″噯
+### 閺嶁€冲櫙
 
-鍓嶆櫙 force-0/force-1 鍗婂樊娉?(Shen 2018 JSSC)銆?
+閸撳秵娅?force-0/force-1 閸楀﹤妯婂▔?(Shen 2018 JSSC)閵?
 
-瀹屾暣浣庢 (131 Q0) 浣滀负鍖归厤鍩哄噯灏猴紝**涓嶈嚜鏍″噯**鈥斺€斾富姣旇緝鍣?~3 mV offset
-鏃犳硶鍙潬瑕嗙洊鏈€浣庡嚑浣嶇殑鍚庣 margin銆?
+鐎瑰本鏆ｆ担搴㈩唽 (131 Q0) 娴ｆ粈璐熼崠褰掑帳閸╁搫鍣亸鐚寸礉**娑撳秷鍤滈弽鈥冲櫙**閳ユ柡鈧柧瀵屽В鏃囩窛閸?~3 mV offset
+閺冪姵纭堕崣顖炴浆鐟曞棛娲婇張鈧担搴″殤娴ｅ秶娈戦崥搴ｎ伂 margin閵?
 
 ```
-鏍″噯椤哄簭:  H1 鈫?H2 鈫?H4 鈫?H8-R 鈫?H8-A 鈫?H16 鈫?H32
-姣忕洰鏍囧鏁? 128                     (v3.1, 浠?512 闄嶄綆)
-鎬诲瓙杞崲:   7 脳 4 脳 128 = 3584     (v3.1, 浠?14336 闄嶄綆)
-Dither:    鍏抽棴 (鍣０ 鈮?1 LSB 鍗冲啑浣?
+閺嶁€冲櫙妞ゅ搫绨?  H1 閳?H2 閳?H4 閳?H8-R 閳?H8-A 閳?H16 閳?H32
+濮ｅ繒娲伴弽鍥ь嚠閺? 128                     (v3.1, 娴?512 闂勫秳缍?
+閹鐡欐潪顒佸床:   7 鑴?4 鑴?128 = 3584     (v3.1, 娴?14336 闂勫秳缍?
+Dither:    閸忔娊妫?(閸ｎ亜锛?閳?1 LSB 閸楀啿鍟戞担?
 ```
 
-| 鍙傛暟 | v3.0.0 | 褰撳墠 | 鐞嗙敱 |
+| 閸欏倹鏆?| v3.0.0 | 瑜版挸澧?| 閻炲棛鏁?|
 |------|--------|--------|------|
-| `AVG_PAIRS` | 512 | **128** | Oracle gap 鍦?128 瀵瑰悗楗卞拰; 蹇?4 鍊?|
-| `SHEN_DITHER_LSB` | 寮€ (纭紪鐮? | **鍏?* (config) | 鍣０ 鈮?1 LSB + N 鈮?32 鏃跺啑浣?|
-| 闄ゆ硶鍣?| 鈥?| **鍙崇Щ 7 浣?* | 128=2鈦? 鏃犻渶纭欢闄ゆ硶鍣?|
+| `AVG_PAIRS` | 512 | **128** | Oracle gap 閸?128 鐎电懓鎮楁鍗炴嫲; 韫?4 閸?|
+| `SHEN_DITHER_LSB` | 瀵偓 (绾剛绱惍? | **閸?* (config) | 閸ｎ亜锛?閳?1 LSB + N 閳?32 閺冭泛鍟戞担?|
+| 闂勩倖纭堕崳?| 閳?| **閸欏磭些 7 娴?* | 128=2閳? 閺冪娀娓剁涵顑挎闂勩倖纭堕崳?|
 
-<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="鏍″噯鏉冮噸"></p>
+<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="閺嶁€冲櫙閺夊啴鍣?></p>
 
-### v3.0.0 缁撴灉
+### v3.0.0 缂佹挻鐏?
 
-100-seed Monte Carlo, TSMC 180nm 淇濆畧浼拌 (`蟽 = 1%` 鍗曚綅鐢靛澶遍厤),
-128 瀵? 1 mV RMS 鏍″噯鍣０, 鐭╁舰绐楃浉骞?FFT銆?
+100-seed Monte Carlo, TSMC 180nm 娣囨繂鐣ф导鎷岊吀 (`锜?= 1%` 閸楁洑缍呴悽闈涱啇婢堕亶鍘?,
+128 鐎? 1 mV RMS 閺嶁€冲櫙閸ｎ亜锛? 閻晛鑸扮粣妤冩祲楠?FFT閵?
 
-| 鎸囨爣 | 鏍″噯鍓?| 鏍″噯鍚?Q2 | Physical Oracle |
+| 閹稿洦鐖?| 閺嶁€冲櫙閸?| 閺嶁€冲櫙閸?Q2 | Physical Oracle |
 |------|--------:|----------:|----------------:|
 | SNDR P50 | 63.73 dB | **74.50 dB** | 74.64 dB |
 | ENOB P50 | 10.29 bit | **12.08 bit** | 12.11 bit |
 | SFDR P50 | 70.57 dB | 94.29 dB | 96.91 dB |
 
-- 100/100 鏈夋晥鏍″噯, 0/100 璐熸敹鐩?
+- 100/100 閺堝鏅ラ弽鈥冲櫙, 0/100 鐠愮喐鏁归惄?
 - Oracle gap P50: **0.14 dB**
 - DNL peak P95: 0.75 LSB; INL peak P95: 0.80 LSB
-- 100/100 闆剁己鐮? 鏈€澶ц烦鐮?= 1
+- 100/100 闂嗗墎宸遍惍? 閺堚偓婢堆嗙儲閻?= 1
 
-| 蟽 (MC_SIGMA) | 鏍″噯鍓?| 鏍″噯鍚?| Oracle Gap | 鍒ゅ畾 |
+| 锜?(MC_SIGMA) | 閺嶁€冲櫙閸?| 閺嶁€冲櫙閸?| Oracle Gap | 閸掋倕鐣?|
 |:------------:|--------:|--------:|----------:|:----:|
-| 1% | 63.7 dB | 74.5 dB | 0.14 dB | 閫氳繃 |
-| 2% | 50.1 dB | 73.3 dB | 1.34 dB | 閫氳繃 |
-| 5% | 42.2 dB | 72.6 dB | 2.05 dB | 閫氳繃 |
-| 10% | 36.1 dB | 70.2 dB | 4.47 dB | 涓寸晫 |
-| 20% | 30.2 dB | 50.6 dB | 24.0 dB | 澶辫触 |
+| 1% | 63.7 dB | 74.5 dB | 0.14 dB | 闁俺绻?|
+| 2% | 50.1 dB | 73.3 dB | 1.34 dB | 闁俺绻?|
+| 5% | 42.2 dB | 72.6 dB | 2.05 dB | 闁俺绻?|
+| 10% | 36.1 dB | 70.2 dB | 4.47 dB | 娑撳鏅?|
+| 20% | 30.2 dB | 50.6 dB | 24.0 dB | 婢惰精瑙?|
 
-鏇村: [v3.0 鍙戝竷璇存槑](docs/RELEASE_RESULTS_V3.md),
-[瀹為獙濂椾欢](src/python_cal/analysis/).
+閺囨潙顦? [v3.0 閸欐垵绔风拠瀛樻](docs/RELEASE_RESULTS_V3.md),
+[鐎圭偤鐛欐總妞炬](src/python_cal/analysis/).
 
-<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT 瀵规瘮"></p>
+<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT 鐎佃鐦?></p>
 
-### FFT 鍗忚
+### FFT 閸楀繗顔?
 
-| 鍙傛暟 | 鍊?|
+| 閸欏倹鏆?| 閸?|
 |------|------:|
-| FFT 鐐规暟 | 4096 |
-| 鐩稿共 bin | 1019 |
-| 鐩镐綅 | 0.123 rad |
-| 杈撳叆骞呭害 | -0.5 dBFS |
-| VFS | 姣?seed 鍔ㄦ€佹祴閲?|
-| 绐楀嚱鏁?| **鐭╁舰绐?(鏃犵獥)** |
-| clipping | 姣忔杩愯鏄惧紡妫€鏌?|
+| FFT 閻愯鏆?| 4096 |
+| 閻╃鍏?bin | 1019 |
+| 閻╅晲缍?| 0.123 rad |
+| 鏉堟挸鍙嗛獮鍛 | -0.5 dBFS |
+| VFS | 濮?seed 閸斻劍鈧焦绁撮柌?|
+| 缁愭鍤遍弫?| **閻晛鑸扮粣?(閺冪姷鐛?** |
+| clipping | 濮ｅ繑顐兼潻鎰攽閺勬儳绱″Λ鈧弻?|
 
-鐩稿共閲囨牱: 淇″彿绮剧‘钀藉湪 bin 1019 (gcd(1019,4096)=1)銆傛棤娉勬紡鈥斺€旂煩褰㈢獥鏄纭殑 (ENBW=1 bin)銆?
+閻╃鍏遍柌鍥ㄧ壉: 娣団€冲娇缁墽鈥橀拃钘夋躬 bin 1019 (gcd(1019,4096)=1)閵嗗倹妫ゅ▔鍕础閳ユ柡鈧梻鐓╄ぐ銏㈢崶閺勵垱顒滅涵顔炬畱 (ENBW=1 bin)閵?
 
-### 蹇€熷紑濮?
+### 韫囶偊鈧喎绱戞慨?
 
 ```powershell
-# 瀹夎
+# 鐎瑰顥?
 python -m pip install -e ".[dev]"
 
-# 杩愯娴嬭瘯
+# 鏉╂劘顢戝ù瀣槸
 $env:PYTHONPATH = "src"
 python -m pytest src/python_cal/tests -q
 
-# 涓€閿牎鍑嗚皟璇?鈽?
+# 娑撯偓闁款喗鐗庨崙鍡氱殶鐠?閳?
 python src/python_cal/debug_entry.py
 python src/python_cal/debug_entry.py --pairs 64 --mc 0.02
 python src/python_cal/debug_entry.py --noise 0.5 --pairs 32
 
-# 瀹屾暣绠＄嚎 (100 seeds)
+# 鐎瑰本鏆ｇ粻锛勫殠 (100 seeds)
 python src/python_cal/run_final_calibration_pipeline.py
 
-# 瀹為獙濂椾欢
+# 鐎圭偤鐛欐總妞炬
 python src/python_cal/analysis/generate_fft_comparison.py
 python src/python_cal/analysis/generate_multisigma_fft.py
 ```
 
-### 纭欢澶嶆潅搴?
+### 绾兛娆㈡径宥嗘絽鎼?
 
-| 妯″潡 | 闂ㄦ暟/鏅朵綋绠?| 闈㈢Н |
+| 濡€虫健 | 闂傘劍鏆?閺呮湹缍嬬粻?| 闂堛垻袧 |
 |------|:----------:|-----:|
-| CDAC 鐢靛闃靛垪 (30涓? | 琚姩鍣ㄤ欢 | ~600 渭m虏 |
-| 搴曟澘寮€鍏?(28脳4:1 MUX) | ~560 Tr | ~600 渭m虏 |
-| StrongArm 姣旇緝鍣?| ~24 Tr | ~200 渭m虏 |
-| SAR FSM | ~400 闂?| ~1200 渭m虏 |
-| 鏍″噯鎺у埗鍣?| ~1800 闂?| ~4000 渭m虏 |
-| 鍔犳潈鍜岃В鐮佸櫒 | ~2000 闂?| ~4500 渭m虏 |
-| **鎬昏** | **~4200 闂?+ ~600 Tr** | **~0.011 mm虏** |
+| CDAC 閻㈤潧顔愰梼闈涘灙 (30娑? | 鐞氼偄濮╅崳銊ゆ | ~600 娓璵铏?|
+| 鎼存洘婢樺鈧崗?(28鑴?:1 MUX) | ~560 Tr | ~600 娓璵铏?|
+| StrongArm 濮ｆ棁绶濋崳?| ~24 Tr | ~200 娓璵铏?|
+| SAR FSM | ~400 闂?| ~1200 娓璵铏?|
+| 閺嶁€冲櫙閹貉冨煑閸?| ~1800 闂?| ~4000 娓璵铏?|
+| 閸旂姵娼堥崪宀冃掗惍浣告珤 | ~2000 闂?| ~4500 娓璵铏?|
+| **閹槒顓?* | **~4200 闂?+ ~600 Tr** | **~0.011 mm铏?* |
 
-瀹屾暣鍒嗘瀽: [DELIVERY.md](src/python_cal/DELIVERY.md)
+鐎瑰本鏆ｉ崚鍡樼€? [DELIVERY.md](src/python_cal/DELIVERY.md)
 
-### 涓轰綍涓嶇敤鏃?95-Cu CDAC ?
+### 娑撹桨缍嶆稉宥囨暏閺?95-Cu CDAC ?
 
 ```text
-鏃?  1,2,4,6,10,16,24 Cu (浣庢) | 1 Cu (妗ユ帴) | 1,2,4,8,16 Cu (楂樻)
-鏂?  鏁存暟 138 Cu
+閺?  1,2,4,6,10,16,24 Cu (娴ｅ孩顔? | 1 Cu (濡椼儲甯? | 1,2,4,8,16 Cu (妤傛ɑ顔?
+閺?  閺佸瓨鏆?138 Cu
 ```
 
-鍚?0.5% 澶遍厤, 1000-seed 鐮佹湰瀹¤:
-- 鏃? 缂虹爜 P50=22, 鏈€鍧?84; 鏈€澶ц烦鐮佹渶鍧?9
-- 鏂? **1000/1000 闆剁己鐮? 鏈€澶ц烦鐮佸缁?1**
+閸?0.5% 婢堕亶鍘? 1000-seed 閻焦婀扮€孤ゎ吀:
+- 閺? 缂傝櫣鐖?P50=22, 閺堚偓閸?84; 閺堚偓婢堆嗙儲閻焦娓堕崸?9
+- 閺? **1000/1000 闂嗗墎宸遍惍? 閺堚偓婢堆嗙儲閻礁顫愮紒?1**
 
-<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC 瀵规瘮"></p>
+<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC 鐎佃鐦?></p>
 
-### 鐩綍缁撴瀯
+### 閻╊喖缍嶇紒鎾寸€?
 
 ```text
 src/python_cal/
-  config.py              缁熶竴閰嶇疆鍏ュ彛
-  debug_entry.py         涓€閿牎鍑嗚皟璇?鈽?
-  DELIVERY.md            閫掍氦鏂囨。
-  topology/              鏁存暟 CDAC 鎷撴墤涓庡紑鍏崇姸鎬?
-  physical/              鐢佃嵎瀹堟亽姹傝В鍣?
-  comparator/            鍔ㄦ€佹瘮杈冨櫒妯″瀷
-  async_control/         寮傛 SAR 鎻℃墜
-  calibration/           Shen 2018 force-0/force-1 鏍″噯
-  decode/                绾姞鏉冨拰瑙ｇ爜鍣?
-  validation/            FFT 涓庡彲杈剧爜鏈璁?
-  analysis/              瀹為獙鑴氭湰涓庡浘琛?
-  tests/                 鍥炲綊娴嬭瘯濂椾欢
+  config.py              缂佺喍绔撮柊宥囩枂閸忋儱褰?
+  debug_entry.py         娑撯偓闁款喗鐗庨崙鍡氱殶鐠?閳?
+  DELIVERY.md            闁帊姘﹂弬鍥ㄣ€?
+  topology/              閺佸瓨鏆?CDAC 閹锋挻澧ゆ稉搴＄磻閸忓磭濮搁幀?
+  physical/              閻絻宓庣€瑰牊浜藉Ч鍌澬掗崳?
+  comparator/            閸斻劍鈧焦鐦潏鍐ㄦ珤濡€崇€?
+  async_control/         瀵倹顒?SAR 閹烩剝澧?
+  calibration/           Shen 2018 force-0/force-1 閺嶁€冲櫙
+  decode/                缁绢垰濮為弶鍐ㄦ嫲鐟欙絿鐖滈崳?
+  validation/            FFT 娑撳骸褰叉潏鍓х垳閺堫剙顓哥拋?
+  analysis/              鐎圭偤鐛欓懘姘拱娑撳骸娴樼悰?
+  tests/                 閸ョ偛缍婂ù瀣槸婵傛ぞ娆?
 docs/
   MODELING_GUIDE.md, VALIDATION_STATUS.md, RELEASE_RESULTS_V3.md, ...
 ```
 
-### 寮曠敤
+### 瀵洜鏁?
 
 ```bibtex
 @misc{sar12_cal_behavioral_2026,
@@ -401,15 +401,15 @@ docs/
 }
 ```
 
-鏍″噯鍗忚鍩轰簬: Shen et al., "A 16-bit 16-MS/s SAR ADC With On-Chip
+閺嶁€冲櫙閸楀繗顔呴崺杞扮艾: Shen et al., "A 16-bit 16-MS/s SAR ADC With On-Chip
 Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
 pp. 1147&ndash;1154, Apr. 2018.
 
-### AI 杈呭姪澹版槑
+### AI 鏉堝懎濮竟鐗堟
 
-鏈」鐩娇鐢?AI 杈呭姪缂栫爜宸ュ叿寮€鍙戯紝鍖呮嫭 CODEX 涓?Trae (DeepSeek)銆?
-鎵€鏈?AI 鐢熸垚浠ｇ爜宸茬粡浜哄伐瀹℃煡涓庨獙璇併€?
+閺堫剟銆嶉惄顔诲▏閻?AI 鏉堝懎濮紓鏍垳瀹搞儱鍙垮鈧崣鎴礉閸栧懏瀚?CODEX 娑?Trae (DeepSeek)閵?
+閹碘偓閺?AI 閻㈢喐鍨氭禒锝囩垳瀹歌尙绮℃禍鍝勪紣鐎光剝鐓℃稉搴ㄧ崣鐠囦降鈧?
 
-### 寮€婧愯鍙?
+### 瀵偓濠ф劘顔忛崣?
 
 [MIT](LICENSE)
