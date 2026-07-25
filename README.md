@@ -1,4 +1,4 @@
-# 12-bit Calibrated Asynchronous SAR ADC — Behavioral Model<br><small>12位校准型异步SAR ADC — 行为级模型</small>
+﻿# 12-bit Calibrated Asynchronous SAR ADC — Behavioral Model<br><small>12位校准型异步SAR ADC — 行为级模型</small>
 
 [![Version](https://img.shields.io/badge/version-3.1.0-0072B2)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/releases)
 [![License](https://img.shields.io/badge/license-MIT-009E73)](LICENSE)
@@ -22,7 +22,7 @@ version** of the project.
 > Evidence level: **Python behavioral L2.**  Results are not transistor-level
 > PVT, post-layout, or silicon measurements.
 
-![Model architecture](docs/assets/figures/fig01_model_architecture.png)
+<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="Model architecture"></p>
 
 ### Locked v3.x CDAC Topology
 
@@ -48,7 +48,7 @@ Nominal effective weights ($H = 67$):
 - Decoder: **plain P/N calibrated weighted sum with Q2 rounding.**
   No LUT, DP, exception tables, or stateful monotonic clamps.
 
-![CDAC topology](docs/assets/figures/fig02_cdac_topology.png)
+<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC topology"></p>
 
 ### Calibration
 
@@ -71,7 +71,7 @@ Dither:             OFF (noise ≧ 1 LSB makes it redundant)
 | `SHEN_DITHER_LSB` | ON (hardcoded) | **OFF** (config) | Redundant when noise ≧ 1 LSB + N ≧ 32 |
 | Divider | — | **right-shift 7** | 128=2⁷, no hardware divider needed |
 
-![Calibration weights](docs/assets/figures/fig03_weights_and_redundancy.png)
+<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="Calibration weights"></p>
 
 ### v3.1.0 Results
 
@@ -100,7 +100,7 @@ Dither:             OFF (noise ≧ 1 LSB makes it redundant)
 More: [v3.0 release notes](docs/RELEASE_RESULTS_V3.md),
 [analysis suite](src/python_cal/analysis/).
 
-![FFT comparison](src/python_cal/analysis/fft_comparison.png)
+<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT comparison"></p>
 
 ### FFT Protocol
 
@@ -165,7 +165,7 @@ Same 0.5% mismatch, 1000-seed codebook audit:
 - Old: missing codes P50=22, worst=84; max jump worst=9
 - New: **1000/1000 zero missing codes, max jump always 1**
 
-![CDAC comparison](docs/assets/figures/fig09_cdac_candidate_comparison.png)
+<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC comparison"></p>
 
 ### Directory
 
@@ -225,7 +225,7 @@ P/N 分侧独立电容失配、前景权重校准。本项目**唯一有效的 P
 
 > 证据等级: **Python behavioral L2.** 非晶体管级 PVT、非版图后仿、非硅片测量。
 
-![模型架构](docs/assets/figures/fig01_model_architecture.png)
+<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="模型架构"></p>
 
 ### 锁定 v3.x CDAC 拓扑
 
@@ -251,7 +251,7 @@ P/N 分侧独立电容失配、前景权重校准。本项目**唯一有效的 P
 - 解码器: **纯 P/N 校准权重加权和 + Q2 舍入。**
   无 LUT、无 DP、无异常表、无状态钳位。
 
-![CDAC 拓扑](docs/assets/figures/fig02_cdac_topology.png)
+<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC 拓扑"></p>
 
 ### 校准
 
@@ -273,7 +273,7 @@ Dither:    关闭 (噪声 ≧ 1 LSB 即冗余)
 | `SHEN_DITHER_LSB` | 开 (硬编码) | **关** (config) | 噪声 ≧ 1 LSB + N ≧ 32 时冗余 |
 | 除法器 | — | **右移 7 位** | 128=2⁷, 无需硬件除法器 |
 
-![校准权重](docs/assets/figures/fig03_weights_and_redundancy.png)
+<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="校准权重"></p>
 
 ### v3.1.0 结果
 
@@ -302,7 +302,7 @@ Dither:    关闭 (噪声 ≧ 1 LSB 即冗余)
 更多: [v3.0 发布说明](docs/RELEASE_RESULTS_V3.md),
 [实验套件](src/python_cal/analysis/).
 
-![FFT 对比](src/python_cal/analysis/fft_comparison.png)
+<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT 对比"></p>
 
 ### FFT 协议
 
@@ -366,7 +366,7 @@ python src/python_cal/analysis/generate_multisigma_fft.py
 - 旧: 缺码 P50=22, 最坏=84; 最大跳码最坏=9
 - 新: **1000/1000 零缺码, 最大跳码始终=1**
 
-![CDAC 对比](docs/assets/figures/fig09_cdac_candidate_comparison.png)
+<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC 对比"></p>
 
 ### 目录结构
 
