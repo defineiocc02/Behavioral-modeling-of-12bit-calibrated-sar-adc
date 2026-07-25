@@ -25,8 +25,8 @@ __pycache__/
 .trae-html-share-packages/
 
 # Separate modules (maintained in their own repos or not part of this release)
-rtl/
-va/
+### rtl/
+### va/
 
 # Generated HTML/audit/delivery output
 sar-adc-cal-delivery/
@@ -42,6 +42,19 @@ src/python_cal/validation_results/
 # Simulation temp files
 psf_*/
 raw_*/
+
+# Vivado / XSIM artifacts
+sim_work/
+xsim.dir/
+*.wdb
+*.vcd
+*.jou
+*.pb
+webtalk*.log
+webtalk*.jou
+xvlog.log
+xelab.log
+xsim.log
 
 # OS
 .DS_Store

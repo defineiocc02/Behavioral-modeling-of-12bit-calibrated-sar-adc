@@ -1,0 +1,72 @@
+// strongarm_cmp.va — StrongArm dynamic comparator behavioral model
+//
+// Models: offset, noise (kT/C), metastability, regeneration time constant.
+//
+// Decision time: t_decision = t0 + tau * ln(V_logic / max(|Vdiff+Voffset+Vnoise|, Vmin))
+// Output = 1 when VTOP_P > VTOP_N after offset+noise (fixed polarity).
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module strongarm_cmp(vtop_p, vtop_n, out, ready, clk);
+  input vtop_p, vtop_n, clk;
+  output out, ready;
+  electrical vtop_p, vtop_n, clk, out, ready;
+
+  // ── Comparator parameters ──
+  parameter real T0_S      = 0.5e-9 from [0:inf);   // base delay
+  parameter real TAU_S     = 50e-12 from (0:inf);    // regeneration time constant
+  parameter real V_LOGIC   = 0.9 from (0:inf);       // logic swing
+  parameter real OFFSET_V  = 0.0;                     // input offset voltage
+  parameter real NOISE_SIGMA_V = 0.0003 from [0:inf); // noise RMS (300 uV default)
+  parameter real V_MIN     = 1e-6 from (0:inf);      // metastability threshold
+  parameter real MAX_WAIT_S = 10e-9 from (0:inf);    // timeout
+
+  integer seed;
+  real vdiff, vdiff_eff, v_noise;
+  real decision_time, abs_veff;
+  integer result, metastable;
+  real vtop_p_val, vtop_n_val;
+
+  analog begin
+    @(initial_step) begin
+      seed = 1;
+      result = 0;
+    end
+
+    vtop_p_val = V(vtop_p);
+    vtop_n_val = V(vtop_n);
+
+    @(cross(V(clk) - 0.9, +1)) begin
+      // Read differential input
+      vdiff = vtop_p_val - vtop_n_val;
+
+      // Generate noise (Gaussian approximation via sum of uniforms)
+      seed = seed + 1;
+      v_noise = NOISE_SIGMA_V * $rdist_normal(seed, 0.0, 1.0);
+
+      // Effective differential with offset and noise
+      vdiff_eff = vdiff + OFFSET_V + v_noise;
+      abs_veff = abs(vdiff_eff);
+
+      // Metastability check
+      metastable = (abs_veff < V_MIN) ? 1 : 0;
+
+      // Decision time
+      if (metastable || abs_veff == 0.0) begin
+        decision_time = MAX_WAIT_S;
+      end else begin
+        decision_time = T0_S + TAU_S * ln(V_LOGIC / max(abs_veff, V_MIN));
+        if (decision_time > MAX_WAIT_S)
+          decision_time = MAX_WAIT_S;
+      end
+
+      // Polarity: 1 if VTOP_P > VTOP_N
+      result = (vdiff_eff > 0.0) ? 1 : 0;
+    end
+
+    // Output with decision delay
+    V(out)   <+ transition(result * 1.8, 0.0, 10e-12, 10e-12);
+    V(ready) <+ 1.8;   // always ready in behavioral model
+  end
+endmodule
