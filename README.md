@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-009E73)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-0072B2)](https://www.python.org/)
 [![FFT](https://img.shields.io/badge/FFT-coherent%20rectangular-009E73)](docs/MODELING_GUIDE.md)
-[![Cal](https://img.shields.io/badge/calibration-Shen%202018%20JSSC-E69F00)](https://ieeexplore.ieee.org/document/8353170)
+[![Cal](https://img.shields.io/badge/calibration-Shen%202018%20JSSC-E69F00)](https://ieeexplore.ieee.org/document/8248649)
 
 **[English](#english) | [中文](#chinese)**
 
@@ -200,8 +200,9 @@ docs/
 }
 ```
 
-Calibration protocol: Shen et al., "A 12-bit 10-MS/s SAR ADC with
-Foreground Calibration," *IEEE JSSC*, vol. 53, no. 7, pp. 1895-1906, 2018.
+Calibration protocol: Shen et al., "A 16-bit 16-MS/s SAR ADC With
+On-Chip Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
+pp. 1147&ndash;1154, Apr. 2018.
 
 ### Contributors
 
@@ -400,8 +401,9 @@ docs/
 }
 ```
 
-校准协议基于: Shen et al., "A 12-bit 10-MS/s SAR ADC with Foreground
-Calibration," *IEEE JSSC*, vol. 53, no. 7, pp. 1895-1906, 2018.
+校准协议基于: Shen et al., "A 16-bit 16-MS/s SAR ADC With On-Chip
+Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
+pp. 1147&ndash;1154, Apr. 2018.
 
 ### 贡献者
 
