@@ -22,7 +22,6 @@
 \usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{parskip}
-\usepackage{float}
 
 % ── Colors ──
 \definecolor{primary}{HTML}{1A5276}
@@ -54,6 +53,7 @@
 \newcommand{\imgdir}{C:/Users/Administrator/Desktop/SAR_ADC_IDEAL_CAL_REPLACEMENT_V6_CLEAN}
 
 \begin{document}
+\raggedbottom
 
 % ===========================================================================
 \begin{titlepage}
@@ -107,7 +107,7 @@ Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC
   \item \textbf{实验套件} —— AVG\_PAIRS 扫描、Dither 消融、噪声热力图、MC 多 $\sigma$ 扫描
 \end{enumerate}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig01_model_architecture.png}
 \caption{系统架构总览}
@@ -118,14 +118,14 @@ Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC
 
 每侧仅使用整数单位电容，P/N 总计 276 Cu (1.104 pF @ Cu = 4 fF)。
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig02_cdac_topology.png}
 \caption{CDAC 电容拓扑 (138 Cu/侧)}
 \label{fig:cdac}
 \end{figure}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{CDAC 电容阵列规格（单侧）}
 \begin{tabular}{lcr}
@@ -143,7 +143,7 @@ Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC
 \end{tabular}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{15 级权重定义 (标称 $H=67$ Q0)}
 \begin{tabular}{ccccr}
@@ -181,7 +181,7 @@ Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC
 
 \subsection{校准权重与冗余}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig03_weights_and_redundancy.png}
 \caption{校准权重估计与 8-Cu 冗余窗口}
@@ -190,7 +190,7 @@ Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC
 
 \subsection{工艺参数与失配模型}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{TSMC 180nm MOM 失配参数}
 \begin{tabular}{ll}
@@ -217,7 +217,7 @@ MC\_SIGMA 配置值 & \textbf{1.0\%} (保守) \\
 
 \subsection{模拟硬件}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{模拟硬件清单}
 \begin{tabular}{lrl}
@@ -238,7 +238,7 @@ StrongArm 比较器 & $\sim$24 Tr, 1 mV RMS 噪声 & $\sim$200 $\mu$m$^2$ \\
 
 \textbf{工具:} Vivado 2018.3 \quad|\quad \textbf{器件:} xc7z020clg400-1 \quad|\quad \textbf{时钟:} 100 MHz
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{FPGA 综合资源}
 \begin{tabular}{lrrr}
@@ -257,7 +257,7 @@ BUFG & 1 & 32 & 3.13\% \\
 
 \subsection{数字硬件 —— ASIC 门数估算}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{ASIC 门数与面积估算 (TSMC 180nm 标准单元)}
 \begin{tabular}{lrr}
@@ -289,7 +289,7 @@ SAR FSM (15 态异步时序器) & $\sim$400 & $\sim$1,200 $\mu$m$^2$ \\
 
 \subsection{硬件成本可视化}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig08_hardware_cost.png}
 \caption{硬件资源分布}
@@ -298,7 +298,7 @@ SAR FSM (15 态异步时序器) & $\sim$400 & $\sim$1,200 $\mu$m$^2$ \\
 
 \subsection{校准时间}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{校准时间对比}
 \begin{tabular}{lrr}
@@ -324,7 +324,7 @@ SAR FSM (15 态异步时序器) & $\sim$400 & $\sim$1,200 $\mu$m$^2$ \\
 
 \subsection{FFT 协议}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{FFT 测量协议}
 \begin{tabular}{ll}
@@ -345,7 +345,7 @@ Clipping 检查 & 每次运行显式检测 \\
 
 \subsection{单点 FFT 频谱}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{\imgdir/src/python_cal/analysis/fft_comparison.png}
 \caption{校准前/校准后/物理 Oracle FFT 频谱对比 (seed=42, $\sigma$=1\%)}
@@ -356,7 +356,7 @@ Clipping 检查 & 每次运行显式检测 \\
 
 \textbf{运行条件:} run ID \texttt{dbac69f3}, 100 MC seeds, $\sigma = 1\%$, AVG\_PAIRS = 128, 校准噪声 1 mV RMS, 4096-pt Rectangular FFT
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{动态性能指标 (Python 行为级模型实测)}
 \begin{tabular}{lrrrr}
@@ -383,7 +383,7 @@ Gap $\le$ 1.0 dB & — & \textbf{100/100 (100\%)} & — & seeds \\
 
 \subsection{MC 动态性能可视化}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig04_dynamic_monte_carlo.png}
 \caption{100-seed MC 动态性能分布}
@@ -392,7 +392,7 @@ Gap $\le$ 1.0 dB & — & \textbf{100/100 (100\%)} & — & seeds \\
 
 \subsection{Oracle Gap CDF}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\textwidth]{\imgdir/docs/assets/figures/fig05_oracle_gap_cdf.png}
 \caption{Oracle Gap 累积分布 (98\% seeds $\le$ 0.5 dB)}
@@ -403,7 +403,7 @@ Gap $\le$ 1.0 dB & — & \textbf{100/100 (100\%)} & — & seeds \\
 
 \textbf{条件:} 100-seed MC, code-density 方法
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{静态 DNL/INL 指标 (Python 实测)}
 \begin{tabular}{lrrr}
@@ -418,7 +418,7 @@ INL peak & 0.80 LSB & 0.92 LSB & 0.96 LSB \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig06_static_signoff.png}
 \caption{静态 DNL/INL 签核 (100 seeds, 零缺码)}
@@ -427,7 +427,7 @@ INL peak & 0.80 LSB & 0.92 LSB & 0.96 LSB \\
 
 \subsection{校准权重误差}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{各目标权重校准误差 (Python 实测, run \texttt{dbac69f3})}
 \begin{tabular}{crrrr}
@@ -448,7 +448,7 @@ H32C  & 2144 & 3.87 / 12.33 & \textbf{0.006\% / 0.018\%} \\
 
 H32C 归一化误差 P50 仅 \textbf{0.0061\%}，与 Oracle Gap P50 = 0.14 dB 一致。
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig07_calibration_error.png}
 \caption{7 目标校准权重误差分布}
@@ -459,14 +459,14 @@ H32C 归一化误差 P50 仅 \textbf{0.0061\%}，与 Oracle Gap P50 = 0.14 dB �
 
 \textbf{Python 实测:} 100 seeds $\times$ 6 $\sigma$ levels
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{\imgdir/src/python_cal/analysis/fft_multisigma_sweep.png}
 \caption{MC $\sigma$ 扫描 FFT (1\%--50\%, 100 seeds/level)}
 \label{fig:multisigma}
 \end{figure}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{MC $\sigma$ 失配容限扫描 (Python 实测)}
 \begin{tabular}{crrrl}
@@ -505,7 +505,7 @@ cal_top (顶层)
 
 \textbf{工具:} Vivado 2018.3 \quad|\quad \textbf{器件:} xc7z020clg400-1 \quad|\quad \textbf{时钟:} 100 MHz, Slow Corner
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{综合结果 —— 修复前后对比}
 \begin{tabular}{lrr}
@@ -528,7 +528,7 @@ Registers & 495 & \textbf{473} \\
 
 \subsection{RTL Bug 修复纪录}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{6 项 RTL Bug 修复明细}
 \footnotesize
@@ -548,7 +548,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 \subsection{时序约束}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{\texttt{timing.xdc} ASIC 级约束}
 \begin{tabular}{ll}
@@ -575,7 +575,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 \subsection{AVG\_PAIRS 扫描}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{AVG\_PAIRS 扫描结果 (Python 实测)}
 \begin{tabular}{crrrl}
@@ -595,7 +595,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 \textbf{结论:} 128 对是 12-bit 精度甜点 —— gap $<$ 0.5 dB 且时间仅为 512 的 1/4。
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{\imgdir/src/python_cal/analysis/old_vs_new_comparison.png}
 \caption{旧 (AVG=512) vs 新 (AVG=128) 对比}
@@ -604,7 +604,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 \subsection{Dither 消融实验}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Dither ON vs OFF (Python 实测)}
 \begin{tabular}{lrrrl}
@@ -621,7 +621,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 \textbf{结论:} 比较器噪声 $\ge$ 1 LSB 或 $N \ge 32$ 时 dither 完全冗余。当前配置 (1 mV + 128 对) $\to$ dither 关闭, 节省硬件。
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\textwidth]{\imgdir/src/python_cal/analysis/dither_ablation.png}
 \caption{Dither 消融实验结果}
@@ -630,7 +630,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 \subsection{噪声 $\times$ AVG\_PAIRS 热力图}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{比较器噪声 vs 最优 AVG\_PAIRS (Python 实测)}
 \begin{tabular}{rrr}
@@ -647,7 +647,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 最优对数公式: $N_{\text{opt}} \approx 18 \times (\sigma_{\text{cmp},\mu\text{V}} / 439)^2$
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{\imgdir/src/python_cal/analysis/noise_vs_pairs_sweep.png}
 \caption{噪声 $\times$ AVG\_PAIRS 热力图}
@@ -661,7 +661,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 % ===========================================================================
 \section{CDAC 拓扑对比: 旧 95-Cu vs 新 138-Cu}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{码本审计对比 (1000 seeds, 0.5\% mismatch)}
 \begin{tabular}{lrr}
@@ -677,7 +677,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig09_cdac_candidate_comparison.png}
 \caption{旧 95-Cu vs 新 138-Cu CDAC 拓扑对比}
@@ -693,7 +693,7 @@ B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 
 \subsection{风险矩阵}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{风险矩阵}
 \footnotesize
@@ -713,7 +713,7 @@ R6 & FPGA IOB 超标 & INFO & ASIC 内部模块端口多 & 不影响 ASIC \\
 
 \subsection{最终验收结论}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{验收标准检查表}
 \begin{tabular}{lrlr}
