@@ -1,7 +1,7 @@
 
 Window Function: Rectangular (No windowing)
-Reason: Coherent sampling (k=127, N=4096, gcd=1) means the signal
-        frequency lands exactly in bin 127. A rectangular window has
+Reason: Coherent sampling (k=1019, N=4096, gcd=1) means the signal
+        frequency lands exactly in bin 1019. A rectangular window has
         ENBW = 1 bin, so no spectral leakage occurs. Blackman/Hann etc.
         would spread the main lobe over 3-5 bins and reduce SNDR by
         2-4 dB from ENBW loss alone.
@@ -9,10 +9,10 @@ Reason: Coherent sampling (k=127, N=4096, gcd=1) means the signal
 ================================================================================
   Sigma     Pre-SNDR   Post-SNDR  Gain       ENOB-pre  ENOB-post  Oracle-Gap
 ================================================================================
-     2%       50.10      73.30      +23.20     8.03      11.88       1.34
-     5%       42.15      72.60      +30.45     6.71      11.77       2.05
-    10%       36.14      70.18      +34.03     5.71      11.37       4.47
-    20%       30.19      50.61      +20.42     4.72       8.11       24.03
+     2%       50.10      73.86      +23.77     8.03      11.98       0.78
+     5%       42.15      72.55      +30.39     6.71      11.76       2.10
+    10%       36.14      69.79      +33.65     5.71      11.30       4.85
+    20%       30.19      51.23      +21.05     4.72       8.22       23.41
     50%       22.66      23.12       +0.46     3.47       3.55       51.52
 
 ================================================================================
