@@ -167,12 +167,9 @@ PHYSICAL_TO_WEIGHT_STAGE = {  # deprecated: 仅作文档保留
     8: 6, 9: 5, 10: 4, 11: 3, 12: 2, 13: 1, 14: 0,
 }
 
-# ── 比较器噪声 ──
-# 校准期间: 1 mV RMS (保守, 512->128 对仍可靠)
-# 正常转换: 0.15 LSB RMS
-# 若比较器能做到 200-500 uV, AVG_PAIRS 可进一步降至 8-32
-CAL_NOISE_SIGMA_V = 0.001    # 校准噪声 RMS [V]
-CONV_NOISE_SIGMA_LSB = 0.15  # 转换噪声 RMS [LSB]
+# ── 比较器噪声 ──  统一 300 μV RMS
+CAL_NOISE_SIGMA_V = 0.0003    # 300 μV RMS
+CONV_NOISE_SIGMA_LSB = 0.68   # 300 μV / (VREF/4096)
 
 FFT_N = 4096
 FFT_K = 1019   # ~2.49 MHz @ Fs=10 MHz (was 127, ~310 kHz)
