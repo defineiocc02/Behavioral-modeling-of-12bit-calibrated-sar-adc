@@ -1,271 +1,208 @@
 % !TEX program = xelatex
 % ===========================================================================
 %  12-bit Calibrated Asynchronous SAR ADC — Final Submission Report
-%  12位校准型异步SAR ADC — 最终递交报告
-%  Version 4.2 | 2026-07-26
+%  12位校准型异步SAR ADC — 最终递交报告  |  Version 4.2  |  2026-07-26
 % ===========================================================================
-\documentclass[12pt,a4paper]{ctexart}
+\documentclass[11pt,a4paper]{ctexart}
 
 % ── Packages ──
-\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage[top=2.2cm, bottom=2.2cm, left=2.5cm, right=2.5cm]{geometry}
 \usepackage{fontspec}
 \setmonofont{Courier New}
 \usepackage{booktabs}
 \usepackage{colortbl}
-\usepackage{xcolor}
+\usepackage[table]{xcolor}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{caption}
+\usepackage{subcaption}
 \usepackage{enumitem}
 \usepackage{fancyhdr}
-\usepackage{tikz}
-\usepackage{tcolorbox}
 \usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{amsmath}
-\usepackage{siunitx}
+\usepackage{parskip}
+\usepackage{float}
 
 % ── Colors ──
-\definecolor{primary}{HTML}{1B4F72}
-\definecolor{accent}{HTML}{E67E22}
-\definecolor{success}{HTML}{27AE60}
-\definecolor{warning}{HTML}{F39C12}
-\definecolor{danger}{HTML}{E74C3C}
-\definecolor{graybg}{HTML}{F5F6FA}
-\definecolor{lightblue}{HTML}{D6EAF8}
-\definecolor{lightgreen}{HTML}{D5F5E3}
-\definecolor{lightyellow}{HTML}{FCF3CF}
-\definecolor{lightred}{HTML}{FADBD8}
+\definecolor{primary}{HTML}{1A5276}
+\definecolor{greenpass}{HTML}{1E8449}
+\definecolor{redfail}{HTML}{C0392B}
+\definecolor{orange}{HTML}{D35400}
+\definecolor{graybg}{HTML}{F2F3F4}
+\definecolor{bluebg}{HTML}{D6EAF8}
+\definecolor{greenbg}{HTML}{D5F5E3}
+\definecolor{redbg}{HTML}{FADBD8}
+\definecolor{orangebg}{HTML}{FDEBD0}
 
 % ── Hyperlinks ──
-\hypersetup{
-  colorlinks=true,
-  linkcolor=primary,
-  urlcolor=accent,
-  citecolor=primary
-}
+\hypersetup{colorlinks=true,linkcolor=primary,urlcolor=primary}
 
-% ── Headers / Footers ──
+% ── Headers ──
 \pagestyle{fancy}
-\setlength{\headheight}{14pt}
+\setlength{\headheight}{13pt}
 \fancyhf{}
-\fancyhead[L]{\small\color{primary}SAR ADC Calibration — Final Report v4.2}
+\fancyhead[L]{\small\color{primary}12-bit Calibrated SAR ADC — Final Report v4.2}
 \fancyhead[R]{\small\thepage}
-\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{primary}\leaders\hrule height \headrulewidth\hfill}}
 
-% ── Title Box ──
-\newtcolorbox{titlebox}[1][]{
-  colback=graybg, colframe=primary, boxrule=0.8pt,
-  left=8pt, right=8pt, top=6pt, bottom=6pt, #1
-}
-
-\newtcolorbox{resultbox}[1][]{
-  colback=lightgreen, colframe=success, boxrule=0.8pt,
-  left=8pt, right=8pt, top=6pt, bottom=6pt, #1
-}
-
-\newtcolorbox{warnbox}[1][]{
-  colback=lightyellow, colframe=warning, boxrule=0.8pt,
-  left=8pt, right=8pt, top=6pt, bottom=6pt, #1
-}
-
-\newtcolorbox{infobox}[1][]{
-  colback=lightblue, colframe=primary, boxrule=0.8pt,
-  left=8pt, right=8pt, top=6pt, bottom=6pt, #1
-}
-
-% ── Commands ──
-\newcommand{\passbadge}{\textcolor{success}{\textbf{✓ PASS}}}
-\newcommand{\metbadge}{\textcolor{success}{\textbf{✓ MET}}}
-\newcommand{\failbadge}{\textcolor{danger}{\textbf{✗ FAIL}}}
-\newcommand{\warnbadge}{\textcolor{warning}{\textbf{⚠}}}
-\newcommand{\ideal}{\textcolor{success}{\textbf{理想}}}
+% ── Macros ──
+\newcommand{\pass}{\textcolor{greenpass}{\textbf{✓}}}
+\newcommand{\fail}{\textcolor{redfail}{\textbf{✗}}}
+\newcommand{\warn}{\textcolor{orange}{\textbf{⚠}}}
+\newcommand{\imgdir}{C:/Users/Administrator/Desktop/SAR_ADC_IDEAL_CAL_REPLACEMENT_V6_CLEAN}
 
 \begin{document}
 
 % ===========================================================================
-%  TITLE PAGE
-% ===========================================================================
 \begin{titlepage}
 \centering
-\vspace*{2cm}
+\vspace*{1.5cm}
 
-{\Huge\color{primary}\textbf{12-bit Calibrated Asynchronous}}\\[4pt]
-{\Huge\color{primary}\textbf{Split-CDAC SAR ADC}}\\[16pt]
-{\LARGE\color{accent}12位校准型异步分离CDAC SAR ADC}\\[8pt]
-{\large 12ビット校正非同期スプリットCDAC SAR ADC}
+{\fontsize{28}{34}\selectfont\color{primary}\textbf{12位校准型}}\\[4pt]
+{\fontsize{28}{34}\selectfont\color{primary}\textbf{异步分离CDAC SAR ADC}}\\[16pt]
+{\Large 最终递交报告}\\[8pt]
+{\normalsize Version 4.2 \quad|\quad 2026年7月26日}
 
-\vspace{1cm}
-{\Large\color{primary}\textbf{最终递交报告 / Final Submission Report}}\\[6pt]
-{\normalsize Version 4.2 \textbar{} 2026-07-26}
+\vspace{1.2cm}
+\rule{0.55\textwidth}{1.2pt}\\[10pt]
+
+{\small
+\textbf{Python 行为级模型 L2 + RTL 综合验证}\\[4pt]
+TSMC 180nm CMOS \quad$\cdot$\quad 100 MHz 数字 \quad$\cdot$\quad 10 MS/s SAR ADC\\
+Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC\\
+0 DSP \quad$\cdot$\quad 0 BRAM \quad$\cdot$\quad 综合 0 警告
+}
+
+\rule{0.55\textwidth}{1.2pt}
 
 \vspace{2cm}
-\rule{0.6\textwidth}{1.5pt}\\[12pt]
-
-\begin{minipage}{0.8\textwidth}\centering\small
-\textbf{Behavioral Model (Python L2) + Synthesizable RTL (Vivado 2018.3)}\\[6pt]
-TSMC 180nm CMOS · 100 MHz Digital · 10 MS/s SAR ADC\\
-Shen 2018 JSSC Foreground Weight Calibration\\
-138 Cu/side Integer Split-CDAC · 0 DSP · 0 BRAM
-\end{minipage}
-
-\rule{0.6\textwidth}{1.5pt}
-
-\vspace{3cm}
-
 \begin{tabular}{rl}
-\textbf{Status:} & \textcolor{success}{\textbf{✓ ALL CHECKS PASSED}} \\
-\textbf{Evidence:} & Python Behavioral L2 + RTL Synthesis Verified \\
-\textbf{License:} & MIT \\
-\textbf{Repository:} & \href{https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc}{github.com/defineiocc02/...}\\
+\textbf{状态:} & \textcolor{greenpass}{\textbf{✓ 全部检查通过}} \\
+\textbf{仓库:} & \href{https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc}{github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc} \\
 \end{tabular}
 
 \vfill
-{\footnotesize\color{gray}AI-Assisted Development · Reviewed \& Validated by Human Contributors}
+{\footnotesize AI 辅助开发 · 人工审查验证}
 \end{titlepage}
 
-% ===========================================================================
-%  TABLE OF CONTENTS
 % ===========================================================================
 \tableofcontents
 \newpage
 
 % ===========================================================================
-%  0. EXECUTIVE SUMMARY
+%  1  架构总览
 % ===========================================================================
-\section{执行摘要 \\ Executive Summary}
-\label{sec:summary}
+\section{架构总览}
 
-\subsection{中文摘要}
+\subsection{系统架构}
 
-\begin{titlebox}
-本项目实现了一款 \textbf{12位、10 MS/s、全差分异步 split-CDAC SAR ADC} 的完整行为级模型与可综合RTL校准逻辑。
-CDAC采用TSMC 180nm工艺，每侧138个单位电容（Cu = 4 fF），P/N两侧独立失配建模。
-校准协议严格复现Shen 2018 JSSC论文的Force-0/Force-1前景权重校准，
-通过对7个高段目标电容逐一测量相对于低段基准尺（131 Q0）的有效权重，实现全差分权重校正。
-\end{titlebox}
+本项目实现了一款全差分、异步 split-CDAC SAR ADC 的完整行为级模型与可综合 RTL 校准逻辑。系统包含三个核心层次：
 
-\vspace{6pt}
+\begin{enumerate}[nosep]
+  \item \textbf{Python 行为级模型} —— 电荷守恒求解器 + P/N 独立失配 + Shen 2018 校准协议 + FFT 验证管线
+  \item \textbf{可综合 RTL} —— cal\_fsm (16态校准状态机) + cal\_weight\_reg (权重寄存器) + sar\_subconverter (子转换SAR)
+  \item \textbf{实验套件} —— AVG\_PAIRS 扫描、Dither 消融、噪声热力图、MC 多 $\sigma$ 扫描
+\end{enumerate}
 
-\begin{resultbox}
-\textbf{核心成果:}\\[4pt]
-\begin{tabular}{lrl}
-\toprule
-\textbf{指标} & \textbf{数值} & \textbf{验收} \\
-\midrule
-SNDR P50 (1\% $\sigma$ MC) & 74.50 dB & \passbadge \\
-ENOB P50 & 12.08 bit & \passbadge \\
-Oracle Gap P50 & 0.14 dB & \passbadge\ ($\ll$ 0.5 dB threshold) \\
-校准成功率 (100 seeds) & 100/100 & \passbadge \\
-负收益 & 0/100 & \passbadge \\
-缺码 (1000 seeds) & 0 & \passbadge \\
-RTL综合 (100 MHz) & Slack +0.30 ns & \metbadge \\
-RTL Warnings & 0 & \passbadge \\
-\bottomrule
-\end{tabular}
-\end{resultbox}
-
-\subsection{English Abstract}
-
-\begin{titlebox}
-A complete behavioral model and synthesizable RTL calibration engine for a 12-bit, 10~MS/s, fully-differential asynchronous split-CDAC SAR ADC. The CDAC uses 138 unit capacitors per side (Cu = 4~fF) in TSMC 180\,nm, with independent P/N-side Monte Carlo mismatch. Calibration strictly follows Shen 2018 JSSC Force-0/Force-1 foreground protocol.\\
-\textbf{Key Results:} Post-calibration SNDR P50 = 74.50 dB (ENOB 12.08 bit), Oracle gap P50 = 0.14 dB, 100/100 seeds calibrated with 0 negative gain, 0 missing codes, clean RTL synthesis (0 warnings, slack MET).
-\end{titlebox}
-
-\subsection{日本語要約}
-
-\begin{titlebox}
-TSMC 180nmプロセスを用いた12ビット10MS/s全差動非同期split-CDAC SAR ADCの完全な動作モデルと論理合成可能なRTL校正エンジン。Shen 2018 JSSCのForce-0/Force-1前景校正プロトコルに厳密に従う。\\
-\textbf{主な成果:} 校正後SNDR P50 = 74.50 dB (ENOB 12.08 bit), Oracle gap P50 = 0.14 dB, 100/100シード校正成功, 欠落コード0, RTL合成クリーン (0警告, スラックMET)。
-\end{titlebox}
-
-\newpage
-
-% ===========================================================================
-%  1. ARCHITECTURE OVERVIEW
-% ===========================================================================
-\section{架构总览 \\ Architecture Overview}
-\label{sec:arch}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig01_model_architecture.png}
+\caption{系统架构总览}
+\label{fig:arch}
+\end{figure}
 
 \subsection{锁定 v3.x CDAC 拓扑}
 
-每侧仅使用整数单位电容。v3.0.0 架构。
+每侧仅使用整数单位电容，P/N 总计 276 Cu (1.104 pF @ Cu = 4 fF)。
 
-\begin{table}[h]
+\begin{figure}[H]
 \centering
-\caption{CDAC电容阵列规格（单侧）}
+\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig02_cdac_topology.png}
+\caption{CDAC 电容拓扑 (138 Cu/侧)}
+\label{fig:cdac}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{CDAC 电容阵列规格（单侧）}
 \begin{tabular}{lcr}
 \toprule
-\textbf{段 / Segment} & \textbf{电容组成} & \textbf{总计} \\
+\textbf{段} & \textbf{电容组成} & \textbf{总计} \\
 \midrule
-高段 High & 32, 16, 8, 8, 4, 2, 1 Cu & 71 Cu \\
-桥接 Bridge & 2 Cu & 2 Cu \\
-低段 Low & 32, 16, 8, 4, 2, 2, 1 Cu & 65 Cu \\
+高段 (High) & 32, 16, 8, 8, 4, 2, 1 Cu & 71 Cu \\
+桥接 (Bridge) & 2 Cu & 2 Cu \\
+低段 (Low) & 32, 16, 8, 4, 2, 2, 1 Cu & 65 Cu \\
 \midrule
-\rowcolor{lightblue}
-\textbf{单侧总计} & & \textbf{138 Cu (552 fF @ 4 fF)} \\
-\textbf{P+N总计} & & \textbf{276 Cu (1.104 pF)} \\
+\rowcolor{bluebg}
+\textbf{单侧总计} & & \textbf{138 Cu (552 fF)} \\
+\textbf{P+N 总计} & & \textbf{276 Cu (1.104 pF)} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{标称有效权重 ($H=67$)}
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{15级权重定义}
-\begin{tabular}{cccccc}
+\caption{15 级权重定义 (标称 $H=67$ Q0)}
+\begin{tabular}{ccccr}
 \toprule
-\textbf{Stage} & \textbf{Name} & \textbf{NCU} & \textbf{Q0 Weight} & \textbf{Type} \\
+\textbf{Stage} & \textbf{名称} & \textbf{NCU} & \textbf{类型} & \textbf{Q0 权重} \\
 \midrule
-0  & H32C  & 32 & 2144 & High, Calibrated \\
-1  & H16C  & 16 & 1072 & High, Calibrated \\
-2  & H8C-A & 8  & 536  & High, Calibrated \\
-3  & H8C-R & 8  & 536  & High, Calibrated (Redundant) \\
-4  & H4C   & 4  & 268  & High, Calibrated \\
-5  & H2C   & 2  & 134  & High, Calibrated \\
-6  & H1C   & 1  & 67   & High, Calibrated \\
-\rowcolor{lightblue}
-7  & L32C  & 32 & 64   & Low, Seed Ruler \\
-8  & L16C  & 16 & 32   & Low, Seed Ruler \\
-9  & L8C   & 8  & 16   & Low, Seed Ruler \\
-10 & L4C   & 4  & 8    & Low, Seed Ruler \\
-11 & L2C-A & 2  & 4    & Low, Seed Ruler \\
-12 & L2C-R & 2  & 4    & Low, Seed Ruler \\
-13 & L1C   & 1  & 2    & Low, Seed Ruler \\
+0  & H32C  & 32 & 高段/校准 & 2144 \\
+1  & H16C  & 16 & 高段/校准 & 1072 \\
+2  & H8C-A & 8  & 高段/校准 & 536 \\
+3  & H8C-R & 8  & 高段/校准 (冗余) & 536 \\
+4  & H4C   & 4  & 高段/校准 & 268 \\
+5  & H2C   & 2  & 高段/校准 & 134 \\
+6  & H1C   & 1  & 高段/校准 & 67 \\
+\rowcolor{bluebg}
+7  & L32C  & 32 & 低段/基准尺 & 64 \\
+8  & L16C  & 16 & 低段/基准尺 & 32 \\
+9  & L8C   & 8  & 低段/基准尺 & 16 \\
+10 & L4C   & 4  & 低段/基准尺 & 8 \\
+11 & L2C-A & 2  & 低段/基准尺 & 4 \\
+12 & L2C-R & 2  & 低段/基准尺 & 4 \\
+13 & L1C   & 1  & 低段/基准尺 & 2 \\
 \rowcolor{graybg}
-14 & TERM  & —  & 1    & Digital only \\
+14 & TERM  & — & 数字终端 & 1 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{infobox}
-\textbf{关键设计特征:}
+\textbf{关键设计特征：}
 \begin{itemize}[nosep]
-  \item 全部14个物理电容均参与采样输入——无VCM屏蔽电容
-  \item 15次比较器判决：14物理 + 1终端位
-  \item 高段8-Cu冗余位 (H8C-R) 提供 $\pm 268$ Q0大范围容错
-  \item 低段65 Cu作为匹配基准尺，\textbf{不自校准}——主比较器 $\approx$ 3 mV offset无法可靠覆盖最低位的后端margin
+  \item 全部 14 个物理电容均参与采样输入 —— 无 VCM 屏蔽电容
+  \item 15 次比较器判决：14 物理 trial/compare/commit + 1 终端位
+  \item 高段 8-Cu 冗余位 (H8C-R) 提供 $\pm 268$ Q0 大范围容错
+  \item 低段 65 Cu 作为匹配基准尺，\textbf{不自校准}
 \end{itemize}
-\end{infobox}
 
-\subsection{失配模型}
+\subsection{校准权重与冗余}
 
-\begin{table}[h]
+\begin{figure}[H]
 \centering
-\caption{TSMC 180nm MOM 电容失配参数}
+\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig03_weights_and_redundancy.png}
+\caption{校准权重估计与 8-Cu 冗余窗口}
+\label{fig:weights}
+\end{figure}
+
+\subsection{工艺参数与失配模型}
+
+\begin{table}[H]
+\centering
+\caption{TSMC 180nm MOM 失配参数}
 \begin{tabular}{ll}
 \toprule
 \textbf{参数} & \textbf{值} \\
 \midrule
 工艺 & TSMC 180nm 1P6M CMOS \\
-电容类型 & MOM fringe, M4-M6 stack \\
-Pelgrom系数 $A_C$ & 1.0\,\%·$\mu$m (保守; 实测 0.5--0.8) \\
-1Cu面积 & $\approx 2$ $\mu$m$^2$ (4 fF @ $\sim$2 fF/$\mu$m$^2$) \\
+电容类型 & MOM fringe, M4--M6 堆叠 \\
+Pelgrom 系数 $A_C$ & 1.0\,\%·$\mu$m (保守；实测 0.5--0.8) \\
+1Cu 面积 & $\approx 2$ $\mu$m$^2$ (4 fF @ $\sim$2 fF/$\mu$m$^2$) \\
 $\sigma(\Delta C/C)$ per Cu pair & 0.707\% ($A_C / \sqrt{\text{area}}$) \\
-MC\_SIGMA (config) & \textbf{1.0\%} (保守, 验证至 5\%) \\
-失配注入模式 & \texttt{per\_unit} — 逐Cu独立 $N(C_U, C_U\cdot\sigma)$ \\
+MC\_SIGMA 配置值 & \textbf{1.0\%} (保守) \\
+失配注入模式 & \texttt{per\_unit} —— 逐 Cu 独立 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -273,98 +210,104 @@ MC\_SIGMA (config) & \textbf{1.0\%} (保守, 验证至 5\%) \\
 \newpage
 
 % ===========================================================================
-%  2. HARDWARE COST
+%  2  硬件成本
 % ===========================================================================
-\section{硬件成本分析 \\ Hardware Cost Analysis}
-\label{sec:cost}
+\section{硬件成本分析}
 
 \subsection{模拟硬件}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{模拟硬件清单}
 \begin{tabular}{lrl}
 \toprule
 \textbf{组件} & \textbf{规格} & \textbf{面积} \\
 \midrule
-CDAC电容阵列 (30个) & 276 Cu total, 4 fF/Cu, MOM & $\sim$600 $\mu$m$^2$ \\
+CDAC 电容阵列 (30 个) & 276 Cu, 4 fF/Cu, MOM 金属 & $\sim$600 $\mu$m$^2$ \\
 底板开关 (28$\times$4:1 MUX) & std-Vt NMOS, $\sim$560 Tr & $\sim$600 $\mu$m$^2$ \\
-StrongArm比较器 & $\sim$24 Tr, 1 mV RMS noise & $\sim$200 $\mu$m$^2$ \\
+StrongArm 比较器 & $\sim$24 Tr, 1 mV RMS 噪声 & $\sim$200 $\mu$m$^2$ \\
 \midrule
-\rowcolor{lightblue}
+\rowcolor{bluebg}
 \textbf{模拟小计} & $\sim$584 Tr & $\sim$0.0014 mm$^2$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{数字硬件 — FPGA综合}
+\subsection{数字硬件 —— RTL 综合结果}
 
-\textbf{目标:} Xilinx xc7z020clg400-1 (Zynq-7000), 100 MHz, Vivado 2018.3
+\textbf{工具:} Vivado 2018.3 \quad|\quad \textbf{器件:} xc7z020clg400-1 \quad|\quad \textbf{时钟:} 100 MHz
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{FPGA综合资源 (Vivado 2018.3)}
+\caption{FPGA 综合资源}
 \begin{tabular}{lrrr}
 \toprule
 \textbf{资源} & \textbf{已用} & \textbf{可用} & \textbf{利用率} \\
 \midrule
 Slice LUTs & 321 & 53,200 & 0.60\% \\
 Slice Registers & 473 & 106,400 & 0.44\% \\
-DSP48E1 & \textcolor{success}{\textbf{0}} & 220 & 0.00\% \\
-Block RAM & \textcolor{success}{\textbf{0}} & 140 & 0.00\% \\
+DSP48E1 & \textcolor{greenpass}{\textbf{0}} & 220 & 0.00\% \\
+Block RAM & \textcolor{greenpass}{\textbf{0}} & 140 & 0.00\% \\
 CARRY4 & 38 & — & — \\
 BUFG & 1 & 32 & 3.13\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{数字硬件 — ASIC门数估算}
+\subsection{数字硬件 —— ASIC 门数估算}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{ASIC门数/面积估算 (TSMC 180nm)}
+\caption{ASIC 门数与面积估算 (TSMC 180nm 标准单元)}
 \begin{tabular}{lrr}
 \toprule
 \textbf{模块} & \textbf{门数} & \textbf{面积} \\
 \midrule
-SAR FSM & $\sim$400 & $\sim$1,200 $\mu$m$^2$ \\
-校准控制器 (cal\_fsm) & $\sim$1,800 & $\sim$4,000 $\mu$m$^2$ \\
-权重寄存器 (cal\_weight\_reg) & $\sim$500 & $\sim$1,200 $\mu$m$^2$ \\
-子转换SAR (sar\_subconv) & $\sim$800 & $\sim$2,000 $\mu$m$^2$ \\
+SAR FSM (15 态异步时序器) & $\sim$400 & $\sim$1,200 $\mu$m$^2$ \\
+校准控制器 (cal\_fsm, 16 态) & $\sim$1,800 & $\sim$4,000 $\mu$m$^2$ \\
+权重寄存器 (7$\times$2$\times$16 bit) & $\sim$500 & $\sim$1,200 $\mu$m$^2$ \\
+子转换 SAR (sar\_subconv) & $\sim$800 & $\sim$2,000 $\mu$m$^2$ \\
 加权和解码器 & $\sim$2,000 & $\sim$4,500 $\mu$m$^2$ \\
 \midrule
-\rowcolor{lightblue}
+\rowcolor{bluebg}
 \textbf{数字小计} & $\sim$5,500 gates & $\sim$0.013 mm$^2$ \\
 \textbf{模拟小计} & $\sim$584 Tr & $\sim$0.0014 mm$^2$ \\
 \midrule
-\rowcolor{lightgreen}
+\rowcolor{greenbg}
 \textbf{总计} & $\sim$5,500 gates + $\sim$600 Tr & $\sim$\textbf{0.014 mm$^2$} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{infobox}
-\textbf{关键成本优势:}
+\textbf{关键成本优势：}
 \begin{enumerate}[nosep]
-  \item \textbf{0 DSP:} 校准乘法由预计算 localparam 常量LUT替代（编译时计算）
-  \item \textbf{0 BRAM:} 权重寄存器为分布式寄存器（7$\times$2$\times$16 bit = 224 bit）
-  \item \textbf{0 除法器:} 平均除以128用右移7位替代（128 = $2^7$）
+  \item \textbf{0 DSP:} 校准乘法由预计算 localparam 常量 LUT 替代（编译时计算 `NOMINAL\_Q0 $\times$ tolerance\% $\times$ 256`）
+  \item \textbf{0 BRAM:} 权重寄存器为分布式寄存器（224 bit 总量）
+  \item \textbf{0 除法器:} 平均除以 128 用右移 7 位替代（128 = $2^7$）
 \end{enumerate}
-\end{infobox}
+
+\subsection{硬件成本可视化}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig08_hardware_cost.png}
+\caption{硬件资源分布}
+\label{fig:hw}
+\end{figure}
 
 \subsection{校准时间}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{校准时间对比}
 \begin{tabular}{lrr}
 \toprule
 \textbf{参数} & \textbf{旧 (AVG=512)} & \textbf{新 (AVG=128)} \\
 \midrule
-每目标子转换 & 4$\times$512 = 2,048 & 4$\times$128 = 512 \\
-总子转换数 & 7$\times$2,048 = 14,336 & 7$\times$512 = \textbf{3,584} \\
+每目标子转换 & 4 $\times$ 512 = 2,048 & 4 $\times$ 128 = 512 \\
+总子转换数 & 7 $\times$ 2,048 = 14,336 & 7 $\times$ 512 = \textbf{3,584} \\
 总时钟周期 & $\sim$286,720 & $\sim$71,680 \\
-\rowcolor{lightgreen}
+\rowcolor{greenbg}
 校准时间 @ 100 MHz & $\sim$2.87 ms & $\sim$\textbf{0.72 ms} \\
 校准时间 @ 200 MHz & $\sim$1.43 ms & $\sim$\textbf{0.36 ms} \\
 \bottomrule
@@ -374,36 +317,207 @@ SAR FSM & $\sim$400 & $\sim$1,200 $\mu$m$^2$ \\
 \newpage
 
 % ===========================================================================
-%  3. RTL IMPLEMENTABILITY
+%  3  Python 行为级验证 —— 实测数据
 % ===========================================================================
-\section{校准逻辑可实现性 \\ Calibration Logic Implementability}
-\label{sec:rtl}
+\section{Python 行为级模型验证}
 
-\subsection{RTL架构}
+\subsection{FFT 协议}
+
+\begin{table}[H]
+\centering
+\caption{FFT 测量协议}
+\begin{tabular}{ll}
+\toprule
+\textbf{参数} & \textbf{值} \\
+\midrule
+FFT 点数 & 4096 \\
+相干 bin ($k$) & 1019 (gcd(1019,4096)=1) \\
+采样频率 $f_s$ & 10 MHz \\
+输入幅度 & −0.5 dBFS \\
+相位 & 0.123 rad \\
+窗函数 & \textbf{Rectangular (矩形窗)} \\
+VFS & 每 seed 动态测量 \\
+Clipping 检查 & 每次运行显式检测 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{单点 FFT 频谱}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{\imgdir/src/python_cal/analysis/fft_comparison.png}
+\caption{校准前/校准后/物理 Oracle FFT 频谱对比 (seed=42, $\sigma$=1\%)}
+\label{fig:fft}
+\end{figure}
+
+\subsection{MC 动态性能 (100 seeds)}
+
+\textbf{运行条件:} run ID \texttt{dbac69f3}, 100 MC seeds, $\sigma = 1\%$, AVG\_PAIRS = 128, 校准噪声 1 mV RMS, 4096-pt Rectangular FFT
+
+\begin{table}[H]
+\centering
+\caption{动态性能指标 (Python 行为级模型实测)}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{指标} & \textbf{校准前} & \textbf{校准后 Q2} & \textbf{物理 Oracle} & \textbf{单位} \\
+\midrule
+SNDR P50 & 63.73 & \textcolor{greenpass}{\textbf{74.50}} & 74.64 & dB \\
+SNDR P95 & — & 74.33 & 74.51 & dB \\
+SNDR min & 56.89 & 73.81 & 74.40 & dB \\
+ENOB P50 & 10.29 & \textcolor{greenpass}{\textbf{12.08}} & 12.11 & bit \\
+SFDR P50 & 70.57 & \textcolor{greenpass}{\textbf{94.29}} & 96.91 & dB \\
+\midrule
+Oracle Gap P50 & — & \textcolor{greenpass}{\textbf{0.14}} & — & dB \\
+Oracle Gap P95 & — & 0.48 & — & dB \\
+Oracle Gap max & — & 0.62 & — & dB \\
+\midrule
+有效校准 & — & \textcolor{greenpass}{\textbf{100/100}} & — & seeds \\
+负收益 & — & \textcolor{greenpass}{\textbf{0/100}} & — & seeds \\
+Gap $\le$ 0.5 dB & — & \textbf{98/100 (98\%)} & — & seeds \\
+Gap $\le$ 1.0 dB & — & \textbf{100/100 (100\%)} & — & seeds \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{MC 动态性能可视化}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig04_dynamic_monte_carlo.png}
+\caption{100-seed MC 动态性能分布}
+\label{fig:mc}
+\end{figure}
+
+\subsection{Oracle Gap CDF}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{\imgdir/docs/assets/figures/fig05_oracle_gap_cdf.png}
+\caption{Oracle Gap 累积分布 (98\% seeds $\le$ 0.5 dB)}
+\label{fig:gapcdf}
+\end{figure}
+
+\subsection{静态性能 (DNL/INL)}
+
+\textbf{条件:} 100-seed MC, code-density 方法
+
+\begin{table}[H]
+\centering
+\caption{静态 DNL/INL 指标 (Python 实测)}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{指标} & \textbf{P50} & \textbf{P95} & \textbf{Max} \\
+\midrule
+DNL peak & 0.75 LSB & 0.87 LSB & 0.95 LSB \\
+INL peak & 0.80 LSB & 0.92 LSB & 0.96 LSB \\
+缺码 & \textcolor{greenpass}{\textbf{0}} & \textcolor{greenpass}{\textbf{0}} & \textcolor{greenpass}{\textbf{0}} \\
+最大跳码 & \textcolor{greenpass}{\textbf{1}} & \textcolor{greenpass}{\textbf{1}} & \textcolor{greenpass}{\textbf{1}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig06_static_signoff.png}
+\caption{静态 DNL/INL 签核 (100 seeds, 零缺码)}
+\label{fig:static}
+\end{figure}
+
+\subsection{校准权重误差}
+
+\begin{table}[H]
+\centering
+\caption{各目标权重校准误差 (Python 实测, run \texttt{dbac69f3})}
+\begin{tabular}{crrrr}
+\toprule
+\textbf{目标} & \textbf{标称 Q0} & \textbf{绝对误差 P50/P95 (Q0)} & \textbf{归一化误差 P50/P95} \\
+\midrule
+H1C   & 67   & 0.18 / 0.48  & 0.085\% / 0.255\% \\
+H2C   & 134  & 0.30 / 0.80  & 0.049\% / 0.126\% \\
+H4C   & 268  & 0.54 / 1.53  & 0.035\% / 0.079\% \\
+H8C-R & 536  & 1.04 / 3.03  & 0.013\% / 0.030\% \\
+H8C-A & 536  & 1.00 / 3.16  & 0.015\% / 0.035\% \\
+H16C  & 1072 & 1.98 / 6.27  & 0.007\% / 0.019\% \\
+\rowcolor{greenbg}
+H32C  & 2144 & 3.87 / 12.33 & \textbf{0.006\% / 0.018\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+H32C 归一化误差 P50 仅 \textbf{0.0061\%}，与 Oracle Gap P50 = 0.14 dB 一致。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig07_calibration_error.png}
+\caption{7 目标校准权重误差分布}
+\label{fig:calerr}
+\end{figure}
+
+\subsection{MC 多 $\sigma$ 失配容限}
+
+\textbf{Python 实测:} 100 seeds $\times$ 6 $\sigma$ levels
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{\imgdir/src/python_cal/analysis/fft_multisigma_sweep.png}
+\caption{MC $\sigma$ 扫描 FFT (1\%--50\%, 100 seeds/level)}
+\label{fig:multisigma}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{MC $\sigma$ 失配容限扫描 (Python 实测)}
+\begin{tabular}{crrrl}
+\toprule
+\textbf{MC $\sigma$} & \textbf{校准前 SNDR} & \textbf{校准后 SNDR} & \textbf{Oracle Gap} & \textbf{判定} \\
+\midrule
+\rowcolor{greenbg} 1\%  & 63.7 dB & 74.5 dB & 0.14 dB & \pass{} 优秀 \\
+\rowcolor{greenbg} 2\%  & 50.1 dB & 73.3 dB & 1.34 dB & \pass{} 通过 \\
+\rowcolor{greenbg} 5\%  & 42.2 dB & 72.6 dB & 2.05 dB & \pass{} 通过 \\
+\rowcolor{orangebg} 10\% & 36.1 dB & 70.2 dB & 4.47 dB & \warn{} 临界 \\
+\rowcolor{redbg} 20\%    & 30.2 dB & 50.6 dB & 24.0 dB & \fail{} 失败 \\
+\rowcolor{redbg} 50\%    & 23.1 dB & —     & —      & \fail{} 崩溃 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{结论:} 校准系统在 $\sigma \le 5\%$ 范围内有效 (覆盖 TSMC 180nm MOM 的 3$\sigma$ 工艺角)。
+
+\newpage
+
+% ===========================================================================
+%  4  RTL 综合验证
+% ===========================================================================
+\section{RTL 综合验证}
+
+\subsection{RTL 架构}
 
 \begin{verbatim}
-cal_top (Top-Level)
-├── cal_fsm          — 16-state calibration state machine
-├── cal_weight_reg   — 7×2×16-bit weight register file
-└── sar_subconverter — Lower-stage SAR trial controller
+cal_top (顶层)
+├── cal_fsm          — 16 态校准状态机 (Shen 2018)
+├── cal_weight_reg   — 7×2×16-bit 权重寄存器文件
+└── sar_subconverter — 低段 SAR trial 控制器
 \end{verbatim}
 
 \subsection{综合验证结果}
 
-\begin{table}[h]
+\textbf{工具:} Vivado 2018.3 \quad|\quad \textbf{器件:} xc7z020clg400-1 \quad|\quad \textbf{时钟:} 100 MHz, Slow Corner
+
+\begin{table}[H]
 \centering
-\caption{综合结果对比 (Vivado 2018.3, xc7z020, 100 MHz, Slow Corner)}
+\caption{综合结果 —— 修复前后对比}
 \begin{tabular}{lrr}
 \toprule
 \textbf{指标} & \textbf{修复前} & \textbf{修复后} \\
 \midrule
-Errors & 0 & \textcolor{success}{\textbf{0}} \\
-Critical Warnings & \textcolor{danger}{14} & \textcolor{success}{\textbf{0}} \\
-Warnings & 1 & \textcolor{success}{\textbf{0}} \\
-\textbf{Slack} & \textcolor{danger}{\textbf{−13.989 ns (VIOLATED)}} & \textcolor{success}{\textbf{+0.297 ns (MET)}} \\
+Errors & 0 & \textcolor{greenpass}{\textbf{0}} \\
+Critical Warnings & \textcolor{redfail}{14} & \textcolor{greenpass}{\textbf{0}} \\
+Warnings & 1 & \textcolor{greenpass}{\textbf{0}} \\
+\textbf{Slack} & \textcolor{redfail}{\textbf{−13.989 ns (VIOLATED)}} & \textcolor{greenpass}{\textbf{+0.297 ns (MET)}} \\
 Data Path Delay & 23.852 ns & \textbf{5.011 ns} \\
 Logic Levels & 26 & \textbf{2} \\
-DSP48E1 & \textcolor{danger}{2} & \textcolor{success}{\textbf{0}} \\
+DSP48E1 & \textcolor{redfail}{2} & \textcolor{greenpass}{\textbf{0}} \\
 LUTs & 1,141 & \textbf{321} \\
 CARRY4 & 175 & \textbf{38} \\
 Registers & 495 & \textbf{473} \\
@@ -413,203 +527,64 @@ Registers & 495 & \textbf{473} \\
 
 \subsection{RTL Bug 修复纪录}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{6项RTL Bug修复明细}
+\caption{6 项 RTL Bug 修复明细}
 \small
-\begin{tabular}{cllp{4cm}p{4cm}}
+\begin{tabular}{cllp{3.5cm}p{3.5cm}}
 \toprule
 \# & 严重度 & 文件 & 问题 & 修复 \\
 \midrule
-B1 & \textcolor{danger}{CRITICAL} & cal\_fsm.sv & \texttt{pair\_idx} multi-driven (always\_ff + always\_comb 冲突) & 删除组合赋值 \\
-B2 & \textcolor{danger}{CRITICAL} & cal\_fsm.sv & Slack −13.99 ns: DSP48E1乘法 + 15级CARRY4 & 预计算7-entry localparam LUT \\
-B3 & \textcolor{warning}{HIGH} & cal\_fsm.sv & 7个未使用寄存器 (ss\_p0\_q8等) & 删除声明+赋值 \\
-B4 & \textcolor{warning}{HIGH} & cal\_fsm.sv & \texttt{valid\_reg} Set/Reset冲突 & 添加 \texttt{valid <= 1'b0} 复位 \\
-B5 & \textcolor{warning}{HIGH} & sar\_subconv. & \texttt{decisions[14:0]} 未使用 & 删除声明+赋值 \\
-B6 & \textcolor{warning}{HIGH} & sar\_subconv. & 5个信号 Set/Reset冲突 & 添加async reset初始化 \\
+B1 & CRITICAL & cal\_fsm.sv & \texttt{pair\_idx} 双重驱动 & 删组合赋值 \\
+B2 & CRITICAL & cal\_fsm.sv & Slack −13.99 ns (DSP 乘法) & 预计算 LUT \\
+B3 & HIGH & cal\_fsm.sv & 7 个未使用寄存器 & 删声明+赋值 \\
+B4 & HIGH & cal\_fsm.sv & valid\_reg Set/Reset 冲突 & 加复位 \\
+B5 & HIGH & sar\_subconv & decisions[14:0] 未使用 & 删声明+赋值 \\
+B6 & HIGH & sar\_subconv & 5 信号 Set/Reset 冲突 & 加复位 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{时序约束}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{ASIC级时序约束 (\texttt{timing.xdc})}
+\caption{\texttt{timing.xdc} ASIC 级约束}
 \begin{tabular}{ll}
 \toprule
 \textbf{约束} & \textbf{值} \\
 \midrule
 \texttt{create\_clock} & 10.000 ns (100 MHz) \\
-\texttt{set\_clock\_uncertainty} (setup) & 0.200 ns (PLL jitter + clock tree skew) \\
+\texttt{set\_clock\_uncertainty} (setup) & 0.200 ns \\
 \texttt{set\_clock\_uncertainty} (hold)  & 0.100 ns \\
-\texttt{set\_input\_delay} (max/min)     & 2.0 / 0.5 ns (intra-die digital) \\
-\texttt{set\_output\_delay} (max/min)    & 2.0 / 0.5 ns (CDAC switch / decoder) \\
+\texttt{set\_input\_delay} (max/min)     & 2.0 / 0.5 ns \\
+\texttt{set\_output\_delay} (max/min)    & 2.0 / 0.5 ns \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{infobox}
-\textbf{极限频率估算:}
-\begin{itemize}[nosep]
-  \item 内部逻辑路径延迟: $\sim$2.7 ns (LUT4+net)
-  \item 含I/O约束的可用频率: $\sim$130 MHz
-  \item 纯内部逻辑极限频率: $\sim$370 MHz
-\end{itemize}
-\end{infobox}
-
-\subsection{校准协议实现}
-
-\textbf{校准顺序:} H1C $\to$ H2C $\to$ H4C $\to$ H8C-R $\to$ H8C-A $\to$ H16C $\to$ H32C
-
-\textbf{FSM状态数:} 16 states (IDLE $\to$ TARGET\_SETUP $\to$ P0\_FORCE $\to$ P0\_WAIT $\to$ \dots\ $\to$ DONE)
-
-\textbf{每目标流程:}
-\begin{verbatim}
-For pair = 0 to N_PAIRS-1:
-  P0: Force P-side target cap to VREFN → run lower-SAR → save signed_sum
-  P1: Force P-side target cap to VREFP → run lower-SAR → save signed_sum
-  N0: Force N-side target cap to VREFN → run lower-SAR → save signed_sum
-  N1: Force N-side target cap to VREFP → run lower-SAR → save signed_sum
-  W_P_acc += (signed_sum_P0 - signed_sum_P1) / 2
-  W_N_acc += (signed_sum_N1 - signed_sum_N0) / 2
-W_P = W_P_acc / N_PAIRS  (right-shift log2(N_PAIRS))
-W_N = W_N_acc / N_PAIRS
-Validate: |W_P - NOMINAL_Q0| ≤ 20% → Commit
-\end{verbatim}
+\textbf{极限频率:} 内部逻辑路径延迟 $\sim$2.7 ns, 含 I/O 约束可用频率 $\sim$130 MHz。
 
 \newpage
 
 % ===========================================================================
-%  4. SOLUTION EFFECTIVENESS
+%  5  参数优化实验
 % ===========================================================================
-\section{方案有效性 \\ Solution Effectiveness}
-\label{sec:effectiveness}
+\section{参数优化实验}
 
-\subsection{动态性能 (v3.0)}
+\subsection{AVG\_PAIRS 扫描}
 
-\textbf{条件:} 100-seed MC, TSMC 180nm $\sigma=1\%$, 128 pairs, 1 mV RMS noise, 4096-pt rectangular FFT ($k=1019$, −0.5 dBFS)
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{动态性能指标}
-\begin{tabular}{lrrrr}
-\toprule
-\textbf{指标} & \textbf{校准前} & \textbf{校准后 Q2} & \textbf{Physical Oracle} & \textbf{单位} \\
-\midrule
-SNDR P50 & 63.73 & \textcolor{success}{\textbf{74.50}} & 74.64 & dB \\
-SNDR P95 & — & 74.33 & 74.51 & dB \\
-SNDR min & 56.89 & 73.81 & 74.40 & dB \\
-ENOB P50 & 10.29 & \textcolor{success}{\textbf{12.08}} & 12.11 & bit \\
-SFDR P50 & 70.57 & \textcolor{success}{\textbf{94.29}} & 96.91 & dB \\
-\midrule
-\textbf{Oracle Gap P50} & — & \textcolor{success}{\textbf{0.14}} & — & dB \\
-Oracle Gap P95 & — & 0.48 & — & dB \\
-Oracle Gap max & — & 0.62 & — & dB \\
-\midrule
-校准成功率 & — & \textcolor{success}{\textbf{100/100}} & — & seeds \\
-负收益 & — & \textcolor{success}{\textbf{0/100}} & — & seeds \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{resultbox}
-\textbf{Oracle Gap分布:}
-\begin{itemize}[nosep]
-  \item Gap $\le$ 0.5 dB: \textbf{98/100} (98\%)
-  \item Gap $\le$ 1.0 dB: \textbf{100/100} (100\%)
-  \item 验收标准: Gap P50 $\le$ 0.5 dB — \textcolor{success}{\textbf{PASS (0.14 dB, 3.6× margin)}}
-\end{itemize}
-\end{resultbox}
-
-\subsection{静态性能}
-
-\textbf{条件:} 100-seed MC, code-density DNL/INL
-
-\begin{table}[h]
-\centering
-\caption{静态性能指标}
-\begin{tabular}{lrrr}
-\toprule
-\textbf{指标} & \textbf{P50} & \textbf{P95} & \textbf{Max} \\
-\midrule
-DNL peak & 0.75 LSB & 0.87 LSB & 0.95 LSB \\
-INL peak & 0.80 LSB & 0.92 LSB & 0.96 LSB \\
-缺码 Missing codes & \textcolor{success}{\textbf{0}} & \textcolor{success}{\textbf{0}} & \textcolor{success}{\textbf{0}} \\
-最大跳码 Max jump & \textcolor{success}{\textbf{1}} & \textcolor{success}{\textbf{1}} & \textcolor{success}{\textbf{1}} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{resultbox}
-\textbf{验收结论:} 零缺码 (100/100), 最大跳码 = 1 (单调性保障), P95 DNL $<$ 1.0 LSB — \textbf{\passbadge{} ALL PASS}
-\end{resultbox}
-
-\subsection{MC失配容限扫描}
-
-\begin{table}[h]
-\centering
-\caption{MC Sigma 扫描 (1\%--50\%)}
-\begin{tabular}{crrrl}
-\toprule
-\textbf{MC $\sigma$} & \textbf{Pre-SNDR} & \textbf{Post-SNDR} & \textbf{Oracle Gap} & \textbf{判定} \\
-\midrule
-\rowcolor{lightgreen} 1\%  & 63.7 dB & 74.5 dB & 0.14 dB & \passbadge{} Excellent \\
-\rowcolor{lightgreen} 2\%  & 50.1 dB & 73.3 dB & 1.34 dB & \passbadge{} Pass \\
-\rowcolor{lightgreen} 5\%  & 42.2 dB & 72.6 dB & 2.05 dB & \passbadge{} Pass \\
-\rowcolor{lightyellow} 10\% & 36.1 dB & 70.2 dB & 4.47 dB & \warnbadge{} Marginal \\
-\rowcolor{lightred} 20\%    & 30.2 dB & 50.6 dB & 24.0 dB & \failbadge{} Fail \\
-\rowcolor{lightred} 50\%    & 23.1 dB & —     & —      & \failbadge{} Catastrophic \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{结论:} 校准系统在 $\sigma \le 5\%$ 范围内有效（覆盖TSMC 180nm MOM的3$\sigma$工艺角）。
-
-\subsection{校准权重误差}
-
-\begin{table}[h]
-\centering
-\caption{各目标权重校准误差 (v3.0)}
-\begin{tabular}{crrrr}
-\toprule
-\textbf{目标} & \textbf{标称Q0} & \textbf{绝对误差 P50/P95 (Q0)} & \textbf{归一化误差 P50/P95} \\
-\midrule
-H1C   & 67   & 0.18 / 0.48  & 0.085\% / 0.255\% \\
-H2C   & 134  & 0.30 / 0.80  & 0.049\% / 0.126\% \\
-H4C   & 268  & 0.54 / 1.53  & 0.035\% / 0.079\% \\
-H8C-R & 536  & 1.04 / 3.03  & 0.013\% / 0.030\% \\
-H8C-A & 536  & 1.00 / 3.16  & 0.015\% / 0.035\% \\
-H16C  & 1072 & 1.98 / 6.27  & 0.007\% / 0.019\% \\
-\rowcolor{lightgreen}
-H32C  & 2144 & 3.87 / 12.33 & \textbf{0.006\% / 0.018\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-H32归一化误差P50仅0.0061\%，与0.14 dB oracle gap一致。验收标准 H32C误差 $\le$ 1.0 Q0 — \textbf{\passbadge{} PASS}。
-
-\newpage
-
-% ===========================================================================
-%  5. PARAMETER OPTIMIZATION
-% ===========================================================================
-\section{参数优化 \\ Parameter Optimization}
-\label{sec:params}
-
-\subsection{AVG\_PAIRS 优化}
-
-\begin{table}[h]
-\centering
-\caption{AVG\_PAIRS扫描}
+\caption{AVG\_PAIRS 扫描结果 (Python 实测)}
 \begin{tabular}{crrrl}
 \toprule
 \textbf{AVG\_PAIRS} & \textbf{SNDR (dB)} & \textbf{Oracle Gap (dB)} & \textbf{校准时间} & \textbf{vs 512} \\
 \midrule
-512 (old) & 74.64 & $\sim$0.00 & 2.87 ms & baseline \\
+512 (旧) & 74.64 & $\sim$0.00 & 2.87 ms & baseline \\
 256 & 74.52 & 0.12 & 1.43 ms & −0.06\% \\
-\rowcolor{lightgreen}
-\textbf{128 (new)} & \textbf{74.50} & \textbf{0.14} & \textbf{0.72 ms} & \textbf{−0.19\%} \\
+\rowcolor{greenbg}
+\textbf{128 (新)} & \textbf{74.50} & \textbf{0.14} & \textbf{0.72 ms} & \textbf{−0.19\%} \\
 64  & 74.42 & 0.22 & 0.36 ms & −0.29\% \\
 32  & 74.18 & 0.46 & 0.18 ms & −0.62\% \\
 16  & 73.64 & 1.00 & 0.09 ms & −1.34\% \\
@@ -617,13 +592,20 @@ H32归一化误差P50仅0.0061\%，与0.14 dB oracle gap一致。验收标准 H3
 \end{tabular}
 \end{table}
 
-\textbf{结论:} 128对是12-bit精度甜点——gap $<$ 0.5 dB且时间仅为512的1/4。256对后gap已饱和。
+\textbf{结论:} 128 对是 12-bit 精度甜点 —— gap $<$ 0.5 dB 且时间仅为 512 的 1/4。
 
-\subsection{Dither消融实验}
-
-\begin{table}[h]
+\begin{figure}[H]
 \centering
-\caption{Dither ON vs OFF}
+\includegraphics[width=0.88\textwidth]{\imgdir/src/python_cal/analysis/old_vs_new_comparison.png}
+\caption{旧 (AVG=512) vs 新 (AVG=128) 对比}
+\label{fig:oldnew}
+\end{figure}
+
+\subsection{Dither 消融实验}
+
+\begin{table}[H]
+\centering
+\caption{Dither ON vs OFF (Python 实测)}
 \begin{tabular}{lrrrl}
 \toprule
 \textbf{条件} & \textbf{Dither ON} & \textbf{Dither OFF} & \textbf{Delta} & \textbf{判定} \\
@@ -636,13 +618,20 @@ H32归一化误差P50仅0.0061\%，与0.14 dB oracle gap一致。验收标准 H3
 \end{tabular}
 \end{table}
 
-\textbf{结论:} 比较器噪声 $\ge$ 1 LSB 或 $N \ge 32$ 时 dither 完全冗余。当前配置 (1 mV + 128对) $\to$ \textbf{dither关闭，节省硬件。}
+\textbf{结论:} 比较器噪声 $\ge$ 1 LSB 或 $N \ge 32$ 时 dither 完全冗余。当前配置 (1 mV + 128 对) $\to$ dither 关闭, 节省硬件。
 
-\subsection{噪声–AVG\_PAIRS 热力图}
-
-\begin{table}[h]
+\begin{figure}[H]
 \centering
-\caption{比较器噪声 vs 最优AVG\_PAIRS}
+\includegraphics[width=0.85\textwidth]{\imgdir/src/python_cal/analysis/dither_ablation.png}
+\caption{Dither 消融实验结果}
+\label{fig:dither}
+\end{figure}
+
+\subsection{噪声 $\times$ AVG\_PAIRS 热力图}
+
+\begin{table}[H]
+\centering
+\caption{比较器噪声 vs 最优 AVG\_PAIRS (Python 实测)}
 \begin{tabular}{rrr}
 \toprule
 \textbf{比较器噪声 ($\mu$V)} & \textbf{最优 $N$} & \textbf{Oracle Gap (dB)} \\
@@ -655,143 +644,121 @@ H32归一化误差P50仅0.0061\%，与0.14 dB oracle gap一致。验收标准 H3
 \end{tabular}
 \end{table}
 
-最优对数公式: $N_{opt} \approx 18 \times (\sigma_{cmp,\mu V} / 439)^2$
+最优对数公式: $N_{\text{opt}} \approx 18 \times (\sigma_{\text{cmp},\mu\text{V}} / 439)^2$
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{\imgdir/src/python_cal/analysis/noise_vs_pairs_sweep.png}
+\caption{噪声 $\times$ AVG\_PAIRS 热力图}
+\label{fig:noise}
+\end{figure}
 
 \newpage
 
 % ===========================================================================
-%  6. CODEBOOK COMPARISON
+%  6  拓扑对比
 % ===========================================================================
-\section{CDAC拓扑对比 \\ CDAC Topology Comparison}
-\label{sec:codebook}
+\section{CDAC 拓扑对比: 旧 95-Cu vs 新 138-Cu}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{旧95-Cu vs 新138-Cu 码本审计 (1000 seeds, 0.5\% mismatch)}
+\caption{码本审计对比 (1000 seeds, 0.5\% mismatch)}
 \begin{tabular}{lrr}
 \toprule
 \textbf{指标} & \textbf{旧 95-Cu (v2.x)} & \textbf{新 138-Cu (v3.x)} \\
 \midrule
-缺码 P50 & 22 & \textcolor{success}{\textbf{0}} \\
-缺码 最差 & 84 & \textcolor{success}{\textbf{0}} \\
-最大跳码 P50 & 2 & \textcolor{success}{\textbf{1}} \\
-最大跳码 最差 & 9 & \textcolor{success}{\textbf{1}} \\
-零缺码seeds & 0/1000 & \textcolor{success}{\textbf{1000/1000}} \\
+缺码 P50 & 22 & \textcolor{greenpass}{\textbf{0}} \\
+缺码 最差 & 84 & \textcolor{greenpass}{\textbf{0}} \\
+最大跳码 P50 & 2 & \textcolor{greenpass}{\textbf{1}} \\
+最大跳码 最差 & 9 & \textcolor{greenpass}{\textbf{1}} \\
+零缺码 seeds & 0/1000 & \textcolor{greenpass}{\textbf{1000/1000}} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig09_cdac_candidate_comparison.png}
+\caption{旧 95-Cu vs 新 138-Cu CDAC 拓扑对比}
+\label{fig:cdaccomp}
+\end{figure}
+
 \newpage
 
 % ===========================================================================
-%  7. RISK ASSESSMENT
+%  7  风险评估与验收结论
 % ===========================================================================
-\section{风险评估 \\ Risk Assessment}
-\label{sec:risk}
+\section{风险评估与验收结论}
 
-\begin{table}[h]
+\subsection{风险矩阵}
+
+\begin{table}[H]
 \centering
 \caption{风险矩阵}
 \small
-\begin{tabular}{cllp{4.5cm}p{4.5cm}}
+\begin{tabular}{cllp{3.5cm}p{3.5cm}}
 \toprule
 \# & 风险 & 严重度 & 根因 & 缓解措施 \\
 \midrule
-R1 & 低段基准尺失配 & \textcolor{warning}{MEDIUM} & 65 Cu并联 $\sigma\approx$MC\_SIGMA/$\sqrt{65}$ & 布局时优化 common-centroid + dummy \\
-R2 & 桥接电容失配 & \textcolor{warning}{MEDIUM} & Bridge仅2 Cu, $\sigma$较高 & 实测bridge比例因子 \\
-R3 & 比较器offset & \textcolor{success}{LOW} & $\sim$3 mV offset限制校准margin & 131 Q0 margin充足 \\
-R4 & 失配 $>$5\% & \textcolor{success}{LOW} & 极端工艺角 & 已超TSMC 180nm 3$\sigma$范围 \\
-R5 & RTL综合时序 & \textcolor{success}{RESOLVED} & DSP乘法路径 & 预计算LUT, 0 DSP, 0 warnings \\
-R6 & FPGA IOB超标 & \textcolor{gray}{INFO} & ASIC内部模块端口数多 & 不影响ASIC; FPGA需serial wrapper \\
+R1 & 低段基准尺失配 & MEDIUM & 65 Cu 并联 $\sigma\approx$MC\_SIGMA/$\sqrt{65}$ & 布局优化 common-centroid + dummy \\
+R2 & 桥接电容失配 & MEDIUM & Bridge 仅 2 Cu & 实测 bridge 比例因子 \\
+R3 & 比较器 offset & LOW & $\sim$3 mV, 限制末位 margin & 131 Q0 margin 充足 \\
+R4 & 失配 $>$5\% & LOW & 极端工艺角 & 已超 3$\sigma$ 范围 \\
+R5 & RTL 综合时序 & \textcolor{greenpass}{RESOLVED} & DSP 乘法路径 & 预计算 LUT, 0 DSP, 0 警告 \\
+R6 & FPGA IOB 超标 & INFO & ASIC 内部模块端口多 & 不影响 ASIC 实现 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\newpage
+\subsection{最终验收结论}
 
-% ===========================================================================
-%  8. DELIVERABLES
-% ===========================================================================
-\section{递交文件清单 \\ Deliverables Inventory}
-\label{sec:deliverables}
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{关键递交文件}
-\begin{tabular}{lp{9cm}}
+\caption{验收标准检查表}
+\begin{tabular}{lrlr}
 \toprule
-\textbf{文件} & \textbf{说明} \\
+\textbf{指标} & \textbf{实测值} & \textbf{门限} & \textbf{判定} \\
 \midrule
-\texttt{FINAL\_SUBMISSION.md} & 三语最终递交报告 (Markdown) \\
-\texttt{docs/final\_report.pdf} & \textbf{本文档} — 精美LaTeX PDF报告 \\
-\texttt{README.md} & 项目主README (中英双语) \\
-\texttt{src/python\_cal/DELIVERY.md} & 校准系统递交包 (v4.1) \\
-\texttt{docs/RELEASE\_RESULTS\_V3.md} & v3.0详细发布结果 \\
-\texttt{scripts/synth\_timing.rpt} & Vivado综合时序报告 \\
-\texttt{scripts/synth\_util.rpt} & Vivado综合资源报告 \\
-\texttt{scripts/timing.xdc} & 时序约束文件 (100 MHz + I/O delay) \\
-\texttt{rtl/cal\_fsm.sv} & 校准状态机 RTL (已修复) \\
-\texttt{rtl/cal\_weight\_reg.sv} & 权重寄存器 RTL \\
-\texttt{rtl/sar\_subconverter.sv} & 子转换SAR RTL (已修复) \\
-\texttt{rtl/cal\_top.sv} & 校准顶层 RTL \\
+SNDR P50 (1\% $\sigma$) & 74.50 dB & — & \pass \\
+ENOB P50 & 12.08 bit & $\ge$ 12 bit & \pass \\
+Oracle Gap P50 & 0.14 dB & $\le$ 0.5 dB & \pass \\
+校准成功率 & 100/100 & 100/100 & \pass \\
+负收益 & 0/100 & 0 & \pass \\
+缺码 (1000 seeds) & 0 & 0 & \pass \\
+最大跳码 & 1 & $\le$ 1 & \pass \\
+DNL peak P95 & 0.87 LSB & $<$ 1.0 LSB & \pass \\
+INL peak P95 & 0.92 LSB & $<$ 1.0 LSB & \pass \\
+RTL Warnings & 0 & 0 & \pass \\
+RTL Slack & +0.297 ns & $>$ 0 & \pass \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\newpage
-
-% ===========================================================================
-%  APPENDIX
-% ===========================================================================
-\appendix
-\section{运行命令 \\ Commands}
-
-\subsection{RTL综合}
-
-\begin{verbatim}
-cd scripts
-vivado -mode batch -source synth_cal.tcl
-\end{verbatim}
-
-\subsection{Python行为模型}
-
-\begin{verbatim}
-cd src/python_cal
-python debug_entry.py                        # 默认: MC=1%, AVG=128
-python debug_entry.py --mc 0.02 --pairs 64  # 自定义场景
-python run_final_calibration_pipeline.py     # 100-seed完整管线
-\end{verbatim}
-
-\section{引用 \\ Citation}
-
-\begin{verbatim}
-@article{shen2018,
-  author  = {Shen, Junhua and others},
-  title   = {A 16-bit 16-MS/s SAR ADC With On-Chip
-             Calibration in 55-nm CMOS},
-  journal = {IEEE J. Solid-State Circuits},
-  volume  = {53}, number = {4},
-  pages   = {1147--1154}, year = {2018}
+\vspace{6pt}
+\begin{center}
+\fcolorbox{greenpass}{greenbg}{\parbox{0.8\textwidth}{\centering\large\textbf{全部 11 项验收指标通过}}
 }
+\end{center}
 
-@misc{sar12_cal_behavioral_2026,
-  author  = {{SAR ADC Calibration Project Contributors}},
-  title   = {12-bit Calibrated Asynchronous SAR ADC
-             -- Behavioral Model},
-  year    = {2026}, version = {3.1.0},
-  url     = {https://github.com/defineiocc02/...}
-}
+\subsection{Python 管线实测数据来源}
+
+本报告所有性能数据来源于 Python 行为级模型的 100-seed Monte Carlo 管线运行:
+
+\begin{verbatim}
+运行ID: dbac69f3
+Python: src/python_cal/run_final_calibration_pipeline.py
+配置:  config.py (AVG_PAIRS=128, MC_SIGMA=0.01, CAL_NOISE_SIGMA_V=0.001)
+数据:  validation_results/final_pipeline/final_pipeline_dbac69f3.csv
+       validation_results/final_pipeline/final_summary_dbac69f3.json
+RTL:   Vivado 2018.3, xc7z020clg400-1, 100 MHz
+       scripts/synth_timing.rpt / synth_util.rpt (0 错误 0 警告)
 \end{verbatim}
 
 \vspace{1cm}
-
 \begin{center}
 \rule{0.4\textwidth}{0.5pt}\\[6pt]
-{\footnotesize\color{gray}
-AI辅助声明: 本项目使用AI辅助编码工具 (CODEX, Trae/DeepSeek) 开发。\\
-所有AI生成代码已经人工审查与验证。\\[4pt]
-AI Assistance Notice: Developed with AI-assisted coding tools.\\
-All AI-generated code has been reviewed and validated by human contributors.}
+{\footnotesize AI 辅助声明: 本项目使用 AI 辅助编码工具 (CODEX, Trae/DeepSeek) 开发。\\
+所有 AI 生成代码已经人工审查与验证。}
 \end{center}
 
 \end{document}
