@@ -209,7 +209,7 @@ class ShenCalibrationController:
     timing: TimingParams = field(default_factory=TimingParams)
     avg_pairs: int = cfg.AVG_PAIRS
     cal_noise_sigma: float = 0.0
-    fixed_dither_lsb: tuple[float, ...] = (-1.5, -0.5, 0.5, 1.5)
+    fixed_dither_lsb: tuple[float, ...] = cfg.SHEN_DITHER_LSB
     current_time_s: float = 0.0
     state: ShenCalibrationState = field(
         init=False, default=ShenCalibrationState.IDLE

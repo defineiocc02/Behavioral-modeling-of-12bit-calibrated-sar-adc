@@ -1,0 +1,146 @@
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║         SAR ADC FFT 数据流动完整分析                                       ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+
+  Run Parameters
+  ─────────────
+  Seed          = 12345
+  MC sigma      = 0.01 (1.0% unit-cap mismatch)
+  AVG_PAIRS     = 128
+  Cal noise     = 0.001 V RMS
+  FFT N         = 4096
+  FFT k         = 127  (coherent, gcd(127,4096)=1)
+  Window        = Rectangular (ENBW = 1 bin)
+  Amplitude     = -0.5 dBFS
+  Phase         = 0.123 rad
+
+  ─────────────────────────────────────────────────────────────────────────────
+  数据流动: 从电容到 FFT 频谱
+  ─────────────────────────────────────────────────────────────────────────────
+
+  Step 1 — 电容失配生成
+  ┌─────────────────────────────────────────────────────────────┐
+  │ gen_mc_caps(seed, sigma)                                    │
+  │   for each cap in ALL_CAP_NAMES:                            │
+  │     C_actual = sum(CU * N(1.0,sigma)) over N_Cu units       │
+  │   → P-side caps dict, N-side caps dict                      │
+  └───────────────────┬─────────────────────────────────────────┘
+                      ↓
+  Step 2 — CDAC 拓扑构建
+  ┌─────────────────────────────────────────────────────────────┐
+  │ DifferentialCDAC.from_mismatch(p_caps, n_caps)              │
+  │   → build_differential_topology()                           │
+  │   → CDACTopology(high_caps, bridge, low_caps) ×2 (P/N)     │
+  │   → DifferentialChargeSolver(p_solver, n_solver)            │
+  │     └─ SideChargeSolver: 预计算 2×2 电荷守恒矩阵 A_inv     │
+  └───────────────────┬─────────────────────────────────────────┘
+                      ↓
+  Step 3 — VFS 测量 (动态满量程)
+  ┌─────────────────────────────────────────────────────────────┐
+  │ measure_positive_vfs(callback, MAX_CODE, guard=1)           │
+  │   → 二分搜索: 最小 Vdiff 使 code ≥ 4094                    │
+  │   → 返回 vfs_v (每 seed 独立, 不硬编码)                    │
+  └───────────────────┬─────────────────────────────────────────┘
+                      ↓
+  Step 4 — 相干正弦激励生成
+  ┌─────────────────────────────────────────────────────────────┐
+  │ build_coherent_differential_sine(vfs, FFTProtocol)          │
+  │   amplitude = vfs × 10^(dBFS/20)                            │
+  │   vin[i] = amplitude × sin(2π·k·i/N + φ)                   │
+  │   输出: 4096 点差分电压序列 + metadata                      │
+  └───────────────────┬─────────────────────────────────────────┘
+                      ↓
+  Step 5 — SAR ADC 逐点转换 (共用 decisions)
+  ┌─────────────────────────────────────────────────────────────┐
+  │ for vd in vin[0..4095]:                                     │
+  │   AsyncSARController.start_conversion(VCM±vd/2)             │
+  │     → SAMPLE:  全部 14 电容底板→VIN, VTOP→VCM              │
+  │     → RESET:   底板→VCM, 电荷守恒求解初始 Vdiff             │
+  │     → SAR:     for stage 0..14 (15 comparisons)             │
+  │         trial:  P/N 当前电容→VREFP                           │
+  │         solve:  charge_solver.solve(charge, switch_state)   │
+  │         compare: DynamicComparator.request(vtop_p, vtop_n)  │
+  │         commit: 保留一侧 VREFP, 另一侧回 VCM                │
+  │     → decisions[15] = [d0..d14] (0 or 1 per bit)           │
+  └───────────────────┬─────────────────────────────────────────┘
+                      ↓
+  Step 6 — 三种解码路径 (共用同一组 decisions[4096][15])
+  ┌─────────────────────────────────────────────────────────────┐
+  │                                                             │
+  │  PATH A: 无失配 Ideal                                       │
+  │    decoder = SARDecoder(Wp_ideal, Wn_ideal)                 │
+  │    → 物理 oracle 权重 (真实电容值推导)                      │
+  │    code = (signed_sum + center) × 4095 / total_range        │
+  │    code_q2 = floor(code × 4 + 0.5) / 4  (Q2 定点)          │
+  │                                                             │
+  │  PATH B: 校准前 Pre-Cal                                     │
+  │    decoder = SARDecoder(NOMINAL_WEIGHTS_Q0, ...)            │
+  │    → 标称权重 2144,1072,536,536,268,134,67,64,32,...       │
+  │    电容已失配, 但解码器不知 → 权重误差直接转码误差         │
+  │                                                             │
+  │  PATH C: 校准后 Post-Cal                                    │
+  │    decoder = SARDecoder(cal_wp, cal_wn)                     │
+  │    → Shen 校准测量值 (P/N 分侧, 7 targets 已更新)           │
+  │    权重接近物理真实值 → SNDR 接近 oracle                    │
+  │                                                             │
+  └───────────────────┬─────────────────────────────────────────┘
+                      ↓
+  Step 7 — FFT 频谱计算
+  ┌─────────────────────────────────────────────────────────────┐
+  │ compute_fft_coherent(codes_q2, N=4096, k=127)              │
+  │   codes_centered = codes - mean(codes)                     │
+  │   spectrum = |rFFT(codes_centered)| / N                    │
+  │   signal_power = |spectrum[127]|²                          │
+  │   harmonics ∑|spectrum[127×h]|²  for h=2..7               │
+  │   noise_power = ∑ spectrum²  excluding DC, signal, harmonics│
+  │   SNDR = 10·log₁₀(signal / (noise + harmonics))           │
+  │   SFDR = 20·log₁₀(signal_mag / max_spur)                  │
+  │   ENOB = (SNDR - 1.76) / 6.02                             │
+  └───────────────────┬─────────────────────────────────────────┘
+                      ↓
+
+  ─────────────────────────────────────────────────────────────
+  FFT Results
+  ─────────────────────────────────────────────────────────────
+
+  Case                 SNDR [dB]    SFDR [dB]    ENOB [bit]
+  ─────────────────────────────────────────────────────────────
+  无失配 Ideal             74.64         96.91         12.11
+  校准前 Pre-Cal           63.73         70.57         10.29
+  校准后 Post-Cal          74.50         94.29         12.08
+  ─────────────────────────────────────────────────────────────
+  Calibration gain      +10.77 dB
+  Oracle gap            0.143 dB
+  ─────────────────────────────────────────────────────────────
+
+  ─────────────────────────────────────────────────────────────
+  校准权重 (P/N 平均)
+  ─────────────────────────────────────────────────────────────
+  H1C     cal=   66.48  nom=   67  err=0.7696%
+  H2C     cal=  134.17  nom=  134  err=0.1253%
+  H4C     cal=  267.79  nom=  268  err=0.0773%
+  H8C-R   cal=  534.73  nom=  536  err=0.2369%
+  H8C-A   cal=  533.55  nom=  536  err=0.4568%
+  H16C    cal= 1071.59  nom= 1072  err=0.0378%
+  H32C    cal= 2142.07  nom= 2144  err=0.0902%
+
+  ─────────────────────────────────────────────────────────────
+  关键观察
+  ─────────────────────────────────────────────────────────────
+  1. 三种 FFT 共用同一组 4096×15 comparator decisions。
+     差异完全来自 decoder 的权重不同 — 物理路径未改动。
+
+  2. 校准前 SNDR 低是因为高段电容失配 (1% σ per unit cap)
+     导致权重误差，在解码时产生系统性非线性。
+
+  3. Shen 校准用 force-0/force-1 半差法测量每个 target 的
+     真实权重。128 pairs 平均将校准噪声压至 ~0.09 mV。
+
+  4. oracle gap = 0.143 dB
+     是校准残差 — 来自低段不校准 (131 Q0 基准尺失配)
+     和 1mV 校准噪声的残余影响。
+
+  5. 矩形窗 + 相干采样: signal bin=127 独占主瓣,
+     ENBW=1 bin, SNDR 不含窗函数展宽损失。
+╚══════════════════════════════════════════════════════════════════════════════╝

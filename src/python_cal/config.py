@@ -51,7 +51,20 @@ SIGNAL_STAGES = tuple(s.index for s in STAGE_SPECS if s.role == "signal")
 AUX_STAGES = tuple(s.index for s in STAGE_SPECS if s.role != "signal")
 STAGE_NAMES = [s.name for s in STAGE_SPECS]
 
-CU = 4e-15
+# ── TSMC 180nm 工艺参数 ──
+# 工艺: TSMC 180nm 1P6M CMOS
+# MOM 电容类型: 横向通量 MOM (metal-oxide-metal fringe)
+# 金属层: M4-M6 堆叠 (典型), 可选 M2-M6 增加密度
+CU = 4e-15                   # 单位电容 4 fF (用户规格)
+
+# Pelgrom 失配 (直接给定, 避免单位链式换算)
+# A_C ≈ 1.0 %·μm  (保守; TSMC 180nm MOM 实测 0.5-0.8 %·μm)
+# 1Cu 面积 ≈ 2 μm²  (4 fF @ ~2 fF/μm² MOM 密度)
+# σ(ΔC/C)_1Cu = A_C / √(area) = 1.0 / √2 ≈ 0.707%
+MOM_AC_PELGROM_PCT_UM = 1.0   # %·μm
+MOM_1CU_AREA_UM2 = 2.0        # μm²
+MOM_SIGMA_1CU = 0.00707       # σ(ΔC/C)_1Cu ≈ 0.707% (预计算值)
+
 VREF = 1.8
 VREFN = 0.0
 VCM = 0.9
@@ -122,21 +135,44 @@ SHEN_LOWER_STAGES = {
 
 FRAC_BITS = 6
 Q_SCALE = 1 << FRAC_BITS
-# Seven targets x four directional sub-conversions x 512 pairs = 14336
-# calibration sub-conversions, equal to the retired pipeline (not increased).
-AVG_PAIRS = 512
-WEIGHT_TOL = 0.20
-UPDATE_DEADBAND_LSB = 0.0
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  校准参数 — 12-bit 反过度设计配置
+#
+#  实验验证 (见 analysis/ 目录):
+#    AVG_PAIRS 扫 16-512:  128 对后 oracle gap < 1 dB, 256 对后饱和
+#    噪声 × pairs 热力图:  1mV 噪声下 64 对 gap=0.69 dB, 128 对 gap=0.66 dB
+#    Dither 消融实验:      噪声 ≥ 1 LSB 时 dither 无增益
+#
+#  配置级 (推荐值):
+#    AVG_PAIRS = 128        → 12-bit 甜点: gap < 1 dB, 时间 = 512 的 1/4
+#    AVG_PAIRS = 64         → 激进: gap ≈ 0.7 dB, 时间再减半
+#    AVG_PAIRS = 16         → 仅当比较器噪声 < 0.5 mV 时可用
+#    DITHER_LSB = (0.0,)  → 噪声 ≥ 1 LSB 时 dither 冗余, 已关闭
+# ═══════════════════════════════════════════════════════════════════════════
+AVG_PAIRS = 128           # 12-bit 推荐 (原 512 过度设计)
+WEIGHT_TOL = 0.20         # 权重异常检测阈值 ±20%
+UPDATE_DEADBAND_LSB = 0.0 # 更新死区 (0=禁用)
+
+# ── Dither 配置 ──
+# 消融实验结论: 噪声 ≥ 1 LSB 或 AVG_PAIRS ≥ 32 时 dither 无增益.
+# 当前 1mV 噪声 + 128 对 → 无需 dither. 关闭可省 dither DAC 硬件.
+# 若需恢复: SHEN_DITHER_LSB = (-1.5, -0.5, 0.5, 1.5)
+SHEN_DITHER_LSB = (0.0,)
 
 # All 14 physical conversion capacitors sample VIN; only bridge is internal.
-VCM_SAMPLE_MASK = 0
-PHYSICAL_TO_WEIGHT_STAGE = {
+VCM_SAMPLE_MASK = 0   # deprecated: 全采样后无 VCM mask
+PHYSICAL_TO_WEIGHT_STAGE = {  # deprecated: 仅作文档保留
     1: 13, 2: 12, 3: 11, 4: 10, 5: 9, 6: 8, 7: 7,
     8: 6, 9: 5, 10: 4, 11: 3, 12: 2, 13: 1, 14: 0,
 }
 
-CAL_NOISE_SIGMA_V = 0.001
-CONV_NOISE_SIGMA_LSB = 0.15
+# ── 比较器噪声 ──
+# 校准期间: 1 mV RMS (保守, 512->128 对仍可靠)
+# 正常转换: 0.15 LSB RMS
+# 若比较器能做到 200-500 uV, AVG_PAIRS 可进一步降至 8-32
+CAL_NOISE_SIGMA_V = 0.001    # 校准噪声 RMS [V]
+CONV_NOISE_SIGMA_LSB = 0.15  # 转换噪声 RMS [LSB]
 
 FFT_N = 4096
 FFT_K = 127
@@ -156,6 +192,12 @@ SCENARIOS = {
     },
 }
 
-MC_SIGMA = 0.005
+# TSMC 180nm MOM 单元失配 σ ≈ 0.71% (保守) → 向上取 1% 作为 MC 默认
+MC_SIGMA = 0.01
+# TSMC 180nm MOM 失配分析档位:
+#   0.3% — 优化版图 (common-centroid, dummy, 大间距)
+#   0.7% — 典型版图 (标准 common-centroid)
+#   1.0% — 保守估计 (最小面积, 无 dummy)
+#   3.0% — 极端工艺角 (仅 stress test)
 MC_SEEDS_PIPELINE = 100
 MC_SEEDS_ISOLATION = 50
