@@ -191,7 +191,7 @@ docs/
 
 ```bibtex
 @misc{sar12_cal_behavioral_2026,
-  author       = {{SAR ADC Calibration Project Contributors}},
+  author       = {{CODEX, DEEPSEEK, and SAR ADC Calibration Project Contributors}},
   title        = {12-bit Calibrated Asynchronous SAR ADC -- Behavioral Model},
   year         = {2026},
   version      = {3.1.0},
@@ -385,7 +385,7 @@ docs/
 
 ```bibtex
 @misc{sar12_cal_behavioral_2026,
-  author       = {{SAR ADC Calibration Project Contributors}},
+  author       = {{CODEX, DEEPSEEK, and SAR ADC Calibration Project Contributors}},
   title        = {12-bit Calibrated Asynchronous SAR ADC -- Behavioral Model},
   year         = {2026},
   version      = {3.1.0},
