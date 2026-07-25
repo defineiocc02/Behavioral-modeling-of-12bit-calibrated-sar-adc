@@ -102,7 +102,8 @@ Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC
 
 \begin{enumerate}[nosep]
   \item \textbf{Python 行为级模型} —— 电荷守恒求解器 + P/N 独立失配 + Shen 2018 校准协议 + FFT 验证管线
-  \item \textbf{可综合 RTL} —— cal\_fsm (16态校准状态机) + cal\_weight\_reg (权重寄存器) + sar\_subconverter (子转换SAR)
+  \item \textbf{可综合 RTL} —— cal\_fsm (16 态校准状态机)\\
+  \hspace*{2em} + cal\_weight\_reg (权重寄存器) + sar\_subconverter (子转换 SAR)
   \item \textbf{实验套件} —— AVG\_PAIRS 扫描、Dither 消融、噪声热力图、MC 多 $\sigma$ 扫描
 \end{enumerate}
 
@@ -514,8 +515,8 @@ cal_top (顶层)
 Errors & 0 & \textcolor{greenpass}{\textbf{0}} \\
 Critical Warnings & \textcolor{redfail}{14} & \textcolor{greenpass}{\textbf{0}} \\
 Warnings & 1 & \textcolor{greenpass}{\textbf{0}} \\
-\textbf{Slack} & \textcolor{redfail}{\textbf{−13.989 ns (VIOLATED)}} & \textcolor{greenpass}{\textbf{+0.297 ns (MET)}} \\
-Data Path Delay & 23.852 ns & \textbf{5.011 ns} \\
+\textbf{Slack} & \textcolor{redfail}{\textbf{−14.0 ns ✗}} & \textcolor{greenpass}{\textbf{+0.30 ns ✓}} \\
+Data Path Delay & 23.85 ns & \textbf{5.01 ns} \\
 Logic Levels & 26 & \textbf{2} \\
 DSP48E1 & \textcolor{redfail}{2} & \textcolor{greenpass}{\textbf{0}} \\
 LUTs & 1,141 & \textbf{321} \\
@@ -530,17 +531,17 @@ Registers & 495 & \textbf{473} \\
 \begin{table}[H]
 \centering
 \caption{6 项 RTL Bug 修复明细}
-\small
-\begin{tabular}{cllp{3.5cm}p{3.5cm}}
+\footnotesize
+\begin{tabular}{clp{2.3cm}p{4.5cm}p{4.5cm}}
 \toprule
 \# & 严重度 & 文件 & 问题 & 修复 \\
 \midrule
-B1 & CRITICAL & cal\_fsm.sv & \texttt{pair\_idx} 双重驱动 & 删组合赋值 \\
-B2 & CRITICAL & cal\_fsm.sv & Slack −13.99 ns (DSP 乘法) & 预计算 LUT \\
-B3 & HIGH & cal\_fsm.sv & 7 个未使用寄存器 & 删声明+赋值 \\
-B4 & HIGH & cal\_fsm.sv & valid\_reg Set/Reset 冲突 & 加复位 \\
-B5 & HIGH & sar\_subconv & decisions[14:0] 未使用 & 删声明+赋值 \\
-B6 & HIGH & sar\_subconv & 5 信号 Set/Reset 冲突 & 加复位 \\
+B1 & CRITICAL & cal\_fsm.sv & pair\_idx 双重驱动 & 删除组合逻辑赋值 \\
+B2 & CRITICAL & cal\_fsm.sv & Slack $-13.99$ ns & 预计算 localparam 常量 \\
+B3 & HIGH & cal\_fsm.sv & 7 个未使用寄存器 & 删除声明及赋值 \\
+B4 & HIGH & cal\_fsm.sv & valid\_reg 无复位 & 添加 async reset \\
+B5 & HIGH & sar\_subconv & decisions 未使用 & 删除声明及赋值 \\
+B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -695,17 +696,17 @@ B6 & HIGH & sar\_subconv & 5 信号 Set/Reset 冲突 & 加复位 \\
 \begin{table}[H]
 \centering
 \caption{风险矩阵}
-\small
-\begin{tabular}{cllp{3.5cm}p{3.5cm}}
+\footnotesize
+\begin{tabular}{cllp{4.3cm}p{4.3cm}}
 \toprule
 \# & 风险 & 严重度 & 根因 & 缓解措施 \\
 \midrule
-R1 & 低段基准尺失配 & MEDIUM & 65 Cu 并联 $\sigma\approx$MC\_SIGMA/$\sqrt{65}$ & 布局优化 common-centroid + dummy \\
-R2 & 桥接电容失配 & MEDIUM & Bridge 仅 2 Cu & 实测 bridge 比例因子 \\
-R3 & 比较器 offset & LOW & $\sim$3 mV, 限制末位 margin & 131 Q0 margin 充足 \\
-R4 & 失配 $>$5\% & LOW & 极端工艺角 & 已超 3$\sigma$ 范围 \\
-R5 & RTL 综合时序 & \textcolor{greenpass}{RESOLVED} & DSP 乘法路径 & 预计算 LUT, 0 DSP, 0 警告 \\
-R6 & FPGA IOB 超标 & INFO & ASIC 内部模块端口多 & 不影响 ASIC 实现 \\
+R1 & 低段基准尺失配 & MEDIUM & 65 Cu 并联, $\sigma\approx$MC/$\sqrt{65}$ & 布局 common-centroid \\
+R2 & 桥接电容失配 & MEDIUM & Bridge 仅 2 Cu, $\sigma$ 较高 & 实测比例因子 \\
+R3 & 比较器 offset & LOW & $\sim$3 mV 限制末位 margin & 131 Q0 margin 充足 \\
+R4 & 失配 $>$5\% 退化 & LOW & 极端工艺角偏离 & 已超 3$\sigma$ 范围 \\
+R5 & RTL 时序 & RESOLVED & DSP48E1 乘法路径 & 预计算 LUT, 0 DSP \\
+R6 & FPGA IOB 超标 & INFO & ASIC 内部模块端口多 & 不影响 ASIC \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -744,15 +745,19 @@ RTL Slack & +0.297 ns & $>$ 0 & \pass \\
 
 本报告所有性能数据来源于 Python 行为级模型的 100-seed Monte Carlo 管线运行:
 
+{\footnotesize
 \begin{verbatim}
 运行ID: dbac69f3
-Python: src/python_cal/run_final_calibration_pipeline.py
-配置:  config.py (AVG_PAIRS=128, MC_SIGMA=0.01, CAL_NOISE_SIGMA_V=0.001)
-数据:  validation_results/final_pipeline/final_pipeline_dbac69f3.csv
-       validation_results/final_pipeline/final_summary_dbac69f3.json
-RTL:   Vivado 2018.3, xc7z020clg400-1, 100 MHz
-       scripts/synth_timing.rpt / synth_util.rpt (0 错误 0 警告)
-\end{verbatim}
+脚本:   run_final_calibration_pipeline.py
+配置:   AVG_PAIRS=128, MC_SIGMA=0.01, CAL_NOISE=1mV
+CSV:    validation_results/final_pipeline/
+        final_pipeline_dbac69f3.csv
+JSON:   validation_results/final_pipeline/
+        final_summary_dbac69f3.json
+RTL:    Vivado 2018.3, xc7z020clg400-1, 100 MHz
+        scripts/synth_timing.rpt (0 错误 0 警告)
+        scripts/synth_util.rpt  (321 LUT, 473 FF)
+\end{verbatim}}
 
 \vspace{1cm}
 \begin{center}
