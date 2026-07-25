@@ -103,16 +103,27 @@ def _conv(adc, vd):
 # MC 电容生成
 # ===================================================================
 def gen_mc_caps(seed):
-    """Generate P/N independent caps with unit-cap-level MC mismatch."""
+    """Generate P/N independent caps with MC mismatch.
+
+    MISMATCH_MODE:
+      "per_unit" — each unit cap independent N(CU, CU*σ), σ∝1/√N for N-Cu caps
+      "per_cap"  — whole cap N(Cnom, Cnom*σ), all caps same relative σ
+    """
     rng = np.random.default_rng(seed)
+    mode = getattr(cfg, "MISMATCH_MODE", "per_unit")
     def make_side():
         caps = {}
         for name in ALL_CAP_NAMES:
             cu_val = cfg.CAP_NOMINAL_CU[name]
-            if cu_val >= 1:
-                caps[name] = sum(CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(cu_val)))
-            else:
+            if mode == "per_cap":
+                # 整电容统一失配: C = N*CU * N(1, σ)
                 caps[name] = CU * cu_val * rng.normal(1.0, MC_SIGMA)
+            else:
+                # 逐Cu独立: C = Σ CU * N(1, σ)
+                if cu_val >= 1:
+                    caps[name] = sum(CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(cu_val)))
+                else:
+                    caps[name] = CU * cu_val * rng.normal(1.0, MC_SIGMA)
         return caps
     return make_side(), make_side()
 

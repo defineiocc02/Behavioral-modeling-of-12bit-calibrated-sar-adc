@@ -191,6 +191,9 @@ SCENARIOS = {
 
 # TSMC 180nm MOM 单元失配 σ ≈ 0.71% (保守) → 向上取 1% 作为 MC 默认
 MC_SIGMA = 0.01
+# 失配模式: "per_unit" = 逐Cu独立 N(CU, CU*σ), 大电容 σ 按 1/√N 缩小
+#           "per_cap"  = 整电容统一 N(Cnom, Cnom*σ), 大小电容 σ 相同
+MISMATCH_MODE = "per_unit"
 # TSMC 180nm MOM 失配分析档位:
 #   0.3% — 优化版图 (common-centroid, dummy, 大间距)
 #   0.7% — 典型版图 (标准 common-centroid)

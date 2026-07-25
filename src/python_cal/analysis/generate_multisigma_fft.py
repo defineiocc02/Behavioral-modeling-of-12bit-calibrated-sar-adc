@@ -42,12 +42,15 @@ FFT_PROTOCOL = FFTProtocol(
 # ══════════════════════════════════════════════════════════════════════
 def gen_mc_caps(seed, sigma):
     rng = np.random.default_rng(seed)
+    mode = getattr(cfg, "MISMATCH_MODE", "per_unit")
     def make_side():
         caps = {}
         for name in cfg.ALL_CAP_NAMES:
             n_cu = cfg.CAP_NOMINAL_CU[name]
-            total = sum(cfg.CU * rng.normal(1.0, sigma) for _ in range(int(n_cu)))
-            caps[name] = total
+            if mode == "per_cap":
+                caps[name] = cfg.CU * n_cu * rng.normal(1.0, sigma)
+            else:
+                caps[name] = sum(cfg.CU * rng.normal(1.0, sigma) for _ in range(int(n_cu)))
         return caps
     return make_side(), make_side()
 

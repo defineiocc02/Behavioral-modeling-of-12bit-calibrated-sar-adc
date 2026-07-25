@@ -46,12 +46,16 @@ print("=" * 60)
 
 # ── caps & decisions (once) ──
 rng = np.random.default_rng(SEED)
+_mode = getattr(cfg, "MISMATCH_MODE", "per_unit")
 def gen_caps():
     def side():
         c = {}
         for n in cfg.ALL_CAP_NAMES:
             ncu = cfg.CAP_NOMINAL_CU[n]
-            c[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
+            if _mode == "per_cap":
+                c[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
+            else:
+                c[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
         return c
     return side(), side()
 

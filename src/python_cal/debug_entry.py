@@ -85,10 +85,15 @@ FFT_PROTOCOL = FFTProtocol(
 # ── 生成失配电容 ──
 rng = np.random.default_rng(SEED)
 p_caps, n_caps = {}, {}
+mode = getattr(cfg, "MISMATCH_MODE", "per_unit")
 for n in cfg.ALL_CAP_NAMES:
     ncu = cfg.CAP_NOMINAL_CU[n]
-    p_caps[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
-    n_caps[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
+    if mode == "per_cap":
+        p_caps[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
+        n_caps[n] = cfg.CU * ncu * rng.normal(1.0, MC_SIGMA)
+    else:
+        p_caps[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
+        n_caps[n] = sum(cfg.CU * rng.normal(1.0, MC_SIGMA) for _ in range(int(ncu)))
 
 cdac = DifferentialCDAC.from_mismatch(p_caps=p_caps, n_caps=n_caps)
 pw_p, pw_n = cdac.get_physical_weights_per_side_q0()
