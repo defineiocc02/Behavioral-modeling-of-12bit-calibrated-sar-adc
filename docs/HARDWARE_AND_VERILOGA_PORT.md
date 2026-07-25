@@ -1,10 +1,10 @@
-# 硬件资源与 Verilog-A 移植方案
+# 纭欢璧勬簮涓?Verilog-A 绉绘鏂规
 
-## 1. 模拟部分
+## 1. 妯℃嫙閮ㄥ垎
 
-每个差分侧：
+姣忎釜宸垎渚э細
 
-| 项目 | 数量 |
+| 椤圭洰 | 鏁伴噺 |
 |---|---:|
 | high-segment unit capacitance | 71 Cu |
 | bridge | 2 Cu |
@@ -12,43 +12,23 @@
 | total | 138 Cu |
 | independently switched groups | 14 |
 
-P/N 总计 276 Cu。若 `Cu=4 fF`，主阵列总名义电容为 `1.104 pF`，每侧
-`552 fF`。这不包含 sampling switch、comparator input 和 routing parasitic。
+P/N 鎬昏 276 Cu銆傝嫢 `Cu=4 fF`锛屼富闃靛垪鎬诲悕涔夌數瀹逛负 `1.104 pF`锛屾瘡渚?`552 fF`銆傝繖涓嶅寘鍚?sampling switch銆乧omparator input 鍜?routing parasitic銆?
+鍙渶瑕佷竴涓富 comparator銆倂3.0 涓嶅鍔?auxiliary calibration comparator銆?calibration sub-DAC銆丩UT SRAM 鎴?CAM銆?
+## 2. 姝ｅ父杞崲鏁板瓧璧勬簮
 
-只需要一个主 comparator。v3.0 不增加 auxiliary calibration comparator、
-calibration sub-DAC、LUT SRAM 或 CAM。
+- 15-state asynchronous SAR sequencer锛?- 14 瀵?P/N bottom-plate controls锛?- 7 涓?P-side 鍜?7 涓?N-side calibrated high-weight registers锛?- 浣庢 7 涓?nominal constants 涓?1 涓?terminal constant锛?- 涓€涓害 20-bit signed Q6 accumulator锛?- 涓€涓?common normalization reciprocal/multiplier锛?- 14-bit unsigned Q2 output (`12 integer + 2 fractional`)銆?
+鑻?high-weight register 閲囩敤 unsigned Q6銆?2 涓暣鏁颁綅锛屾瘡涓?18 bits锛?14 涓瘎瀛樺櫒鍏?252 bits銆備綆娈靛父鏁板彲缁煎悎涓鸿繛绾垮父閲忋€?
+## 3. 鏍″噯鏁板瓧璧勬簮
 
-## 2. 正常转换数字资源
+鏍″噯纭欢鍙笌姝ｅ父 decoder 澶嶇敤锛?
+- 涓€涓?target counter锛? states锛夛紱
+- 涓€涓?pair counter锛? bits锛?..511锛夛紱
+- P0/P1/N0/N1 鍥涚姸鎬佹帶鍒讹紱
+- 涓€涓害 30-bit signed accumulation register锛屽彲鍒嗘椂澶嶇敤锛?- target validation comparator锛?- 252-bit high-weight register bank銆?
+鎬绘牎鍑嗗伐浣滀负 14336 涓?lower-SAR sub-conversions锛屼笌閫€褰圭増鏈浉鍚屻€?鏍″噯鏄墠鏅惎鍔ㄦ祦绋嬶紝涓嶅奖鍝嶆瘡娆?normal conversion 鐨?15-comparison 寤惰繜銆?
+## 4. Verilog-A 绔彛
 
-- 15-state asynchronous SAR sequencer；
-- 14 对 P/N bottom-plate controls；
-- 7 个 P-side 和 7 个 N-side calibrated high-weight registers；
-- 低段 7 个 nominal constants 与 1 个 terminal constant；
-- 一个约 20-bit signed Q6 accumulator；
-- 一个 common normalization reciprocal/multiplier；
-- 14-bit unsigned Q2 output (`12 integer + 2 fractional`)。
-
-若 high-weight register 采用 unsigned Q6、12 个整数位，每个 18 bits，
-14 个寄存器共 252 bits。低段常数可综合为连线常量。
-
-## 3. 校准数字资源
-
-校准硬件可与正常 decoder 复用：
-
-- 一个 target counter（7 states）；
-- 一个 pair counter（9 bits，0..511）；
-- P0/P1/N0/N1 四状态控制；
-- 一个约 30-bit signed accumulation register，可分时复用；
-- target validation comparator；
-- 252-bit high-weight register bank。
-
-总校准工作为 14336 个 lower-SAR sub-conversions，与退役版本相同。
-校准是前景启动流程，不影响每次 normal conversion 的 15-comparison 延迟。
-
-## 4. Verilog-A 端口
-
-推荐模拟模块只描述物理 CDAC 与 comparator-facing top plates：
-
+鎺ㄨ崘妯℃嫙妯″潡鍙弿杩扮墿鐞?CDAC 涓?comparator-facing top plates锛?
 ```text
 electrical VINP, VINN, VREFP, VREFN, VCM
 electrical VTOP_P, VTOP_N
@@ -57,36 +37,23 @@ input [13:0] BITP
 input [13:0] BITN
 ```
 
-stage 到电容组：
-
+stage 鍒扮數瀹圭粍锛?
 ```text
 0 H32, 1 H16, 2 H8-A, 3 H8-R, 4 H4, 5 H2, 6 H1,
 7 L32, 8 L16, 9 L8, 10 L4, 11 L2-A, 12 L2-R, 13 L1
 ```
 
-采样相位，P 侧所有 14 个 bottom plates 接 VINP，N 侧接 VINN。转换相位
-由 BITP/BITN 选择 VCM 或 VREFP。bridge 是内部 `VTOP ↔ VBRIDGE` 电容，
-没有数字 bottom-plate port。
+閲囨牱鐩镐綅锛孭 渚ф墍鏈?14 涓?bottom plates 鎺?VINP锛孨 渚ф帴 VINN銆傝浆鎹㈢浉浣?鐢?BITP/BITN 閫夋嫨 VCM 鎴?VREFP銆俠ridge 鏄唴閮?`VTOP 鈫?VBRIDGE` 鐢靛锛?娌℃湁鏁板瓧 bottom-plate port銆?
+## 5. 澶遍厤鏄犲皠
 
-## 5. 失配映射
-
-不要给一个 32-Cu group 直接施加 `0.5%` group sigma。正确方法是：
-
+涓嶈缁欎竴涓?32-Cu group 鐩存帴鏂藉姞 `0.5%` group sigma銆傛纭柟娉曟槸锛?
 ```text
-C_group = Cu × sum_{k=1..N}(1 + epsilon_k)
+C_group = Cu 脳 sum_{k=1..N}(1 + epsilon_k)
 epsilon_k ~ Normal(0, 0.005)
 ```
 
-因此 group relative sigma 自动按 `0.5%/sqrt(N)` 缩小。P/N 两侧独立生成，
-bridge 的两个 unit cells 也独立生成。
+鍥犳 group relative sigma 鑷姩鎸?`0.5%/sqrt(N)` 缂╁皬銆侾/N 涓や晶鐙珛鐢熸垚锛?bridge 鐨勪袱涓?unit cells 涔熺嫭绔嬬敓鎴愩€?
+## 6. 绉绘椤哄簭
 
-## 6. 移植顺序
-
-1. 先在 Verilog-A 中复现理想 15-decision trace；
-2. 对四个代表输入比较 Python 与 VA 的每 stage `VTOP_P-VTOP_N`；
-3. 加入 unit-cell mismatch 并比对 physical oracle weights；
-4. 接入数字校准寄存器与 Q6 accumulator；
-5. 使用同一 `N=4096, k=127, -0.5 dBFS, rectangular` FFT 协议；
-6. 最后才进入 Spectre PVT、settling、reference droop 和 parasitic 验证。
-
-这份文档是端口和资源规划，不是已完成的晶体管级或 Verilog-A 签核。
+1. 鍏堝湪 Verilog-A 涓鐜扮悊鎯?15-decision trace锛?2. 瀵瑰洓涓唬琛ㄨ緭鍏ユ瘮杈?Python 涓?VA 鐨勬瘡 stage `VTOP_P-VTOP_N`锛?3. 鍔犲叆 unit-cell mismatch 骞舵瘮瀵?physical oracle weights锛?4. 鎺ュ叆鏁板瓧鏍″噯瀵勫瓨鍣ㄤ笌 Q6 accumulator锛?5. 浣跨敤鍚屼竴 `N=4096, k=1019, -0.5 dBFS, rectangular` FFT 鍗忚锛?6. 鏈€鍚庢墠杩涘叆 Spectre PVT銆乻ettling銆乺eference droop 鍜?parasitic 楠岃瘉銆?
+杩欎唤鏂囨。鏄鍙ｅ拰璧勬簮瑙勫垝锛屼笉鏄凡瀹屾垚鐨勬櫠浣撶绾ф垨 Verilog-A 绛炬牳銆?

@@ -1,13 +1,13 @@
-// cal_fsm.sv — Shen 2018 Calibration State Machine
+// cal_fsm.sv 闁?Shen 2018 Calibration State Machine
 `timescale 1ns / 1ps
 //
 // Controls the calibration sequence:
-//   For each of 7 targets (H1C→H32C):
+//   For each of 7 targets (H1C闁愁偅澧?2C):
 //     For pair in 0..N_PAIRS-1:
-//       Force-0 subconvert → save signed sum
-//       Force-1 subconvert → save signed sum
+//       Force-0 subconvert 闁?save signed sum
+//       Force-1 subconvert 闁?save signed sum
 //       Accumulate half-difference
-//     Compute mean weight → validate → commit to register
+//     Compute mean weight 闁?validate 闁?commit to register
 
 module cal_fsm #(
   parameter int N_TARGETS     = 7,
@@ -22,7 +22,7 @@ module cal_fsm #(
   input  logic signed [15:0]           subconv_signed_sum,
   output logic                          start_subconv,
   output logic [$clog2(N_TARGETS)-1:0]  target_idx,
-  output logic [1:0]                    phase,         // 0=IDLE, 1=P0, 2=P1, 3=N0, 4=N1
+  output logic [2:0]                    phase,         // 0=IDLE, 1=P0, 2=P1, 3=N0, 4=N1         // 0=IDLE, 1=P0, 2=P1, 3=N0, 4=N1
   output logic [$clog2(N_PAIRS)-1:0]    pair_cnt,
   // Accumulator interface
   output logic                          acc_valid,
@@ -35,11 +35,11 @@ module cal_fsm #(
   output logic                          cal_done
 );
 
-  // ── Calibration target definitions (mirror Python cal_targets) ──
-  // Order: H1C(stage=6)→H2C(5)→H4C(4)→H8C-R(3)→H8C-A(2)→H16C(1)→H32C(0)
+  // 闁冲厜鍋撻柍鍏夊亾 Calibration target definitions (mirror Python cal_targets) 闁冲厜鍋撻柍鍏夊亾
+  // Order: H1C(stage=6)闁愁偅澧?C(5)闁愁偅澧?C(4)闁愁偅澧?C-R(3)闁愁偅澧?C-A(2)闁愁偅澧?6C(1)闁愁偅澧?2C(0)
   localparam int TARGET_STAGES [0:6] = '{6, 5, 4, 3, 2, 1, 0};
   localparam int TARGET_NOMINAL_Q0 [0:6] = '{67, 134, 268, 536, 536, 1072, 2144};
-  localparam int WEIGHT_TOL_PCT = 20;  // ±20% validity check
+  localparam int WEIGHT_TOL_PCT = 20;  // 閸?0% validity check
 
   // FSM states
   typedef enum logic [3:0] {
@@ -111,9 +111,9 @@ module cal_fsm #(
         N1_WAIT: if (subconv_done) ss_n1 <= subconv_signed_sum;
 
         ACCUMULATE: begin
-          // W_P += (P0 - P1) / 2  →  Q0 raw, convert to Q8 for accumulation
+          // W_P += (P0 - P1) / 2  闁? Q0 raw, convert to Q8 for accumulation
           // W_N += (N1 - N0) / 2
-          ss_p0_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_p0, 8'b0};  // Q0 → Q8
+          ss_p0_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_p0, 8'b0};  // Q0 闁?Q8
           ss_p1_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_p1, 8'b0};
           ss_n0_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_n0, 8'b0};
           ss_n1_q8 <= {{(16-WEIGHT_WIDTH+8){1'b0}}, ss_n1, 8'b0};
@@ -128,8 +128,8 @@ module cal_fsm #(
           end
 
           if (pair_idx == N_PAIRS - 1) begin
-            // Final pair: compute average (÷N_PAIRS via shift)
-            // N_PAIRS=128 → >>7, N_PAIRS=16 → >>4, N_PAIRS=4 → >>2
+            // Final pair: compute average (濮婂尒_PAIRS via shift)
+            // N_PAIRS=128 闁?>>7, N_PAIRS=16 闁?>>4, N_PAIRS=4 闁?>>2
             wp_avg <= accum_wp >>> $clog2(N_PAIRS);
             wn_avg <= accum_wn >>> $clog2(N_PAIRS);
           end
@@ -144,6 +144,9 @@ module cal_fsm #(
         end
 
         NEXT_TARGET: begin
+          // Compute final average (now accum_wp has the last pair)
+          wp_avg <= accum_wp >>> $clog2(N_PAIRS);
+          wn_avg <= accum_wn >>> $clog2(N_PAIRS);
           pair_idx <= '0;
           accum_wp <= '0;
           accum_wn <= '0;
@@ -224,7 +227,6 @@ module cal_fsm #(
       ACCUMULATE: begin
         if (pair_idx == N_PAIRS - 1) begin
           state_next = TARGET_DONE;
-          pair_idx     = N_PAIRS;  // force overflow to trigger next state
         end else begin
           state_next = P0_FORCE;    // next pair
         end
@@ -238,7 +240,7 @@ module cal_fsm #(
         if (valid)
           state_next = TARGET_COMMIT;
         else
-          state_next = DONE;  // FAILED — calibration stopped
+          state_next = DONE;  // FAILED 闁?calibration stopped
       end
 
       TARGET_COMMIT: begin
@@ -261,7 +263,7 @@ module cal_fsm #(
     endcase
   end
 
-  // ── Output assignments ──
+  // 闁冲厜鍋撻柍鍏夊亾 Output assignments 闁冲厜鍋撻柍鍏夊亾
   assign target_idx = tgt_idx;
   assign pair_cnt   = pair_idx;
   assign phase      = (state == P0_FORCE || state == P0_WAIT) ? 2'b01 :

@@ -32,11 +32,11 @@ acceptance:
 
 verification:
   dynamic_mc_seeds: 100
-  unit_cap_sigma: 0.005
-  calibration_pairs: 512
+  unit_cap_sigma: 0.01
+  calibration_pairs: 128
   calibration_noise_sigma_v: 0.001
   fft_points: 4096
-  coherent_bin: 127
+  coherent_bin: 1019
   fft_phase_rad: 0.123
   amplitude_dbfs: -0.5
   window: rectangular

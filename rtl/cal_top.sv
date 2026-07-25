@@ -1,17 +1,17 @@
-// cal_top.sv — Calibration Top-Level (Synthesizable RTL)
+// cal_top.sv 鈥?Calibration Top-Level (Synthesizable RTL)
 //
 // Integrates: cal_fsm + cal_weight_reg + sar_subconverter
 `timescale 1ns / 1ps
 //
 // Interface:
-//   clk, rst_n       — system clock and reset
-//   start             — calibration start pulse
-//   cmp_out           — comparator result (1 bit)
-//   cal_done          — calibration complete
-//   sw_h[6:0]         — high-segment switch control (per cap: 00=hold, 01=VCM, 10=VREFN, 11=VREFP)
-//   sw_l[6:0]         — low-segment switch control
-//   weights_p[6:0]    — calibrated weights (Q8 fixed-point, 16-bit each)
-//   weights_n[6:0]    — calibrated weights (Q8 fixed-point, 16-bit each)
+//   clk, rst_n       鈥?system clock and reset
+//   start             鈥?calibration start pulse
+//   cmp_out           鈥?comparator result (1 bit)
+//   cal_done          鈥?calibration complete
+//   sw_h[6:0]         鈥?high-segment switch control (per cap: 00=hold, 01=VCM, 10=VREFN, 11=VREFP)
+//   sw_l[6:0]         鈥?low-segment switch control
+//   weights_p[6:0]    鈥?calibrated weights (Q8 fixed-point, 16-bit each)
+//   weights_n[6:0]    鈥?calibrated weights (Q8 fixed-point, 16-bit each)
 
 module cal_top #(
   parameter int N_TARGETS     = 7,        // number of calibration targets
@@ -25,7 +25,7 @@ module cal_top #(
   input  logic                          start,
   input  logic                          cmp_out,       // comparator output
   output logic                          cal_done,
-  // Switch control: 2 bits per capacitor (14 caps × 2 sides)
+  // Switch control: 2 bits per capacitor (14 caps 脳 2 sides)
   // {P_H[6:0], N_H[6:0], P_L[6:0], N_L[6:0]} each 2 bits
   output logic [1:0]                    sw_p_h [6:0],
   output logic [1:0]                    sw_n_h [6:0],
@@ -36,22 +36,22 @@ module cal_top #(
   output logic [WEIGHT_WIDTH-1:0]       weights_n [N_TARGETS-1:0]
 );
 
-  // ── Switch encoding ──
+  // 鈹€鈹€ Switch encoding 鈹€鈹€
   // 2'b00 = hold (keep previous state)
   // 2'b01 = VCM (0.9V)
-  // 2'b10 = VREFN (0V) — force-0
-  // 2'b11 = VREFP (1.8V) — force-1
+  // 2'b10 = VREFN (0V) 鈥?force-0
+  // 2'b11 = VREFP (1.8V) 鈥?force-1
   localparam logic [1:0] SW_HOLD  = 2'b00;
   localparam logic [1:0] SW_VCM   = 2'b01;
   localparam logic [1:0] SW_VREFN = 2'b10;
   localparam logic [1:0] SW_VREFP = 2'b11;
 
-  // ── Calibration target definitions ──
+  // 鈹€鈹€ Calibration target definitions 鈹€鈹€
   // Target order: H1C(stage=6) -> H2C(stage=5) -> H4C(stage=4) ->
   //               H8C-R(stage=3) -> H8C-A(stage=2) -> H16C(stage=1) -> H32C(stage=0)
   localparam int TARGET_STAGES [0:6] = '{6, 5, 4, 3, 2, 1, 0};
   localparam int TARGET_NOMINAL_Q8 [0:6] = '{
-    16'd67  << 8,   // H1C =  67 Q0 → Q8
+    16'd67  << 8,   // H1C =  67 Q0 鈫?Q8
     16'd134 << 8,   // H2C = 134 Q0
     16'd268 << 8,   // H4C = 268 Q0
     16'd536 << 8,   // H8C-R = 536 Q0
@@ -60,23 +60,23 @@ module cal_top #(
     16'd2144 << 8   // H32C = 2144 Q0
   };
 
-  // ── FSM signals ──
+  // 鈹€鈹€ FSM signals 鈹€鈹€
   logic                                fsm_start_subconv;
   logic [$clog2(N_TARGETS)-1:0]        fsm_target_idx;
-  logic [1:0]                          fsm_phase;  // 0=IDLE, 1=P0, 2=P1, 3=N0, 4=N1
+  logic [2:0]                          fsm_phase;  // 0=IDLE, 1=P0, 2=P1, 3=N0, 4=N1
   logic                                fsm_subconv_done;
   logic                                fsm_all_done;
 
-  // ── SAR subconversion signals ──
+  // 鈹€鈹€ SAR subconversion signals 鈹€鈹€
   logic                                sar_start;
   logic                                sar_done;
   logic signed [15:0]                 sar_signed_sum;    // signed Q0 sum
 
-  // ── Accumulator signals ──
+  // 鈹€鈹€ Accumulator signals 鈹€鈹€
   logic [$clog2(N_PAIRS)-1:0]          acc_pair_cnt;
   logic                                acc_valid;
 
-  // ── Weight register signals ──
+  // 鈹€鈹€ Weight register signals 鈹€鈹€
   logic [$clog2(N_TARGETS)-1:0]        wreg_addr;
   logic                                wreg_we;
   logic [WEIGHT_WIDTH-1:0]             wreg_wp_in, wreg_wn_in;
@@ -106,7 +106,7 @@ module cal_top #(
   );
 
   // =========================================================================
-  //  Weight Register File (7 entries × 2 sides)
+  //  Weight Register File (7 entries 脳 2 sides)
   // =========================================================================
   cal_weight_reg #(
     .N_TARGETS(N_TARGETS),
@@ -133,7 +133,7 @@ module cal_top #(
     .rst_n      (rst_n),
     .start      (fsm_start_subconv),
     .target_idx (fsm_target_idx),
-    .phase      (fsm_phase),
+    .phase            (fsm_phase),
     .cmp_out    (cmp_out),
     .sw_p_h     (sw_p_h),
     .sw_n_h     (sw_n_h),

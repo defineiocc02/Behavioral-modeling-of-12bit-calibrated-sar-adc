@@ -1,4 +1,4 @@
-﻿# 12-bit Calibrated Asynchronous SAR ADC — Behavioral Model<br><small>12位校准型异步SAR ADC — 行为级模型</small>
+# 12-bit Calibrated Asynchronous SAR ADC 鈥?Behavioral Model<br><small>12浣嶆牎鍑嗗瀷寮傛SAR ADC 鈥?琛屼负绾фā鍨?/small>
 
 [![Version](https://img.shields.io/badge/version-3.1.0-0072B2)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/releases)
 [![License](https://img.shields.io/badge/license-MIT-009E73)](LICENSE)
@@ -6,7 +6,7 @@
 [![FFT](https://img.shields.io/badge/FFT-coherent%20rectangular-009E73)](docs/MODELING_GUIDE.md)
 [![Cal](https://img.shields.io/badge/calibration-Shen%202018%20JSSC-E69F00)](https://ieeexplore.ieee.org/document/8248649)
 
-**[English](#english) | [中文](#chinese)**
+**[English](#english) | [涓枃](#chinese)**
 
 ---
 
@@ -26,7 +26,7 @@ version** of the project.
 
 ### Locked v3.x CDAC Topology
 
-Per-side integer unit capacitors only.  Identical for v3.0.0 and v3.1.0.
+Per-side integer unit capacitors only.  Identical for all v3.x.
 
 ```text
   High segment:  32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
@@ -42,7 +42,7 @@ Nominal effective weights ($H = 67$):
   64,   32,  16,   8,   4,   4,  2, 1 terminal
 ```
 
-- All 14 high/low capacitors sample the input — no VCM-masked caps.
+- All 14 high/low capacitors sample the input 鈥?no VCM-masked caps.
 - 15 comparator decisions: 14 physical trial/compare/commit + 1 terminal.
 - High-segment 8-Cu duplicate provides wide-range redundancy.
 - Decoder: **plain P/N calibrated weighted sum with Q2 rounding.**
@@ -55,27 +55,27 @@ Nominal effective weights ($H = 67$):
 Foreground force-0/force-1 half-difference protocol (Shen 2018 JSSC).
 
 The complete low segment (131 Q0) serves as the seed ruler and is **not
-self-calibrated** — the main comparator's ~3 mV offset cannot reliably cover
+self-calibrated** 鈥?the main comparator's ~3 mV offset cannot reliably cover
 the lowest bits' backend margin.
 
 ```
-Calibration order:  H1 → H2 → H4 → H8-R → H8-A → H16 → H32
+Calibration order:  H1 鈫?H2 鈫?H4 鈫?H8-R 鈫?H8-A 鈫?H16 鈫?H32
 Pairs per target:   128                    (v3.1, down from 512)
-Total sub-convs:    7 × 4 × 128 = 3584    (v3.1, down from 14336)
-Dither:             OFF (noise ≧ 1 LSB makes it redundant)
+Total sub-convs:    7 脳 4 脳 128 = 3584    (v3.1, down from 14336)
+Dither:             OFF (noise 鈮?1 LSB makes it redundant)
 ```
 
-| Parameter | v3.0.0 | v3.1.0 | Rationale |
+| Parameter | Original | Current | Rationale |
 |-----------|--------|--------|-----------|
-| `AVG_PAIRS` | 512 | **128** | Oracle gap saturated by 128; 4× faster |
-| `SHEN_DITHER_LSB` | ON (hardcoded) | **OFF** (config) | Redundant when noise ≧ 1 LSB + N ≧ 32 |
-| Divider | — | **right-shift 7** | 128=2⁷, no hardware divider needed |
+| `AVG_PAIRS` | 512 | **128** | Oracle gap saturated by 128; 4脳 faster |
+| `SHEN_DITHER_LSB` | ON (hardcoded) | **OFF** (config) | Redundant when noise 鈮?1 LSB + N 鈮?32 |
+| Divider | 鈥?| **right-shift 7** | 128=2鈦? no hardware divider needed |
 
 <p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="Calibration weights"></p>
 
-### v3.1.0 Results
+### v3.0.0 Results
 
-100-seed Monte Carlo, TSMC 180nm conservative (`σ = 1%` unit-cap mismatch),
+100-seed Monte Carlo, TSMC 180nm conservative (`蟽 = 1%` unit-cap mismatch),
 128 pairs, 1 mV RMS calibration noise, rectangular-window coherent FFT.
 
 | Metric | Pre-Cal | Post-Cal Q2 | Physical Oracle |
@@ -89,7 +89,7 @@ Dither:             OFF (noise ≧ 1 LSB makes it redundant)
 - DNL peak P95: 0.75 LSB; INL peak P95: 0.80 LSB
 - 100/100 zero missing codes, max jump = 1
 
-| σ (MC_SIGMA) | Pre-SNDR | Post-SNDR | Oracle Gap | Verdict |
+| 蟽 (MC_SIGMA) | Pre-SNDR | Post-SNDR | Oracle Gap | Verdict |
 |:------------:|--------:|--------:|----------:|:--------:|
 | 1% | 63.7 dB | 74.5 dB | 0.14 dB | Pass |
 | 2% | 50.1 dB | 73.3 dB | 1.34 dB | Pass |
@@ -114,7 +114,7 @@ More: [v3.0 release notes](docs/RELEASE_RESULTS_V3.md),
 | Window | **Rectangular** |
 | Clipping | explicit per-run check |
 
-Coherent sampling: signal on bin 1019 (gcd(1019,4096)=1).  No leakage —
+Coherent sampling: signal on bin 1019 (gcd(1019,4096)=1).  No leakage 鈥?
 rectangular window is correct (ENBW=1 bin).
 
 ### Quick Start
@@ -127,7 +127,7 @@ python -m pip install -e ".[dev]"
 $env:PYTHONPATH = "src"
 python -m pytest src/python_cal/tests -q
 
-# One-click calibration debug ★
+# One-click calibration debug 鈽?
 python src/python_cal/debug_entry.py
 python src/python_cal/debug_entry.py --pairs 64 --mc 0.02
 python src/python_cal/debug_entry.py --noise 0.5 --pairs 32
@@ -144,13 +144,13 @@ python src/python_cal/analysis/generate_multisigma_fft.py
 
 | Block | Gates / Tr. | Area |
 |-------|:----------:|-----:|
-| CDAC capacitor array (30 caps) | passive | ~600 μm² |
-| Bottom-plate switches (28×4:1 MUX) | ~560 Tr | ~600 μm² |
-| StrongArm comparator | ~24 Tr | ~200 μm² |
-| SAR FSM | ~400 gates | ~1200 μm² |
-| Calibration controller | ~1800 gates | ~4000 μm² |
-| Weighted-sum decoder | ~2000 gates | ~4500 μm² |
-| **Total** | **~4200 gates + ~600 Tr** | **~0.011 mm²** |
+| CDAC capacitor array (30 caps) | passive | ~600 渭m虏 |
+| Bottom-plate switches (28脳4:1 MUX) | ~560 Tr | ~600 渭m虏 |
+| StrongArm comparator | ~24 Tr | ~200 渭m虏 |
+| SAR FSM | ~400 gates | ~1200 渭m虏 |
+| Calibration controller | ~1800 gates | ~4000 渭m虏 |
+| Weighted-sum decoder | ~2000 gates | ~4500 渭m虏 |
+| **Total** | **~4200 gates + ~600 Tr** | **~0.011 mm虏** |
 
 Full analysis: [DELIVERY.md](src/python_cal/DELIVERY.md)
 
@@ -172,7 +172,7 @@ Same 0.5% mismatch, 1000-seed codebook audit:
 ```text
 src/python_cal/
   config.py              single-source configuration
-  debug_entry.py         one-click calibration debug ★
+  debug_entry.py         one-click calibration debug 鈽?
   DELIVERY.md            handover document
   topology/              integer CDAC and explicit switch states
   physical/              charge-conservation solver
@@ -218,177 +218,177 @@ reviewed and validated by human contributors.
 
 <a id="chinese"></a>
 
-## 中文
+## 涓枃
 
-全差分、异步 split-CDAC SAR ADC 行为级模型。包含电荷守恒求解、
-P/N 分侧独立电容失配、前景权重校准。本项目**唯一有效的 Python 行为级版本**。
+鍏ㄥ樊鍒嗐€佸紓姝?split-CDAC SAR ADC 琛屼负绾фā鍨嬨€傚寘鍚數鑽峰畧鎭掓眰瑙ｃ€?
+P/N 鍒嗕晶鐙珛鐢靛澶遍厤銆佸墠鏅潈閲嶆牎鍑嗐€傛湰椤圭洰**鍞竴鏈夋晥鐨?Python 琛屼负绾х増鏈?*銆?
 
-> 证据等级: **Python behavioral L2.** 非晶体管级 PVT、非版图后仿、非硅片测量。
+> 璇佹嵁绛夌骇: **Python behavioral L2.** 闈炴櫠浣撶绾?PVT銆侀潪鐗堝浘鍚庝豢銆侀潪纭呯墖娴嬮噺銆?
 
-<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="模型架构"></p>
+<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="妯″瀷鏋舵瀯"></p>
 
-### 锁定 v3.x CDAC 拓扑
+### 閿佸畾 v3.x CDAC 鎷撴墤
 
-每侧仅使用整数单位电容。v3.0.0 与 v3.1.0 完全相同。
+姣忎晶浠呬娇鐢ㄦ暣鏁板崟浣嶇數瀹广€倂3.0.0 鏋舵瀯銆?
 
 ```text
-  高段:   32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
-  桥接:                             2 Cu
-  低段:   32, 16, 8, 4, 2, 2, 1 Cu  = 65 Cu
-  单侧总计:                          138 Cu  (552 fF @ Cu=4 fF)
+  楂樻:   32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
+  妗ユ帴:                             2 Cu
+  浣庢:   32, 16, 8, 4, 2, 2, 1 Cu  = 65 Cu
+  鍗曚晶鎬昏:                          138 Cu  (552 fF @ Cu=4 fF)
 ```
 
-标称有效权重 ($H = 67$):
+鏍囩О鏈夋晥鏉冮噸 ($H = 67$):
 
 ```text
 2144, 1072, 536, 536, 268, 134, 67,
-  64,   32,  16,   8,   4,   4,  2, 1 终端位
+  64,   32,  16,   8,   4,   4,  2, 1 缁堢浣?
 ```
 
-- 全部 14 个高/低段电容参与采样输入——无屏蔽电容。
-- 15 次比较器判决: 14 物理 trial/compare/commit + 1 终端位。
-- 高段 8-Cu 冗余提供大范围容错。
-- 解码器: **纯 P/N 校准权重加权和 + Q2 舍入。**
-  无 LUT、无 DP、无异常表、无状态钳位。
+- 鍏ㄩ儴 14 涓珮/浣庢鐢靛鍙備笌閲囨牱杈撳叆鈥斺€旀棤灞忚斀鐢靛銆?
+- 15 娆℃瘮杈冨櫒鍒ゅ喅: 14 鐗╃悊 trial/compare/commit + 1 缁堢浣嶃€?
+- 楂樻 8-Cu 鍐椾綑鎻愪緵澶ц寖鍥村閿欍€?
+- 瑙ｇ爜鍣? **绾?P/N 鏍″噯鏉冮噸鍔犳潈鍜?+ Q2 鑸嶅叆銆?*
+  鏃?LUT銆佹棤 DP銆佹棤寮傚父琛ㄣ€佹棤鐘舵€侀挸浣嶃€?
 
-<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC 拓扑"></p>
+<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC 鎷撴墤"></p>
 
-### 校准
+### 鏍″噯
 
-前景 force-0/force-1 半差法 (Shen 2018 JSSC)。
+鍓嶆櫙 force-0/force-1 鍗婂樊娉?(Shen 2018 JSSC)銆?
 
-完整低段 (131 Q0) 作为匹配基准尺，**不自校准**——主比较器 ~3 mV offset
-无法可靠覆盖最低几位的后端 margin。
+瀹屾暣浣庢 (131 Q0) 浣滀负鍖归厤鍩哄噯灏猴紝**涓嶈嚜鏍″噯**鈥斺€斾富姣旇緝鍣?~3 mV offset
+鏃犳硶鍙潬瑕嗙洊鏈€浣庡嚑浣嶇殑鍚庣 margin銆?
 
 ```
-校准顺序:  H1 → H2 → H4 → H8-R → H8-A → H16 → H32
-每目标对数: 128                     (v3.1, 从 512 降低)
-总子转换:   7 × 4 × 128 = 3584     (v3.1, 从 14336 降低)
-Dither:    关闭 (噪声 ≧ 1 LSB 即冗余)
+鏍″噯椤哄簭:  H1 鈫?H2 鈫?H4 鈫?H8-R 鈫?H8-A 鈫?H16 鈫?H32
+姣忕洰鏍囧鏁? 128                     (v3.1, 浠?512 闄嶄綆)
+鎬诲瓙杞崲:   7 脳 4 脳 128 = 3584     (v3.1, 浠?14336 闄嶄綆)
+Dither:    鍏抽棴 (鍣０ 鈮?1 LSB 鍗冲啑浣?
 ```
 
-| 参数 | v3.0.0 | v3.1.0 | 理由 |
+| 鍙傛暟 | v3.0.0 | 褰撳墠 | 鐞嗙敱 |
 |------|--------|--------|------|
-| `AVG_PAIRS` | 512 | **128** | Oracle gap 在 128 对后饱和; 快 4 倍 |
-| `SHEN_DITHER_LSB` | 开 (硬编码) | **关** (config) | 噪声 ≧ 1 LSB + N ≧ 32 时冗余 |
-| 除法器 | — | **右移 7 位** | 128=2⁷, 无需硬件除法器 |
+| `AVG_PAIRS` | 512 | **128** | Oracle gap 鍦?128 瀵瑰悗楗卞拰; 蹇?4 鍊?|
+| `SHEN_DITHER_LSB` | 寮€ (纭紪鐮? | **鍏?* (config) | 鍣０ 鈮?1 LSB + N 鈮?32 鏃跺啑浣?|
+| 闄ゆ硶鍣?| 鈥?| **鍙崇Щ 7 浣?* | 128=2鈦? 鏃犻渶纭欢闄ゆ硶鍣?|
 
-<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="校准权重"></p>
+<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="鏍″噯鏉冮噸"></p>
 
-### v3.1.0 结果
+### v3.0.0 缁撴灉
 
-100-seed Monte Carlo, TSMC 180nm 保守估计 (`σ = 1%` 单位电容失配),
-128 对, 1 mV RMS 校准噪声, 矩形窗相干 FFT。
+100-seed Monte Carlo, TSMC 180nm 淇濆畧浼拌 (`蟽 = 1%` 鍗曚綅鐢靛澶遍厤),
+128 瀵? 1 mV RMS 鏍″噯鍣０, 鐭╁舰绐楃浉骞?FFT銆?
 
-| 指标 | 校准前 | 校准后 Q2 | Physical Oracle |
+| 鎸囨爣 | 鏍″噯鍓?| 鏍″噯鍚?Q2 | Physical Oracle |
 |------|--------:|----------:|----------------:|
 | SNDR P50 | 63.73 dB | **74.50 dB** | 74.64 dB |
 | ENOB P50 | 10.29 bit | **12.08 bit** | 12.11 bit |
 | SFDR P50 | 70.57 dB | 94.29 dB | 96.91 dB |
 
-- 100/100 有效校准, 0/100 负收益
+- 100/100 鏈夋晥鏍″噯, 0/100 璐熸敹鐩?
 - Oracle gap P50: **0.14 dB**
 - DNL peak P95: 0.75 LSB; INL peak P95: 0.80 LSB
-- 100/100 零缺码, 最大跳码 = 1
+- 100/100 闆剁己鐮? 鏈€澶ц烦鐮?= 1
 
-| σ (MC_SIGMA) | 校准前 | 校准后 | Oracle Gap | 判定 |
+| 蟽 (MC_SIGMA) | 鏍″噯鍓?| 鏍″噯鍚?| Oracle Gap | 鍒ゅ畾 |
 |:------------:|--------:|--------:|----------:|:----:|
-| 1% | 63.7 dB | 74.5 dB | 0.14 dB | 通过 |
-| 2% | 50.1 dB | 73.3 dB | 1.34 dB | 通过 |
-| 5% | 42.2 dB | 72.6 dB | 2.05 dB | 通过 |
-| 10% | 36.1 dB | 70.2 dB | 4.47 dB | 临界 |
-| 20% | 30.2 dB | 50.6 dB | 24.0 dB | 失败 |
+| 1% | 63.7 dB | 74.5 dB | 0.14 dB | 閫氳繃 |
+| 2% | 50.1 dB | 73.3 dB | 1.34 dB | 閫氳繃 |
+| 5% | 42.2 dB | 72.6 dB | 2.05 dB | 閫氳繃 |
+| 10% | 36.1 dB | 70.2 dB | 4.47 dB | 涓寸晫 |
+| 20% | 30.2 dB | 50.6 dB | 24.0 dB | 澶辫触 |
 
-更多: [v3.0 发布说明](docs/RELEASE_RESULTS_V3.md),
-[实验套件](src/python_cal/analysis/).
+鏇村: [v3.0 鍙戝竷璇存槑](docs/RELEASE_RESULTS_V3.md),
+[瀹為獙濂椾欢](src/python_cal/analysis/).
 
-<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT 对比"></p>
+<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT 瀵规瘮"></p>
 
-### FFT 协议
+### FFT 鍗忚
 
-| 参数 | 值 |
+| 鍙傛暟 | 鍊?|
 |------|------:|
-| FFT 点数 | 4096 |
-| 相干 bin | 1019 |
-| 相位 | 0.123 rad |
-| 输入幅度 | -0.5 dBFS |
-| VFS | 每 seed 动态测量 |
-| 窗函数 | **矩形窗 (无窗)** |
-| clipping | 每次运行显式检查 |
+| FFT 鐐规暟 | 4096 |
+| 鐩稿共 bin | 1019 |
+| 鐩镐綅 | 0.123 rad |
+| 杈撳叆骞呭害 | -0.5 dBFS |
+| VFS | 姣?seed 鍔ㄦ€佹祴閲?|
+| 绐楀嚱鏁?| **鐭╁舰绐?(鏃犵獥)** |
+| clipping | 姣忔杩愯鏄惧紡妫€鏌?|
 
-相干采样: 信号精确落在 bin 127 (gcd(127,4096)=1)。无泄漏——矩形窗是正确的 (ENBW=1 bin)。
+鐩稿共閲囨牱: 淇″彿绮剧‘钀藉湪 bin 1019 (gcd(1019,4096)=1)銆傛棤娉勬紡鈥斺€旂煩褰㈢獥鏄纭殑 (ENBW=1 bin)銆?
 
-### 快速开始
+### 蹇€熷紑濮?
 
 ```powershell
-# 安装
+# 瀹夎
 python -m pip install -e ".[dev]"
 
-# 运行测试
+# 杩愯娴嬭瘯
 $env:PYTHONPATH = "src"
 python -m pytest src/python_cal/tests -q
 
-# 一键校准调试 ★
+# 涓€閿牎鍑嗚皟璇?鈽?
 python src/python_cal/debug_entry.py
 python src/python_cal/debug_entry.py --pairs 64 --mc 0.02
 python src/python_cal/debug_entry.py --noise 0.5 --pairs 32
 
-# 完整管线 (100 seeds)
+# 瀹屾暣绠＄嚎 (100 seeds)
 python src/python_cal/run_final_calibration_pipeline.py
 
-# 实验套件
+# 瀹為獙濂椾欢
 python src/python_cal/analysis/generate_fft_comparison.py
 python src/python_cal/analysis/generate_multisigma_fft.py
 ```
 
-### 硬件复杂度
+### 纭欢澶嶆潅搴?
 
-| 模块 | 门数/晶体管 | 面积 |
+| 妯″潡 | 闂ㄦ暟/鏅朵綋绠?| 闈㈢Н |
 |------|:----------:|-----:|
-| CDAC 电容阵列 (30个) | 被动器件 | ~600 μm² |
-| 底板开关 (28×4:1 MUX) | ~560 Tr | ~600 μm² |
-| StrongArm 比较器 | ~24 Tr | ~200 μm² |
-| SAR FSM | ~400 门 | ~1200 μm² |
-| 校准控制器 | ~1800 门 | ~4000 μm² |
-| 加权和解码器 | ~2000 门 | ~4500 μm² |
-| **总计** | **~4200 门 + ~600 Tr** | **~0.011 mm²** |
+| CDAC 鐢靛闃靛垪 (30涓? | 琚姩鍣ㄤ欢 | ~600 渭m虏 |
+| 搴曟澘寮€鍏?(28脳4:1 MUX) | ~560 Tr | ~600 渭m虏 |
+| StrongArm 姣旇緝鍣?| ~24 Tr | ~200 渭m虏 |
+| SAR FSM | ~400 闂?| ~1200 渭m虏 |
+| 鏍″噯鎺у埗鍣?| ~1800 闂?| ~4000 渭m虏 |
+| 鍔犳潈鍜岃В鐮佸櫒 | ~2000 闂?| ~4500 渭m虏 |
+| **鎬昏** | **~4200 闂?+ ~600 Tr** | **~0.011 mm虏** |
 
-完整分析: [DELIVERY.md](src/python_cal/DELIVERY.md)
+瀹屾暣鍒嗘瀽: [DELIVERY.md](src/python_cal/DELIVERY.md)
 
-### 为何不用旧 95-Cu CDAC ?
+### 涓轰綍涓嶇敤鏃?95-Cu CDAC ?
 
 ```text
-旧:  1,2,4,6,10,16,24 Cu (低段) | 1 Cu (桥接) | 1,2,4,8,16 Cu (高段)
-新:  整数 138 Cu
+鏃?  1,2,4,6,10,16,24 Cu (浣庢) | 1 Cu (妗ユ帴) | 1,2,4,8,16 Cu (楂樻)
+鏂?  鏁存暟 138 Cu
 ```
 
-同 0.5% 失配, 1000-seed 码本审计:
-- 旧: 缺码 P50=22, 最坏=84; 最大跳码最坏=9
-- 新: **1000/1000 零缺码, 最大跳码始终=1**
+鍚?0.5% 澶遍厤, 1000-seed 鐮佹湰瀹¤:
+- 鏃? 缂虹爜 P50=22, 鏈€鍧?84; 鏈€澶ц烦鐮佹渶鍧?9
+- 鏂? **1000/1000 闆剁己鐮? 鏈€澶ц烦鐮佸缁?1**
 
-<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC 对比"></p>
+<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC 瀵规瘮"></p>
 
-### 目录结构
+### 鐩綍缁撴瀯
 
 ```text
 src/python_cal/
-  config.py              统一配置入口
-  debug_entry.py         一键校准调试 ★
-  DELIVERY.md            递交文档
-  topology/              整数 CDAC 拓扑与开关状态
-  physical/              电荷守恒求解器
-  comparator/            动态比较器模型
-  async_control/         异步 SAR 握手
-  calibration/           Shen 2018 force-0/force-1 校准
-  decode/                纯加权和解码器
-  validation/            FFT 与可达码本审计
-  analysis/              实验脚本与图表
-  tests/                 回归测试套件
+  config.py              缁熶竴閰嶇疆鍏ュ彛
+  debug_entry.py         涓€閿牎鍑嗚皟璇?鈽?
+  DELIVERY.md            閫掍氦鏂囨。
+  topology/              鏁存暟 CDAC 鎷撴墤涓庡紑鍏崇姸鎬?
+  physical/              鐢佃嵎瀹堟亽姹傝В鍣?
+  comparator/            鍔ㄦ€佹瘮杈冨櫒妯″瀷
+  async_control/         寮傛 SAR 鎻℃墜
+  calibration/           Shen 2018 force-0/force-1 鏍″噯
+  decode/                绾姞鏉冨拰瑙ｇ爜鍣?
+  validation/            FFT 涓庡彲杈剧爜鏈璁?
+  analysis/              瀹為獙鑴氭湰涓庡浘琛?
+  tests/                 鍥炲綊娴嬭瘯濂椾欢
 docs/
   MODELING_GUIDE.md, VALIDATION_STATUS.md, RELEASE_RESULTS_V3.md, ...
 ```
 
-### 引用
+### 寮曠敤
 
 ```bibtex
 @misc{sar12_cal_behavioral_2026,
@@ -401,15 +401,15 @@ docs/
 }
 ```
 
-校准协议基于: Shen et al., "A 16-bit 16-MS/s SAR ADC With On-Chip
+鏍″噯鍗忚鍩轰簬: Shen et al., "A 16-bit 16-MS/s SAR ADC With On-Chip
 Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
 pp. 1147&ndash;1154, Apr. 2018.
 
-### AI 辅助声明
+### AI 杈呭姪澹版槑
 
-本项目使用 AI 辅助编码工具开发，包括 CODEX 与 Trae (DeepSeek)。
-所有 AI 生成代码已经人工审查与验证。
+鏈」鐩娇鐢?AI 杈呭姪缂栫爜宸ュ叿寮€鍙戯紝鍖呮嫭 CODEX 涓?Trae (DeepSeek)銆?
+鎵€鏈?AI 鐢熸垚浠ｇ爜宸茬粡浜哄伐瀹℃煡涓庨獙璇併€?
 
-### 开源许可
+### 寮€婧愯鍙?
 
 [MIT](LICENSE)

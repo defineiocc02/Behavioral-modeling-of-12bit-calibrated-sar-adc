@@ -51,19 +51,17 @@ SIGNAL_STAGES = tuple(s.index for s in STAGE_SPECS if s.role == "signal")
 AUX_STAGES = tuple(s.index for s in STAGE_SPECS if s.role != "signal")
 STAGE_NAMES = [s.name for s in STAGE_SPECS]
 
-# ── TSMC 180nm 工艺参数 ──
-# 工艺: TSMC 180nm 1P6M CMOS
-# MOM 电容类型: 横向通量 MOM (metal-oxide-metal fringe)
-# 金属层: M4-M6 堆叠 (典型), 可选 M2-M6 增加密度
-CU = 4e-15                   # 单位电容 4 fF (用户规格)
+# 閳光偓閳光偓 TSMC 180nm 瀹搞儴澹撻崣鍌涙殶 閳光偓閳光偓
+# 瀹搞儴澹? TSMC 180nm 1P6M CMOS
+# MOM 閻㈤潧顔愮猾璇茬€? 濡亜鎮滈柅姘跺櫤 MOM (metal-oxide-metal fringe)
+# 闁叉垵鐫樼仦? M4-M6 閸棗褰?(閸忕鐎?, 閸欘垶鈧?M2-M6 婢х偛濮炵€靛棗瀹?CU = 4e-15                   # 閸楁洑缍呴悽闈涱啇 4 fF (閻劍鍩涚憴鍕壐)
 
-# Pelgrom 失配 (直接给定, 避免单位链式换算)
-# A_C ≈ 1.0 %·μm  (保守; TSMC 180nm MOM 实测 0.5-0.8 %·μm)
-# 1Cu 面积 ≈ 2 μm²  (4 fF @ ~2 fF/μm² MOM 密度)
-# σ(ΔC/C)_1Cu = A_C / √(area) = 1.0 / √2 ≈ 0.707%
-MOM_AC_PELGROM_PCT_UM = 1.0   # %·μm
-MOM_1CU_AREA_UM2 = 2.0        # μm²
-MOM_SIGMA_1CU = 0.00707       # σ(ΔC/C)_1Cu ≈ 0.707% (预计算值)
+# Pelgrom 婢堕亶鍘?(閻╁瓨甯寸紒娆忕暰, 闁灝鍘ら崡鏇氱秴闁炬儳绱￠幑銏㈢暬)
+# A_C 閳?1.0 %璺腑m  (娣囨繂鐣? TSMC 180nm MOM 鐎圭偞绁?0.5-0.8 %璺腑m)
+# 1Cu 闂堛垻袧 閳?2 娓璵铏? (4 fF @ ~2 fF/娓璵铏?MOM 鐎靛棗瀹?
+# 锜?铻朇/C)_1Cu = A_C / 閳?area) = 1.0 / 閳? 閳?0.707%
+MOM_AC_PELGROM_PCT_UM = 1.0   # %璺腑m
+MOM_1CU_AREA_UM2 = 2.0        # 娓璵铏?MOM_SIGMA_1CU = 0.00707       # 锜?铻朇/C)_1Cu 閳?0.707% (妫板嫯顓哥粻妤€鈧?
 
 VREF = 1.8
 VREFN = 0.0
@@ -136,40 +134,33 @@ SHEN_LOWER_STAGES = {
 FRAC_BITS = 6
 Q_SCALE = 1 << FRAC_BITS
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  校准参数 — 12-bit 反过度设计配置
-#
-#  实验验证 (见 analysis/ 目录):
-#    AVG_PAIRS 扫 16-512:  128 对后 oracle gap < 1 dB, 256 对后饱和
-#    噪声 × pairs 热力图:  1mV 噪声下 64 对 gap=0.69 dB, 128 对 gap=0.66 dB
-#    Dither 消融实验:      噪声 ≥ 1 LSB 时 dither 无增益
-#
-#  配置级 (推荐值):
-#    AVG_PAIRS = 128        → 12-bit 甜点: gap < 1 dB, 时间 = 512 的 1/4
-#    AVG_PAIRS = 64         → 激进: gap ≈ 0.7 dB, 时间再减半
-#    AVG_PAIRS = 16         → 仅当比较器噪声 < 0.5 mV 时可用
-#    DITHER_LSB = (0.0,)  → 噪声 ≥ 1 LSB 时 dither 冗余, 已关闭
-# ═══════════════════════════════════════════════════════════════════════════
-AVG_PAIRS = 128           # 12-bit 推荐 (原 512 过度设计)
-WEIGHT_TOL = 0.20         # 权重异常检测阈值 ±20%
-UPDATE_DEADBAND_LSB = 0.0 # 更新死区 (0=禁用)
+# 閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡?#  閺嶁€冲櫙閸欏倹鏆?閳?12-bit 閸欏秷绻冩惔锕侇啎鐠侊繝鍘ょ純?#
+#  鐎圭偤鐛欐宀冪槈 (鐟?analysis/ 閻╊喖缍?:
+#    AVG_PAIRS 閹?16-512:  128 鐎电懓鎮?oracle gap < 1 dB, 256 鐎电懓鎮楁鍗炴嫲
+#    閸ｎ亜锛?鑴?pairs 閻戭厼濮忛崶?  1mV 閸ｎ亜锛愭稉?64 鐎?gap=0.69 dB, 128 鐎?gap=0.66 dB
+#    Dither 濞戝牐鐎虹€圭偤鐛?      閸ｎ亜锛?閳?1 LSB 閺?dither 閺冪姴顤冮惄?#
+#  闁板秶鐤嗙痪?(閹恒劏宕橀崐?:
+#    AVG_PAIRS = 128        閳?12-bit 閻㈡粎鍋? gap < 1 dB, 閺冨爼妫?= 512 閻?1/4
+#    AVG_PAIRS = 64         閳?濠碘偓鏉? gap 閳?0.7 dB, 閺冨爼妫块崘宥呭櫤閸?#    AVG_PAIRS = 16         閳?娴犲懎缍嬪В鏃囩窛閸ｃ劌娅旀竟?< 0.5 mV 閺冭泛褰查悽?#    DITHER_LSB = (0.0,)  閳?閸ｎ亜锛?閳?1 LSB 閺?dither 閸愭ぞ缍? 瀹告彃鍙ч梻?# 閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡鎰ㄦ櫜閳烘劏鏅查埡?AVG_PAIRS = 128           # 12-bit 閹恒劏宕?(閸?512 鏉╁洤瀹崇拋鎹愵吀)
+WEIGHT_TOL = 0.20         # 閺夊啴鍣稿鍌氱埗濡偓濞村妲囬崐?鍗?0%
+UPDATE_DEADBAND_LSB = 0.0 # 閺囧瓨鏌婂璇插隘 (0=缁備胶鏁?
 
-# ── Dither 配置 ──
-# 消融实验结论: 噪声 ≥ 1 LSB 或 AVG_PAIRS ≥ 32 时 dither 无增益.
-# 当前 1mV 噪声 + 128 对 → 无需 dither. 关闭可省 dither DAC 硬件.
-# 若需恢复: SHEN_DITHER_LSB = (-1.5, -0.5, 0.5, 1.5)
+# 閳光偓閳光偓 Dither 闁板秶鐤?閳光偓閳光偓
+# 濞戝牐鐎虹€圭偤鐛欑紒鎾诡啈: 閸ｎ亜锛?閳?1 LSB 閹?AVG_PAIRS 閳?32 閺?dither 閺冪姴顤冮惄?
+# 瑜版挸澧?1mV 閸ｎ亜锛?+ 128 鐎?閳?閺冪娀娓?dither. 閸忔娊妫撮崣顖滄阜 dither DAC 绾兛娆?
+# 閼汇儵娓堕幁銏狀槻: SHEN_DITHER_LSB = (-1.5, -0.5, 0.5, 1.5)
 SHEN_DITHER_LSB = (0.0,)
 
 # All 14 physical conversion capacitors sample VIN; only bridge is internal.
-VCM_SAMPLE_MASK = 0   # deprecated: 全采样后无 VCM mask
-PHYSICAL_TO_WEIGHT_STAGE = {  # deprecated: 仅作文档保留
+VCM_SAMPLE_MASK = 0   # deprecated: 閸忋劑鍣伴弽宄版倵閺?VCM mask
+PHYSICAL_TO_WEIGHT_STAGE = {  # deprecated: 娴犲懍缍旈弬鍥ㄣ€傛穱婵堟殌
     1: 13, 2: 12, 3: 11, 4: 10, 5: 9, 6: 8, 7: 7,
     8: 6, 9: 5, 10: 4, 11: 3, 12: 2, 13: 1, 14: 0,
 }
 
-# ── 比较器噪声 ──  统一 300 μV RMS
-CAL_NOISE_SIGMA_V = 0.0003    # 300 μV RMS
-CONV_NOISE_SIGMA_LSB = 0.68   # 300 μV / (VREF/4096)
+# 閳光偓閳光偓 濮ｆ棁绶濋崳銊ユ珨婢?閳光偓閳光偓  缂佺喍绔?300 娓璙 RMS
+CAL_NOISE_SIGMA_V = 0.0003    # 300 娓璙 RMS
+CONV_NOISE_SIGMA_LSB = 0.68   # 300 娓璙 / (VREF/4096)
 
 FFT_N = 4096
 FFT_K = 1019   # ~2.49 MHz @ Fs=10 MHz (was 127, ~310 kHz)
@@ -189,26 +180,20 @@ SCENARIOS = {
     },
 }
 
-# TSMC 180nm MOM 单元电容失配
-#
-# Pelgrom 系数: A_C = 1.0 %·μm → σ(ΔC/C)₁Cu_pair ≈ 1.0/√2 = 0.707%
-# 以下 σ 均为单个 Cu 的标准差 (不是 pair mismatch):
-#   0.71% — 典型 (optimised common-centroid + dummy)
-#   1.0%  — 保守 (minimal area, no dummy)
+# TSMC 180nm MOM 閸楁洖鍘撻悽闈涱啇婢堕亶鍘?#
+# Pelgrom 缁粯鏆? A_C = 1.0 %璺腑m 閳?锜?铻朇/C)閳т竼u_pair 閳?1.0/閳? = 0.707%
+# 娴犮儰绗?锜?閸у洣璐熼崡鏇氶嚋 Cu 閻ㄥ嫭鐖ｉ崙鍡楁▕ (娑撳秵妲?pair mismatch):
+#   0.71% 閳?閸忕鐎?(optimised common-centroid + dummy)
+#   1.0%  閳?娣囨繂鐣?(minimal area, no dummy)
+# 婢堕亶鍘ょ€圭偟骞囧Ο鈥崇础:
+#   "per_unit"            閳?闁?Cu 閻欘剛鐝?N(CU, CU璺熃), 锜絖cap = 锜?閳瓊   [姒涙顓? 閻椻晝鎮奭
+#   "per_cap_scaled"      閳?閺佸鏁哥€?N(Cnom, Cnom璺熃/閳瓊), 娑?per_unit 缂佺喕顓哥粵澶嬫櫏, MC 閸旂娀鈧?#   "per_cap_flat_stress" 閳?閺佸鏁哥€?N(Cnom, Cnom璺熃), 婢堆冪毈閻㈤潧顔?锜?閻╃鎮?[闂堢偟澧块悶? 娴犲懎甯囬崝娑欑ゴ鐠囨槨
 MC_SIGMA = 0.01
-# 失配实现模式:
-#   "per_unit"            — 逐 Cu 独立 N(CU, CU·σ), σ_cap = σ/√N   [默认, 物理]
-#   "per_cap_scaled"      — 整电容 N(Cnom, Cnom·σ/√N), 与 per_unit 统计等效, MC 加速
-#   "per_cap_flat_stress" — 整电容 N(Cnom, Cnom·σ), 大小电容 σ 相同 [非物理, 仅压力测试]
 MISMATCH_MODE = "per_unit"
-# 失配范围: "all"             = 全电容 (15 个) 失配
-#           "calibrated_only" = 仅校准目标 (高段 7 个) 失配, 低段+桥接标称
-#           "base_ruler_only" = 仅基准尺 (低段 7+桥接 1) 失配, 高段标称
-MISMATCH_SCOPE = "all"
-MC_SIGMA = 0.01
+# 婢堕亶鍘ら懠鍐ㄦ纯: "all"             = 閸忋劎鏁哥€?(15 娑? 婢堕亶鍘?#           "calibrated_only" = 娴犲懏鐗庨崙鍡欐窗閺?(妤傛ɑ顔?7 娑? 婢堕亶鍘? 娴ｅ孩顔?濡椼儲甯撮弽鍥┬?#           "base_ruler_only" = 娴犲懎鐔€閸戝棗鏄?(娴ｅ孩顔?7+濡椼儲甯?1) 婢堕亶鍘? 妤傛ɑ顔岄弽鍥┬?MISMATCH_SCOPE = "all"
 
 def should_mismatch(cap_name: str) -> bool:
-    """是否对该电容加失配。"""
+    """閺勵垰鎯佺€电顕氶悽闈涱啇閸旂姴銇戦柊宥冣偓?""
     scope = MISMATCH_SCOPE
     if scope == "all":
         return True
@@ -218,6 +203,6 @@ def should_mismatch(cap_name: str) -> bool:
         return cap_name.startswith("low_") or cap_name == "bridge"
     raise ValueError(f"unknown MISMATCH_SCOPE: {scope}")
 
-# ── 输入信号 ──
+# 閳光偓閳光偓 鏉堟挸鍙嗘穱鈥冲娇 閳光偓閳光偓
 MC_SEEDS_PIPELINE = 100
 MC_SEEDS_ISOLATION = 50

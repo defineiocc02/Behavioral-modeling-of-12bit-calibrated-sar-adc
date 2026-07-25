@@ -1,8 +1,8 @@
-// sar_subconverter.sv — Lower-SAR Subconversion Controller (Synthesizable)
+// sar_subconverter.sv 鈥?Lower-SAR Subconversion Controller (Synthesizable)
 `timescale 1ns / 1ps
 //
 // Performs a subconversion on lower stages below the calibration target.
-// This is NOT the full SAR ADC controller — it only handles the calibration
+// This is NOT the full SAR ADC controller 鈥?it only handles the calibration
 // subconversion with force-0/force-1 states.
 //
 // Operation (per subconversion):
@@ -20,8 +20,8 @@ module sar_subconverter #(
   input  logic                     clk,
   input  logic                     rst_n,
   input  logic                     start,
-  input  logic [2:0]               target_idx,    // 0..6 → target stage
-  input  logic [1:0]               phase,         // 1=P0, 2=P1, 3=N0, 4=N1
+  input  logic [2:0]               target_idx,    // 0..6 鈫?target stage
+  input  logic [2:0]               phase,         // 0=IDLE, 1=P0, 2=P1, 3=N0, 4=N1
   input  logic                     cmp_out,       // comparator result
   output logic [1:0]               sw_p_h [6:0],
   output logic [1:0]               sw_n_h [6:0],
@@ -31,13 +31,13 @@ module sar_subconverter #(
   output logic signed [15:0]              signed_sum     // signed Q0 sum
 );
 
-  // ── Switch encoding ──
+  // 鈹€鈹€ Switch encoding 鈹€鈹€
   localparam logic [1:0] SW_HOLD  = 2'b00;
   localparam logic [1:0] SW_VCM   = 2'b01;
   localparam logic [1:0] SW_VREFN = 2'b10;
   localparam logic [1:0] SW_VREFP = 2'b11;
 
-  // ── Stage-to-capacitor mapping ──
+  // 鈹€鈹€ Stage-to-capacitor mapping 鈹€鈹€
   // Stage  0: high_32c (H32C, NCU=32)
   // Stage  1: high_16c (H16C, NCU=16)
   // Stage  2: high_8c_a (H8C-A, NCU=8)
@@ -54,18 +54,18 @@ module sar_subconverter #(
   // Stage 13: low_1c   (L1C,  NCU=1)
   // Stage 14: terminal  (digital only, no cap)
 
-  // ── Calibration targets → stages ──
+  // 鈹€鈹€ Calibration targets 鈫?stages 鈹€鈹€
   localparam int TARGET_STAGES [0:6] = '{6, 5, 4, 3, 2, 1, 0};
   localparam int TARGET_CAPS   [0:6] = '{6, 5, 4, 3, 2, 1, 0};  // index into sw_h
 
-  // ── Nominal weights (Q0) ──
+  // 鈹€鈹€ Nominal weights (Q0) 鈹€鈹€
   localparam logic [15:0] NOM_Q0 [0:14] = '{
     2144, 1072, 536, 536, 268, 134, 67,    // high
     64, 32, 16, 8, 4, 4, 2,                // low
     1                                       // terminal
   };
 
-  // ── Lower stages for each target (sorted descending by nominal weight) ──
+  // 鈹€鈹€ Lower stages for each target (sorted descending by nominal weight) 鈹€鈹€
   // Generated from Python SHEN_LOWER_STAGES
   // H1C(stage=6): lower = [7,8,9,10,11,12,13,14]
   // H2C(stage=5): lower = [6,7,8,9,10,11,12,13,14]
@@ -79,7 +79,7 @@ module sar_subconverter #(
   // Stages are sorted by descending nominal weight.
 
   // Precomputed sorted lower stage lists (compact ROM)
-  // Format: {count[3:0], stage[3:0] × N_LOWER_STAGES_MAX}
+  // Format: {count[3:0], stage[3:0] 脳 N_LOWER_STAGES_MAX}
   // H1C: 8 lower stages in order: 7,8,9,10,11,12,13,14
   // H2C: 9 lower stages: 6,7,8,9,10,11,12,13,14
   // H4C: 10 lower stages: 5,6,7,8,9,10,11,12,13,14
@@ -88,8 +88,8 @@ module sar_subconverter #(
   // H16C: 13 lower stages: 2,3,4,5,6,7,8,9,10,11,12,13,14
   // H32C: 14 lower stages: 1,2,3,4,5,6,7,8,9,10,11,12,13,14
 
-  // Compact storage: 8 entries per target (4-bit stage index × 8)
-  logic [3:0] lower_stages [0:6][0:13];  // 7 targets × up to 14 stages
+  // Compact storage: 8 entries per target (4-bit stage index 脳 8)
+  logic [3:0] lower_stages [0:6][0:13];  // 7 targets 脳 up to 14 stages
   logic [3:0] n_lower [0:6];             // number of lower stages per target
 
   // SAR state
@@ -110,7 +110,7 @@ module sar_subconverter #(
   logic [1:0] force_rail;       // VREFN or VREFP
   logic       force_is_p;       // 1=P-side, 0=N-side
 
-  // ── Initialize lower stages ROM ──
+  // 鈹€鈹€ Initialize lower stages ROM 鈹€鈹€
   initial begin
     // H1C (target stage 6): lower = [7->14]
     lower_stages[0] = '{4'd7, 4'd8, 4'd9, 4'd10, 4'd11, 4'd12, 4'd13, 4'd14, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0};
@@ -135,25 +135,25 @@ module sar_subconverter #(
     n_lower[6] = 4'd14;
   end
 
-  // ── Helper: set single switch ──
+  // 鈹€鈹€ Helper: set single switch 鈹€鈹€
   function automatic void set_sw(output logic [1:0] sw_arr [6:0],
                                   input int idx, input logic [1:0] val);
     for (int i = 0; i < 7; i++)
       sw_arr[i] = (i == idx) ? val : sw_arr[i];
   endfunction
 
-  // ── Helper: high index → sw index (reverse map) ──
+  // 鈹€鈹€ Helper: high index 鈫?sw index (reverse map) 鈹€鈹€
   // h_idx 0=H32C(stage0), 1=H16C(stage1), ..., 6=H1C(stage6)
   // sw_h[0]=H32C(32Cu), sw_h[1]=H16C(16Cu), ..., sw_h[6]=H1C(1Cu)
   // So h_idx == sw_h index
-  // ── Helper: low index → sw_l index ──
-  // stage 7=L32C→l_idx0, 8=L16C→l_idx1, 9=L8C→l_idx2,
-  //       10=L4C→l_idx3, 11=L2C-A→l_idx4, 12=L2C-R→l_idx5, 13=L1C→l_idx6
+  // 鈹€鈹€ Helper: low index 鈫?sw_l index 鈹€鈹€
+  // stage 7=L32C鈫抣_idx0, 8=L16C鈫抣_idx1, 9=L8C鈫抣_idx2,
+  //       10=L4C鈫抣_idx3, 11=L2C-A鈫抣_idx4, 12=L2C-R鈫抣_idx5, 13=L1C鈫抣_idx6
   function automatic int low_stage_to_lidx(input int stage);
     return stage - 7;
   endfunction
 
-  // ── SAR FSM ──
+  // 鈹€鈹€ SAR FSM 鈹€鈹€
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       sar_state  <= SAR_IDLE;
@@ -173,9 +173,9 @@ module sar_subconverter #(
           done <= 1'b0;
           if (start) begin
             // Determine force rail
-            force_is_p <= (phase == 2'd1 || phase == 2'd2);  // P0, P1 → force P side
-            force_rail <= (phase == 2'd1 || phase == 2'd3) ? SW_VREFN : SW_VREFP;
-            // P0: P→VREFN | P1: P→VREFP | N0: N→VREFN | N1: N→VREFP
+            force_is_p <= (phase == 3'd1 || phase == 3'd2);  // P0, P1 鈫?force P side
+            force_rail <= (phase == 3'd1 || phase == 3'd3) ? SW_VREFN : SW_VREFP;
+            // P0: P鈫扸REFN | P1: P鈫扸REFP | N0: N鈫扸REFN | N1: N鈫扸REFP
             n_lower_cur <= n_lower[target_idx];
             trial_idx   <= '0;
             decisions   <= '0;
@@ -237,14 +237,14 @@ module sar_subconverter #(
         end
 
         SAR_COMMIT: begin
-          // Read comparator: cmp_out=1 → VTOP_P > VTOP_N
+          // Read comparator: cmp_out=1 鈫?VTOP_P > VTOP_N
           // Convention:
-          //   cmp_out=0 (VTOP_P < VTOP_N): P side kept VREFP → Vdiff INCREASES → +weight
-          //   cmp_out=1 (VTOP_P > VTOP_N): N side kept VREFP → Vdiff DECREASES → -weight
-          // signed_sum = Σ(+NOM_Q0 for P-contrib) + Σ(-NOM_Q0 for N-contrib)
+          //   cmp_out=0 (VTOP_P < VTOP_N): P side kept VREFP 鈫?Vdiff INCREASES 鈫?+weight
+          //   cmp_out=1 (VTOP_P > VTOP_N): N side kept VREFP 鈫?Vdiff DECREASES 鈫?-weight
+          // signed_sum = 危(+NOM_Q0 for P-contrib) + 危(-NOM_Q0 for N-contrib)
           if (cmp_out) begin
             // VTOP_P > VTOP_N: keep N side at VREFP, P side back to VCM
-            // N side contributes → negative signed sum
+            // N side contributes 鈫?negative signed sum
             if (trial_stage < 7) begin
               sw_p_h[trial_stage] <= SW_VCM;    // P side back to VCM
             end else if (trial_stage != 4'd14) begin
@@ -254,7 +254,7 @@ module sar_subconverter #(
             accum_sum <= accum_sum - $signed({1'b0, NOM_Q0[trial_stage]});
           end else begin
             // VTOP_P < VTOP_N: keep P side at VREFP, N side back to VCM
-            // P side contributes → positive signed sum
+            // P side contributes 鈫?positive signed sum
             if (trial_stage < 7) begin
               sw_n_h[trial_stage] <= SW_VCM;    // N side back to VCM
             end else if (trial_stage != 4'd14) begin
