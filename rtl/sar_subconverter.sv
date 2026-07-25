@@ -28,7 +28,7 @@ module sar_subconverter #(
   output logic [1:0]               sw_p_l [6:0],
   output logic [1:0]               sw_n_l [6:0],
   output logic                     done,
-  output logic [15:0]              signed_sum     // raw Q0 signed sum
+  output logic signed [15:0]              signed_sum     // signed Q0 sum
 );
 
   // ── Switch encoding ──
@@ -238,29 +238,30 @@ module sar_subconverter #(
 
         SAR_COMMIT: begin
           // Read comparator: cmp_out=1 → VTOP_P > VTOP_N
+          // Convention:
+          //   cmp_out=0 (VTOP_P < VTOP_N): P side kept VREFP → Vdiff INCREASES → +weight
+          //   cmp_out=1 (VTOP_P > VTOP_N): N side kept VREFP → Vdiff DECREASES → -weight
+          // signed_sum = Σ(+NOM_Q0 for P-contrib) + Σ(-NOM_Q0 for N-contrib)
           if (cmp_out) begin
             // VTOP_P > VTOP_N: keep N side at VREFP, P side back to VCM
+            // N side contributes → negative signed sum
             if (trial_stage < 7) begin
               sw_p_h[trial_stage] <= SW_VCM;    // P side back to VCM
-              // N side stays at VREFP (already set)
             end else if (trial_stage != 4'd14) begin
               sw_p_l[low_stage_to_lidx(trial_stage)] <= SW_VCM;
             end
             decisions[trial_stage] <= 1'b1;
-            accum_sum <= accum_sum + NOM_Q0[trial_stage];
+            accum_sum <= accum_sum - $signed({1'b0, NOM_Q0[trial_stage]});
           end else begin
             // VTOP_P < VTOP_N: keep P side at VREFP, N side back to VCM
+            // P side contributes → positive signed sum
             if (trial_stage < 7) begin
               sw_n_h[trial_stage] <= SW_VCM;    // N side back to VCM
-              // P side stays at VREFP
             end else if (trial_stage != 4'd14) begin
               sw_n_l[low_stage_to_lidx(trial_stage)] <= SW_VCM;
             end
             decisions[trial_stage] <= 1'b0;
-            // contribution from P side (VREFP) vs N side (VCM) gives positive signed sum
-            // Actually the signed_sum accumulation is done via the SAR accumulator
-            // Here we accumulate the binary-weighted sum
-            accum_sum <= accum_sum + NOM_Q0[trial_stage];  // P side stays = contribution
+            accum_sum <= accum_sum + $signed({1'b0, NOM_Q0[trial_stage]});
           end
 
           if (trial_idx >= n_lower_cur - 1) begin

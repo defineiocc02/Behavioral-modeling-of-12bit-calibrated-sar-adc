@@ -70,7 +70,7 @@ module cal_top #(
   // ── SAR subconversion signals ──
   logic                                sar_start;
   logic                                sar_done;
-  logic [15:0]                         sar_signed_sum;    // Q0 signed sum
+  logic signed [15:0]                 sar_signed_sum;    // signed Q0 sum
 
   // ── Accumulator signals ──
   logic [$clog2(N_PAIRS)-1:0]          acc_pair_cnt;

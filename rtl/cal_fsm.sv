@@ -19,7 +19,7 @@ module cal_fsm #(
   input  logic                          rst_n,
   input  logic                          start,
   input  logic                          subconv_done,
-  input  logic [15:0]                   subconv_signed_sum,
+  input  logic signed [15:0]           subconv_signed_sum,
   output logic                          start_subconv,
   output logic [$clog2(N_TARGETS)-1:0]  target_idx,
   output logic [1:0]                    phase,         // 0=IDLE, 1=P0, 2=P1, 3=N0, 4=N1
@@ -128,9 +128,10 @@ module cal_fsm #(
           end
 
           if (pair_idx == N_PAIRS - 1) begin
-            // Final pair: compute average (÷N_PAIRS, N_PAIRS=128 → >>7)
-            wp_avg <= accum_wp >>> 7;
-            wn_avg <= accum_wn >>> 7;
+            // Final pair: compute average (÷N_PAIRS via shift)
+            // N_PAIRS=128 → >>7, N_PAIRS=16 → >>4, N_PAIRS=4 → >>2
+            wp_avg <= accum_wp >>> $clog2(N_PAIRS);
+            wn_avg <= accum_wn >>> $clog2(N_PAIRS);
           end
           pair_idx <= pair_idx + 1'b1;
         end
