@@ -203,6 +203,12 @@ docs/
 Calibration protocol: Shen et al., "A 12-bit 10-MS/s SAR ADC with
 Foreground Calibration," *IEEE JSSC*, vol. 53, no. 7, pp. 1895-1906, 2018.
 
+### Contributors
+
+- [defineiocc02](https://github.com/defineiocc02)
+- [Fleetandwood](https://github.com/Fleetandwood)
+- CODEX & DEEPSEEK (AI-assisted design and verification)
+
 ### License
 
 [MIT](LICENSE)
@@ -396,6 +402,12 @@ docs/
 
 校准协议基于: Shen et al., "A 12-bit 10-MS/s SAR ADC with Foreground
 Calibration," *IEEE JSSC*, vol. 53, no. 7, pp. 1895-1906, 2018.
+
+### 贡献者
+
+- [defineiocc02](https://github.com/defineiocc02)
+- [Fleetandwood](https://github.com/Fleetandwood)
+- CODEX & DEEPSEEK（AI 辅助设计与验证）
 
 ### 开源许可
 
