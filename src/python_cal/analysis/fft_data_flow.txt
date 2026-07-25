@@ -6,7 +6,7 @@
   Run Parameters
   ─────────────
   Seed          = 12345
-  MC sigma      = 0.03 (3.0% unit-cap mismatch)
+  MC sigma      = 0.01 (1.0% unit-cap mismatch)
   AVG_PAIRS     = 128
   Cal noise     = 0.0003 V RMS
   FFT N         = 4096
@@ -47,7 +47,7 @@
   ┌─────────────────────────────────────────────────────────────┐
   │ build_coherent_differential_sine(vfs, FFTProtocol)          │
   │   amplitude = vfs × 10^(dBFS/20)                            │
-  │   vin[i] = amplitude × sin(2π·k·i/N + φ)                   │
+  │   vin[i] = amplitude * sin(2*pi*k*i/N + phi)                │
   │   输出: 4096 点差分电压序列 + metadata                      │
   └───────────────────┬─────────────────────────────────────────┘
                       ↓
@@ -91,11 +91,11 @@
   │ compute_fft_coherent(codes_q2, N=4096, k=127)              │
   │   codes_centered = codes - mean(codes)                     │
   │   spectrum = |rFFT(codes_centered)| / N                    │
-  │   signal_power = |spectrum[127]|²                          │
-  │   harmonics ∑|spectrum[127×h]|²  for h=2..7               │
-  │   noise_power = ∑ spectrum²  excluding DC, signal, harmonics│
-  │   SNDR = 10·log₁₀(signal / (noise + harmonics))           │
-  │   SFDR = 20·log₁₀(signal_mag / max_spur)                  │
+  │   signal_power = |spectrum[127]|^2                          │
+  │   harmonics = sum(|spectrum[127*h]|^2) for h=2..7            │
+  │   noise_power = sum(spectrum^2) excluding DC, signal, harmonics │
+  │   SNDR = 10*log10(signal / (noise + harmonics))             │
+  │   SFDR = 20*log10(signal_mag / max_spur)                    │
   │   ENOB = (SNDR - 1.76) / 6.02                             │
   └───────────────────┬─────────────────────────────────────────┘
                       ↓
@@ -107,23 +107,23 @@
   Case                 SNDR [dB]    SFDR [dB]    ENOB [bit]
   ─────────────────────────────────────────────────────────────
   无失配 Ideal             74.64         96.91         12.11
-  校准前 Pre-Cal           54.37         60.90          8.74
-  校准后 Post-Cal          74.37         97.27         12.06
+  校准前 Pre-Cal           59.30         67.00          9.56
+  校准后 Post-Cal          74.40         93.89         12.07
   ─────────────────────────────────────────────────────────────
-  Calibration gain      +19.99 dB
-  Oracle gap            0.276 dB
+  Calibration gain      +15.10 dB
+  Oracle gap            0.244 dB
   ─────────────────────────────────────────────────────────────
 
   ─────────────────────────────────────────────────────────────
   校准权重 (P/N 平均)
   ─────────────────────────────────────────────────────────────
-  H1C     cal=   65.28  nom=   67  err=2.5653%
-  H2C     cal=  134.72  nom=  134  err=0.5393%
-  H4C     cal=  267.86  nom=  268  err=0.0510%
-  H8C-R   cal=  533.01  nom=  536  err=0.5582%
-  H8C-A   cal=  529.31  nom=  536  err=1.2482%
-  H16C    cal= 1072.41  nom= 1072  err=0.0378%
-  H32C    cal= 2141.33  nom= 2144  err=0.1246%
+  H1C     cal=   66.37  nom=   67  err=0.9445%
+  H2C     cal=  132.52  nom=  134  err=1.1077%
+  H4C     cal=  268.93  nom=  268  err=0.3454%
+  H8C-R   cal=  533.31  nom=  536  err=0.5014%
+  H8C-A   cal=  533.82  nom=  536  err=0.4059%
+  H16C    cal= 1071.99  nom= 1072  err=0.0005%
+  H32C    cal= 2140.93  nom= 2144  err=0.1432%
 
   ─────────────────────────────────────────────────────────────
   关键观察
@@ -137,7 +137,7 @@
   3. Shen 校准用 force-0/force-1 半差法测量每个 target 的
      真实权重。128 pairs 平均将校准噪声压至 ~0.03 mV。
 
-  4. oracle gap = 0.276 dB
+  4. oracle gap = 0.244 dB
      是校准残差 — 来自低段不校准 (131 Q0 基准尺失配)
      和 1mV 校准噪声的残余影响。
 
