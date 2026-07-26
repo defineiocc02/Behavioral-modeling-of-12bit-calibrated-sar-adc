@@ -2,6 +2,44 @@
 
 All notable changes to the public Python behavioral model are recorded here.
 
+## 3.1.0 — 2026-07-26
+
+### Mismatch-focused verification
+
+- Added a five-case formal matrix: ideal, 0.5% and 1.0% PER-UNIT mismatch,
+  each with zero calibration disturbance and, for mismatch cases, a 0.3 mV
+  RMS calibration-comparator stability condition.
+- Kept normal conversion noise at zero and separated calibration measurement
+  decorrelation from ADC noise performance.
+- Corrected the pre/post comparison to Q2-to-Q2 and retained integer-12 only
+  as a diagnostic.
+- Added frozen CSV/JSON/manifests, SHA-256 aggregation and report generation
+  directly from the frozen evidence.
+
+### Python/RTL/Verilog-A alignment
+
+- Truncates every recursive Python target update to Q8, exactly matching the
+  synthesizable RTL register and arithmetic-shift behavior.
+- Reworked the calibration FSM and lower-SAR RTL around signed Q8 sums,
+  per-side recursive P/N weights, complete pair accumulation and explicit
+  failure status.
+- Added self-checking XSIM coverage for the seven-target FSM and recursive
+  lower-SAR ruler.
+- Corrected the Verilog-A sampling model so only VTOP is clamped to VCM;
+  VBRIDGE remains the internal floating split-array node.
+
+### Overdesign removal and claim boundaries
+
+- Uses 128 pairs instead of the retired 512-pair default.
+- Removed duplicate/unused RTL CDAC and accumulator modules, the duplicate
+  comparator Verilog-A model, and a stale contradictory synthesis report.
+- Keeps the active decoder as an ordinary P/N weighted sum: no LUT, CAM,
+  remap table, monotonic clamp, calibration sub-DAC or auxiliary comparator.
+- Removed unsupported foundry/process claims; 4 fF and the 0.5%/1.0% mismatch
+  points remain behavioral assumptions until replaced by target-PDK evidence.
+- Replaced the release report with a mismatch-centered PDF and explicit
+  transistor/PVT/post-layout signoff gaps.
+
 ## 3.0.0 — 2026-07-25
 
 ### Architecture

@@ -1,4 +1,4 @@
-"""Fast reproducible comparison of the retired and v3.0 CDAC candidates.
+"""Fast reproducible comparison of retired and current CDAC candidates.
 
 This verifier uses the closed-form two-node split-CDAC coefficients and an
 exact vectorized prefix-interval partition.  It is independent of the slower
@@ -17,9 +17,11 @@ VREF_HALF = 0.9
 N_CODES = 4096
 
 
-def _side_coefficients(rng, high, low, bridge):
+def _side_coefficients(rng, high, low, bridge, sigma=None):
+    sigma = SIGMA if sigma is None else float(sigma)
+
     def group(count):
-        return float(rng.normal(1.0, SIGMA, count).sum())
+        return float(rng.normal(1.0, sigma, count).sum())
 
     high_c = np.asarray([group(value) for value in high])
     low_c = np.asarray([group(value) for value in low])
@@ -34,10 +36,10 @@ def _side_coefficients(rng, high, low, bridge):
     ]
 
 
-def _audit_seed(high, low, bridge, terminal, seed):
+def _audit_seed(high, low, bridge, terminal, seed, sigma=None):
     rng = np.random.default_rng(seed)
-    p = _side_coefficients(rng, high, low, bridge)
-    n = _side_coefficients(rng, high, low, bridge)
+    p = _side_coefficients(rng, high, low, bridge, sigma=sigma)
+    n = _side_coefficients(rng, high, low, bridge, sigma=sigma)
     input_slope = (p.sum() + n.sum()) / 2.0
     nominal = np.asarray(
         [value * (sum(low) + bridge) for value in high]
@@ -127,9 +129,22 @@ def _audit_seed(high, low, bridge, terminal, seed):
         N_CODES - 1,
     )
     codes = np.floor(code_float + 0.5).astype(int)
+    float_steps = np.diff(code_float)
     steps = np.diff(codes)
     represented = np.zeros(N_CODES, dtype=bool)
     represented[codes] = True
+
+    # A backstep count alone is dominated by how many exactly tied nominal
+    # boundaries are split by an arbitrarily small mismatch.  Also report the
+    # amplitude and the fraction of the input interval that is actually below
+    # the previously reached code.  These quantify severity without hiding the
+    # order violation.
+    prior_float_max = np.maximum.accumulate(code_float)
+    prior_integer_max = np.maximum.accumulate(codes)
+    float_violation = code_float < prior_float_max - tolerance
+    integer_violation = codes < prior_integer_max
+    interval_width = hi - lo
+    input_span = float(hi[-1] - lo[0])
 
     widths = np.bincount(codes, weights=hi - lo, minlength=N_CODES)
     internal = widths[1:-1]
@@ -140,6 +155,24 @@ def _audit_seed(high, low, bridge, terminal, seed):
     return {
         "missing_codes": int(np.count_nonzero(~represented)),
         "integer_backsteps": int(np.count_nonzero(steps < 0)),
+        "float_backsteps": int(np.count_nonzero(float_steps < -tolerance)),
+        "minimum_float_step_lsb": float(np.min(float_steps)),
+        "worst_float_step_lsb": float(min(0.0, np.min(float_steps))),
+        "worst_float_backstep_magnitude_lsb": float(
+            max(0.0, -np.min(float_steps))
+        ),
+        "max_float_rollback_lsb": float(
+            np.max(prior_float_max - code_float)
+        ),
+        "max_integer_rollback_lsb": int(
+            np.max(prior_integer_max - codes)
+        ),
+        "float_nonmonotonic_input_fraction": float(
+            np.sum(interval_width[float_violation]) / input_span
+        ),
+        "integer_nonmonotonic_input_fraction": float(
+            np.sum(interval_width[integer_violation]) / input_span
+        ),
         "max_integer_jump": int(np.max(steps)),
         "dnl_peak_lsb": float(np.max(np.abs(dnl))),
         "inl_peak_lsb": float(np.max(np.abs(inl))),

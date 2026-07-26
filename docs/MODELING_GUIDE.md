@@ -1,4 +1,4 @@
-# v3.0 建模与实现指南
+# v3.1 建模与实现指南
 
 ## 1. 设计边界
 
@@ -41,7 +41,7 @@ Term:  1 Q0 comparator-only rounding decision
 P-side all high/low bottom plates -> VINP
 N-side all high/low bottom plates -> VINN
 bridge capacitor -> internal floating series element
-top plates -> VCM
+VTOP_P/VTOP_N -> VCM; VBRIDGE_P/VBRIDGE_N remain floating
 ```
 
 复位后所有 14 个 bottom plates 回到 VCM，保存的电荷产生满幅差分输入。
@@ -84,8 +84,12 @@ W_P = mean(S_P0 - S_P1) / 2
 W_N = mean(S_N1 - S_N0) / 2
 ```
 
-固定对称 dither 为 `[-1.5, -0.5, 0.5, 1.5] LSB`。高段 7 targets、
-512 pairs，总子转换次数 14336。
+当前主验证关闭额外 dither（`SHEN_DITHER_LSB=(0.0,)`）。高段 7 targets、
+默认 128 pairs，总子转换次数 3584。正式矩阵分别运行 0 mV 校准扰动和
+0.3 mV RMS 比较器输入等效扰动；后者只用于解除重复 lower-SAR 整数结果的
+量化锁定，不进入正常转换。RTL 的 lower-SAR 使用已提交的 P/N Q8 高段
+权重递归构造下一目标的量尺；每个目标写回时截断到 Q8，低段与 terminal
+仍是标称基准尺。Python 采用完全相同的逐目标 Q8 格点。
 
 ## 6. 解码
 
@@ -126,7 +130,7 @@ code-density DNL 把同一 code 的所有不相交输入区间宽度相加，等
 
 ```text
 N = 4096
-k = 127, gcd(k,N)=1
+k = 1019, gcd(k,N)=1
 phase = 0.123 rad
 amplitude = VFS × 10^(-0.5/20)
 window = rectangular
@@ -140,15 +144,20 @@ physical-oracle 版本均由同一组物理 decisions 解码，避免不同 stim
 
 相对退役的 128 Cu / 14-comparison 模型：
 
-| 资源 | v3.0 |
+| 资源 | v3.1 |
 |---|---:|
 | CDAC | 138 Cu/side，+7.8% |
 | normal comparisons | 15，+1 |
-| calibration sub-conversions | 14336，不变 |
+| calibration sub-conversions | 3584（128 pairs） |
 | calibrated registers | 14 P/N weights + terminal constant |
 | decoder | signed MAC + common normalization + Q2 round |
 | LUT / CAM / SRAM exception table | 0 |
 | auxiliary calibration comparator | 0 |
+
+删除或不实现的过度设计包括：512-pair 默认平均、calibration sub-DAC、
+auxiliary comparator、decision-word LUT/CAM、单调 clamp、额外 dither
+DAC、双份 comparator Verilog-A 和未使用的 RTL accumulator/CDAC 模型。
+这些删减不改变物理 decision，只移除当前证据不需要的硬件或重复路径。
 
 ## 10. 不能外推的结论
 

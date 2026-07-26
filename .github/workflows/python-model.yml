@@ -5,12 +5,18 @@ on:
     paths:
       - "src/python_cal/**"
       - "docs/figures/**"
+      - "evidence/mismatch_matrix/**"
+      - "scripts/generate_report_*.py"
+      - "scripts/report_figure_support.py"
       - "pyproject.toml"
       - ".github/workflows/python-model.yml"
   pull_request:
     paths:
       - "src/python_cal/**"
       - "docs/figures/**"
+      - "evidence/mismatch_matrix/**"
+      - "scripts/generate_report_*.py"
+      - "scripts/report_figure_support.py"
       - "pyproject.toml"
       - ".github/workflows/python-model.yml"
 
@@ -33,11 +39,37 @@ jobs:
       - name: Run regression tests
         run: python -m pytest
 
-      - name: Render all documentation figures
-        run: python docs/figures/generate_modeling_figures.py
+      - name: Render current mismatch-report figures
+        run: |
+          python scripts/generate_report_figures.py --matrix-root evidence/mismatch_matrix
+          python scripts/generate_report_metrics.py
+
+      - name: Verify report artifacts and English figure internals
+        run: |
+          git diff --exit-code -- docs/figures/mismatch_report docs/generated_metrics.tex
+          python - <<'PY'
+          from pathlib import Path
+
+          roots = [Path("scripts/generate_report_figures.py")]
+          roots.extend(Path("docs/figures/mismatch_report").glob("*.svg"))
+          cjk_ranges = ((0x3400, 0x9FFF), (0xF900, 0xFAFF))
+          offenders = []
+          for path in roots:
+              text = path.read_text(encoding="utf-8")
+              if any(lo <= ord(char) <= hi for char in text for lo, hi in cjk_ranges):
+                  offenders.append(str(path))
+          if offenders:
+              raise SystemExit("CJK text found inside report figures: " + ", ".join(offenders))
+
+          outputs = list(Path("docs/figures/mismatch_report").glob("*.*"))
+          if len(outputs) != 21:
+              raise SystemExit(f"expected 21 current figure files, found {len(outputs)}")
+          PY
 
       - name: Upload rendered figures
         uses: actions/upload-artifact@v4
         with:
-          name: modeling-figures
-          path: docs/assets/figures
+          name: mismatch-report-figures
+          path: |
+            docs/figures/mismatch_report
+            docs/generated_metrics.tex

@@ -1,769 +1,1464 @@
-% !TEX program = xelatex
-% ===========================================================================
-%  12-bit Calibrated Asynchronous SAR ADC — Final Submission Report
-%  12位校准型异步SAR ADC — 最终递交报告  |  Version 4.2  |  2026-07-26
-% ===========================================================================
-\documentclass[11pt,a4paper]{ctexart}
+\documentclass[UTF8,11pt,a4paper]{ctexart}
 
-% ── Packages ──
-\usepackage[top=2.2cm, bottom=2.2cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage[a4paper,top=22mm,bottom=22mm,left=25mm,right=25mm]{geometry}
 \usepackage{fontspec}
-\setmonofont{Courier New}
-\usepackage{booktabs}
-\usepackage{colortbl}
+\usepackage{amsmath,amssymb}
 \usepackage[table]{xcolor}
+\usepackage{booktabs,tabularx,array,longtable,multirow}
 \usepackage{graphicx}
-\usepackage{hyperref}
-\usepackage{caption}
-\usepackage{subcaption}
 \usepackage{enumitem}
+\usepackage{caption}
 \usepackage{fancyhdr}
-\usepackage{tabularx}
-\usepackage{multirow}
-\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{ragged2e}
 \usepackage{parskip}
+\usepackage{needspace}
+\usepackage{tikz}
+\usepackage[most]{tcolorbox}
 
-% ── Colors ──
-\definecolor{primary}{HTML}{1A5276}
-\definecolor{greenpass}{HTML}{1E8449}
-\definecolor{redfail}{HTML}{C0392B}
-\definecolor{orange}{HTML}{D35400}
-\definecolor{graybg}{HTML}{F2F3F4}
-\definecolor{bluebg}{HTML}{D6EAF8}
-\definecolor{greenbg}{HTML}{D5F5E3}
-\definecolor{redbg}{HTML}{FADBD8}
-\definecolor{orangebg}{HTML}{FDEBD0}
+\setmainfont{Arial}
+\setsansfont{Arial}
+\setmonofont{Courier New}
+\setCJKmainfont{Noto Serif SC}[BoldFont={SimHei}]
+\setCJKsansfont{Microsoft YaHei}
 
-% ── Hyperlinks ──
-\hypersetup{colorlinks=true,linkcolor=primary,urlcolor=primary}
+\definecolor{DeepNavy}{HTML}{15324B}
+\definecolor{Navy}{HTML}{17365D}
+\definecolor{Teal}{HTML}{167D85}
+\definecolor{Orange}{HTML}{D97735}
+\definecolor{Green}{HTML}{3D8C6A}
+\definecolor{Purple}{HTML}{79558C}
+\definecolor{Red}{HTML}{B84A45}
+\definecolor{Ink}{HTML}{27333D}
+\definecolor{Muted}{HTML}{65727D}
+\definecolor{Line}{HTML}{CDD5DA}
+\definecolor{PaleBlue}{HTML}{EAF2F7}
+\definecolor{PaleTeal}{HTML}{E8F3F2}
+\definecolor{PaleOrange}{HTML}{FAEFE6}
+\definecolor{PaleGray}{HTML}{F3F5F6}
+\definecolor{WarmWhite}{HTML}{FCFBF8}
 
-% ── Headers ──
-\pagestyle{fancy}
-\setlength{\headheight}{13pt}
-\fancyhf{}
-\fancyhead[L]{\small\color{primary}12-bit Calibrated SAR ADC — Final Report v4.2}
-\fancyhead[R]{\small\thepage}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\headrule}{\hbox to\headwidth{\color{primary}\leaders\hrule height \headrulewidth\hfill}}
-
-% ── Macros ──
-\newcommand{\pass}{\textcolor{greenpass}{\textbf{✓}}}
-\newcommand{\fail}{\textcolor{redfail}{\textbf{✗}}}
-\newcommand{\warn}{\textcolor{orange}{\textbf{⚠}}}
-\newcommand{\imgdir}{C:/Users/Administrator/Desktop/SAR_ADC_IDEAL_CAL_REPLACEMENT_V6_CLEAN}
-
-\begin{document}
-\raggedbottom
-
-% ===========================================================================
-\begin{titlepage}
-\centering
-\vspace*{1.5cm}
-
-{\fontsize{28}{34}\selectfont\color{primary}\textbf{12位校准型}}\\[4pt]
-{\fontsize{28}{34}\selectfont\color{primary}\textbf{异步分离CDAC SAR ADC}}\\[16pt]
-{\Large 最终递交报告}\\[8pt]
-{\normalsize Version 4.2 \quad|\quad 2026年7月26日}
-
-\vspace{1.2cm}
-\rule{0.55\textwidth}{1.2pt}\\[10pt]
-
-{\small
-\textbf{Python 行为级模型 L2 + RTL 综合验证}\\[4pt]
-TSMC 180nm CMOS \quad$\cdot$\quad 100 MHz 数字 \quad$\cdot$\quad 10 MS/s SAR ADC\\
-Shen 2018 JSSC 前景权重校准 \quad$\cdot$\quad 138 Cu/侧 整数 Split-CDAC\\
-0 DSP \quad$\cdot$\quad 0 BRAM \quad$\cdot$\quad 综合 0 警告
+\hypersetup{
+  colorlinks=true,
+  linkcolor=DeepNavy,
+  urlcolor=Teal,
+  citecolor=Teal,
+  pdfauthor={SAR ADC Project},
+  pdftitle={12-bit SAR ADC capacitor mismatch and foreground calibration validation},
+  pdfsubject={Behavioral model, RTL, Verilog-A, mismatch calibration, synthesis and timing}
 }
 
-\rule{0.55\textwidth}{1.2pt}
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{22pt}
+\lhead{\small\color{DeepNavy}12-bit SAR ADC · mismatch and calibration}
+\rhead{\small\color{Muted}v3.1.0}
+\cfoot{\small\color{Muted}\thepage}
+\renewcommand{\headrulewidth}{0.35pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{Line}\leaders\hrule height \headrulewidth\hfill}}
 
-\vspace{2cm}
-\begin{tabular}{rl}
-\textbf{状态:} & \textcolor{greenpass}{\textbf{✓ 全部检查通过}} \\
-\textbf{仓库:} & \href{https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc}{github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc} \\
-\end{tabular}
+\titleformat{\section}
+  {\Needspace{7\baselineskip}\Large\bfseries\sffamily\color{DeepNavy}}
+  {\colorbox{DeepNavy}{\color{white}\strut\thesection}}
+  {0.70em}{}
+\titleformat{\subsection}
+  {\Needspace{4\baselineskip}\large\bfseries\sffamily\color{Teal}}
+  {\thesubsection}{0.55em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\sffamily\color{Ink}}
+  {\thesubsubsection}{0.50em}{}
+\titlespacing*{\section}{0pt}{1.45em}{0.70em}
+\titlespacing*{\subsection}{0pt}{1.05em}{0.42em}
+\titlespacing*{\subsubsection}{0pt}{0.75em}{0.25em}
 
-\vfill
-{\footnotesize AI 辅助开发 · 人工审查验证}
+\captionsetup{
+  font=small,
+  labelfont={bf,color=DeepNavy},
+  textfont={color=Ink},
+  justification=centering,
+  skip=6pt
+}
+\setlist[itemize]{leftmargin=1.55em,itemsep=0.30em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.80em,itemsep=0.32em,topsep=0.35em}
+\renewcommand{\arraystretch}{1.22}
+\setlength{\tabcolsep}{5pt}
+\raggedbottom
+
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\RaggedLeft\arraybackslash}p{#1}}
+
+\newcommand{\statuspass}{\textcolor{Green}{\textbf{PASS}}}
+\newcommand{\statusfail}{\textcolor{Red}{\textbf{FAIL}}}
+\newcommand{\statusdiag}{\textcolor{Purple}{\textbf{DIAGNOSTIC}}}
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\pathcode}[1]{{\small\nolinkurl{#1}}}
+\newcommand{\keyterm}[1]{\textbf{\color{DeepNavy}#1}}
+
+\newtcolorbox{verdictbox}[2][]{
+  enhanced,
+  breakable,
+  colback=#2!7!white,
+  colframe=#2,
+  boxrule=0.8pt,
+  arc=1.5mm,
+  left=3.0mm,
+  right=3.0mm,
+  top=2.2mm,
+  bottom=2.2mm,
+  before skip=5pt,
+  after skip=7pt,
+  #1
+}
+\newtcolorbox{notebox}[1][]{
+  enhanced,
+  breakable,
+  colback=PaleGray,
+  colframe=Line,
+  boxrule=0.6pt,
+  arc=1.2mm,
+  left=3mm,
+  right=3mm,
+  top=2mm,
+  bottom=2mm,
+  before skip=4pt,
+  after skip=6pt,
+  #1
+}
+\newtcolorbox{metriccard}[2][]{
+  enhanced,
+  colback=white,
+  colframe=#2,
+  boxrule=0.8pt,
+  arc=1.8mm,
+  left=2.8mm,
+  right=2.8mm,
+  top=2.3mm,
+  bottom=2.3mm,
+  height=34mm,
+  valign=center,
+  #1
+}
+\newcommand{\tablehead}{\rowcolor{PaleBlue}\bfseries\color{DeepNavy}}
+\newcommand{\hashvalue}[1]{\begingroup\ttfamily\scriptsize\nolinkurl{#1}\endgroup}
+
+\input{generated_metrics.tex}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+% Cover
+% ---------------------------------------------------------------------------
+\begin{titlepage}
+  \thispagestyle{empty}
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[DeepNavy]
+      (current page.north west)
+      rectangle ([xshift=13mm]current page.south west);
+    \fill[Teal]
+      ([xshift=13mm]current page.north west)
+      rectangle ([xshift=16mm]current page.south west);
+    \fill[PaleBlue]
+      ([yshift=-14mm,xshift=16mm]current page.north west)
+      rectangle ([yshift=-15.5mm]current page.north east);
+  \end{tikzpicture}
+
+  \hspace*{8mm}
+  \begin{minipage}{0.92\textwidth}
+    \vspace*{9mm}
+    {\sffamily\color{Teal}\Large ENGINEERING VALIDATION REPORT\par}
+    \vspace{4mm}
+    {\sffamily\bfseries\color{DeepNavy}\fontsize{27}{32}\selectfont
+      12-bit SAR ADC\\[2mm]
+      电容失配影响与前景校准验证\par}
+    \vspace{3mm}
+    {\sffamily\color{Muted}\Large
+      Python 行为级黄金模型 · SystemVerilog 校准子系统\\
+      Verilog-A 移植骨架 · 综合与约束时序\par}
+
+    \vspace{8mm}
+    \begin{verdictbox}{Teal}
+      \textbf{主问题。}PER-UNIT 单位电容失配会把标称数字权重与真实 CDAC
+      权重拉开多远；前景 P0/P1/N0/N1 校准能否在不改变物理 decisions、
+      不增加 LUT/CAM/单调钳位的前提下，把整体 ADC 性能稳定回验收区间。
+      0.3 mV RMS 仅用于检查校准量化锁定，不是正常转换噪声研究。
+    \end{verdictbox}
+
+    \vspace{2mm}
+    \begin{tcbraster}[
+      raster columns=3,
+      raster equal height=rows,
+      raster column skip=3.5mm
+    ]
+      \begin{metriccard}{DeepNavy}
+        {\sffamily\small\color{Muted}IDEAL BASELINE\par}
+        \vspace{1mm}
+        {\sffamily\bfseries\fontsize{20}{22}\selectfont
+          \IdealCalSndr{} dB\par}
+        {\footnotesize ENOB \IdealCalEnob{} bit\\
+        0 missing · 0 rollback}
+      \end{metriccard}
+      \begin{metriccard}{Green}
+        {\sffamily\small\color{Muted}0.5\% NOMINAL\par}
+        \vspace{1mm}
+        {\sffamily\bfseries\fontsize{20}{22}\selectfont
+          100/100\par}
+        {\footnotesize dynamic / static / combined\\
+        \MZeroFiveNoiseCalSndr{} dB P50}
+      \end{metriccard}
+      \begin{metriccard}{Orange}
+        {\sffamily\small\color{Muted}1.0\% STRESS\par}
+        \vspace{1mm}
+        {\sffamily\bfseries\fontsize{20}{22}\selectfont
+          100 / 98\par}
+        {\footnotesize dynamic / static seeds\\
+        0 missing}
+      \end{metriccard}
+    \end{tcbraster}
+
+    \vfill
+    \begin{tabularx}{\linewidth}{@{}>{\bfseries\color{DeepNavy}}p{34mm}Y@{}}
+      文档版本 & v3.1.0\\
+      冻结日期 & 2026-07-26\\
+      代码分支 & \code{codex/python-cal-validation}\\
+      行为级证据 & 4096-point coherent FFT；100-seed Monte Carlo；精确可达树\\
+      数字证据 & Vivado 2018.3 XSIM + synthesis proxy；100 MHz XDC\\
+      模拟证据 & Verilog-A 源码结构与方程审查；本机未做 Spectre 编译\\
+    \end{tabularx}
+    \vspace{4mm}
+    {\small\color{Muted}
+      结论边界：本报告证明行为级架构与当前校准 RTL 的工程一致性，
+      不把结果外推为目标 PDK、晶体管级、版图后或硅片签核。
+    \par}
+    \vspace{4mm}
+  \end{minipage}
 \end{titlepage}
 
-% ===========================================================================
+% ---------------------------------------------------------------------------
+% Executive summary
+% ---------------------------------------------------------------------------
+\section*{决策摘要}
+\addcontentsline{toc}{section}{决策摘要}
+
+\begin{verdictbox}[title=\textbf{一句话结论}]{Green}
+  理想链路没有问题；0.5\% PER-UNIT 标称失配会显著降低未校准 SNDR，
+  但当前 Q8 前景校准在100个正式种子上把 dynamic、static 与 combined
+  yield 全部稳定到100/100。1.0\% 压力点仍保持 dynamic 100/100、
+  无缺码，static 为98/100；不应为了两个轻微 INL 尾点或窄局部
+  1-LSB backstep 重做阵列或增加复杂数字补丁。
+\end{verdictbox}
+
+\begin{table}[htbp]
+  \centering
+  \caption{面向决策者的证据摘要}
+  \begin{tabularx}{\textwidth}{@{}p{34mm}C{29mm}Y@{}}
+    \toprule
+    \tablehead 项目 & 结论 & 证据与解释\\
+    \midrule
+    理想功能 & \statuspass &
+      SNDR \IdealCalSndr{} dB、ENOB \IdealCalEnob{} bit；
+      pre/cal/oracle 完全一致，0 missing、0 backstep。\\
+    0.5\% nominal & \statuspass &
+      校准后 SNDR P50/min =
+      \MZeroFiveNoiseCalSndr/\MZeroFiveNoiseCalSndrMin{} dB；
+      dynamic/static/combined 均100/100。\\
+    1.0\% stress & 压力余量 &
+      dynamic 100/100、static 98/100、0 missing；
+      两个种子仅 INL 略高于1 LSB。\\
+    0.3 mV 扰动 & 次要机制 &
+      只进入校准 comparator，约0.68 LSB；解除重复 lower-SAR
+      量化锁定，normal conversion noise 保持0。\\
+    局部 backstep & \statusdiag &
+      nominal 最大 rollback 为1 LSB，受影响输入宽度 P50/P95/max 为
+      \MZeroFiveNoiseNonmonotonicFractionPPercent\% /
+      \MZeroFiveNoiseNonmonotonicFractionPNinetyFivePercent\% /
+      \MZeroFiveNoiseNonmonotonicFractionMaxPercent\%。\\
+    RTL & 局部闭环 &
+      calibration/lower-SAR XSIM 通过；可综合；但不是完整 ADC RTL。\\
+    综合时序 & 有条件 &
+      setup WNS +0.298 ns；hold WHS -0.147 ns、4个端点；
+      overall timing summary 明确为 not met。\\
+    流片 & 尚未签核 &
+      缺 normal SAR/Q2 top、Spectre AMS、PDK MOMCAP/开关/比较器、
+      reference/PVT/post-layout/ASIC STA。\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{notebox}
+  \textbf{本报告如何避免“过度设计”。}主发布门仍是 SNDR、ENOB、missing
+  code 和 code-density DNL/INL。局部顺序倒退被完整量化，但只有当具体应用
+  明确要求严格单调、或后续 PDK/晶体管级证据显示倒退范围显著扩大时，才触发
+  LUT、重映射或阵列重构。现在不为了让压力点从98/100改写成100/100而增加硬件。
+\end{notebox}
+
+\clearpage
 \tableofcontents
-\newpage
+\clearpage
 
-% ===========================================================================
-%  1  架构总览
-% ===========================================================================
-\section{架构总览}
+% ---------------------------------------------------------------------------
+\section{工程组织架构：Python、RTL、Verilog-A 与交付链}
 
-\subsection{系统架构}
+\subsection{为什么按证据层组织，而不是按文件类型堆叠}
 
-本项目实现了一款全差分、异步 split-CDAC SAR ADC 的完整行为级模型与可综合 RTL 校准逻辑。系统包含三个核心层次：
+本项目同时包含行为模型、可综合数字逻辑和模拟行为模型。如果只把它们称作
+“三种语言实现”，很容易产生两个错误：一是把 Python 的100-seed 结果当作
+RTL 或电路级结果；二是同一物理机制在不同语言里悄悄漂移。本轮采用
+\keyterm{职责、接口、权威边界、证据输出}四维组织：
 
-\begin{enumerate}[nosep]
-  \item \textbf{Python 行为级模型} —— 电荷守恒求解器 + P/N 独立失配 + Shen 2018 校准协议 + FFT 验证管线
-  \item \textbf{可综合 RTL} —— cal\_fsm (16 态校准状态机)\\
-  \hspace*{2em} + cal\_weight\_reg (权重寄存器) + sar\_subconverter (子转换 SAR)
-  \item \textbf{实验套件} —— AVG\_PAIRS 扫描、Dither 消融、噪声热力图、MC 多 $\sigma$ 扫描
-\end{enumerate}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig01_model_architecture.png}
-\caption{系统架构总览}
-\label{fig:arch}
-\end{figure}
-
-\subsection{锁定 v3.x CDAC 拓扑}
-
-每侧仅使用整数单位电容，P/N 总计 276 Cu (1.104 pF @ Cu = 4 fF)。
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig02_cdac_topology.png}
-\caption{CDAC 电容拓扑 (138 Cu/侧)}
-\label{fig:cdac}
-\end{figure}
-
-\begin{table}[htbp]
-\centering
-\caption{CDAC 电容阵列规格（单侧）}
-\begin{tabular}{lcr}
-\toprule
-\textbf{段} & \textbf{电容组成} & \textbf{总计} \\
-\midrule
-高段 (High) & 32, 16, 8, 8, 4, 2, 1 Cu & 71 Cu \\
-桥接 (Bridge) & 2 Cu & 2 Cu \\
-低段 (Low) & 32, 16, 8, 4, 2, 2, 1 Cu & 65 Cu \\
-\midrule
-\rowcolor{bluebg}
-\textbf{单侧总计} & & \textbf{138 Cu (552 fF)} \\
-\textbf{P+N 总计} & & \textbf{276 Cu (1.104 pF)} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[htbp]
-\centering
-\caption{15 级权重定义 (标称 $H=67$ Q0)}
-\begin{tabular}{ccccr}
-\toprule
-\textbf{Stage} & \textbf{名称} & \textbf{NCU} & \textbf{类型} & \textbf{Q0 权重} \\
-\midrule
-0  & H32C  & 32 & 高段/校准 & 2144 \\
-1  & H16C  & 16 & 高段/校准 & 1072 \\
-2  & H8C-A & 8  & 高段/校准 & 536 \\
-3  & H8C-R & 8  & 高段/校准 (冗余) & 536 \\
-4  & H4C   & 4  & 高段/校准 & 268 \\
-5  & H2C   & 2  & 高段/校准 & 134 \\
-6  & H1C   & 1  & 高段/校准 & 67 \\
-\rowcolor{bluebg}
-7  & L32C  & 32 & 低段/基准尺 & 64 \\
-8  & L16C  & 16 & 低段/基准尺 & 32 \\
-9  & L8C   & 8  & 低段/基准尺 & 16 \\
-10 & L4C   & 4  & 低段/基准尺 & 8 \\
-11 & L2C-A & 2  & 低段/基准尺 & 4 \\
-12 & L2C-R & 2  & 低段/基准尺 & 4 \\
-13 & L1C   & 1  & 低段/基准尺 & 2 \\
-\rowcolor{graybg}
-14 & TERM  & — & 数字终端 & 1 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{关键设计特征：}
-\begin{itemize}[nosep]
-  \item 全部 14 个物理电容均参与采样输入 —— 无 VCM 屏蔽电容
-  \item 15 次比较器判决：14 物理 trial/compare/commit + 1 终端位
-  \item 高段 8-Cu 冗余位 (H8C-R) 提供 $\pm 268$ Q0 大范围容错
-  \item 低段 65 Cu 作为匹配基准尺，\textbf{不自校准}
+\begin{itemize}
+  \item Python 是失配、物理 decisions、校准权重和系统指标的行为级黄金链路；
+  \item SystemVerilog 是前景校准控制、递归 lower-SAR 和 Q8 寄存器的可综合子集；
+  \item Verilog-A 是 CDAC 电荷方程和比较器行为的 AMS 接口骨架；
+  \item \code{evidence/} 是进入报告的唯一正式数据源，探索性图片不能绕过冻结流程；
+  \item 文档与 CI 只消费冻结证据，不在 LaTeX 中手填统计数字。
 \end{itemize}
 
-\subsection{校准权重与冗余}
-
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig03_weights_and_redundancy.png}
-\caption{校准权重估计与 8-Cu 冗余窗口}
-\label{fig:weights}
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/mismatch_report/fig_project_architecture.pdf}
+  \caption{工程总架构与证据流。图内统一使用英文。实线是当前实现中的运行时
+  数据/控制；虚线是跨语言等价检查或尚待工具/PDK闭环的接口。}
 \end{figure}
 
-\subsection{工艺参数与失配模型}
+\subsection{仓库顶层职责}
 
 \begin{table}[htbp]
-\centering
-\caption{TSMC 180nm MOM 失配参数}
-\begin{tabular}{ll}
-\toprule
-\textbf{参数} & \textbf{值} \\
-\midrule
-工艺 & TSMC 180nm 1P6M CMOS \\
-电容类型 & MOM fringe, M4--M6 堆叠 \\
-Pelgrom 系数 $A_C$ & 1.0\,\%·$\mu$m (保守；实测 0.5--0.8) \\
-1Cu 面积 & $\approx 2$ $\mu$m$^2$ (4 fF @ $\sim$2 fF/$\mu$m$^2$) \\
-$\sigma(\Delta C/C)$ per Cu pair & 0.707\% ($A_C / \sqrt{\text{area}}$) \\
-MC\_SIGMA 配置值 & \textbf{1.0\%} (保守) \\
-失配注入模式 & \texttt{per\_unit} —— 逐 Cu 独立 \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{目录级 ownership 与使用规则}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{34mm}p{38mm}Y@{}}
+    \toprule
+    \tablehead 路径 & 权威职责 & 维护规则\\
+    \midrule
+    \code{spec.yml} &
+      版本化架构、验收与 scope &
+      只写已实现或明确的目标；不写未经 PDK 验证的面积、功耗、噪声。\\
+    \code{src/python\_cal/} &
+      行为级黄金模型与正式 pipeline &
+      算法修改先加测试；normal decisions 与 decoder 必须解耦。\\
+    \code{rtl/} &
+      calibration/lower-SAR synthesizable subset &
+      Q-format、stage map、switch encoding 必须与 Python contract 同步。\\
+    \code{va/} &
+      CDAC/comparator AMS bridge &
+      失配倍率由 testbench 外部注入；模块内不使用随机种子。\\
+    \code{scripts/} &
+      运行、冻结、图表、LaTeX宏、综合与复现 &
+      路径必须相对仓库；脚本不得篡改正式实验内容。\\
+    \code{evidence/} &
+      跟踪的正式 CSV/JSON/manifest &
+      只有完整 case 可冻结；报告只能读这里。\\
+    \pathcode{docs/figures/mismatch_report/} &
+      v3.1 当前报告图 &
+      PDF/SVG/PNG 同源；逐图视觉检查后才能嵌入。\\
+    \pathcode{docs/archive/v3.0/} &
+      旧版本结果与生成器 &
+      不参与当前报告和 CI，防止版本数据混用。\\
+    \pathcode{.github/workflows/} &
+      Python regression 与 current-figure rendering &
+      CI 当前不替代本机 XeLaTeX/Spectre/Vivado signoff。\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\newpage
+\subsection{Python：从物理拓扑到正式验收}
 
-% ===========================================================================
-%  2  硬件成本
-% ===========================================================================
-\section{硬件成本分析}
+\subsubsection{配置与 topology}
 
-\subsection{模拟硬件}
+\code{config.py} 定义15个决策 stage、14个物理电容、参考电压、Q8 校准
+权重和 Q2 输出格式。\code{topology/} 只描述元件与开关，不计算 SNDR：
 
-\begin{table}[htbp]
-\centering
-\caption{模拟硬件清单}
-\begin{tabular}{lrl}
-\toprule
-\textbf{组件} & \textbf{规格} & \textbf{面积} \\
-\midrule
-CDAC 电容阵列 (30 个) & 276 Cu, 4 fF/Cu, MOM 金属 & $\sim$600 $\mu$m$^2$ \\
-底板开关 (28$\times$4:1 MUX) & std-Vt NMOS, $\sim$560 Tr & $\sim$600 $\mu$m$^2$ \\
-StrongArm 比较器 & $\sim$24 Tr, 1 mV RMS 噪声 & $\sim$200 $\mu$m$^2$ \\
-\midrule
-\rowcolor{bluebg}
-\textbf{模拟小计} & $\sim$584 Tr & $\sim$0.0014 mm$^2$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{itemize}
+  \item \code{capacitor.py} 区分物理电容与 comparator-only terminal；
+  \item \code{cdac\_topology.py} 构建 high、bridge、low 三部分，并接收 P/N
+    两侧独立 realized capacitances；
+  \item \code{switch\_state.py} 保存每个 bottom plate 的 rail；
+  \item \code{switching\_policy.py} 生成 sampling、reset、trial 和 commit。
+\end{itemize}
 
-\subsection{数字硬件 —— RTL 综合结果}
+这一分层保证校准算法无法通过偷偷修改拓扑来“修复”失配。
 
-\textbf{工具:} Vivado 2018.3 \quad|\quad \textbf{器件:} xc7z020clg400-1 \quad|\quad \textbf{时钟:} 100 MHz
+\subsubsection{physical、comparator 与 async control}
 
-\begin{table}[htbp]
-\centering
-\caption{FPGA 综合资源}
-\begin{tabular}{lrrr}
-\toprule
-\textbf{资源} & \textbf{已用} & \textbf{可用} & \textbf{利用率} \\
-\midrule
-Slice LUTs & 321 & 53,200 & 0.60\% \\
-Slice Registers & 473 & 106,400 & 0.44\% \\
-DSP48E1 & \textcolor{greenpass}{\textbf{0}} & 220 & 0.00\% \\
-Block RAM & \textcolor{greenpass}{\textbf{0}} & 140 & 0.00\% \\
-CARRY4 & 38 & — & — \\
-BUFG & 1 & 32 & 3.13\% \\
-\bottomrule
-\end{tabular}
-\end{table}
+\code{physical/charge\_solver.py} 对每侧求解 top/bridge 两节点矩阵，
+\code{differential\_cdac.py} 组合 P/N 两侧并保留 sampled charge。
+\code{comparator/dynamic\_comparator.py} 将差分顶板电压变成 polarity 与行为级
+decision delay；\code{async\_control/handshake.py} 执行15-stage
+trial/commit 并保存 trace。这里产生的是\keyterm{物理 decisions}，不是最终 code。
 
-\subsection{数字硬件 —— ASIC 门数估算}
+\subsubsection{calibration 与 decode}
 
-\begin{table}[htbp]
-\centering
-\caption{ASIC 门数与面积估算 (TSMC 180nm 标准单元)}
-\begin{tabular}{lrr}
-\toprule
-\textbf{模块} & \textbf{门数} & \textbf{面积} \\
-\midrule
-SAR FSM (15 态异步时序器) & $\sim$400 & $\sim$1,200 $\mu$m$^2$ \\
-校准控制器 (cal\_fsm, 16 态) & $\sim$1,800 & $\sim$4,000 $\mu$m$^2$ \\
-权重寄存器 (7$\times$2$\times$16 bit) & $\sim$500 & $\sim$1,200 $\mu$m$^2$ \\
-子转换 SAR (sar\_subconv) & $\sim$800 & $\sim$2,000 $\mu$m$^2$ \\
-加权和解码器 & $\sim$2,000 & $\sim$4,500 $\mu$m$^2$ \\
-\midrule
-\rowcolor{bluebg}
-\textbf{数字小计} & $\sim$5,500 gates & $\sim$0.013 mm$^2$ \\
-\textbf{模拟小计} & $\sim$584 Tr & $\sim$0.0014 mm$^2$ \\
-\midrule
-\rowcolor{greenbg}
-\textbf{总计} & $\sim$5,500 gates + $\sim$600 Tr & $\sim$\textbf{0.014 mm$^2$} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\code{calibration/shen\_calibrator.py} 对七个高段 target 依次运行
+P0/P1/N0/N1，已经校准的高段递归加入后续 lower ruler。每个 target 写回时
+立即截断到 Q8，与 RTL 的算术右移一致。\code{decode/sar\_decoder.py}
+再用 nominal、calibrated 或 physical-oracle P/N 权重解读同一组 decisions。
 
-\textbf{关键成本优势：}
-\begin{enumerate}[nosep]
-  \item \textbf{0 DSP:} 校准乘法由预计算 localparam 常量 LUT 替代（编译时计算 `NOMINAL\_Q0 $\times$ tolerance\% $\times$ 256`）
-  \item \textbf{0 BRAM:} 权重寄存器为分布式寄存器（224 bit 总量）
-  \item \textbf{0 除法器:} 平均除以 128 用右移 7 位替代（128 = $2^7$）
+\subsubsection{validation 与 pipeline}
+
+\code{validation/} 分成四种职责：
+
+\begin{enumerate}
+  \item \code{fft\_protocol.py} 固定 coherent FFT 和 clipping 检查；
+  \item \code{reachable\_codebook.py} 做精确可达树、DNL/INL、missing 和 backstep；
+  \item \code{acceptance.py} 把动态、code-density static 和 monotonic diagnostic 分开；
+  \item \code{summarize\_mismatch\_matrix.py} 汇总完整 case 并写 provenance hash。
 \end{enumerate}
 
-\subsection{硬件成本可视化}
+\code{run\_final\_calibration\_pipeline.py} 是正式 orchestration：
+生成 PER-UNIT mismatch、运行校准、做三路公平解码、FFT 和静态审计，
+最后输出每种子 CSV、case JSON 和 manifest。\code{analysis/} 只允许探索，
+其中旧图片不进入当前报告。
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig08_hardware_cost.png}
-\caption{硬件资源分布}
-\label{fig:hw}
-\end{figure}
-
-\subsection{校准时间}
+\subsection{SystemVerilog：当前可综合的校准子系统}
 
 \begin{table}[htbp]
-\centering
-\caption{校准时间对比}
-\begin{tabular}{lrr}
-\toprule
-\textbf{参数} & \textbf{旧 (AVG=512)} & \textbf{新 (AVG=128)} \\
-\midrule
-每目标子转换 & 4 $\times$ 512 = 2,048 & 4 $\times$ 128 = 512 \\
-总子转换数 & 7 $\times$ 2,048 = 14,336 & 7 $\times$ 512 = \textbf{3,584} \\
-总时钟周期 & $\sim$286,720 & $\sim$71,680 \\
-\rowcolor{greenbg}
-校准时间 @ 100 MHz & $\sim$2.87 ms & $\sim$\textbf{0.72 ms} \\
-校准时间 @ 200 MHz & $\sim$1.43 ms & $\sim$\textbf{0.36 ms} \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{RTL 模块、接口和边界}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{31mm}p{46mm}Y@{}}
+    \toprule
+    \tablehead 模块 & 主要接口/状态 & 工程职责\\
+    \midrule
+    \code{cal\_top.sv} &
+      clk/rst/start/cmp；四组 P/N switch arrays；P/N weights &
+      集成三个子模块；当前 synthesis top，但不是完整 ADC top。\\
+    \code{cal\_fsm.sv} &
+      16 states；target/phase/pair；signed sum；write port &
+      四相测量、32-bit累加、除以$2N$、±20\% sanity、Q8 commit。\\
+    \pathcode{cal_weight_reg.sv} &
+      P/N各7项，20-bit Q8 &
+      nominal reset、同步写、组合读；为递归 lower-SAR 和未来 Q2 decoder供权重。\\
+    \pathcode{sar_subconverter.sv} &
+      target/phase/cmp；switch arrays；24-bit signed Q8 sum &
+      5-state calibration-only lower-SAR；读取已校准高段权重。\\
+    \code{tb\_cal\_rtl.sv} &
+      self-checking cal\_fsm TB &
+      目标次序、四相、最后一对、平均和 Q8 写回。\\
+    \pathcode{tb_sar_subconverter.sv} &
+      self-checking ruler TB &
+      H32 使用前六个 P/N Q8 寄存器，而不是固定 nominal ruler。\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\newpage
+明确未包含的数字模块是：normal-conversion SAR、Q2 normalization/decoder、
+完整 ADC top、comparator-ready 握手、CDC/reset release、DFT/scan。
+所以报告只说“校准子系统可综合”，不说“完整 ADC RTL 已完成”。
 
-% ===========================================================================
-%  3  Python 行为级验证 —— 实测数据
-% ===========================================================================
-\section{Python 行为级模型验证}
+\subsection{Verilog-A 与跨语言接口}
+
+\code{cdac\_behavioral.va} 是 P/N 两侧独立的两节点电荷守恒模型；
+\code{strongarm\_cmp.va} 提供 polarity、offset、可选噪声、输入相关延迟和 ready。
+Verilog-A 不在模块内部抽 mismatch RNG，testbench 应把 Python 同一 seed
+生成的 realized group multipliers 外部传入。这样才能做到逐 stage trace 对照。
+
+计划中的 AMS testbench 负责把 RTL 2-bit switch encoding 映射到模拟 rails，
+把 comparator result/ready 接回数字控制，并保存 top/bridge waveform。
+本轮缺少可用 Spectre/OpenVAF，因此该接口是\keyterm{设计完成、工具未闭环}，
+不能写成已仿真。
+
+\subsection{脚本、冻结证据、文档和 CI}
+
+\code{run\_mismatch\_matrix.ps1} 运行五个正式 case；
+\code{freeze\_mismatch\_evidence.py} 只复制完整结果；
+\code{generate\_report\_metrics.py} 生成本文宏；
+\code{generate\_report\_figures.py} 只读冻结 CSV/JSON。
+GitHub Actions 在 Ubuntu/Python 3.12 上执行 pytest、重画 current figures 和
+metrics，并上传 artifact；它不跑 Vivado、Spectre 或 XeLaTeX PDF QA。
+
+\begin{notebox}
+  这套组织的核心是“权威不能越级”：Python 证明行为级逻辑，RTL 证明可综合
+  子系统，Verilog-A 证明移植方程骨架，冻结证据证明报告数据来源。任何
+  transistor/layout/silicon claim 都必须新增对应层证据。
+\end{notebox}
+
+% ---------------------------------------------------------------------------
+\section{验收口径、主变量与证据边界}
+
+\subsection{主变量是失配，不是噪声}
+
+正式矩阵把单位电容失配设为0、0.5\%和1.0\%。normal conversion 的
+comparator noise 始终为0。0.3 mV RMS 只在 P0/P1/N0/N1 lower-SAR
+比较时打开，用于验证失配校准是否会被量化锁定破坏。
+
+\begin{table}[htbp]
+  \centering
+  \caption{五个正式 case 的目的}
+  \begin{tabularx}{\textwidth}{@{}p{38mm}p{25mm}p{25mm}Y@{}}
+    \toprule
+    \tablehead Case & PER-UNIT $\sigma_C$ & 校准扰动 & 用途\\
+    \midrule
+    Ideal & 0 & 0 & 先确认理想链路本身正确。\\
+    0.5\% zero & 0.5\% & 0 & 隔离失配与零扰动量化锁定。\\
+    0.5\% nominal & 0.5\% & 0.3 mV & 当前行为级发布主 case。\\
+    1.0\% zero & 1.0\% & 0 & 更强失配下的锁定隔离。\\
+    1.0\% stress & 1.0\% & 0.3 mV & 方法余量，不替代 nominal gate。\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{硬门与诊断项}
+
+\begin{table}[htbp]
+  \centering
+  \caption{行为级发布口径}
+  \begin{tabularx}{\textwidth}{@{}p{40mm}p{40mm}Y@{}}
+    \toprule
+    \tablehead 项目 & 门槛 & 含义\\
+    \midrule
+    校准有效性 & 7/7 target；每个权重在 nominal $\pm20\%$ &
+      防止符号、溢出或 FSM 失控，不代表精度已经达标。\\
+    Dynamic & SNDR $>70.99$ dB；ENOB $>11.5$ bit &
+      每个有效种子都必须通过；Q2-to-Q2 比较。\\
+    Code-density static & missing=0；max jump $\le1$；
+      DNL/INL peak $\le1$ LSB &
+      精确区间宽度，相当于无限慢 code-density ramp。\\
+    Strict ordering & backstep count、rollback、affected width &
+      当前为 \statusdiag；应用明确要求严格单调时才升级硬门。\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{证据等级}
+
+\begin{table}[htbp]
+  \centering
+  \caption{已经证明与尚未证明}
+  \begin{tabularx}{\textwidth}{@{}p{36mm}p{44mm}Y@{}}
+    \toprule
+    \tablehead 层级 & 当前证据 & 可支持结论\\
+    \midrule
+    Python behavioral L2 &
+      电荷守恒、100-seed FFT、精确可达树 &
+      架构逻辑、失配敏感性、数字权重校准效果。\\
+    RTL calibration subset &
+      两组 XSIM、自检、Vivado synthesis/timing reports &
+      校准 FSM、递归 lower-SAR 和 Q8 register 可综合。\\
+    Verilog-A source &
+      结构、端口、方程和参数审查 &
+      有 AMS 移植骨架；不证明编译或波形签核。\\
+    Transistor / layout &
+      本轮无新证据 &
+      不支持 PVT、功耗、参考建立、面积、良率和直接流片结论。\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+% ---------------------------------------------------------------------------
+\section{split-CDAC 与采样路径的底层复核}
+
+\subsection{阵列结构}
+
+每个差分侧采用整数单位电容：
+
+\[
+  C_H=71C_u,\qquad C_B=2C_u,\qquad C_L=65C_u,\qquad
+  C_{\text{side}}=138C_u .
+\]
+
+高段为 $32,16,8,8,4,2,1$ Cu，低段为
+$32,16,8,4,2,2,1$ Cu。bridge 是 top node 与 bridge node 之间的内部
+串联电容，没有 bottom-plate switch。P/N 合计276 Cu。
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\textwidth]{figures/mismatch_report/fig_cdac_topology.pdf}
+  \caption{P/N 两侧完整连接。sampling 只钳位 top node 到 VCM；high/low
+  bottom plates 全部接 VINP/VINN；bridge node 保持浮动。}
+\end{figure}
+
+\subsection{两节点电荷守恒}
+
+对任一侧，转换相位使用：
+
+\[
+\begin{bmatrix}
+C_H+C_B & -C_B\\
+-C_B & C_L+C_B
+\end{bmatrix}
+\begin{bmatrix}
+V_{\mathrm{TOP}}\\
+V_{\mathrm{BR}}
+\end{bmatrix}
+=
+\begin{bmatrix}
+Q_{\mathrm{TOP}}+\sum C_{H,i}V_{H,i}\\
+Q_{\mathrm{BR}}+\sum C_{L,i}V_{L,i}
+\end{bmatrix}.
+\]
+
+Python 与 Verilog-A 都直接求解该矩阵，而不是先把 bridge 简化成固定比例。
+标称有效权重为：
+
+\[
+  W_{H,\mathrm{unit}}=C_L+C_B=67\ Q0,\qquad
+  W_{L,\mathrm{unit}}=C_B=2\ Q0.
+\]
+
+\subsection{采样路径为什么必须全阵列参与}
+
+sampling 时，P 侧14个 high/low bottom plates 接 VINP，N 侧接 VINN；
+仅 VTOP\_P/VTOP\_N 钳位到 VCM。bridge node 的采样电压由
+
+\[
+  V_{\mathrm{BR,sample}}
+  =
+  \frac{C_BV_{\mathrm{CM}}+C_LV_{\mathrm{IN}}}{C_B+C_L}
+\]
+
+决定。若再把 bridge node 强行钳到 VCM，就相当于增加了原架构不存在的模拟
+开关，并破坏采样电荷。若低段不采样输入，则低段只剩校准 DAC 功能，正常转换
+增益和权重都会错误。
+
+\subsection{正常转换顺序}
+
+14个物理 stages 从大到小 trial/commit，stage 14 是 comparator-only
+terminal decision，因此每个行为级 normal conversion 共15次比较。
+terminal 不增加物理电容，只提供残差舍入；理想 case 的0 missing、0 backstep
+和 \IdealCalSndr{} dB SNDR 证明该链路本身没有异常。
+
+% ---------------------------------------------------------------------------
+\section{PER-UNIT 失配模型与传播}
+
+\subsection{本轮正式采用的失配方式}
+
+每个 unit cell 独立高斯：
+
+\[
+  C_{\mathrm{group}}
+  =
+  C_u\sum_{k=1}^{N}(1+\epsilon_k),
+  \qquad
+  \epsilon_k\sim\mathcal{N}(0,\sigma_C).
+\]
+
+因此 $N$-Cu group 的相对标准差是 $\sigma_C/\sqrt{N}$。P/N 两侧独立，
+bridge 的两个 units 也独立。0.5\%和1.0\%是行为级探索值，不是 foundry
+MOMCAP Monte Carlo 数字。
+
+\begin{table}[htbp]
+  \centering
+  \caption{PER-UNIT 模型下 group 相对标准差}
+  \begin{tabular}{@{}lccccc@{}}
+    \toprule
+    \tablehead Unit $\sigma$ & 1 Cu & 2 Cu & 4 Cu & 8 Cu & 16 / 32 Cu\\
+    \midrule
+    0.5\% & 0.500\% & 0.354\% & 0.250\% & 0.177\% & 0.125\% / 0.088\%\\
+    1.0\% & 1.000\% & 0.707\% & 0.500\% & 0.354\% & 0.250\% / 0.177\%\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{为什么 flat PER-CAP 会误导}
+
+若给1-Cu和32-Cu group施加相同相对 sigma，就隐含认为32个并联单位完全相关，
+会高估大电容 group 的随机失配，并改变 target-to-target 校准难度。本轮
+Python formal matrix 使用 PER-UNIT；Verilog-A 的 \code{P\_MC\_*}/
+\code{N\_MC\_*} 只能接收已实现 group multiplier，testbench 不得再次按
+flat group sigma 抽样。
+
+\subsection{失配如何影响最终输出}
+
+失配先改变 two-node matrix 的系数，再改变每个 stage 的真实差分权重。
+正常 SAR decisions 由这些真实权重产生，但 nominal decoder 仍按标称 Q2
+重构，于是同一 decision word 被映射到错误 code，造成 SNDR、INL 和 DNL
+退化。physical-weight oracle 仍接近理想上限，说明主要问题是
+\keyterm{数字重构权重与物理权重不一致}，不是阵列动态范围本身崩溃。
+
+% ---------------------------------------------------------------------------
+\section{前景校准、0.3 mV 扰动与 Q8 硬件契约}
+
+\subsection{P0/P1/N0/N1 观测量}
+
+对每个高段 target：
+
+\[
+\begin{aligned}
+  W_P &=
+  \frac{1}{2N}\sum_{j=1}^{N}\left(S_{P0,j}-S_{P1,j}\right),\\
+  W_N &=
+  \frac{1}{2N}\sum_{j=1}^{N}\left(S_{N1,j}-S_{N0,j}\right).
+\end{aligned}
+\]
+
+顺序为 H1、H2、H4、H8-R、H8-A、H16、H32。低段加 terminal 是
+131-Q0 base ruler；校准更大 target 时，已校准高段递归加入。
+
+\subsection{0.3 mV 的准确含义}
+
+0.3 mV RMS 是每次校准比较的输入等效高斯扰动：
+
+\[
+  n_{\mathrm{cal}}\sim\mathcal{N}\left(0,(0.3\ \mathrm{mV})^2\right).
+\]
+
+12-bit、1.8 V 下1 LSB约为0.439 mV，所以0.3 mV约0.68 LSB。它只进入
+校准 comparator；normal conversion comparator noise=0，固定 dither
+sequence 关闭，也没有 dither DAC。
+
+\subsection{为什么完全零扰动会量化锁定}
+
+同一 target、同一 force state、同一零输入下，lower-SAR 是确定性离散量化器：
+
+\[
+  S_{P0,1}=S_{P0,2}=\cdots=S_{P0,128}.
+\]
+
+重复128次不会产生额外分辨率。小幅零均值扰动让阈值附近 decisions 随机翻转，
+平均后得到亚码宽权重信息。因此它是 calibration measurement decorrelation，
+不是“噪声越大性能越好”的正常 ADC 结论。
+
+\subsection{Q8 与递归一致性}
+
+本轮修正了两个硬件一致性问题：
+
+\begin{itemize}
+  \item Python 每个 target 写回后立即截断到 Q8，后续 target 不再获得 RTL
+    中不存在的 sub-Q8 精度；
+  \item \code{sar\_subconverter.sv} 对已校准 high stages 读取 P/N 分侧
+    Q8 register，不再在失配下错误地使用全 nominal ruler。
+\end{itemize}
+
+H32 nominal Q8 为 $2144\times256=548864$，16-bit Q8 不够；当前每项
+20 bits，P/N七项合计280 register bits。24-bit signed lower sum 和
+32-bit pair accumulator 保留足够符号与累加余量。
+
+\subsection{校准工作量与纯数字 schedule}
+
+默认参数执行：
+
+\[
+  7\times4\times128=3584
+\]
+
+个 lower-SAR subconversions，以及
+
+\[
+  4\times128\times(8+9+10+11+12+13+14)=39{,}424
+\]
+
+次 lower comparator decisions。按当前同步 RTL，TRIAL/COMMIT 每 stage
+两周期，再计 SAMPLE、DONE、handshake、ACCUMULATE 和 target boundary，
+纯数字 schedule 约94,115 clocks，即100 MHz下约0.941 ms。
+
+\begin{notebox}
+  0.941 ms 不含真实 CDAC/reference settling、comparator ready 和
+  metastability tail。当前 RTL 固定按 clock 采样 \code{cmp\_out}，没有
+  \code{ready} 输入；实际集成必须证明10 ns周期覆盖最差 PVT，或增加握手。
+\end{notebox}
+
+% ---------------------------------------------------------------------------
+\section{验证协议：同 decisions、公平解码与精确静态审计}
+
+\subsection{三路解码共用同一物理 decisions}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/mismatch_report/fig_validation_flow.pdf}
+  \caption{同一物理 decisions 的 nominal、calibrated 与 oracle 三路解码。
+  校准只更新数字权重，不修改 CDAC 或已经发生的比较器决策。}
+\end{figure}
+
+每个 seed 只运行一次物理 conversion 并保存15-bit decisions，随后分别使用
+nominal Q2、calibrated Q2 和 physical-oracle Q2。旧流程曾把 pre
+integer-12 与 post Q2 比较，在理想条件下虚构约3.44 dB gain；本轮统一
+Q2-to-Q2，integer-12 只作二次量化诊断。
 
 \subsection{FFT 协议}
 
-\begin{table}[htbp]
-\centering
-\caption{FFT 测量协议}
-\begin{tabular}{ll}
-\toprule
-\textbf{参数} & \textbf{值} \\
-\midrule
-FFT 点数 & 4096 \\
-相干 bin ($k$) & 1019 (gcd(1019,4096)=1) \\
-采样频率 $f_s$ & 10 MHz \\
-输入幅度 & −0.5 dBFS \\
-相位 & 0.123 rad \\
-窗函数 & \textbf{Rectangular (矩形窗)} \\
-VFS & 每 seed 动态测量 \\
-Clipping 检查 & 每次运行显式检测 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\[
+  N=4096,\quad k=1019,\quad A=-0.5\ \mathrm{dBFS},\quad
+  \phi=0.123\ \mathrm{rad}.
+\]
 
-\subsection{单点 FFT 频谱}
+$k$ 与 $N$ 互质，使用 rectangular window。每个 seed 先测量可用 VFS，
+再构造 coherent differential sine，并检查 peak/VFS 与 clipping。
+因此不同 mismatch seed 不会因固定输入幅度越过可用范围而产生假 SNDR 尾点。
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{\imgdir/src/python_cal/analysis/fft_comparison.png}
-\caption{校准前/校准后/物理 Oracle FFT 频谱对比 (seed=42, $\sigma$=1\%)}
-\label{fig:fft}
-\end{figure}
+\subsection{精确可达树与静态指标}
 
-\subsection{MC 动态性能 (100 seeds)}
+comparator residue 对输入是仿射函数；每个 decision prefix 最多把输入区间
+切分一次。遍历所有可达 leaves 后得到：
 
-\textbf{运行条件:} run ID \texttt{dbac69f3}, 100 MC seeds, $\sigma = 1\%$, AVG\_PAIRS = 128, 校准噪声 1 mV RMS, 4096-pt Rectangular FFT
+\begin{itemize}
+  \item unique/missing integer codes；
+  \item exact code-density DNL/INL；
+  \item float/integer backsteps、最大 rollback；
+  \item 所有 nonmonotonic intervals 的输入宽度和。
+\end{itemize}
 
-\begin{table}[htbp]
-\centering
-\caption{动态性能指标 (Python 行为级模型实测)}
-\begin{tabular}{lrrrr}
-\toprule
-\textbf{指标} & \textbf{校准前} & \textbf{校准后 Q2} & \textbf{物理 Oracle} & \textbf{单位} \\
-\midrule
-SNDR P50 & 63.73 & \textcolor{greenpass}{\textbf{74.50}} & 74.64 & dB \\
-SNDR P95 & — & 74.33 & 74.51 & dB \\
-SNDR min & 56.89 & 73.81 & 74.40 & dB \\
-ENOB P50 & 10.29 & \textcolor{greenpass}{\textbf{12.08}} & 12.11 & bit \\
-SFDR P50 & 70.57 & \textcolor{greenpass}{\textbf{94.29}} & 96.91 & dB \\
-\midrule
-Oracle Gap P50 & — & \textcolor{greenpass}{\textbf{0.14}} & — & dB \\
-Oracle Gap P95 & — & 0.48 & — & dB \\
-Oracle Gap max & — & 0.62 & — & dB \\
-\midrule
-有效校准 & — & \textcolor{greenpass}{\textbf{100/100}} & — & seeds \\
-负收益 & — & \textcolor{greenpass}{\textbf{0/100}} & — & seeds \\
-Gap $\le$ 0.5 dB & — & \textbf{98/100 (98\%)} & — & seeds \\
-Gap $\le$ 1.0 dB & — & \textbf{100/100 (100\%)} & — & seeds \\
-\bottomrule
-\end{tabular}
-\end{table}
+同一 output code 可能来自多个不相交输入区间。code-density 将这些宽度相加，
+strict ordering 则保留局部输入顺序。两者回答不同问题，不能互相替代。
 
-\subsection{MC 动态性能可视化}
+\subsection{正式证据冻结}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig04_dynamic_monte_carlo.png}
-\caption{100-seed MC 动态性能分布}
-\label{fig:mc}
-\end{figure}
+每个 case 保存 CSV、case summary 和 run manifest。working 与
+\code{evidence/mismatch\_matrix/} 分别重新汇总后必须字节一致。
+图和 LaTeX metrics 只读取冻结版本；这样可防止用户所担心的“图片与数据版本混乱”。
 
-\subsection{Oracle Gap CDF}
+% ---------------------------------------------------------------------------
+\section{正式失配矩阵结果}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{\imgdir/docs/assets/figures/fig05_oracle_gap_cdf.png}
-\caption{Oracle Gap 累积分布 (98\% seeds $\le$ 0.5 dB)}
-\label{fig:gapcdf}
-\end{figure}
+\subsection{理想先验：校准不能在无失配时虚构收益}
 
-\subsection{静态性能 (DNL/INL)}
+\begin{verdictbox}{Green}
+  Ideal run \code{\IdealRunId}：pre/cal/oracle SNDR 都是
+  \IdealCalSndr{} dB，ENOB \IdealCalEnob{} bit；oracle gap 0；
+  missing=0；integer backstep=0；formal verdict=\IdealFormalVerdict。
+  这证明理想 CDAC、采样、15 decisions、Q2 decoder 和校准旁路没有问题。
+\end{verdictbox}
 
-\textbf{条件:} 100-seed MC, code-density 方法
+\subsection{动态性能}
 
 \begin{table}[htbp]
-\centering
-\caption{静态 DNL/INL 指标 (Python 实测)}
-\begin{tabular}{lrrr}
-\toprule
-\textbf{指标} & \textbf{P50} & \textbf{P95} & \textbf{Max} \\
-\midrule
-DNL peak & 0.75 LSB & 0.87 LSB & 0.95 LSB \\
-INL peak & 0.80 LSB & 0.92 LSB & 0.96 LSB \\
-缺码 & \textcolor{greenpass}{\textbf{0}} & \textcolor{greenpass}{\textbf{0}} & \textcolor{greenpass}{\textbf{0}} \\
-最大跳码 & \textcolor{greenpass}{\textbf{1}} & \textcolor{greenpass}{\textbf{1}} & \textcolor{greenpass}{\textbf{1}} \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{失配矩阵动态结果；mismatch cases 均为100 seeds}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{34mm}R{16mm}R{28mm}R{28mm}C{21mm}Y@{}}
+    \toprule
+    \tablehead 条件 & Pre P50 & Cal P50 / min & ENOB P50 / min &
+      Dynamic & Oracle gap P50/P95\\
+    \midrule
+    Ideal &
+      \IdealPreSndr &
+      \IdealCalSndr{} / \IdealCalSndrMin &
+      \IdealCalEnob{} / \IdealCalEnobMin &
+      \IdealDynamicYield &
+      \IdealGapP{} / \IdealGapPNinetyFive\\
+    0.5\%, 0 mV &
+      \MZeroFiveZeroPreSndr &
+      \MZeroFiveZeroCalSndr{} / \MZeroFiveZeroCalSndrMin &
+      \MZeroFiveZeroCalEnob{} / \MZeroFiveZeroCalEnobMin &
+      \MZeroFiveZeroDynamicYield &
+      \MZeroFiveZeroGapP{} / \MZeroFiveZeroGapPNinetyFive\\
+    0.5\%, 0.3 mV &
+      \MZeroFiveNoisePreSndr &
+      \MZeroFiveNoiseCalSndr{} / \MZeroFiveNoiseCalSndrMin &
+      \MZeroFiveNoiseCalEnob{} / \MZeroFiveNoiseCalEnobMin &
+      \MZeroFiveNoiseDynamicYield &
+      \MZeroFiveNoiseGapP{} / \MZeroFiveNoiseGapPNinetyFive\\
+    1.0\%, 0 mV &
+      \MOneZeroPreSndr &
+      \MOneZeroCalSndr{} / \MOneZeroCalSndrMin &
+      \MOneZeroCalEnob{} / \MOneZeroCalEnobMin &
+      \MOneZeroDynamicYield &
+      \MOneZeroGapP{} / \MOneZeroGapPNinetyFive\\
+    1.0\%, 0.3 mV &
+      \MOneNoisePreSndr &
+      \MOneNoiseCalSndr{} / \MOneNoiseCalSndrMin &
+      \MOneNoiseCalEnob{} / \MOneNoiseCalEnobMin &
+      \MOneNoiseDynamicYield &
+      \MOneNoiseGapP{} / \MOneNoiseGapPNinetyFive\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{\imgdir/docs/assets/figures/fig06_static_signoff.png}
-\caption{静态 DNL/INL 签核 (100 seeds, 零缺码)}
-\label{fig:static}
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/mismatch_report/fig_mismatch_performance.pdf}
+  \caption{失配导致 nominal decoder 明显退化；Q8 校准把100-seed 分布拉回
+  oracle 附近。右图保留全范围与最差种子。}
 \end{figure}
 
-\subsection{校准权重误差}
+\subsection{静态性能与全样本 verdict}
 
 \begin{table}[htbp]
-\centering
-\caption{各目标权重校准误差 (Python 实测, run \texttt{dbac69f3})}
-\begin{tabular}{crrrr}
-\toprule
-\textbf{目标} & \textbf{标称 Q0} & \textbf{绝对误差 P50/P95 (Q0)} & \textbf{归一化误差 P50/P95} \\
-\midrule
-H1C   & 67   & 0.18 / 0.48  & 0.085\% / 0.255\% \\
-H2C   & 134  & 0.30 / 0.80  & 0.049\% / 0.126\% \\
-H4C   & 268  & 0.54 / 1.53  & 0.035\% / 0.079\% \\
-H8C-R & 536  & 1.04 / 3.03  & 0.013\% / 0.030\% \\
-H8C-A & 536  & 1.00 / 3.16  & 0.015\% / 0.035\% \\
-H16C  & 1072 & 1.98 / 6.27  & 0.007\% / 0.019\% \\
-\rowcolor{greenbg}
-H32C  & 2144 & 3.87 / 12.33 & \textbf{0.006\% / 0.018\%} \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{code-density static 与正式 verdict}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{36mm}C{22mm}C{18mm}R{22mm}R{22mm}Y@{}}
+    \toprule
+    \tablehead 条件 & Static yield & Missing & DNL max & INL max & Verdict\\
+    \midrule
+    Ideal &
+      \IdealStaticYield & \IdealMissingCodes &
+      \IdealDnlPeakMax & \IdealInlPeakMax & \IdealFormalVerdict\\
+    0.5\%, 0 mV &
+      \MZeroFiveZeroStaticYield & \MZeroFiveZeroMissingCodes &
+      \MZeroFiveZeroDnlPeakMax & \MZeroFiveZeroInlPeakMax &
+      \MZeroFiveZeroFormalVerdict\\
+    0.5\%, 0.3 mV &
+      \MZeroFiveNoiseStaticYield & \MZeroFiveNoiseMissingCodes &
+      \MZeroFiveNoiseDnlPeakMax & \MZeroFiveNoiseInlPeakMax &
+      \MZeroFiveNoiseFormalVerdict\\
+    1.0\%, 0 mV &
+      \MOneZeroStaticYield & \MOneZeroMissingCodes &
+      \MOneZeroDnlPeakMax & \MOneZeroInlPeakMax &
+      \MOneZeroFormalVerdict\\
+    1.0\%, 0.3 mV &
+      \MOneNoiseStaticYield & \MOneNoiseMissingCodes &
+      \MOneNoiseDnlPeakMax & \MOneNoiseInlPeakMax &
+      \MOneNoiseFormalVerdict\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-H32C 归一化误差 P50 仅 \textbf{0.0061\%}，与 Oracle Gap P50 = 0.14 dB 一致。
+0.5\% nominal 100/100 全通过，是当前发布判断。1.0\% stress 的 dynamic
+100/100 且无缺码；static 98/100。失败种子：
+
+\begin{itemize}
+  \item seed 10062：DNL 0.79783 LSB，INL 1.02918 LSB，SNDR 73.641 dB；
+  \item seed 10080：DNL 0.72007 LSB，INL 1.00010 LSB，SNDR 74.002 dB。
+\end{itemize}
+
+两者都不是动态崩溃或缺码，只是 INL 轻微越过1 LSB。报告保留98/100，
+不通过放宽门槛或增加数字 remap 把压力点改写为全通过。
+
+\subsection{0.3 mV 的次要效应}
+
+0.5\%下0.3 mV 相对零扰动使 SNDR P50 改变
+\NoiseEffectZeroFiveSndrMedianDelta{} dB，最差值改变
+\NoiseEffectZeroFiveSndrMinDelta{} dB，oracle-gap P95 改变
+\NoiseEffectZeroFiveGapPNinetyFiveDelta{} dB。1.0\%下相应为
+\NoiseEffectOneSndrMedianDelta{} dB、
+\NoiseEffectOneSndrMinDelta{} dB 和
+\NoiseEffectOneGapPNinetyFiveDelta{} dB。
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig07_calibration_error.png}
-\caption{7 目标校准权重误差分布}
-\label{fig:calerr}
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/mismatch_report/fig_noise_secondary.pdf}
+  \caption{相同100个失配种子的 calibration-only 扰动配对比较。图中没有
+  normal-conversion noise。}
 \end{figure}
 
-\subsection{MC 多 $\sigma$ 失配容限}
+% ---------------------------------------------------------------------------
+\section{专章：单调性、局部 backstep 与过度设计边界}
 
-\textbf{Python 实测:} 100 seeds $\times$ 6 $\sigma$ levels
+\subsection{必须先区分三件事}
+
+\begin{enumerate}
+  \item \textbf{Code-density DNL/INL：}按每个输出 code 占据的总输入宽度计算；
+  \item \textbf{Missing code / max jump：}判断整数 code 是否完全缺失或跨越；
+  \item \textbf{Strict ordering：}输入从小到大时，decoded output 是否在每个
+    可达边界都不下降。
+\end{enumerate}
+
+冗余 SAR 允许不同 decision words 映射到相近甚至相同 code。同一 code 可由
+多个不相交区间产生，因此 code-density 可以合并宽度并通过，而局部输入顺序
+仍发生1-LSB回退。这不是计算矛盾，而是两个指标定义不同。
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{\imgdir/src/python_cal/analysis/fft_multisigma_sweep.png}
-\caption{MC $\sigma$ 扫描 FFT (1\%--50\%, 100 seeds/level)}
-\label{fig:multisigma}
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/mismatch_report/fig_monotonicity_mechanism.pdf}
+  \caption{左：局部1-LSB回退与 code-density 合并区间的概念示意；
+  右：正式 nominal/stress 的受影响输入宽度。}
 \end{figure}
 
-\begin{table}[htbp]
-\centering
-\caption{MC $\sigma$ 失配容限扫描 (Python 实测)}
-\begin{tabular}{crrrl}
-\toprule
-\textbf{MC $\sigma$} & \textbf{校准前 SNDR} & \textbf{校准后 SNDR} & \textbf{Oracle Gap} & \textbf{判定} \\
-\midrule
-\rowcolor{greenbg} 1\%  & 63.7 dB & 74.5 dB & 0.14 dB & \pass{} 优秀 \\
-\rowcolor{greenbg} 2\%  & 50.1 dB & 73.3 dB & 1.34 dB & \pass{} 通过 \\
-\rowcolor{greenbg} 5\%  & 42.2 dB & 72.6 dB & 2.05 dB & \pass{} 通过 \\
-\rowcolor{orangebg} 10\% & 36.1 dB & 70.2 dB & 4.47 dB & \warn{} 临界 \\
-\rowcolor{redbg} 20\%    & 30.2 dB & 50.6 dB & 24.0 dB & \fail{} 失败 \\
-\rowcolor{redbg} 50\%    & 23.1 dB & —     & —      & \fail{} 崩溃 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{结论:} 校准系统在 $\sigma \le 5\%$ 范围内有效 (覆盖 TSMC 180nm MOM 的 3$\sigma$ 工艺角)。
-
-\newpage
-
-% ===========================================================================
-%  4  RTL 综合验证
-% ===========================================================================
-\section{RTL 综合验证}
-
-\subsection{RTL 架构}
-
-\begin{verbatim}
-cal_top (顶层)
-├── cal_fsm          — 16 态校准状态机 (Shen 2018)
-├── cal_weight_reg   — 7×2×16-bit 权重寄存器文件
-└── sar_subconverter — 低段 SAR trial 控制器
-\end{verbatim}
-
-\subsection{综合验证结果}
-
-\textbf{工具:} Vivado 2018.3 \quad|\quad \textbf{器件:} xc7z020clg400-1 \quad|\quad \textbf{时钟:} 100 MHz, Slow Corner
+\subsection{正式数值：计数很多，但区间很窄}
 
 \begin{table}[htbp]
-\centering
-\caption{综合结果 —— 修复前后对比}
-\begin{tabular}{lrr}
-\toprule
-\textbf{指标} & \textbf{修复前} & \textbf{修复后} \\
-\midrule
-Errors & 0 & \textcolor{greenpass}{\textbf{0}} \\
-Critical Warnings & \textcolor{redfail}{14} & \textcolor{greenpass}{\textbf{0}} \\
-Warnings & 1 & \textcolor{greenpass}{\textbf{0}} \\
-\textbf{Slack} & \textcolor{redfail}{\textbf{−14.0 ns ✗}} & \textcolor{greenpass}{\textbf{+0.30 ns ✓}} \\
-Data Path Delay & 23.85 ns & \textbf{5.01 ns} \\
-Logic Levels & 26 & \textbf{2} \\
-DSP48E1 & \textcolor{redfail}{2} & \textcolor{greenpass}{\textbf{0}} \\
-LUTs & 1,141 & \textbf{321} \\
-CARRY4 & 175 & \textbf{38} \\
-Registers & 495 & \textbf{473} \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{校准后 nominal 与 stress 的 strict-order diagnostic}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{34mm}C{20mm}C{31mm}C{18mm}Y@{}}
+    \toprule
+    \tablehead 条件 & 有 backstep seeds &
+      每 seed count P50/P95/max & Max rollback &
+      Affected input width P50/P95/max\\
+    \midrule
+    0.5\% nominal &
+      \MZeroFiveNoiseIntegerBackstepSeeds/100 &
+      \MZeroFiveNoiseBackstepCountP /
+      \MZeroFiveNoiseBackstepCountPNinetyFive /
+      \MZeroFiveNoiseBackstepCountMax &
+      \MZeroFiveNoiseIntegerRollbackMax{} LSB &
+      \MZeroFiveNoiseNonmonotonicFractionPPercent\% /
+      \MZeroFiveNoiseNonmonotonicFractionPNinetyFivePercent\% /
+      \MZeroFiveNoiseNonmonotonicFractionMaxPercent\%\\
+    1.0\% stress &
+      \MOneNoiseIntegerBackstepSeeds/100 &
+      \MOneNoiseBackstepCountP /
+      \MOneNoiseBackstepCountPNinetyFive /
+      \MOneNoiseBackstepCountMax &
+      \MOneNoiseIntegerRollbackMax{} LSB &
+      \MOneNoiseNonmonotonicFractionPPercent\% /
+      \MOneNoiseNonmonotonicFractionPNinetyFivePercent\% /
+      \MOneNoiseNonmonotonicFractionMaxPercent\%\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\subsection{RTL Bug 修复纪录}
+可达树枚举的是许多很窄的 decision intervals，所以 count 可以达到数百；
+工程上更重要的是 rollback 幅度和输入宽度。两组最大整数 rollback 都只有
+1 LSB，nominal max affected width 只有
+\MZeroFiveNoiseNonmonotonicFractionMaxPercent\%。
+
+\subsection{产生原因}
+
+局部 backstep 由以下因素共同产生：
+
+\begin{itemize}
+  \item redundant stage weights 使相邻 decision words 不再等价于简单二进制顺序；
+  \item PER-UNIT mismatch 改变 P/N 分侧实际权重；
+  \item 校准只估计七个高段，低段和 terminal 使用 nominal base ruler；
+  \item Q8 权重和 Q2 输出引入有限分辨率；
+  \item comparator decision boundary 与数字 weighted sum 的局部排序不必完全一致。
+\end{itemize}
+
+理想 case 为0 backstep，说明它不是 stage mapping 或 polarity 的基础 bug。
+失配后出现说明这是“物理 decision partition 与有限精度 digital
+reconstruction 的局部错序”，不是整个 transfer 失稳。
+
+\subsection{它什么时候真的重要}
+
+若 ADC 用于普通采样和频谱测量，SNDR、ENOB、missing、DNL/INL 已捕捉主要影响。
+但以下应用可能把严格单调设为硬约束：
+
+\begin{itemize}
+  \item 闭环 servo、控制器或逐码搜索，要求输入上升时 code 绝不下降；
+  \item threshold scanning 或 code-domain inverse mapping，需要唯一可逆顺序；
+  \item 以 ADC code 直接驱动状态机、窗口比较或 safety interlock；
+  \item 局部回退扩大到多 LSB 或宽输入区间，可能形成 limit cycle、局部歧义或 spurs。
+\end{itemize}
+
+\subsection{可选修复及其代价}
 
 \begin{table}[htbp]
-\centering
-\caption{6 项 RTL Bug 修复明细}
-\footnotesize
-\begin{tabular}{clp{2.3cm}p{4.5cm}p{4.5cm}}
-\toprule
-\# & 严重度 & 文件 & 问题 & 修复 \\
-\midrule
-B1 & CRITICAL & cal\_fsm.sv & pair\_idx 双重驱动 & 删除组合逻辑赋值 \\
-B2 & CRITICAL & cal\_fsm.sv & Slack $-13.99$ ns & 预计算 localparam 常量 \\
-B3 & HIGH & cal\_fsm.sv & 7 个未使用寄存器 & 删除声明及赋值 \\
-B4 & HIGH & cal\_fsm.sv & valid\_reg 无复位 & 添加 async reset \\
-B5 & HIGH & sar\_subconv & decisions 未使用 & 删除声明及赋值 \\
-B6 & HIGH & sar\_subconv & 5 信号无复位 & 添加 async reset \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{若未来应用强制严格单调，可选方案与过度设计风险}
+  \begin{tabularx}{\textwidth}{@{}p{38mm}p{43mm}Y@{}}
+    \toprule
+    \tablehead 方案 & 可解决问题 & 代价/风险\\
+    \midrule
+    增加 redundancy margin &
+      给 mismatch 和定点误差更多排序余量 &
+      增加电容、开关、参考负载、能量和 settling 压力。\\
+    Monotonic constrained decode / LUT &
+      对输出局部排序或重映射 &
+      存储、验证、PVT映射、启动时间；可能隐藏物理问题。\\
+    全 transfer per-chip calibration &
+      实测并重建每个阈值 &
+      前景时间和存储大幅增加，不符合当前轻量目标。\\
+    合并/丢弃问题 code &
+      强制无回退 &
+      有效分辨率和 code density 受损。\\
+    重构 CDAC &
+      从物理权重上改写 redundancy &
+      面积、参考驱动和全套验证重来。\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\subsection{时序约束}
+\begin{verdictbox}[title=\textbf{当前工程决策}]{Orange}
+  不修复、不隐藏、继续记录。理由是理想链路0 backstep；0.5\% nominal
+  dynamic/static/combined 全100/100；最大 rollback 1 LSB；受影响区间很窄。
+  只有应用规格明确要求 strict monotonicity，或 transistor/PDK/post-layout
+  结果显示回退显著扩大，才升级为硬门。现在为它加入 LUT、CAM、排序或阵列重构
+  属于过度设计。
+\end{verdictbox}
 
-\begin{table}[htbp]
-\centering
-\caption{\texttt{timing.xdc} ASIC 级约束}
-\begin{tabular}{ll}
-\toprule
-\textbf{约束} & \textbf{值} \\
-\midrule
-\texttt{create\_clock} & 10.000 ns (100 MHz) \\
-\texttt{set\_clock\_uncertainty} (setup) & 0.200 ns \\
-\texttt{set\_clock\_uncertainty} (hold)  & 0.100 ns \\
-\texttt{set\_input\_delay} (max/min)     & 2.0 / 0.5 ns \\
-\texttt{set\_output\_delay} (max/min)    & 2.0 / 0.5 ns \\
-\bottomrule
-\end{tabular}
-\end{table}
+% ---------------------------------------------------------------------------
+\section{RTL 工程：组织、仿真、综合与时序}
 
-\textbf{极限频率:} 内部逻辑路径延迟 $\sim$2.7 ns, 含 I/O 约束可用频率 $\sim$130 MHz。
-
-\newpage
-
-% ===========================================================================
-%  5  参数优化实验
-% ===========================================================================
-\section{参数优化实验}
-
-\subsection{AVG\_PAIRS 扫描}
-
-\begin{table}[htbp]
-\centering
-\caption{AVG\_PAIRS 扫描结果 (Python 实测)}
-\begin{tabular}{crrrl}
-\toprule
-\textbf{AVG\_PAIRS} & \textbf{SNDR (dB)} & \textbf{Oracle Gap (dB)} & \textbf{校准时间} & \textbf{vs 512} \\
-\midrule
-512 (旧) & 74.64 & $\sim$0.00 & 2.87 ms & baseline \\
-256 & 74.52 & 0.12 & 1.43 ms & −0.06\% \\
-\rowcolor{greenbg}
-\textbf{128 (新)} & \textbf{74.50} & \textbf{0.14} & \textbf{0.72 ms} & \textbf{−0.19\%} \\
-64  & 74.42 & 0.22 & 0.36 ms & −0.29\% \\
-32  & 74.18 & 0.46 & 0.18 ms & −0.62\% \\
-16  & 73.64 & 1.00 & 0.09 ms & −1.34\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{结论:} 128 对是 12-bit 精度甜点 —— gap $<$ 0.5 dB 且时间仅为 512 的 1/4。
+\subsection{数据流与接口}
 
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{\imgdir/src/python_cal/analysis/old_vs_new_comparison.png}
-\caption{旧 (AVG=512) vs 新 (AVG=128) 对比}
-\label{fig:oldnew}
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/mismatch_report/fig_rtl_architecture.pdf}
+  \caption{当前 synthesizable calibration subset。图明确标出 analog boundary、
+  register recursion、status/weight outputs 和未包含的 full-ADC 功能。}
 \end{figure}
 
-\subsection{Dither 消融实验}
+\code{cal\_fsm} 发出 target、phase 和 \code{start\_subconv}；
+\code{sar\_subconverter} 通过 switch buses 操作 CDAC，读取 \code{cmp\_out}，
+返回 \code{done/signed\_sum}；FSM 把四相结果累加并写
+\code{cal\_weight\_reg}；register 立即回馈后续 target 的递归 ruler。
+这是一个真正闭合的数据回路，不是三个互不相关的模块。
+
+\subsection{XSIM 自检}
 
 \begin{table}[htbp]
-\centering
-\caption{Dither ON vs OFF (Python 实测)}
-\begin{tabular}{lrrrl}
-\toprule
-\textbf{条件} & \textbf{Dither ON} & \textbf{Dither OFF} & \textbf{Delta} & \textbf{判定} \\
-\midrule
-1 mV, N=128 & 74.51 dB & 74.50 dB & −0.01 dB & 冗余 \\
-1 mV, N=32  & 74.12 dB & 74.08 dB & −0.04 dB & 冗余 \\
-0.5 mV, N=16 & 73.35 dB & 72.81 dB & −0.54 dB & 可忽略 \\
-0.2 mV, N=8  & 71.15 dB & 67.90 dB & −3.25 dB & 有益 \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{Vivado 2018.3 XSIM 结果}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{43mm}C{22mm}Y@{}}
+    \toprule
+    \tablehead Testbench & 结果 & 覆盖\\
+    \midrule
+    \code{tb\_cal\_rtl.sv} & \statuspass &
+      7/7 targets、P0/P1/N0/N1、Q8 width、最后一对进入平均、写回次序。\\
+    \pathcode{tb_sar_subconverter.sv} & \statuspass &
+      H32 使用已校准的 P/N Q8 high weights；正负 signed sum 极性。\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\textbf{结论:} 比较器噪声 $\ge$ 1 LSB 或 $N \ge 32$ 时 dither 完全冗余。当前配置 (1 mV + 128 对) $\to$ dither 关闭, 节省硬件。
+这两组 TB 不证明 analog settling、comparator metastability 或完整 ADC conversion；
+它们证明 RTL arithmetic 和 control contract。
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{\imgdir/src/python_cal/analysis/dither_ablation.png}
-\caption{Dither 消融实验结果}
-\label{fig:dither}
-\end{figure}
+\subsection{综合资源}
 
-\subsection{噪声 $\times$ AVG\_PAIRS 热力图}
+Vivado 2018.3、top \code{cal\_top}、part
+\code{xc7z020clg400-1}。综合为：
 
 \begin{table}[htbp]
-\centering
-\caption{比较器噪声 vs 最优 AVG\_PAIRS (Python 实测)}
-\begin{tabular}{rrr}
-\toprule
-\textbf{比较器噪声 ($\mu$V)} & \textbf{最优 $N$} & \textbf{Oracle Gap (dB)} \\
-\midrule
-200  & 8   & 0.49 \\
-500  & 16  & 0.98 \\
-1000 & 64  & 0.69 \\
-2000 & 256 & 1.27 \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{Synthesis proxy utilization}
+  \begin{tabular}{@{}lrrr@{}}
+    \toprule
+    \tablehead Resource & Used & Available & Utilization\\
+    \midrule
+    Slice LUT & 449 & 53,200 & 0.84\%\\
+    Slice FF & 595 & 106,400 & 0.56\%\\
+    DSP & 0 & 220 & 0\%\\
+    BRAM tile & 0 & 140 & 0\%\\
+    BUFG & 1 & 32 & 3.13\%\\
+    Bonded IOB & 342 & 125 & 273.60\%\\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
-最优对数公式: $N_{\text{opt}} \approx 18 \times (\sigma_{\text{cmp},\mu\text{V}} / 439)^2$
+逻辑规模很小，但 IOB 超用非常重要。\code{cal\_top} 把 ASIC 内部 switch
+controls 和14个20-bit weights 作为顶层 parallel ports 暴露，Vivado 会把它们
+当 package pins，所以342/125无法 place-and-route。这不否定内部逻辑可综合，
+却证明它不是可直接下载到该 FPGA 的 package top。FPGA 原型需要
+serialized/packed wrapper 或更大器件。
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{\imgdir/src/python_cal/analysis/noise_vs_pairs_sweep.png}
-\caption{噪声 $\times$ AVG\_PAIRS 热力图}
-\label{fig:noise}
-\end{figure}
-
-\newpage
-
-% ===========================================================================
-%  6  拓扑对比
-% ===========================================================================
-\section{CDAC 拓扑对比: 旧 95-Cu vs 新 138-Cu}
+\subsection{Setup、hold 与约束完整性}
 
 \begin{table}[htbp]
-\centering
-\caption{码本审计对比 (1000 seeds, 0.5\% mismatch)}
-\begin{tabular}{lrr}
-\toprule
-\textbf{指标} & \textbf{旧 95-Cu (v2.x)} & \textbf{新 138-Cu (v3.x)} \\
-\midrule
-缺码 P50 & 22 & \textcolor{greenpass}{\textbf{0}} \\
-缺码 最差 & 84 & \textcolor{greenpass}{\textbf{0}} \\
-最大跳码 P50 & 2 & \textcolor{greenpass}{\textbf{1}} \\
-最大跳码 最差 & 9 & \textcolor{greenpass}{\textbf{1}} \\
-零缺码 seeds & 0/1000 & \textcolor{greenpass}{\textbf{1000/1000}} \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{100 MHz synthesis timing summary}
+  \begin{tabularx}{\textwidth}{@{}p{30mm}R{22mm}R{22mm}R{30mm}Y@{}}
+    \toprule
+    \tablehead 类型 & Worst slack & Total violation & Failing endpoints & 解释\\
+    \midrule
+    Setup & +0.298 ns & 0 & 0 / 2101 &
+      当前 unplaced synthesis estimate 满足10 ns setup。\\
+    Hold & -0.147 ns & -0.436 ns & 4 / 2101 &
+      三条 \code{start} 输入路径和一条 \code{cmp\_out} 输入路径失败。\\
+    Pulse width & +4.500 ns & 0 & 0 / 596 &
+      无 pulse-width failure。\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{\imgdir/docs/assets/figures/fig09_cdac_candidate_comparison.png}
-\caption{旧 95-Cu vs 新 138-Cu CDAC 拓扑对比}
-\label{fig:cdaccomp}
-\end{figure}
+setup 最差路径从 \code{u\_cal\_fsm/state\_reg} 到 \code{cal\_done}：
+data path 5.010 ns，其中 logic 3.407 ns、route estimate 1.603 ns，
+2 logic levels，output delay 2 ns，clock uncertainty 0.235 ns。
 
-\newpage
+hold 最差路径是 \code{start} 输入到 FSM target-index 寄存器，
+WHS -0.147 ns；同类另有两个 target-index 端点，一条
+\code{cmp\_out} 到 accumulator 的路径也失败。
+这些都是 raw FPGA I/O timing model 下的 input-to-register hold，不是内部
+register-to-register setup failure。
 
-% ===========================================================================
-%  7  风险评估与验收结论
-% ===========================================================================
-\section{风险评估与验收结论}
+\begin{verdictbox}[title=\textbf{时序结论必须这样表述}]{Orange}
+  100 MHz setup met，但完整 timing constraints \textbf{not met}，因为 hold
+  有4个失败端点。当前报告不再只报 +0.298 ns。由于 top 的 I/O 形式本身不适合
+  该 FPGA package，下一步应先加 prototype wrapper，再做 implementation、
+  hold repair 和 post-route timing；ASIC 则必须用目标 standard-cell library、
+  CTS、真实 I/O/clock budget 和 signoff STA。
+\end{verdictbox}
 
-\subsection{风险矩阵}
+\code{check\_timing} 同时确认：0 no-clock registers、0 constant-clock、
+0 unconstrained internal endpoints、0 missing input delay、0 missing output delay、
+0 combinational loop。也就是说 hold failure 不是“忘了约束”，而是当前模型下
+真实报告出的 endpoint failure。
+
+\subsection{RTL 剩余集成工作}
+
+\begin{enumerate}
+  \item 实现 normal-conversion 15-stage SAR；
+  \item 实现 P/N Q8 weight 到 Q2 output 的 normalization/round/saturation；
+  \item 定义 calibration 与 normal mode 的 switch ownership；
+  \item 加 comparator-ready 或证明 fixed-cycle 最差 PVT；
+  \item 补 reset release、CDC、scan/DFT；
+  \item 建 ASIC synthesis/STA 与 AMS co-simulation。
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+\section{Verilog-A 工程：模块、方程、参数与验证限制}
+
+\subsection{\code{cdac\_behavioral.va}}
+
+模块包含 P/N 各14个 bottom-plate ports、top/bridge nodes、VINP/VINN 和
+SAMPLE。默认 \code{CU=4 fF}、\code{VCM=0.9 V}、transition time 1 ps
+只是行为参数，不是目标 PDK 签核值。
+
+sample phase 只驱动 VTOP 到 VCM，bridge node 保持内部浮动并由电容分压。
+conversion phase 对 P/N 两侧分别求解两节点矩阵。每个 high/low/bridge group
+有独立 P/N multiplier port；模块不调用 RNG。
+
+\subsection{\code{strongarm\_cmp.va}}
+
+该模块是 clocked behavioral comparator，不是 transistor StrongArm。
+默认参数包括：
+
+\begin{itemize}
+  \item base delay 0.5 ns、regeneration $\tau=50$ ps；
+  \item logic swing 1.8 V、offset 0、noise 0；
+  \item minimum differential 1 $\mu$V、maximum wait 10 ns；
+  \item ready/result transition 10 ps。
+\end{itemize}
+
+rising clock edge 读取 \code{V(inp)-V(inn)}，可加输入等效 offset/noise，
+delay 使用
+
+\[
+  t_d=t_0+\tau\ln
+  \left(
+    \frac{V_{\mathrm{logic}}}
+    {\max(|V_{\mathrm{diff}}|,V_{\min})}
+  \right)
+\]
+
+并限制最大等待。它适合验证 polarity、ready 和控制时序，不支持真实
+kickback、input capacitance、PVT offset/noise、功耗或 metastability tail。
+
+\subsection{AMS 闭环计划}
+
+\begin{enumerate}
+  \item 用 Python 同一 PER-UNIT seed 计算 realized group multipliers；
+  \item 将 RTL switch buses 映射为模拟 rail switch；
+  \item 比较 Python/VA 的 sampled charge、VTOP、VBR 和每 stage polarity；
+  \item 用 \code{ready} 驱动或检查数字采样时刻；
+  \item 重跑 ideal、nominal、stress 与关键 tail seeds；
+  \item 再进入 transistor comparator、switch、reference 和 extracted CDAC。
+\end{enumerate}
+
+\begin{notebox}
+  本机没有 Spectre/OpenVAF 可用编译器，所以本轮只完成源码结构与方程审查。
+  这项限制不是“测试以后再说”的脚注，而是流片证据链中明确未闭合的一层。
+\end{notebox}
+
+% ---------------------------------------------------------------------------
+\section{整体过度设计审计}
 
 \begin{table}[htbp]
-\centering
-\caption{风险矩阵}
-\footnotesize
-\begin{tabular}{cllp{4.3cm}p{4.3cm}}
-\toprule
-\# & 风险 & 严重度 & 根因 & 缓解措施 \\
-\midrule
-R1 & 低段基准尺失配 & MEDIUM & 65 Cu 并联, $\sigma\approx$MC/$\sqrt{65}$ & 布局 common-centroid \\
-R2 & 桥接电容失配 & MEDIUM & Bridge 仅 2 Cu, $\sigma$ 较高 & 实测比例因子 \\
-R3 & 比较器 offset & LOW & $\sim$3 mV 限制末位 margin & 131 Q0 margin 充足 \\
-R4 & 失配 $>$5\% 退化 & LOW & 极端工艺角偏离 & 已超 3$\sigma$ 范围 \\
-R5 & RTL 时序 & RESOLVED & DSP48E1 乘法路径 & 预计算 LUT, 0 DSP \\
-R6 & FPGA IOB 超标 & INFO & ASIC 内部模块端口多 & 不影响 ASIC \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{删除、拒绝或保留的机制}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{42mm}C{22mm}Y@{}}
+    \toprule
+    \tablehead 项目 & 处理 & 依据\\
+    \midrule
+    512 calibration pairs & 删除 &
+      当前共同实现为128；正式 nominal 100/100通过。\\
+    Calibration sub-DAC / auxiliary comparator & 不实现 &
+      131-Q0 lower ruler 与主比较器已完成七个高段 target。\\
+    决策 LUT/CAM/异常表/单调 clamp & 不实现 &
+      nominal 整体性能通过；不隐藏局部 strict-order diagnostic。\\
+    额外 dither DAC & 不实现 &
+      当前仅验证校准输入等效扰动；PDK 噪声不足时再决定。\\
+    重复 comparator Verilog-A & 删除 &
+      只保留 \code{strongarm\_cmp.va}，避免两个权威实现漂移。\\
+    未使用 accumulator/CDAC RTL & 删除 &
+      accumulator 已在 FSM 内；行为 CDAC 归 VA/Python，不伪装成数字物理模型。\\
+    Bridge-node sampling clamp & 删除 &
+      bridge 是浮动节点；额外 clamp 会改变采样电荷。\\
+    Q2 output & 保留 &
+      理想 Q2 SNDR \IdealCalSndr{} dB；integer-12 约损失3.4 dB。\\
+    Comparator-only terminal & 保留 &
+      不增加电容，提供残差舍入；理想链路已证明。\\
+    P/N 分侧七权重 & 保留 &
+      PER-UNIT P/N独立失配需要分侧重构。\\
+    20-bit Q8 register & 保留 &
+      H32 Q8=548864，16 bit 明确不够。\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\subsection{最终验收结论}
+Q8、128 pairs 和20-bit不是宣称的全局数学最小值，而是本轮已验证、跨 Python/RTL
+一致的工作点。只有目标 PDK/比较器数据证明更小配置仍保持同一 acceptance，
+才继续削减，避免为了“看起来更精简”破坏余量。
+
+% ---------------------------------------------------------------------------
+\section{从当前证据到流片：逻辑可行，但签核未完成}
+
+\subsection{当前有意义的结论}
+
+\begin{itemize}
+  \item split-CDAC、全阵列 sampling、15-stage decisions 与 Q2 decode 在理想
+    条件下自洽；
+  \item PER-UNIT mismatch 的确显著破坏 nominal decode；
+  \item P/N 分侧前景权重校准能在0.5\% nominal 100-seed下稳定恢复整体性能；
+  \item Q8 定点契约已在 Python 和 RTL 闭环；
+  \item 当前 calibration RTL 可综合，setup proxy 满足100 MHz，但 hold 和
+    FPGA IOB wrapper 尚未解决；
+  \item VA 方程与接口合理，可进入 AMS 联调。
+\end{itemize}
+
+\subsection{仍需权威证据}
 
 \begin{table}[htbp]
-\centering
-\caption{验收标准检查表}
-\begin{tabular}{lrlr}
-\toprule
-\textbf{指标} & \textbf{实测值} & \textbf{门限} & \textbf{判定} \\
-\midrule
-SNDR P50 (1\% $\sigma$) & 74.50 dB & — & \pass \\
-ENOB P50 & 12.08 bit & $\ge$ 12 bit & \pass \\
-Oracle Gap P50 & 0.14 dB & $\le$ 0.5 dB & \pass \\
-校准成功率 & 100/100 & 100/100 & \pass \\
-负收益 & 0/100 & 0 & \pass \\
-缺码 (1000 seeds) & 0 & 0 & \pass \\
-最大跳码 & 1 & $\le$ 1 & \pass \\
-DNL peak P95 & 0.87 LSB & $<$ 1.0 LSB & \pass \\
-INL peak P95 & 0.92 LSB & $<$ 1.0 LSB & \pass \\
-RTL Warnings & 0 & 0 & \pass \\
-RTL Slack & +0.297 ns & $>$ 0 & \pass \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{流片前的闭环清单}
+  \begin{tabularx}{\textwidth}{@{}p{37mm}p{42mm}Y@{}}
+    \toprule
+    \tablehead 项目 & 当前状态 & 下一层必须获得的证据\\
+    \midrule
+    CDAC ratio/mismatch &
+      behavioral PER-UNIT MC &
+      目标 PDK MOMCAP unit、layout、foundry MC、extracted parasitics。\\
+    Sampling switch &
+      理想 rail connection/charge capture &
+      Ron/settling、charge injection、clock feedthrough、bootstrap reliability。\\
+    Comparator &
+      behavioral polarity/delay &
+      transistor offset/noise/metastability、kickback、PVT。\\
+    Reference &
+      ideal rails &
+      switching energy、droop、buffer settling、package impedance。\\
+    Digital &
+      calibration subset &
+      normal SAR/Q2 top、CDC/DFT、ASIC synthesis/STA。\\
+    Mixed signal &
+      VA source review &
+      Spectre/AMS compile、trace cross-check、PVT/MC、post-layout。\\
+    Silicon &
+      尚无 &
+      coherent FFT、code-density、calibration time/yield、application monotonicity。\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-\vspace{6pt}
-\begin{center}
-\fcolorbox{greenpass}{greenbg}{\parbox{0.8\textwidth}{\centering\large\textbf{全部 11 项验收指标通过}}
-}
-\end{center}
+\begin{verdictbox}[title=\textbf{“逻辑能否流片”的准确回答}]{Teal}
+  当前底层电荷、采样、decision、校准和数字重构之间没有已知逻辑断裂，
+  方案有继续进入 transistor/AMS/ASIC 实现的意义；但“可以继续实现”不等于
+  “已经 tapeout-ready”。没有目标 PDK、晶体管级、reference、post-layout
+  和 ASIC signoff STA，就不能给出直接流片承诺。
+\end{verdictbox}
 
-\subsection{Python 管线实测数据来源}
+% ---------------------------------------------------------------------------
+\section{复现、版本管理与证据溯源}
 
-本报告所有性能数据来源于 Python 行为级模型的 100-seed Monte Carlo 管线运行:
+\subsection{最短复现路径}
 
-{\footnotesize
-\begin{verbatim}
-运行ID: dbac69f3
-脚本:   run_final_calibration_pipeline.py
-配置:   AVG_PAIRS=128, MC_SIGMA=0.01, CAL_NOISE=1mV
-CSV:    validation_results/final_pipeline/
-        final_pipeline_dbac69f3.csv
-JSON:   validation_results/final_pipeline/
-        final_summary_dbac69f3.json
-RTL:    Vivado 2018.3, xc7z020clg400-1, 100 MHz
-        scripts/synth_timing.rpt (0 错误 0 警告)
-        scripts/synth_util.rpt  (321 LUT, 473 FF)
-\end{verbatim}}
+\begin{notebox}
+  \ttfamily\small
+  1.\quad python -m pytest\\[1mm]
+  2.\quad scripts\textbackslash run\_mismatch\_matrix.ps1
+    -Seeds 100 -AveragePairs 128\\[1mm]
+  3.\quad python -m python\_cal.validation.summarize\_mismatch\_matrix\\[1mm]
+  4.\quad python scripts\textbackslash freeze\_mismatch\_evidence.py\\[1mm]
+  5.\quad python scripts\textbackslash generate\_report\_figures.py\\[1mm]
+  6.\quad python scripts\textbackslash generate\_report\_metrics.py\\[1mm]
+  7.\quad xelatex -interaction=nonstopmode -halt-on-error final\_report.tex
+    \quad（连续三次）
+\end{notebox}
 
-\vspace{1cm}
-\begin{center}
-\rule{0.4\textwidth}{0.5pt}\\[6pt]
-{\footnotesize AI 辅助声明: 本项目使用 AI 辅助编码工具 (CODEX, Trae/DeepSeek) 开发。\\
-所有 AI 生成代码已经人工审查与验证。}
-\end{center}
+也可使用 \code{scripts/reproduce.ps1 -RunMismatchMatrix -BuildPdf}。
+Vivado synthesis 使用相对仓库路径的 \code{scripts/synth\_cal.tcl}，输出
+utilization、setup、hold、timing summary 和 check-timing reports。
+
+\subsection{版本隔离}
+
+\begin{itemize}
+  \item 当前 active figures 只有 \code{docs/figures/mismatch\_report/}；
+  \item v3.0 图、结果和旧 generator 全部归档到 \code{docs/archive/v3.0/}；
+  \item current report 不引用 archive；
+  \item working validation results 可重跑，但最终 PDF 只读 \code{evidence/}；
+  \item 图内使用英文，中文只在正文和 caption，减少字体与连接格式风险；
+  \item 每张图先单独放大视觉检查，再在 PDF 中逐页检查。
+\end{itemize}
+
+\subsection{冻结 provenance}
+
+Pipeline SHA-256：
+
+\begin{notebox}
+  \hashvalue{\MatrixPipelineHash}
+\end{notebox}
+
+Calibrator SHA-256：
+
+\begin{notebox}
+  \hashvalue{\MatrixCalibratorHash}
+\end{notebox}
+
+Config SHA-256：
+
+\begin{notebox}
+  \hashvalue{\MatrixConfigHash}
+\end{notebox}
+
+% ---------------------------------------------------------------------------
+\section{最终结论}
+
+\begin{enumerate}
+  \item 理想模型正确：\IdealCalSndr{} dB、0 missing、0 backstep；
+  \item 失配是主退化源；physical oracle 证明阵列上限仍在，nominal decoder
+    权重失配才是主要问题；
+  \item 0.5\% PER-UNIT nominal 经 Q8 前景校准后 dynamic/static/combined
+    100/100，说明整体性能已经稳住；
+  \item 1.0\% stress 仍 dynamic 100/100、static 98/100、无缺码；不为两个
+    轻微 INL 尾点过度设计；
+  \item 0.3 mV 仅是 calibration-only decorrelation，用来解除 lower-SAR
+    量化锁定，不代表 normal conversion 需要注噪；
+  \item 局部 backstep 被完整量化：最大1 LSB、输入宽度窄；当前是诊断，
+    不是架构重做触发器；
+  \item RTL calibration subset 通过 XSIM 并可综合；setup proxy met，
+    但 hold -0.147 ns、4端点和 IOB 273.6\%说明 FPGA wrapper/implementation
+    仍需完成；
+  \item Verilog-A 已具备合理方程和端口，但尚未 Spectre 编译；
+  \item 当前方案逻辑上值得继续推进，距离 tapeout signoff 仍需 full RTL、
+    AMS、PDK、transistor、reference、PVT、post-layout 与 ASIC STA。
+\end{enumerate}
+
+\begin{verdictbox}[title=\textbf{最终工程判断}]{Green}
+  不需要围绕局部单调性继续“做梦式”扩张；应把下一阶段资源集中到真正缺失的
+  full-ADC RTL、AMS trace、目标 PDK MOMCAP/开关/比较器、reference settling
+  和 ASIC implementation signoff。当前 nominal mismatch-calibration 场景
+  已达到行为级目标，报告同时保留 stress tail 与数字时序缺口，没有把不完整证据
+  包装成流片完成。
+\end{verdictbox}
+
+\appendix
+\section{文件到结论的映射}
+
+\small
+\begin{longtable}{@{}p{47mm}p{48mm}p{47mm}@{}}
+  \caption{关键文件、输出与权威边界}\\
+  \toprule
+  \tablehead 文件/目录 & 直接输出 & 不能替代的证据\\
+  \midrule
+  \endfirsthead
+  \toprule
+  \tablehead 文件/目录 & 直接输出 & 不能替代的证据\\
+  \midrule
+  \endhead
+  \code{config.py}, \code{topology/} &
+    stage/cap/switch contract &
+    不证明电路 settling 或 noise。\\
+  \pathcode{physical/charge_solver.py} &
+    top/bridge 电荷守恒 &
+    不证明 extracted parasitics。\\
+  \code{shen\_calibrator.py} &
+    P/N Q8 foreground weights &
+    不证明 comparator circuit。\\
+  \code{sar\_decoder.py} &
+    nominal/cal/oracle Q2 code &
+    不改变 physical decisions。\\
+  \pathcode{reachable_codebook.py} &
+    exact DNL/INL/missing/backstep &
+    不自动提供应用级 strict-monotonic requirement。\\
+  \code{cal\_fsm.sv} &
+    synthesizable control/arithmetic &
+    不证明完整 ADC conversion。\\
+  \pathcode{sar_subconverter.sv} &
+    calibration lower-SAR ruler &
+    不是 normal SAR sequencer。\\
+  \code{cdac\_behavioral.va} &
+    AMS CDAC equation skeleton &
+    不证明 MOMCAP PDK/layout。\\
+  \code{strongarm\_cmp.va} &
+    behavioral polarity/delay/ready &
+    不证明 transistor StrongArm。\\
+  \code{synth\_*.rpt} &
+    FPGA synthesis proxy &
+    不替代 post-route FPGA 或 ASIC STA。\\
+  \pathcode{evidence/mismatch_matrix/} &
+    formal frozen statistics &
+    不包含 transistor/silicon results。\\
+  \pathcode{ENGINEERING_ARCHITECTURE.md} &
+    repository ownership contract &
+    不替代实际 tests/reports。\\
+  \bottomrule
+\end{longtable}
+\normalsize
 
 \end{document}

@@ -1,4 +1,4 @@
-"""Authoritative configuration for the v3.0 Python SAR ADC model.
+"""Authoritative configuration for the v3.1 Python SAR ADC model.
 
 Active CDAC (per side, integer unit capacitors only):
 
@@ -51,19 +51,8 @@ SIGNAL_STAGES = tuple(s.index for s in STAGE_SPECS if s.role == "signal")
 AUX_STAGES = tuple(s.index for s in STAGE_SPECS if s.role != "signal")
 STAGE_NAMES = [s.name for s in STAGE_SPECS]
 
-# ── TSMC 180nm 工艺参数 ──
-# 工艺: TSMC 180nm 1P6M CMOS
-# MOM 电容类型: 横向通量 MOM (metal-oxide-metal fringe)
-# 金属层: M4-M6 堆叠 (典型), 可选 M2-M6 增加密度
-CU = 4e-15                   # 单位电容 4 fF (用户规格)
-
-# Pelgrom 失配 (直接给定, 避免单位链式换算)
-# A_C ≈ 1.0 %·μm  (保守; TSMC 180nm MOM 实测 0.5-0.8 %·μm)
-# 1Cu 面积 ≈ 2 μm²  (4 fF @ ~2 fF/μm² MOM 密度)
-# σ(ΔC/C)_1Cu = A_C / √(area) = 1.0 / √2 ≈ 0.707%
-MOM_AC_PELGROM_PCT_UM = 1.0   # %·μm
-MOM_1CU_AREA_UM2 = 2.0        # μm²
-MOM_SIGMA_1CU = 0.00707       # σ(ΔC/C)_1Cu ≈ 0.707% (预计算值)
+# Behavioral scale only.  CU is not a PDK MOMCAP selection or area claim.
+CU = 4e-15
 
 VREF = 1.8
 VREFN = 0.0
@@ -133,43 +122,30 @@ SHEN_LOWER_STAGES = {
     for target in SHEN_CAL_TARGETS
 }
 
-FRAC_BITS = 6
-Q_SCALE = 1 << FRAC_BITS
+CAL_WEIGHT_FRAC_BITS = 8
+# Calibration weights are stored as Q8 in the synthesizable RTL; Python uses
+# the same lattice after every target update.
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  校准参数 — 12-bit 反过度设计配置
+#  校准参数 — 当前正式矩阵采用 128 pairs。
 #
-#  实验验证 (见 analysis/ 目录):
-#    AVG_PAIRS 扫 16-512:  128 对后 oracle gap < 1 dB, 256 对后饱和
-#    噪声 × pairs 热力图:  1mV 噪声下 64 对 gap=0.69 dB, 128 对 gap=0.66 dB
-#    Dither 消融实验:      噪声 ≥ 1 LSB 时 dither 无增益
-#
-#  配置级 (推荐值):
-#    AVG_PAIRS = 128        → 12-bit 甜点: gap < 1 dB, 时间 = 512 的 1/4
-#    AVG_PAIRS = 64         → 激进: gap ≈ 0.7 dB, 时间再减半
-#    AVG_PAIRS = 16         → 仅当比较器噪声 < 0.5 mV 时可用
-#    DITHER_LSB = (0.0,)  → 噪声 ≥ 1 LSB 时 dither 冗余, 已关闭
+#  128 是本轮 Python/RTL 共同实现值，不外推为跨 PDK 的全局最优值。
+#  零校准扰动组用于隔离失配；300 μV RMS 组仅检查比较器输入等效扰动
+#  能否解除重复 lower-SAR 结果的量化锁定。
 # ═══════════════════════════════════════════════════════════════════════════
 AVG_PAIRS = 128           # 12-bit 推荐 (原 512 过度设计)
 WEIGHT_TOL = 0.20         # 权重异常检测阈值 ±20%
-UPDATE_DEADBAND_LSB = 0.0 # 更新死区 (0=禁用)
 
 # ── Dither 配置 ──
-# 消融实验结论: 噪声 ≥ 1 LSB 或 AVG_PAIRS ≥ 32 时 dither 无增益.
-# 当前 1mV 噪声 + 128 对 → 无需 dither. 关闭可省 dither DAC 硬件.
-# 若需恢复: SHEN_DITHER_LSB = (-1.5, -0.5, 0.5, 1.5)
+# 正式矩阵不依赖额外 dither DAC；0.3 mV 是校准比较器输入等效噪声。
+# 若目标比较器噪声不足以解除量化锁定，可再评估受控 dither，而不是
+# 在当前行为模型中预先增加硬件。
 SHEN_DITHER_LSB = (0.0,)
 
-# All 14 physical conversion capacitors sample VIN; only bridge is internal.
-VCM_SAMPLE_MASK = 0   # deprecated: 全采样后无 VCM mask
-PHYSICAL_TO_WEIGHT_STAGE = {  # deprecated: 仅作文档保留
-    1: 13, 2: 12, 3: 11, 4: 10, 5: 9, 6: 8, 7: 7,
-    8: 6, 9: 5, 10: 4, 11: 3, 12: 2, 13: 1, 14: 0,
-}
-
-# ── 比较器噪声 ──  统一 300 μV RMS
-CAL_NOISE_SIGMA_V = 0.0003    # 300 μV RMS
-CONV_NOISE_SIGMA_LSB = 0.68   # 300 μV / (VREF/4096)
+# ── 比较器噪声 ──
+# 失配主验证通过 SAR_CAL_NOISE_SIGMA_V=0 隔离校准噪声；300 μV 仅作为
+# 校准抗扰动对照。正常转换的 Python 主路径不注入噪声。
+CAL_NOISE_SIGMA_V = 0.0003
 
 FFT_N = 4096
 FFT_K = 1019   # ~2.49 MHz @ Fs=10 MHz (was 127, ~310 kHz)
@@ -177,24 +153,9 @@ FFT_FS = 10e6
 FFT_AMPLITUDE_DBFS = -0.5
 FFT_PHASE = 0.123
 
-SCENARIOS = {
-    "ideal": {"md": [1.0] * 7, "mu": [1.0] * 7},
-    "det_alt_2pct": {
-        "md": [1.02, 0.98, 1.02, 0.98, 1.02, 0.98, 1.02],
-        "mu": [1.02, 0.98, 1.02, 0.98, 1.02, 0.98, 1.02],
-    },
-    "det_alt_5pct": {
-        "md": [1.05, 0.95, 1.05, 0.95, 1.05, 0.95, 1.05],
-        "mu": [1.05, 0.95, 1.05, 0.95, 1.05, 0.95, 1.05],
-    },
-}
-
-# TSMC 180nm MOM 单元电容失配
-#
-# Pelgrom 系数: A_C = 1.0 %·μm → σ(ΔC/C)₁Cu_pair ≈ 1.0/√2 = 0.707%
-# 以下 σ 均为单个 Cu 的标准差 (不是 pair mismatch):
-#   0.71% — 典型 (optimised common-centroid + dummy)
-#   1.0%  — 保守 (minimal area, no dummy)
+# 单位电容失配探索值。没有当前 PDK MOMCAP Monte Carlo/版图抽取证据，
+# 因此 0.5% 作为标称研究点、1% 作为压力点，均不得表述为工艺签核值。
+# 以下 sigma 是单个 Cu 的标准差，不是整个 group 的相对标准差。
 MC_SIGMA = 0.01
 # 失配实现模式:
 #   "per_unit"            — 逐 Cu 独立 N(CU, CU·σ), σ_cap = σ/√N   [默认, 物理]
@@ -205,7 +166,6 @@ MISMATCH_MODE = "per_unit"
 #           "calibrated_only" = 仅校准目标 (高段 7 个) 失配, 低段+桥接标称
 #           "base_ruler_only" = 仅基准尺 (低段 7+桥接 1) 失配, 高段标称
 MISMATCH_SCOPE = "all"
-MC_SIGMA = 0.01
 
 def should_mismatch(cap_name: str) -> bool:
     """是否对该电容加失配。"""
@@ -220,4 +180,3 @@ def should_mismatch(cap_name: str) -> bool:
 
 # ── 输入信号 ──
 MC_SEEDS_PIPELINE = 100
-MC_SEEDS_ISOLATION = 50

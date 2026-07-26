@@ -1,5 +1,11 @@
 # v3.0 发布结果
 
+> **历史快照，不是当前验收结果。** 本页保留旧版
+> `512 pairs / 1 mV calibration noise / k=127` 数据用于版本追溯。
+> 当前失配矩阵、Q2-to-Q2公平比较与结论以
+> `evidence/mismatch_matrix/mismatch_matrix_summary.json` 和
+> `docs/final_report.pdf` 为准。
+
 ## 运行条件
 
 - run ID: `dbac69f3`

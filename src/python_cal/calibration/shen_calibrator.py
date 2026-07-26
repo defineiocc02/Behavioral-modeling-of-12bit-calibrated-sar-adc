@@ -23,10 +23,11 @@ Calibration order: H1 -> H2 -> H4 -> H8-R -> H8-A -> H16 -> H32.
 与旧 calDAC balance-search 方案的差异:
   - 残差通过正常 SAR 低位转换的完整输出码读出, 而非 calDAC 搜索
   - 不需要 calDAC 自校准或 calDAC 尺子精度
-  - force 状态关于 VCM 对称，并用成对固定 dither 平均失调/锁码
+  - force 状态关于 VCM 对称；固定 dither 为可选项，正式矩阵默认关闭
   - stage 14 is a comparator-only terminal decision
 """
 from dataclasses import dataclass, field
+import math
 
 from python_cal import config as cfg
 from python_cal.physical.differential_cdac import DifferentialCDAC
@@ -327,6 +328,13 @@ class ShenCalibrationController:
             self.state = ShenCalibrationState.TARGET_ESTIMATE
             wp = wp_sum / self.avg_pairs
             wn = wn_sum / self.avg_pairs
+            # Match the synthesizable register interface exactly.  RTL
+            # lower-SAR sums are Q8 and its arithmetic shift truncates each
+            # committed target back to Q8.  Retaining progressively finer
+            # fractions here would give Python precision absent in hardware.
+            q_scale = 1 << cfg.CAL_WEIGHT_FRAC_BITS
+            wp = math.floor(wp * q_scale) / q_scale
+            wn = math.floor(wn * q_scale) / q_scale
             w_avg = (wp + wn) / 2.0
 
             # 有效性检查

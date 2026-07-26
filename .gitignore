@@ -35,6 +35,9 @@ tsmc180-analysis/
 
 # Auto-generated provenance (re-created on every run)
 **/run_manifest.json
+!evidence/
+!evidence/**/
+!evidence/**/run_manifest.json
 
 # Pipeline output (reproducible, not source)
 src/python_cal/validation_results/

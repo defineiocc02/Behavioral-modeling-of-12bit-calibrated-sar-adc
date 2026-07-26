@@ -8,27 +8,32 @@
 // Operation (per subconversion):
 //   1. Apply force state: target cap to VREFN or VREFP, higher caps to VCM
 //   2. Run SAR trial on lower stages (descending nominal weight order)
-//   3. Return decisions[15] and computed signed_sum
+//   3. Return decisions[15] and the side-specific signed Q8 sum
 //
-// The signed_sum uses NOMINAL weights (base ruler assumption).
+// Previously calibrated high-segment weights are read from the register file.
+// Low-segment and terminal weights remain the nominal base ruler, matching the
+// Python recursive calibration path.
 
 module sar_subconverter #(
   parameter int N_STAGES           = 15,
-  parameter int N_LOWER_STAGES_MAX = 8,
-  parameter int WEIGHT_WIDTH       = 16
+  parameter int N_LOWER_STAGES_MAX = 14,
+  parameter int WEIGHT_WIDTH       = 20,
+  parameter int SUBSUM_WIDTH       = 24
 ) (
   input  logic                     clk,
   input  logic                     rst_n,
   input  logic                     start,
   input  logic [2:0]               target_idx,    // 0..6 → target stage
-  input  logic [1:0]               phase,         // 1=P0, 2=P1, 3=N0, 4=N1
+  input  logic [2:0]               phase,         // 1=P0, 2=P1, 3=N0, 4=N1
   input  logic                     cmp_out,       // comparator result
+  input  logic [WEIGHT_WIDTH-1:0]  weights_p [6:0],
+  input  logic [WEIGHT_WIDTH-1:0]  weights_n [6:0],
   output logic [1:0]               sw_p_h [6:0],
   output logic [1:0]               sw_n_h [6:0],
   output logic [1:0]               sw_p_l [6:0],
   output logic [1:0]               sw_n_l [6:0],
   output logic                     done,
-  output logic signed [15:0]              signed_sum     // signed Q0 sum
+  output logic signed [SUBSUM_WIDTH-1:0] signed_sum
 );
 
   // ── Switch encoding ──
@@ -103,7 +108,10 @@ module sar_subconverter #(
   logic [3:0] n_lower_cur;      // number of lower stages for current target
 
   // Accumulated signed sum
-  logic [15:0] accum_sum;
+  logic signed [SUBSUM_WIDTH-1:0] accum_sum;
+  logic [3:0] selected_trial_stage;
+  logic signed [SUBSUM_WIDTH-1:0] selected_weight_p_q8;
+  logic signed [SUBSUM_WIDTH-1:0] selected_weight_n_q8;
 
   // Force state for current phase
   logic [1:0] force_rail;       // VREFN or VREFP
@@ -152,6 +160,35 @@ module sar_subconverter #(
     return stage - 7;
   endfunction
 
+  always_comb begin
+    selected_trial_stage = lower_stages[target_idx][trial_idx];
+    if (selected_trial_stage < 7) begin
+      // Register index 0 is H1(stage 6), index 6 is H32(stage 0).
+      selected_weight_p_q8 = $signed({
+        {(SUBSUM_WIDTH-WEIGHT_WIDTH){1'b0}},
+        weights_p[6-selected_trial_stage]
+      });
+      selected_weight_n_q8 = $signed({
+        {(SUBSUM_WIDTH-WEIGHT_WIDTH){1'b0}},
+        weights_n[6-selected_trial_stage]
+      });
+    end else begin
+      selected_weight_p_q8 = $signed({
+        {(SUBSUM_WIDTH-16){1'b0}}, NOM_Q0[selected_trial_stage]
+      }) <<< 8;
+      selected_weight_n_q8 = $signed({
+        {(SUBSUM_WIDTH-16){1'b0}}, NOM_Q0[selected_trial_stage]
+      }) <<< 8;
+    end
+  end
+
+  // synthesis translate_off
+  initial begin
+    if (SUBSUM_WIDTH < WEIGHT_WIDTH || SUBSUM_WIDTH < 24)
+      $error("SUBSUM_WIDTH must be >= max(WEIGHT_WIDTH, 24)");
+  end
+  // synthesis translate_on
+
   // ── SAR FSM ──
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -176,8 +213,8 @@ module sar_subconverter #(
           done <= 1'b0;
           if (start) begin
             // Determine force rail
-            force_is_p <= (phase == 2'd1 || phase == 2'd2);  // P0, P1 → force P side
-            force_rail <= (phase == 2'd1 || phase == 2'd3) ? SW_VREFN : SW_VREFP;
+            force_is_p <= (phase == 3'd1 || phase == 3'd2);  // P0, P1 → force P side
+            force_rail <= (phase == 3'd1 || phase == 3'd3) ? SW_VREFN : SW_VREFP;
             // P0: P→VREFN | P1: P→VREFP | N0: N→VREFN | N1: N→VREFP
             n_lower_cur <= n_lower[target_idx];
             trial_idx   <= '0;
@@ -218,21 +255,21 @@ module sar_subconverter #(
 
         SAR_TRIAL: begin
           // Trial: P side AND N side both toggle current lower cap to VREFP
-          trial_stage <= lower_stages[target_idx][trial_idx];
+          trial_stage <= selected_trial_stage;
 
-          if (trial_stage == 4'd14) begin
+          if (selected_trial_stage == 4'd14) begin
             // Terminal stage: compare directly without switching
             sar_state <= SAR_COMMIT;
           end else begin
             // Determine if trial stage is high or low
-            if (trial_stage < 7) begin
+            if (selected_trial_stage < 7) begin
               // High cap trial: toggle both sides
-              sw_p_h[trial_stage] <= SW_VREFP;
-              sw_n_h[trial_stage] <= SW_VREFP;
+              sw_p_h[selected_trial_stage] <= SW_VREFP;
+              sw_n_h[selected_trial_stage] <= SW_VREFP;
             end else begin
               // Low cap trial
-              sw_p_l[low_stage_to_lidx(trial_stage)] <= SW_VREFP;
-              sw_n_l[low_stage_to_lidx(trial_stage)] <= SW_VREFP;
+              sw_p_l[low_stage_to_lidx(selected_trial_stage)] <= SW_VREFP;
+              sw_n_l[low_stage_to_lidx(selected_trial_stage)] <= SW_VREFP;
             end
             sar_state <= SAR_COMMIT;
           end
@@ -243,7 +280,7 @@ module sar_subconverter #(
           // Convention:
           //   cmp_out=0 (VTOP_P < VTOP_N): P side kept VREFP → Vdiff INCREASES → +weight
           //   cmp_out=1 (VTOP_P > VTOP_N): N side kept VREFP → Vdiff DECREASES → -weight
-          // signed_sum = Σ(+NOM_Q0 for P-contrib) + Σ(-NOM_Q0 for N-contrib)
+          // signed_sum_Q8 = sum(+W_P for P) + sum(-W_N for N).
           if (cmp_out) begin
             // VTOP_P > VTOP_N: keep N side at VREFP, P side back to VCM
             // N side contributes → negative signed sum
@@ -252,7 +289,7 @@ module sar_subconverter #(
             end else if (trial_stage != 4'd14) begin
               sw_p_l[low_stage_to_lidx(trial_stage)] <= SW_VCM;
             end
-            accum_sum <= accum_sum - $signed({1'b0, NOM_Q0[trial_stage]});
+            accum_sum <= accum_sum - selected_weight_n_q8;
           end else begin
             // VTOP_P < VTOP_N: keep P side at VREFP, N side back to VCM
             // P side contributes → positive signed sum
@@ -261,7 +298,7 @@ module sar_subconverter #(
             end else if (trial_stage != 4'd14) begin
               sw_n_l[low_stage_to_lidx(trial_stage)] <= SW_VCM;
             end
-            accum_sum <= accum_sum + $signed({1'b0, NOM_Q0[trial_stage]});
+            accum_sum <= accum_sum + selected_weight_p_q8;
           end
 
           if (trial_idx >= n_lower_cur - 1) begin

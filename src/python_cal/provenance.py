@@ -122,8 +122,8 @@ def generate_manifest(
     dnl_iter: int = 15,
     mc_seeds: int = 100,
     mc_sigma_pct: float = 0.5,
-    avg_pairs: int = 512,
-    cal_noise_sigma_v: float = 0.001,
+    avg_pairs: int = 128,
+    cal_noise_sigma_v: float = 0.0003,
 ) -> RunManifest:
     """生成运行溯源清单"""
     if repo_dir is None:

@@ -1,139 +1,145 @@
-// tb_cal_rtl.sv — Calibration RTL FSM Verification with Injected signed_sum
-//
-// Strategy: instead of modeling the full CDAC + comparator physics,
-// inject controlled signed_sum values that test the FSM arithmetic.
-// This cleanly separates FSM correctness from analog model correctness.
-//
-// For each target, during calibration:
-//   P0: signed_sum = +TARGET_NOMINAL   (force-0 pulls target down, SAR compensates up)
-//   P1: signed_sum = -TARGET_NOMINAL   (force-1 pulls target up, SAR compensates down)
-//   N0: signed_sum = -TARGET_NOMINAL   (N-side force-0)
-//   N1: signed_sum = +TARGET_NOMINAL   (N-side force-1)
-//
-// Then: W_P = sum(P0-P1) / (2*N_PAIRS) = sum(2*TARGET_NOM) / (2*N_PAIRS) = TARGET_NOM
-//       W_N = sum(N1-N0) / (2*N_PAIRS) = sum(2*TARGET_NOM) / (2*N_PAIRS) = TARGET_NOM
-//
-// Expected: all calibrated weights = nominal values (no mismatch case).
-
+// tb_cal_rtl.sv — self-checking calibration arithmetic/FSM test
 `timescale 1ns / 1ps
 
 module tb_cal_rtl;
-
   parameter int CLK_PERIOD_NS = 10;
-  parameter int N_TARGETS     = 7;
-  parameter int N_PAIRS       = 4;    // Faster simulation
+  parameter int N_TARGETS = 7;
+  parameter int N_PAIRS = 4;
+  parameter int WEIGHT_WIDTH = 20;
+  parameter int SUBSUM_WIDTH = 24;
 
-  // Target nominal Q0 values
-  localparam int TARGET_NOM_Q0 [0:6] = '{67, 134, 268, 536, 536, 1072, 2144};
+  localparam int TARGET_NOM_Q0 [0:6] = '{
+    67, 134, 268, 536, 536, 1072, 2144
+  };
 
   logic clk = 0;
   logic rst_n;
+  logic start;
+  logic subconv_done;
+  logic signed [SUBSUM_WIDTH-1:0] subconv_signed_sum;
+  logic start_subconv;
+  logic [2:0] target_idx;
+  logic [2:0] phase;
+  logic [$clog2(N_PAIRS)-1:0] pair_cnt;
+  logic acc_valid;
+  logic wreg_we;
+  logic [2:0] wreg_addr;
+  logic [WEIGHT_WIDTH-1:0] wreg_wp, wreg_wn;
+  logic cal_done, cal_failed;
+
+  logic pending_response;
+  logic [2:0] pending_phase;
+  logic [2:0] pending_target;
+  logic [4:1] phase_seen;
+  integer write_count;
+  integer timeout_cycles;
+
   always #(CLK_PERIOD_NS/2) clk = ~clk;
 
-  logic        start;
-  logic        cmp_out;
-  logic        cal_done;
-  logic [1:0]  sw_p_h [6:0];
-  logic [1:0]  sw_n_h [6:0];
-  logic [1:0]  sw_p_l [6:0];
-  logic [1:0]  sw_n_l [6:0];
-  logic [15:0] weights_p [N_TARGETS-1:0];
-  logic [15:0] weights_n [N_TARGETS-1:0];
-
-  // ── DUT ──
-  cal_top #(.N_TARGETS(N_TARGETS), .N_PAIRS(N_PAIRS)) u_dut (
-    .clk(clk), .rst_n(rst_n), .start(start), .cmp_out(cmp_out),
-    .cal_done(cal_done), .sw_p_h(sw_p_h), .sw_n_h(sw_n_h),
-    .sw_p_l(sw_p_l), .sw_n_l(sw_n_l),
-    .weights_p(weights_p), .weights_n(weights_n)
+  cal_fsm #(
+    .N_TARGETS(N_TARGETS),
+    .N_PAIRS(N_PAIRS),
+    .WEIGHT_WIDTH(WEIGHT_WIDTH),
+    .SUBSUM_WIDTH(SUBSUM_WIDTH)
+  ) u_dut (
+    .clk(clk),
+    .rst_n(rst_n),
+    .start(start),
+    .subconv_done(subconv_done),
+    .subconv_signed_sum(subconv_signed_sum),
+    .start_subconv(start_subconv),
+    .target_idx(target_idx),
+    .phase(phase),
+    .pair_cnt(pair_cnt),
+    .acc_valid(acc_valid),
+    .wreg_we(wreg_we),
+    .wreg_addr(wreg_addr),
+    .wreg_wp(wreg_wp),
+    .wreg_wn(wreg_wn),
+    .cal_done(cal_done),
+    .cal_failed(cal_failed)
   );
 
-  // ── Injected signed_sum emulation ──
-  // Watches target_idx and phase, waits for subconv_done via SAR,
-  // and produces a dummy cmp_out for the SAR to consume.
-  // The real SAR subconverter generates signed_sum based on its own
-  // internal logic interacting with cmp_out. We can't directly inject signed_sum.
-  //
-  // Instead, we observe that the SAR subconverter's signed_sum is a linear
-  // function of cmp_out decisions. By controlling cmp_out, we indirectly
-  // control signed_sum.
-  //
-  // For subconversions that SHOULD produce +TARGET_NOMINAL signed_sum,
-  // we make cmp_out=0 for low-weight stages (P side contributes → positive)
-  // and cmp_out=1 for high-weight stages (N side contributes → negative).
-  //
-  // Wait, that's the SAR decision, not the signed_sum injection.
-  //
-  // SIMPLER APPROACH: The signed_sum from subconverter is computed as a
-  // weighted sum of comparator decisions. Instead of trying to control
-  // decisions individually, we just let the SAR run (cmp_out toggles
-  // randomly) and note that the CONVERGENCE depends on the signed_sum
-  // difference between force states. For the injection test, we bypass
-  // the CDAC entirely and use a random but consistent cmp_out source.
-
-  // ── Simple free-running comparator (random toggle) ──
-  logic cmp_toggle;
-  always_ff @(posedge clk) cmp_toggle <= ~cmp_toggle;
-  assign cmp_out = cmp_toggle;
-
-  integer pass_count, fail_count;
-
-  initial begin
-    pass_count = 0; fail_count = 0;
-
-    rst_n = 0; start = 0;
-    #(CLK_PERIOD_NS * 10);
-    rst_n = 1;
-    #(CLK_PERIOD_NS * 5);
-
-    $display("╔══════════════════════════════════════════════════╗");
-    $display("║  SAR ADC Cal RTL — FSM Verification             ║");
-    $display("╠══════════════════════════════════════════════════╣");
-    $display("║  N_TARGETS=%0d  N_PAIRS=%0d  Strategy: cmp_inject    ║", N_TARGETS, N_PAIRS);
-    $display("╚══════════════════════════════════════════════════╝");
-
-    $display("\n[%0t] Starting calibration FSM...", $time);
-    start = 1; #(CLK_PERIOD_NS); start = 0;
-    @(posedge cal_done);
-    $display("[%0t] Calibration FSM DONE\n", $time);
-
-    $display("┌──────────────────────────────────────────────────┐");
-    $display("│  Calibration Weight Output                       │");
-    $display("├──────────┬────────────┬────────────┬─────────────┤");
-    $display("│ Target   │ W_P(Q0)    │ W_N(Q0)    │ Nominal     │");
-    $display("├──────────┼────────────┼────────────┼─────────────┤");
-    for (int i = 0; i < N_TARGETS; i++) begin
-      real wp = real'(weights_p[i]) / 256.0;
-      real wn = real'(weights_n[i]) / 256.0;
-      string nm;
-      case (i) 0:nm="H1C"; 1:nm="H2C"; 2:nm="H4C"; 3:nm="H8CR";
-               4:nm="H8CA";5:nm="H16C";6:nm="H32C"; endcase
-      $display("│ %s      │ %10.1f │ %10.1f │ %10d  │",
-               nm, wp, wn, TARGET_NOM_Q0[i]);
+  // One-cycle-latency lower-SAR response.  Values implement:
+  // P0=+W_Q8, P1=-W_Q8, N0=-W_Q8, N1=+W_Q8, hence both
+  // half-differences equal W_Q8.
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      subconv_done <= 1'b0;
+      subconv_signed_sum <= '0;
+      pending_response <= 1'b0;
+      pending_phase <= '0;
+      pending_target <= '0;
+      phase_seen <= '0;
+    end else begin
+      subconv_done <= 1'b0;
+      if (start_subconv) begin
+        pending_response <= 1'b1;
+        pending_phase <= phase;
+        pending_target <= target_idx;
+        if (phase >= 1 && phase <= 4)
+          phase_seen[phase] <= 1'b1;
+      end else if (pending_response) begin
+        pending_response <= 1'b0;
+        subconv_done <= 1'b1;
+        case (pending_phase)
+          3'd1, 3'd4:
+            subconv_signed_sum <= (
+              TARGET_NOM_Q0[pending_target] <<< 8
+            );
+          3'd2, 3'd3:
+            subconv_signed_sum <= -(
+              TARGET_NOM_Q0[pending_target] <<< 8
+            );
+          default:
+            $fatal(1, "illegal phase %0d", pending_phase);
+        endcase
+      end
     end
-    $display("└──────────┴────────────┴────────────┴─────────────┘");
+  end
 
-    $display("\n┌──────────────────────────────────────────────────┐");
-    $display("│  Verification Items                              │");
-    $display("├──────────────────────────────────────────────────┤");
-    $display("│  xvlog: 6 modules analyzed, 0 errors     PASS   │");
-    $display("│  xelab: static elaboration complete      PASS   │");
-    $display("│  xsim:  FSM reached DONE state           PASS   │");
-    $display("│  Targets: 7/7 completed                  PASS   │");
-    $display("│  Clocks:  %0d elapsed                     INFO   │", $time / CLK_PERIOD_NS);
-    $display("└──────────────────────────────────────────────────┘");
-
-    $display("\n╔══════════════════════════════════════════════════╗");
-    $display("║  VERDICT: ALL STRUCTURAL CHECKS PASSED           ║");
-    $display("║  FSM + HW infrastructure verified at RTL level   ║");
-    $display("╚══════════════════════════════════════════════════╝");
-
-    #(CLK_PERIOD_NS * 5);
-    $finish;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      write_count <= 0;
+    end else if (wreg_we) begin
+      if (wreg_addr !== write_count[2:0])
+        $fatal(1, "write order mismatch: addr=%0d expected=%0d",
+               wreg_addr, write_count);
+      if (wreg_wp !== (TARGET_NOM_Q0[wreg_addr] << 8))
+        $fatal(1, "W_P mismatch target=%0d got=%0d expected=%0d",
+               wreg_addr, wreg_wp, TARGET_NOM_Q0[wreg_addr] << 8);
+      if (wreg_wn !== (TARGET_NOM_Q0[wreg_addr] << 8))
+        $fatal(1, "W_N mismatch target=%0d got=%0d expected=%0d",
+               wreg_addr, wreg_wn, TARGET_NOM_Q0[wreg_addr] << 8);
+      write_count <= write_count + 1;
+    end
   end
 
   initial begin
-    $dumpfile("tb_cal_rtl.vcd");
-    $dumpvars(0, tb_cal_rtl);
+    rst_n = 0;
+    start = 0;
+    timeout_cycles = 0;
+    repeat (5) @(posedge clk);
+    rst_n = 1;
+    repeat (2) @(posedge clk);
+    start = 1;
+    @(posedge clk);
+    start = 0;
+
+    while (!cal_done && timeout_cycles < 5000) begin
+      @(posedge clk);
+      timeout_cycles = timeout_cycles + 1;
+    end
+    if (!cal_done)
+      $fatal(1, "timeout waiting for cal_done");
+    if (cal_failed)
+      $fatal(1, "calibration unexpectedly failed");
+    if (write_count != N_TARGETS)
+      $fatal(1, "only %0d/%0d targets committed", write_count, N_TARGETS);
+    if (phase_seen !== 4'b1111)
+      $fatal(1, "not all P0/P1/N0/N1 phases observed: %b", phase_seen);
+
+    $display("PASS: 7/7 targets, P0/P1/N0/N1, Q8 width and averaging");
+    $finish;
   end
 endmodule

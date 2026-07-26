@@ -157,6 +157,15 @@ def audit_reachable_codebook(
     )
     float_steps = np.diff(codes_float)
     int_steps = np.diff(codes_int)
+    prior_float_max = np.maximum.accumulate(codes_float)
+    prior_integer_max = np.maximum.accumulate(codes_int)
+    float_violation = codes_float < prior_float_max - 1e-12
+    integer_violation = codes_int < prior_integer_max
+    interval_widths = np.asarray(
+        [leaf.width_v for leaf in leaves],
+        dtype=np.float64,
+    )
+    input_span = float(leaves[-1].v_hi - leaves[0].v_lo)
 
     represented = np.zeros(decoder.max_code + 1, dtype=bool)
     represented[np.clip(codes_int, 0, decoder.max_code)] = True
@@ -176,6 +185,18 @@ def audit_reachable_codebook(
             float(np.min(float_steps)) if len(float_steps) else 0.0
         ),
         "n_integer_backsteps": int(np.count_nonzero(int_steps < 0)),
+        "max_float_rollback_lsb": float(
+            np.max(prior_float_max - codes_float)
+        ),
+        "max_integer_rollback_lsb": int(
+            np.max(prior_integer_max - codes_int)
+        ),
+        "float_nonmonotonic_input_fraction": float(
+            np.sum(interval_widths[float_violation]) / input_span
+        ),
+        "integer_nonmonotonic_input_fraction": float(
+            np.sum(interval_widths[integer_violation]) / input_span
+        ),
         "max_integer_jump": (
             int(np.max(int_steps)) if len(int_steps) else 0
         ),

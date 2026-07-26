@@ -5,15 +5,15 @@ debug_entry.py — SAR ADC 校准系统 一键调试入口
   python debug_entry.py                           # 默认配置: MC=1%, AVG=128
   python debug_entry.py --mc 0.02                 # 2% 失配
   python debug_entry.py --pairs 64                # 64 对平均
-  python debug_entry.py --no-dither               # 关闭 dither
+  python debug_entry.py --no-dither               # 明确保持 dither 关闭
   python debug_entry.py --mc 0.01 --pairs 64 --seed 42  # 组合
 
 可调参数 (要跑得快就降 --pairs 和 --mc):
   --mc FLOAT      单位电容失配 sigma (默认 0.01 = 1%)
   --pairs INT     校准平均对数 (默认 128, 激进 64, 保守 512)
   --seed INT      随机种子 (默认 42)
-  --no-dither     关闭 dither (默认启用)
-  --noise FLOAT   校准噪声 mV RMS (默认 1.0)
+  --no-dither     关闭 dither（正式配置本身也默认关闭）
+  --noise FLOAT   校准比较器输入等效噪声 mV RMS (默认 0.3)
   --nfft INT      FFT 点数 (默认 4096)
   --skip-multi    跳过多 sigma 扫描 (单次更快)
 
@@ -58,11 +58,11 @@ args = parser.parse_args()
 MC_SIGMA = args.mc
 AVG_PAIRS = args.pairs
 SEED = args.seed
-USE_DITHER = not args.no_dither
 CAL_NOISE = args.noise * 1e-3
 N_FFT = args.nfft
 FFT_K = cfg.FFT_K
-DITHER = cfg.SHEN_DITHER_LSB if USE_DITHER else (0.0,)
+DITHER = cfg.SHEN_DITHER_LSB if not args.no_dither else (0.0,)
+USE_DITHER = any(abs(value) > 0.0 for value in DITHER)
 VCM = cfg.VCM
 MAX_CODE = (1 << cfg.N_BITS) - 1
 

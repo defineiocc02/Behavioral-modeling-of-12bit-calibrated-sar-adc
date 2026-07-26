@@ -1,0 +1,126 @@
+{
+  "run_id": "5fac58bb",
+  "timestamp": "20260725_220105",
+  "mode": "7-target high-segment calibration + recursive Q8 weights + full-array sampling + Q2 weighted decoder + rectangular coherent FFT",
+  "mc_seeds": 1,
+  "seed_start": 10000,
+  "mc_sigma": 0.0,
+  "cal_noise_sigma_v": 0.0,
+  "avg_pairs": 128,
+  "mismatch_mode": "per_unit",
+  "mismatch_scope": "all",
+  "cal_weight_fractional_bits": 8,
+  "output_fractional_bits": 2,
+  "static_test": "exact_reachable_decision_tree_every_seed",
+  "static_linearity": "exact_code_density_interval_widths",
+  "formal_backsteps_reported_separately": true,
+  "oracle_gap_verdict": "PASS",
+  "absolute_dynamic_verdict": "PASS",
+  "acceptance_verdict": "PASS",
+  "min_cal_enob_bits": 11.5,
+  "min_cal_sndr_db": 70.99,
+  "static_verdict": "PASS",
+  "formal_monotonic_verdict": "PASS",
+  "n_valid": 1,
+  "n_total": 1,
+  "gap_p50_db": 0.0,
+  "gap_p95_db": 0.0,
+  "gap_pass_05db": 1,
+  "gap_pass_10db": 1,
+  "cal_gain_p50_db": 0.0,
+  "cal_gain_min_db": 0.0,
+  "sndr_nom_p50_db": 74.643,
+  "sndr_nom_min_db": 74.643,
+  "sndr_cal_p50_db": 74.643,
+  "sndr_cal_min_db": 74.643,
+  "sndr_cal_int12_p50_db": 71.208,
+  "sndr_phy_p50_db": 74.643,
+  "sndr_phy_min_db": 74.643,
+  "enob_nom_p50": 12.107,
+  "enob_cal_p50": 12.107,
+  "enob_cal_min": 12.107,
+  "enob_cal_int12_p50": 11.536,
+  "enob_phy_p50": 12.107,
+  "negative_gain_pct": 0.0,
+  "dnl_peak_p95_lsb": 0.6762,
+  "dnl_peak_max_lsb": 0.6762,
+  "inl_peak_p95_lsb": 0.7533,
+  "inl_peak_max_lsb": 0.7533,
+  "total_missing_codes": 0,
+  "total_integer_backsteps": 0,
+  "elapsed_s": 11.7,
+  "weight_errors": {
+    "H1C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H2C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H4C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H8C-R": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H8C-A": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H16C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H32C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    }
+  },
+  "ratio_errors": {
+    "H1C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H2C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H4C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H8C-R": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H8C-A": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H16C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    },
+    "H32C": {
+      "P50": 0.0,
+      "P95": 0.0,
+      "mean": 0.0
+    }
+  }
+}

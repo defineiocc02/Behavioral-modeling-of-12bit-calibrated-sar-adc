@@ -19,8 +19,9 @@ run_final_calibration_pipeline.py — SAR ADC 校准验收管线
   - 否则 -> FAIL
 
 变更历史:
-  v3.0 locks the 138-Cu integer array, full-array sampling, ordinary
+  v3.1 locks the 138-Cu integer array, full-array sampling, ordinary
   weighted-sum decode, exact code-density static metrics and coherent FFT.
+  Recursive calibration commits every target to the same Q8 lattice as RTL.
   - v6: 每 seed 精确可达静态审计；不改变论文式加权 decoder
 """
 import sys, os, math, csv, json, hashlib, time
@@ -30,7 +31,14 @@ from datetime import datetime, timezone
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(SCRIPT_DIR)
 sys.path.insert(0, SRC_DIR)
-OUT_DIR = os.path.join(SCRIPT_DIR, "validation_results", "final_pipeline")
+DEFAULT_OUT_DIR = os.path.join(
+    SCRIPT_DIR,
+    "validation_results",
+    "final_pipeline",
+)
+OUT_DIR = os.path.abspath(
+    os.environ.get("SAR_OUT_DIR", DEFAULT_OUT_DIR)
+)
 os.makedirs(OUT_DIR, exist_ok=True)
 
 from python_cal import config as cfg
@@ -54,14 +62,18 @@ from python_cal.validation.reachable_codebook import (
     audit_reachable_codebook,
     enumerate_reachable_leaves,
 )
+from python_cal.validation.acceptance import evaluate_acceptance
 
 # ===================================================================
 # 参数 (全部从 config 引用, 不硬编码)
 # ===================================================================
 MC_SEEDS   = int(os.environ.get("SAR_MC_SEEDS", cfg.MC_SEEDS_PIPELINE))
-MC_SIGMA   = cfg.MC_SIGMA
-CAL_NOISE  = cfg.CAL_NOISE_SIGMA_V
+MC_SIGMA   = float(os.environ.get("SAR_MC_SIGMA", cfg.MC_SIGMA))
+CAL_NOISE  = float(
+    os.environ.get("SAR_CAL_NOISE_SIGMA_V", cfg.CAL_NOISE_SIGMA_V)
+)
 AVG_PAIRS  = int(os.environ.get("SAR_AVG_PAIRS", cfg.AVG_PAIRS))
+SEED_START = int(os.environ.get("SAR_SEED_START", "10000"))
 MAX_CODE   = (1 << N_BITS) - 1  # 4095
 N_FFT      = cfg.FFT_N
 FFT_K      = cfg.FFT_K
@@ -186,6 +198,11 @@ def run_one_seed(seed, _seed_idx):
         [nominal_decoder.decode(d) for d in decisions],
         n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
     )
+    met_nom = compute_fft_coherent(
+        [nominal_decoder.decode_fixed(d, fractional_bits=2)
+         for d in decisions],
+        n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
+    )
     met_phy_int = compute_fft_coherent(
         [physical_decoder.decode(d) for d in decisions],
         n_bits=N_BITS, n_fft=N_FFT, signal_bin=FFT_K,
@@ -260,6 +277,18 @@ def run_one_seed(seed, _seed_idx):
             "worst_float_step_lsb": static_result[
                 "worst_float_step_lsb"
             ],
+            "max_float_rollback_lsb": static_result[
+                "max_float_rollback_lsb"
+            ],
+            "max_integer_rollback_lsb": static_result[
+                "max_integer_rollback_lsb"
+            ],
+            "float_nonmonotonic_input_fraction": static_result[
+                "float_nonmonotonic_input_fraction"
+            ],
+            "integer_nonmonotonic_input_fraction": static_result[
+                "integer_nonmonotonic_input_fraction"
+            ],
             "dnl_peak": static_result["dnl_peak_lsb"],
             "dnl_rms": static_result["dnl_rms_lsb"],
             "inl_peak": static_result["inl_peak_lsb"],
@@ -273,25 +302,28 @@ def run_one_seed(seed, _seed_idx):
     # --- Result ---
     gap = round(met_phy["sndr_db"] - met_cal["sndr_db"], 3) if valid else -999
     gain = round(
-        met_cal["sndr_db"] - met_nom_int["sndr_db"], 3
+        met_cal["sndr_db"] - met_nom["sndr_db"], 3
     ) if valid else -999
 
     return {
         "seed": seed,
         "valid": valid,
-        "nominal_sndr": met_nom_int["sndr_db"],
+        "nominal_sndr": met_nom["sndr_db"],
+        "nominal_sndr_int12": met_nom_int["sndr_db"],
         "physical_sndr": met_phy["sndr_db"],
         "calibrated_sndr": met_cal["sndr_db"],
         "physical_sndr_int12": met_phy_int["sndr_db"],
         "calibrated_sndr_int12": met_cal_int["sndr_db"],
         "oracle_gap_db": gap,
         "cal_gain_db": gain,
-        "nominal_enob": met_nom_int["enob"],
+        "nominal_enob": met_nom["enob"],
+        "nominal_enob_int12": met_nom_int["enob"],
         "physical_enob": met_phy["enob"],
         "calibrated_enob": met_cal["enob"],
         "physical_enob_int12": met_phy_int["enob"],
         "calibrated_enob_int12": met_cal_int["enob"],
-        "nominal_sfdr": met_nom_int["sfdr_db"],
+        "nominal_sfdr": met_nom["sfdr_db"],
+        "nominal_sfdr_int12": met_nom_int["sfdr_db"],
         "physical_sfdr": met_phy["sfdr_db"],
         "calibrated_sfdr": met_cal["sfdr_db"],
         "calibration_error": calibration_error or "",
@@ -310,7 +342,8 @@ def run_one_seed(seed, _seed_idx):
 run_timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 run_id = hashlib.md5(run_timestamp.encode()).hexdigest()[:8]
 mode_label = (
-    "7-target high-segment calibration + full-array sampling + Q2 weighted decoder + rectangular coherent FFT"
+    "7-target high-segment calibration + recursive Q8 weights + "
+    "full-array sampling + Q2 weighted decoder + rectangular coherent FFT"
 )
 
 print("=" * 70)
@@ -326,7 +359,7 @@ results = []
 t_start = time.time()
 
 for si in range(MC_SEEDS):
-    seed = 10000 + si
+    seed = SEED_START + si
     r = run_one_seed(seed, si)
     results.append(r)
 
@@ -353,8 +386,10 @@ if nv == 0:
 
 gaps = np.array([r["oracle_gap_db"] for r in valid_r])
 gains = np.array([r["cal_gain_db"] for r in valid_r])
+sndr_nom = np.array([r["nominal_sndr"] for r in valid_r])
 sndr_cal = np.array([r["calibrated_sndr"] for r in valid_r])
 sndr_phy = np.array([r["physical_sndr"] for r in valid_r])
+enob_nom = np.array([r["nominal_enob"] for r in valid_r])
 enob_cal = np.array([r["calibrated_enob"] for r in valid_r])
 enob_phy = np.array([r["physical_enob"] for r in valid_r])
 sndr_cal_int12 = np.array([
@@ -419,36 +454,33 @@ elif gap_p50 <= 1.0 and gap_p95 <= 3.0:
 else:
     oracle_gap_verdict = "FAIL"
 
-absolute_dynamic_pass = (
-    nv == MC_SEEDS
-    and bool(np.all(enob_cal > MIN_CAL_ENOB_BITS))
-    and bool(np.all(sndr_cal > MIN_CAL_SNDR_DB))
+# A histogram can combine disjoint input intervals into one code bin, so its
+# DNL/INL result cannot prove that a redundant SAR transfer is order-preserving.
+# Report strict ordering independently.  It remains diagnostic under the
+# current release contract and can be promoted to a hard gate by an application
+# that explicitly requires monotonic conversion.
+verdicts = evaluate_acceptance(
+    n_valid=nv,
+    n_seeds=MC_SEEDS,
+    calibrated_enob=enob_cal,
+    calibrated_sndr_db=sndr_cal,
+    min_enob_bits=MIN_CAL_ENOB_BITS,
+    min_sndr_db=MIN_CAL_SNDR_DB,
+    total_missing_codes=n_missing_codes,
+    max_integer_jumps=[
+        r["static"]["max_integer_jump"] for r in valid_r
+    ],
+    dnl_peaks_lsb=dnl_peaks,
+    inl_peaks_lsb=inl_peaks,
+    total_integer_backsteps=n_non_monotonic,
+    require_strict_monotonicity=False,
 )
-absolute_dynamic_verdict = "PASS" if absolute_dynamic_pass else "FAIL"
-
-# Paper-style static signoff uses the exact deterministic limit of a slow-ramp
-# code-density test: no missing codes, no jump wider than one output code, and
-# peak DNL/INL <= 1 LSB.  Formal sub-LSB local backsteps are reported
-# separately; redundant decision-word overlap makes that a strictly stronger
-# property than the DNL/INL convention used in silicon measurements.
-static_pass = (
-    nv == MC_SEEDS
-    and n_missing_codes == 0
-    and all(r["static"]["max_integer_jump"] <= 1 for r in valid_r)
-    and len(dnl_peaks) == MC_SEEDS
-    and bool(np.all(dnl_peaks <= 1.0))
-    and len(inl_peaks) == MC_SEEDS
-    and bool(np.all(inl_peaks <= 1.0))
-)
-static_verdict = "PASS" if static_pass else "FAIL"
-formal_monotonic_verdict = (
-    "PASS" if n_non_monotonic == 0 else "DIAGNOSTIC FAIL"
-)
-
-acceptance_verdict = (
-    "PASS" if absolute_dynamic_verdict == "PASS" and static_verdict == "PASS"
-    else "FAIL"
-)
+absolute_dynamic_verdict = verdicts["absolute_dynamic_verdict"]
+static_verdict = verdicts["code_density_static_verdict"]
+formal_monotonic_verdict = verdicts[
+    "mismatch_transfer_integrity_verdict"
+]
+acceptance_verdict = verdicts["acceptance_verdict"]
 
 print(f"\n{'='*70}")
 print(f"  FINAL RESULTS")
@@ -458,6 +490,7 @@ print(f"  Oracle gap P50:      {gap_p50:.3f} dB")
 print(f"  Oracle gap P95:      {gap_p95:.3f} dB")
 print(f"  Gap <= 0.5 dB:       {gap_pass_05}/{MC_SEEDS}")
 print(f"  Gap <= 1.0 dB:       {gap_pass_10}/{MC_SEEDS}")
+print(f"  SNDR pre Q2 P50:     {np.percentile(sndr_nom,50):.2f} dB")
 print(f"  SNDR cal P50:        {np.percentile(sndr_cal,50):.2f} dB")
 print(f"  SNDR int12 P50:      {np.percentile(sndr_cal_int12,50):.2f} dB")
 print(f"  SNDR phy P50:        {np.percentile(sndr_phy,50):.2f} dB")
@@ -495,7 +528,7 @@ print(f"  ACCEPTANCE VERDICT: {acceptance_verdict}")
 # ===================================================================
 manifest = generate_manifest(
     repo_dir=SRC_DIR,
-    random_seed=10000,
+    random_seed=SEED_START,
     fft_n=N_FFT,
     fft_k=FFT_K,
     fft_fs=cfg.FFT_FS,
@@ -503,7 +536,7 @@ manifest = generate_manifest(
     mc_seeds=MC_SEEDS,
     mc_sigma_pct=MC_SIGMA * 100,
     avg_pairs=AVG_PAIRS,
-    cal_noise_sigma_v=cfg.CAL_NOISE_SIGMA_V,
+    cal_noise_sigma_v=CAL_NOISE,
 )
 save_manifest_compact(manifest, OUT_DIR)
 print(f"  Provenance saved: {OUT_DIR}/run_manifest.json")
@@ -515,13 +548,19 @@ csv_path = os.path.join(OUT_DIR, f"final_pipeline_{run_id}.csv")
 base_fields = ["seed","valid","calibration_error",
                "nominal_sndr","physical_sndr","calibrated_sndr","oracle_gap_db","cal_gain_db",
                "nominal_enob","physical_enob","calibrated_enob",
+               "nominal_sndr_int12",
                "physical_sndr_int12","calibrated_sndr_int12",
+               "nominal_enob_int12",
                "physical_enob_int12","calibrated_enob_int12",
+               "nominal_sfdr_int12",
                "nominal_sfdr","physical_sfdr","calibrated_sfdr"]
 static_fields = [
     "dnl_peak", "dnl_rms", "inl_peak", "inl_rms",
     "n_missing", "n_non_monotonic", "n_float_backsteps",
     "worst_float_step_lsb", "max_integer_jump",
+    "max_float_rollback_lsb", "max_integer_rollback_lsb",
+    "float_nonmonotonic_input_fraction",
+    "integer_nonmonotonic_input_fraction",
 ]
 fields = base_fields + static_fields
 for ts in TARGET_STAGES:
@@ -551,9 +590,13 @@ summary = {
     "timestamp": run_timestamp,
     "mode": mode_label,
     "mc_seeds": MC_SEEDS,
+    "seed_start": SEED_START,
     "mc_sigma": MC_SIGMA,
     "cal_noise_sigma_v": CAL_NOISE,
     "avg_pairs": AVG_PAIRS,
+    "mismatch_mode": cfg.MISMATCH_MODE,
+    "mismatch_scope": cfg.MISMATCH_SCOPE,
+    "cal_weight_fractional_bits": cfg.CAL_WEIGHT_FRAC_BITS,
     "output_fractional_bits": OUTPUT_FRACTIONAL_BITS,
     "static_test": "exact_reachable_decision_tree_every_seed",
     "static_linearity": "exact_code_density_interval_widths",
@@ -571,19 +614,29 @@ summary = {
     "gap_p95_db": gap_p95,
     "gap_pass_05db": gap_pass_05,
     "gap_pass_10db": gap_pass_10,
+    "cal_gain_p50_db": round(float(np.percentile(gains, 50)), 3),
+    "cal_gain_min_db": round(float(np.min(gains)), 3),
+    "sndr_nom_p50_db": round(float(np.percentile(sndr_nom, 50)), 3),
+    "sndr_nom_min_db": round(float(np.min(sndr_nom)), 3),
     "sndr_cal_p50_db": round(float(np.percentile(sndr_cal, 50)), 3),
+    "sndr_cal_min_db": round(float(np.min(sndr_cal)), 3),
     "sndr_cal_int12_p50_db": round(
         float(np.percentile(sndr_cal_int12, 50)), 3
     ),
     "sndr_phy_p50_db": round(float(np.percentile(sndr_phy, 50)), 3),
+    "sndr_phy_min_db": round(float(np.min(sndr_phy)), 3),
+    "enob_nom_p50": round(float(np.percentile(enob_nom, 50)), 3),
     "enob_cal_p50": round(float(np.percentile(enob_cal, 50)), 3),
+    "enob_cal_min": round(float(np.min(enob_cal)), 3),
     "enob_cal_int12_p50": round(
         float(np.percentile(enob_cal_int12, 50)), 3
     ),
     "enob_phy_p50": round(float(np.percentile(enob_phy, 50)), 3),
     "negative_gain_pct": round(n_neg_gain / nv * 100, 1) if nv > 0 else 100,
     "dnl_peak_p95_lsb": round(float(np.percentile(dnl_peaks, 95)), 4) if len(dnl_peaks) > 0 else -1,
+    "dnl_peak_max_lsb": round(float(np.max(dnl_peaks)), 4) if len(dnl_peaks) > 0 else -1,
     "inl_peak_p95_lsb": round(float(np.percentile(inl_peaks, 95)), 4) if len(inl_peaks) > 0 else -1,
+    "inl_peak_max_lsb": round(float(np.max(inl_peaks)), 4) if len(inl_peaks) > 0 else -1,
     "total_missing_codes": int(n_missing_codes),
     "total_integer_backsteps": int(n_non_monotonic),
     "elapsed_s": round(elapsed_total, 1),
@@ -619,7 +672,9 @@ report = [
     f"| Oracle gap P95 | {gap_p95:.3f} dB |",
     f"| Gap <= 0.5 dB | {gap_pass_05}/{MC_SEEDS} ({gap_pass_05/MC_SEEDS*100:.0f}%) |",
     f"| Gap <= 1.0 dB | {gap_pass_10}/{MC_SEEDS} ({gap_pass_10/MC_SEEDS*100:.0f}%) |",
+    f"| SNDR pre-cal P50 (Q2) | {np.percentile(sndr_nom,50):.2f} dB |",
     f"| SNDR cal P50 (Q2) | {np.percentile(sndr_cal,50):.2f} dB |",
+    f"| Calibration gain P50 (Q2-to-Q2) | {np.percentile(gains,50):.2f} dB |",
     f"| SNDR cal P50 (integer 12b diagnostic) | {np.percentile(sndr_cal_int12,50):.2f} dB |",
     f"| ENOB cal P50 (Q2) | {np.percentile(enob_cal,50):.2f} bit |",
     f"| ENOB cal P50 (integer 12b diagnostic) | {np.percentile(enob_cal_int12,50):.2f} bit |",

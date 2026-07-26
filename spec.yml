@@ -1,5 +1,5 @@
 block: 12bit-asynchronous-sar-adc-python
-version: 3.0.0
+version: 3.1.0
 process: behavioral-model
 supply: 1.8
 eda_mode: review
@@ -30,13 +30,36 @@ acceptance:
   code_density_dnl_peak: {max: 1.0, unit: LSB}
   code_density_inl_peak: {max: 1.0, unit: LSB}
 
+diagnostics:
+  strict_integer_backsteps: {target: 0, unit: boundary}
+  strict_monotonicity_required_for_release: false
+
 verification:
   dynamic_mc_seeds: 100
-  unit_cap_sigma: 0.005
-  calibration_pairs: 512
-  calibration_noise_sigma_v: 0.001
+  primary_behavioral_case:
+    unit_cap_sigma: 0.005
+    calibration_noise_sigma_v: 0.0003
+    normal_conversion_noise_sigma_v: 0.0
+    purpose: nominal mismatch-calibration acceptance
+  stress_case:
+    unit_cap_sigma: 0.01
+    calibration_noise_sigma_v: 0.0003
+    normal_conversion_noise_sigma_v: 0.0
+    purpose: margin characterization, not the nominal release gate
+  mismatch_isolation:
+    unit_cap_sigma: [0.0, 0.005, 0.01]
+    calibration_pairs: 128
+    calibration_noise_sigma_v: 0.0
+    purpose: expose mismatch and zero-disturbance lower-SAR quantization lock
+  calibration_stability:
+    unit_cap_sigma: [0.005, 0.01]
+    calibration_pairs: 128
+    calibration_noise_sigma_v: 0.0003
+    purpose: secondary perturbation test; normal conversion remains noiseless
+  mismatch_model: independent per-unit Gaussian summed into each group
+  calibration_weight_format: Q8, truncated after every target
   fft_points: 4096
-  coherent_bin: 127
+  coherent_bin: 1019
   fft_phase_rad: 0.123
   amplitude_dbfs: -0.5
   window: rectangular
@@ -44,5 +67,7 @@ verification:
 
 scope_limits:
   - Python behavioral evidence only; no transistor-level or silicon claim.
-  - Formal sub-LSB local backsteps are reported as a separate diagnostic.
+  - Code-density linearity and strict transfer ordering are separate results.
+  - Strict monotonicity becomes a hard gate only if the application requires it.
+  - Calibration-noise injection is not normal-conversion noise.
   - Chen 2024 informs redundancy criteria only; this is not its circuit.

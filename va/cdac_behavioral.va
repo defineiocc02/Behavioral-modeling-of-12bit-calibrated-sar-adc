@@ -1,230 +1,158 @@
-// cdac_behavioral.va — Split-CDAC charge-conservation behavioral model
+// cdac_behavioral.va — differential split-CDAC charge-conservation model
 //
-// 138 Cu/side, two-segment with bridge capacitor.
-// Solves VTOP and VBRIDGE from charge conservation at each timestep.
-//
-// Topology (per side):
-//   High segment: H32C(32), H16C(16), H8C_A(8), H8C_R(8),
-//                 H4C(4), H2C(2), H1C(1)  = 71 Cu
-//   Bridge:       2 Cu
-//   Low segment:  L32C(32), L16C(16), L8C(8), L4C(4),
-//                 L2C_A(2), L2C_R(2), L1C(1) = 65 Cu
-//   Total / side: 71 + 2 + 65 = 138 Cu
-//
-// Charge conservation (floating nodes VTOP, VBRIDGE):
-//   [C_high+C_bridge,      -C_bridge        ] [VTOP]    = [b1]
-//   [-C_bridge,             C_low+C_bridge   ] [VBRIDGE] = [b2]
-//
-//   b1 = Q_top_sampled + SUM(C_high_i * Vbot_high_i)
-//   b2 = Q_bridge_sampled + SUM(C_low_j * Vbot_low_j)
+// The P and N arrays have independent bottom-plate ports and independent
+// mismatch parameters.  SAMPLE high clamps only VTOP to VCM; VBRIDGE remains
+// the internal floating split-array node and assumes its capacitive-divider
+// voltage.  The falling SAMPLE edge captures both node charges from VINP/VINN
+// on all 14 physical capacitors.  Subsequent bottom-plate rail changes are
+// solved by the exact two-node charge-conservation matrix on each side.
 
 `include "constants.vams"
 `include "disciplines.vams"
 
-module cdac_behavioral(vtop_p, vtop_n, vbridge_p, vbridge_n,
-                       vbot_h0, vbot_h1, vbot_h2, vbot_h3,
-                       vbot_h4, vbot_h5, vbot_h6,
-                       vbot_l0, vbot_l1, vbot_l2, vbot_l3,
-                       vbot_l4, vbot_l5, vbot_l6);
-  // ── Ports ──
-  inout vtop_p, vtop_n, vbridge_p, vbridge_n;
-  input vbot_h0, vbot_h1, vbot_h2, vbot_h3, vbot_h4, vbot_h5, vbot_h6;
-  input vbot_l0, vbot_l1, vbot_l2, vbot_l3, vbot_l4, vbot_l5, vbot_l6;
+module cdac_behavioral(
+  vtop_p, vtop_n, vbridge_p, vbridge_n,
+  vinp, vinn, sample,
+  vbot_p_h0, vbot_p_h1, vbot_p_h2, vbot_p_h3,
+  vbot_p_h4, vbot_p_h5, vbot_p_h6,
+  vbot_p_l0, vbot_p_l1, vbot_p_l2, vbot_p_l3,
+  vbot_p_l4, vbot_p_l5, vbot_p_l6,
+  vbot_n_h0, vbot_n_h1, vbot_n_h2, vbot_n_h3,
+  vbot_n_h4, vbot_n_h5, vbot_n_h6,
+  vbot_n_l0, vbot_n_l1, vbot_n_l2, vbot_n_l3,
+  vbot_n_l4, vbot_n_l5, vbot_n_l6
+);
+  output vtop_p, vtop_n, vbridge_p, vbridge_n;
+  input vinp, vinn, sample;
+  input vbot_p_h0, vbot_p_h1, vbot_p_h2, vbot_p_h3;
+  input vbot_p_h4, vbot_p_h5, vbot_p_h6;
+  input vbot_p_l0, vbot_p_l1, vbot_p_l2, vbot_p_l3;
+  input vbot_p_l4, vbot_p_l5, vbot_p_l6;
+  input vbot_n_h0, vbot_n_h1, vbot_n_h2, vbot_n_h3;
+  input vbot_n_h4, vbot_n_h5, vbot_n_h6;
+  input vbot_n_l0, vbot_n_l1, vbot_n_l2, vbot_n_l3;
+  input vbot_n_l4, vbot_n_l5, vbot_n_l6;
   electrical vtop_p, vtop_n, vbridge_p, vbridge_n;
-  electrical vbot_h0, vbot_h1, vbot_h2, vbot_h3, vbot_h4, vbot_h5, vbot_h6;
-  electrical vbot_l0, vbot_l1, vbot_l2, vbot_l3, vbot_l4, vbot_l5, vbot_l6;
+  electrical vinp, vinn, sample;
+  electrical vbot_p_h0, vbot_p_h1, vbot_p_h2, vbot_p_h3;
+  electrical vbot_p_h4, vbot_p_h5, vbot_p_h6;
+  electrical vbot_p_l0, vbot_p_l1, vbot_p_l2, vbot_p_l3;
+  electrical vbot_p_l4, vbot_p_l5, vbot_p_l6;
+  electrical vbot_n_h0, vbot_n_h1, vbot_n_h2, vbot_n_h3;
+  electrical vbot_n_h4, vbot_n_h5, vbot_n_h6;
+  electrical vbot_n_l0, vbot_n_l1, vbot_n_l2, vbot_n_l3;
+  electrical vbot_n_l4, vbot_n_l5, vbot_n_l6;
 
-  // ── Parameters: unit capacitance & mismatch ──
-  parameter real CU = 4.0e-15 from (0:inf);            // 4 fF per unit cap
-  parameter real MC_SIGMA = 0.01 from [0:1);           // per-unit sigma
-  parameter integer MC_SEED = 1 from [0:inf);
+  parameter real CU = 4.0e-15 from (0:inf);
+  parameter real VCM_V = 0.9;
+  parameter real SAMPLE_THRESHOLD_V = 0.45;
+  parameter real TR_S = 1.0e-12 from [0:inf);
 
-  // Per-cap mismatched capacitance values (Cu units):
-  // High: H32(32), H16(16), H8A(8), H8R(8), H4(4), H2(2), H1(1)
-  // Bridge: 2
-  // Low:   L32(32), L16(16), L8(8), L4(4), L2A(2), L2R(2), L1(1)
-  parameter real CH0_NCU = 32;    // H32C
-  parameter real CH1_NCU = 16;    // H16C
-  parameter real CH2_NCU = 8;     // H8C_A
-  parameter real CH3_NCU = 8;     // H8C_R
-  parameter real CH4_NCU = 4;     // H4C
-  parameter real CH5_NCU = 2;     // H2C
-  parameter real CH6_NCU = 1;     // H1C
-  parameter real CB_NCU  = 2;     // Bridge
-  parameter real CL0_NCU = 32;    // L32C
-  parameter real CL1_NCU = 16;    // L16C
-  parameter real CL2_NCU = 8;     // L8C
-  parameter real CL3_NCU = 4;     // L4C
-  parameter real CL4_NCU = 2;     // L2C_A
-  parameter real CL5_NCU = 2;     // L2C_R
-  parameter real CL6_NCU = 1;     // L1C
+  parameter real P_MC_H0=1.0, P_MC_H1=1.0, P_MC_H2=1.0;
+  parameter real P_MC_H3=1.0, P_MC_H4=1.0, P_MC_H5=1.0;
+  parameter real P_MC_H6=1.0, P_MC_B=1.0;
+  parameter real P_MC_L0=1.0, P_MC_L1=1.0, P_MC_L2=1.0;
+  parameter real P_MC_L3=1.0, P_MC_L4=1.0, P_MC_L5=1.0;
+  parameter real P_MC_L6=1.0;
+  parameter real N_MC_H0=1.0, N_MC_H1=1.0, N_MC_H2=1.0;
+  parameter real N_MC_H3=1.0, N_MC_H4=1.0, N_MC_H5=1.0;
+  parameter real N_MC_H6=1.0, N_MC_B=1.0;
+  parameter real N_MC_L0=1.0, N_MC_L1=1.0, N_MC_L2=1.0;
+  parameter real N_MC_L3=1.0, N_MC_L4=1.0, N_MC_L5=1.0;
+  parameter real N_MC_L6=1.0;
 
-  // ── Per-side mismatch factors ──
-  // These are set externally to reflect MC mismatch (default 1.0 = nominal)
-  parameter real P_MC_H0 = 1.0; parameter real P_MC_H1 = 1.0;
-  parameter real P_MC_H2 = 1.0; parameter real P_MC_H3 = 1.0;
-  parameter real P_MC_H4 = 1.0; parameter real P_MC_H5 = 1.0;
-  parameter real P_MC_H6 = 1.0; parameter real P_MC_B  = 1.0;
-  parameter real P_MC_L0 = 1.0; parameter real P_MC_L1 = 1.0;
-  parameter real P_MC_L2 = 1.0; parameter real P_MC_L3 = 1.0;
-  parameter real P_MC_L4 = 1.0; parameter real P_MC_L5 = 1.0;
-  parameter real P_MC_L6 = 1.0;
-
-  parameter real N_MC_H0 = 1.0; parameter real N_MC_H1 = 1.0;
-  parameter real N_MC_H2 = 1.0; parameter real N_MC_H3 = 1.0;
-  parameter real N_MC_H4 = 1.0; parameter real N_MC_H5 = 1.0;
-  parameter real N_MC_H6 = 1.0; parameter real N_MC_B  = 1.0;
-  parameter real N_MC_L0 = 1.0; parameter real N_MC_L1 = 1.0;
-  parameter real N_MC_L2 = 1.0; parameter real N_MC_L3 = 1.0;
-  parameter real N_MC_L4 = 1.0; parameter real N_MC_L5 = 1.0;
-  parameter real N_MC_L6 = 1.0;
-
-  // ── Internal variables ──
-  real p_ch0, p_ch1, p_ch2, p_ch3, p_ch4, p_ch5, p_ch6, p_cb;
-  real p_cl0, p_cl1, p_cl2, p_cl3, p_cl4, p_cl5, p_cl6;
-  real n_ch0, n_ch1, n_ch2, n_ch3, n_ch4, n_ch5, n_ch6, n_cb;
-  real n_cl0, n_cl1, n_cl2, n_cl3, n_cl4, n_cl5, n_cl6;
-
-  // Per-side totals
-  real p_ch_total, p_cl_total;
-  real n_ch_total, n_cl_total;
-
-  // Matrix coefficients (per side)
-  real p_a11, p_a12, p_a21, p_a22, p_det;
-  real p_ai11, p_ai12, p_ai21, p_ai22;
-  real n_a11, n_a12, n_a21, n_a22, n_det;
-  real n_ai11, n_ai12, n_ai21, n_ai22;
-
-  // Sampled charge (set via events during sample phase)
-  real q_top_p, q_bridge_p;
-  real q_top_n, q_bridge_n;
-
-  // Solved node voltages
-  real vtop_p_val, vbridge_p_val;
-  real vtop_n_val, vbridge_n_val;
-
-  // Bottom-plate voltages (read from ports)
-  real vh0, vh1, vh2, vh3, vh4, vh5, vh6;
-  real vl0, vl1, vl2, vl3, vl4, vl5, vl6;
-
-  integer sampled;    // 1 if sample charge has been captured
+  real p_h0,p_h1,p_h2,p_h3,p_h4,p_h5,p_h6,p_b;
+  real p_l0,p_l1,p_l2,p_l3,p_l4,p_l5,p_l6;
+  real n_h0,n_h1,n_h2,n_h3,n_h4,n_h5,n_h6,n_b;
+  real n_l0,n_l1,n_l2,n_l3,n_l4,n_l5,n_l6;
+  real p_ht,p_lt,n_ht,n_lt;
+  real p_a11,p_a22,p_det,n_a11,n_a22,n_det;
+  real p_i11,p_i12,p_i21,p_i22,n_i11,n_i12,n_i21,n_i22;
+  real qtp,qbp,qtn,qbn,b1,b2;
+  real vtp,vbp,vtn,vbn;
+  integer sampled;
 
   analog begin
-    // ── Initial block: compute per-side capacitances from parameters ──
     @(initial_step) begin
-      // P-side caps
-      p_ch0 = CU * CH0_NCU * P_MC_H0;  p_ch1 = CU * CH1_NCU * P_MC_H1;
-      p_ch2 = CU * CH2_NCU * P_MC_H2;  p_ch3 = CU * CH3_NCU * P_MC_H3;
-      p_ch4 = CU * CH4_NCU * P_MC_H4;  p_ch5 = CU * CH5_NCU * P_MC_H5;
-      p_ch6 = CU * CH6_NCU * P_MC_H6;  p_cb  = CU * CB_NCU  * P_MC_B;
-      p_cl0 = CU * CL0_NCU * P_MC_L0;  p_cl1 = CU * CL1_NCU * P_MC_L1;
-      p_cl2 = CU * CL2_NCU * P_MC_L2;  p_cl3 = CU * CL3_NCU * P_MC_L3;
-      p_cl4 = CU * CL4_NCU * P_MC_L4;  p_cl5 = CU * CL5_NCU * P_MC_L5;
-      p_cl6 = CU * CL6_NCU * P_MC_L6;
+      p_h0=CU*32*P_MC_H0; p_h1=CU*16*P_MC_H1;
+      p_h2=CU*8*P_MC_H2;  p_h3=CU*8*P_MC_H3;
+      p_h4=CU*4*P_MC_H4;  p_h5=CU*2*P_MC_H5;
+      p_h6=CU*P_MC_H6;    p_b=CU*2*P_MC_B;
+      p_l0=CU*32*P_MC_L0; p_l1=CU*16*P_MC_L1;
+      p_l2=CU*8*P_MC_L2;  p_l3=CU*4*P_MC_L3;
+      p_l4=CU*2*P_MC_L4;  p_l5=CU*2*P_MC_L5;
+      p_l6=CU*P_MC_L6;
+      n_h0=CU*32*N_MC_H0; n_h1=CU*16*N_MC_H1;
+      n_h2=CU*8*N_MC_H2;  n_h3=CU*8*N_MC_H3;
+      n_h4=CU*4*N_MC_H4;  n_h5=CU*2*N_MC_H5;
+      n_h6=CU*N_MC_H6;    n_b=CU*2*N_MC_B;
+      n_l0=CU*32*N_MC_L0; n_l1=CU*16*N_MC_L1;
+      n_l2=CU*8*N_MC_L2;  n_l3=CU*4*N_MC_L3;
+      n_l4=CU*2*N_MC_L4;  n_l5=CU*2*N_MC_L5;
+      n_l6=CU*N_MC_L6;
 
-      p_ch_total = p_ch0 + p_ch1 + p_ch2 + p_ch3 + p_ch4 + p_ch5 + p_ch6;
-      p_cl_total = p_cl0 + p_cl1 + p_cl2 + p_cl3 + p_cl4 + p_cl5 + p_cl6;
-
-      // P-side matrix
-      p_a11 = p_ch_total + p_cb;
-      p_a12 = -p_cb;
-      p_a21 = -p_cb;
-      p_a22 = p_cl_total + p_cb;
-      p_det = p_a11 * p_a22 - p_a12 * p_a21;
-      p_ai11 =  p_a22 / p_det;  p_ai12 = -p_a12 / p_det;
-      p_ai21 = -p_a21 / p_det;  p_ai22 =  p_a11 / p_det;
-
-      // N-side caps
-      n_ch0 = CU * CH0_NCU * N_MC_H0;  n_ch1 = CU * CH1_NCU * N_MC_H1;
-      n_ch2 = CU * CH2_NCU * N_MC_H2;  n_ch3 = CU * CH3_NCU * N_MC_H3;
-      n_ch4 = CU * CH4_NCU * N_MC_H4;  n_ch5 = CU * CH5_NCU * N_MC_H5;
-      n_ch6 = CU * CH6_NCU * N_MC_H6;  n_cb  = CU * CB_NCU  * N_MC_B;
-      n_cl0 = CU * CL0_NCU * N_MC_L0;  n_cl1 = CU * CL1_NCU * N_MC_L1;
-      n_cl2 = CU * CL2_NCU * N_MC_L2;  n_cl3 = CU * CL3_NCU * N_MC_L3;
-      n_cl4 = CU * CL4_NCU * N_MC_L4;  n_cl5 = CU * CL5_NCU * N_MC_L5;
-      n_cl6 = CU * CL6_NCU * N_MC_L6;
-
-      n_ch_total = n_ch0 + n_ch1 + n_ch2 + n_ch3 + n_ch4 + n_ch5 + n_ch6;
-      n_cl_total = n_cl0 + n_cl1 + n_cl2 + n_cl3 + n_cl4 + n_cl5 + n_cl6;
-
-      // N-side matrix
-      n_a11 = n_ch_total + n_cb;
-      n_a12 = -n_cb;
-      n_a21 = -n_cb;
-      n_a22 = n_cl_total + n_cb;
-      n_det = n_a11 * n_a22 - n_a12 * n_a21;
-      n_ai11 =  n_a22 / n_det;  n_ai12 = -n_a12 / n_det;
-      n_ai21 = -n_a21 / n_det;  n_ai22 =  n_a11 / n_det;
-
-      sampled = 0;
-      q_top_p = 0.0;  q_bridge_p = 0.0;
-      q_top_n = 0.0;  q_bridge_n = 0.0;
+      p_ht=p_h0+p_h1+p_h2+p_h3+p_h4+p_h5+p_h6;
+      p_lt=p_l0+p_l1+p_l2+p_l3+p_l4+p_l5+p_l6;
+      n_ht=n_h0+n_h1+n_h2+n_h3+n_h4+n_h5+n_h6;
+      n_lt=n_l0+n_l1+n_l2+n_l3+n_l4+n_l5+n_l6;
+      p_a11=p_ht+p_b; p_a22=p_lt+p_b;
+      p_det=p_a11*p_a22-p_b*p_b;
+      p_i11=p_a22/p_det; p_i12=p_b/p_det;
+      p_i21=p_b/p_det;   p_i22=p_a11/p_det;
+      n_a11=n_ht+n_b; n_a22=n_lt+n_b;
+      n_det=n_a11*n_a22-n_b*n_b;
+      n_i11=n_a22/n_det; n_i12=n_b/n_det;
+      n_i21=n_b/n_det;   n_i22=n_a11/n_det;
+      sampled=0;
+      qtp=0.0; qbp=0.0; qtn=0.0; qbn=0.0;
     end
 
-    // ── Read bottom-plate voltages ──
-    vh0 = V(vbot_h0);  vh1 = V(vbot_h1);  vh2 = V(vbot_h2);
-    vh3 = V(vbot_h3);  vh4 = V(vbot_h4);  vh5 = V(vbot_h5);
-    vh6 = V(vbot_h6);
-    vl0 = V(vbot_l0);  vl1 = V(vbot_l1);  vl2 = V(vbot_l2);
-    vl3 = V(vbot_l3);  vl4 = V(vbot_l4);  vl5 = V(vbot_l5);
-    vl6 = V(vbot_l6);
+    @(cross(V(sample)-SAMPLE_THRESHOLD_V,+1)) sampled=0;
+    @(cross(V(sample)-SAMPLE_THRESHOLD_V,-1)) begin
+      // All high and low physical capacitors sample their side's input.
+      // VBRIDGE has no sampling clamp.  Its sampled voltage is the
+      // capacitive-divider solution with VTOP=VCM and all low bottoms at VIN.
+      vbp=(p_b*VCM_V+p_lt*V(vinp))/(p_b+p_lt);
+      vbn=(n_b*VCM_V+n_lt*V(vinn))/(n_b+n_lt);
+      qtp=p_ht*(VCM_V-V(vinp))+p_b*(VCM_V-vbp);
+      qbp=p_b*(vbp-VCM_V)+p_lt*(vbp-V(vinp));
+      qtn=n_ht*(VCM_V-V(vinn))+n_b*(VCM_V-vbn);
+      qbn=n_b*(vbn-VCM_V)+n_lt*(vbn-V(vinn));
+      sampled=1;
+    end
 
-    // ── Charge-conservation solve: VTOP = ai11*b1 + ai12*b2 ──
-    // P side
-    if (sampled) begin
-      vtop_p_val = p_ai11 * (q_top_p +
-                              p_ch0*vh0 + p_ch1*vh1 + p_ch2*vh2 +
-                              p_ch3*vh3 + p_ch4*vh4 + p_ch5*vh5 + p_ch6*vh6)
-                 + p_ai12 * (q_bridge_p +
-                              p_cl0*vl0 + p_cl1*vl1 + p_cl2*vl2 +
-                              p_cl3*vl3 + p_cl4*vl4 + p_cl5*vl5 + p_cl6*vl6);
-
-      vbridge_p_val = p_ai21 * (q_top_p +
-                                 p_ch0*vh0 + p_ch1*vh1 + p_ch2*vh2 +
-                                 p_ch3*vh3 + p_ch4*vh4 + p_ch5*vh5 + p_ch6*vh6)
-                    + p_ai22 * (q_bridge_p +
-                                 p_cl0*vl0 + p_cl1*vl1 + p_cl2*vl2 +
-                                 p_cl3*vl3 + p_cl4*vl4 + p_cl5*vl5 + p_cl6*vl6);
-
-      // N side
-      vtop_n_val = n_ai11 * (q_top_n +
-                              n_ch0*vh0 + n_ch1*vh1 + n_ch2*vh2 +
-                              n_ch3*vh3 + n_ch4*vh4 + n_ch5*vh5 + n_ch6*vh6)
-                 + n_ai12 * (q_bridge_n +
-                              n_cl0*vl0 + n_cl1*vl1 + n_cl2*vl2 +
-                              n_cl3*vl3 + n_cl4*vl4 + n_cl5*vl5 + n_cl6*vl6);
-
-      vbridge_n_val = n_ai21 * (q_top_n +
-                                 n_ch0*vh0 + n_ch1*vh1 + n_ch2*vh2 +
-                                 n_ch3*vh3 + n_ch4*vh4 + n_ch5*vh5 + n_ch6*vh6)
-                    + n_ai22 * (q_bridge_n +
-                                 n_cl0*vl0 + n_cl1*vl1 + n_cl2*vl2 +
-                                 n_cl3*vl3 + n_cl4*vl4 + n_cl5*vl5 + n_cl6*vl6);
-
+    if (V(sample) > SAMPLE_THRESHOLD_V || !sampled) begin
+      vtp=VCM_V;
+      vbp=(p_b*VCM_V+p_lt*V(vinp))/(p_b+p_lt);
+      vtn=VCM_V;
+      vbn=(n_b*VCM_V+n_lt*V(vinn))/(n_b+n_lt);
     end else begin
-      // Before sampling, VTOP is driven to VCM by sampling switches,
-      // and VBRIDGE finds its DC operating point.
-      // For simplicity, force to VCM if not yet sampled.
-      vtop_p_val = 0.9;   // VCM
-      vtop_n_val = 0.9;
-      vbridge_p_val = 0.9;
-      vbridge_n_val = 0.9;
+      b1=qtp+p_h0*V(vbot_p_h0)+p_h1*V(vbot_p_h1)
+            +p_h2*V(vbot_p_h2)+p_h3*V(vbot_p_h3)
+            +p_h4*V(vbot_p_h4)+p_h5*V(vbot_p_h5)
+            +p_h6*V(vbot_p_h6);
+      b2=qbp+p_l0*V(vbot_p_l0)+p_l1*V(vbot_p_l1)
+            +p_l2*V(vbot_p_l2)+p_l3*V(vbot_p_l3)
+            +p_l4*V(vbot_p_l4)+p_l5*V(vbot_p_l5)
+            +p_l6*V(vbot_p_l6);
+      vtp=p_i11*b1+p_i12*b2;
+      vbp=p_i21*b1+p_i22*b2;
+
+      b1=qtn+n_h0*V(vbot_n_h0)+n_h1*V(vbot_n_h1)
+            +n_h2*V(vbot_n_h2)+n_h3*V(vbot_n_h3)
+            +n_h4*V(vbot_n_h4)+n_h5*V(vbot_n_h5)
+            +n_h6*V(vbot_n_h6);
+      b2=qbn+n_l0*V(vbot_n_l0)+n_l1*V(vbot_n_l1)
+            +n_l2*V(vbot_n_l2)+n_l3*V(vbot_n_l3)
+            +n_l4*V(vbot_n_l4)+n_l5*V(vbot_n_l5)
+            +n_l6*V(vbot_n_l6);
+      vtn=n_i11*b1+n_i12*b2;
+      vbn=n_i21*b1+n_i22*b2;
     end
 
-    // ── Drive output nodes ──
-    V(vtop_p)    <+ vtop_p_val;
-    V(vtop_n)    <+ vtop_n_val;
-    V(vbridge_p) <+ vbridge_p_val;
-    V(vbridge_n) <+ vbridge_n_val;
+    V(vtop_p) <+ transition(vtp,0.0,TR_S,TR_S);
+    V(vbridge_p) <+ transition(vbp,0.0,TR_S,TR_S);
+    V(vtop_n) <+ transition(vtn,0.0,TR_S,TR_S);
+    V(vbridge_n) <+ transition(vbn,0.0,TR_S,TR_S);
   end
-
-  // ── Public API via analog events (accessed through cross-module references) ──
-  // These are NOT synthesizable; they exist to allow the testbench/controller
-  // to trigger sampling and read the solved voltages.
-  //
-  // Convention: the calibration controller drives a special "cmd" electrical
-  // net to encode commands, and reads results from "status" nets.
-  // For simplicity in this behavioral model, we expose the internal state
-  // through the node voltages directly (V(vtop_p), V(vtop_n) give the solved values).
-
 endmodule

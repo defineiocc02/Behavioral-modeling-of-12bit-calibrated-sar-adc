@@ -1,415 +1,189 @@
-﻿# 12-bit Calibrated Asynchronous SAR ADC — Behavioral Model<br><small>12位校准型异步SAR ADC — 行为级模型</small>
+# 12-bit mismatch-calibrated SAR ADC
 
-[![Version](https://img.shields.io/badge/version-3.1.0-0072B2)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/releases)
-[![License](https://img.shields.io/badge/license-MIT-009E73)](LICENSE)
+[![Version](https://img.shields.io/badge/version-3.1.0-0072B2)](VERSION)
 [![Python](https://img.shields.io/badge/python-3.10+-0072B2)](https://www.python.org/)
-[![FFT](https://img.shields.io/badge/FFT-coherent%20rectangular-009E73)](docs/MODELING_GUIDE.md)
-[![Cal](https://img.shields.io/badge/calibration-Shen%202018%20JSSC-E69F00)](https://ieeexplore.ieee.org/document/8248649)
+[![Mismatch](https://img.shields.io/badge/mismatch-PER--UNIT-009E73)](docs/VALIDATION_STATUS.md)
+[![Decoder](https://img.shields.io/badge/decoder-Q2%20weighted%20sum-D55E00)](docs/MODELING_GUIDE.md)
 
-**[English](#english) | [中文](#chinese)**
+这是一个以“电容失配如何影响 SAR ADC，以及前景权重校准能否把性能稳住”
+为主问题的可复现行为级项目。噪声不是主研究对象；0.3 mV RMS 只在校准
+比较器中作为次要扰动，用于检查 lower-SAR 量化锁定，正常转换不注入噪声。
 
----
+当前工程结论：
 
-<a id="english"></a>
+- 理想 CDAC、采样、15 次决策和 Q2 解码链路正确；
+- 0.5% PER-UNIT 失配是 nominal behavioral acceptance case；
+- 1.0% PER-UNIT 失配是 margin stress，不冒充目标 PDK 数据；
+- 校准只更新 P/N 分侧权重，不改变物理电容或 comparator decisions；
+- 局部 backstep 保留为诊断，不作为当前应用的单独否决门；
+- Python/RTL 使用相同的逐目标 Q8 权重格点；
+- 当前可继续进入 transistor/AMS 实现，但尚不是 PDK、版图后或硅片签核。
 
-## English
+正式数值、逐种子 yield 和 SHA-256 位于
+[验证状态](docs/VALIDATION_STATUS.md)与
+[`evidence/mismatch_matrix/`](evidence/mismatch_matrix/)；完整分析见
+[最终 PDF 报告](docs/final_report.pdf)。
 
-Fully-differential, asynchronous split-CDAC SAR ADC behavioral model with
-charge-conservation solving, P/N-side independent capacitor mismatch, and
-foreground weight calibration.  This is the **only active Python behavioral
-version** of the project.
+## 架构
 
-> Evidence level: **Python behavioral L2.**  Results are not transistor-level
-> PVT, post-layout, or silicon measurements.
-
-<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="Model architecture"></p>
-
-### Locked v3.x CDAC Topology
-
-Per-side integer unit capacitors only.  Identical for v3.0.0 and v3.0.0.
-
-```text
-  High segment:  32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
-  Bridge:                                   2 Cu
-  Low segment:   32, 16, 8, 4, 2, 2, 1 Cu  = 65 Cu
-  Total per side:                          138 Cu  (552 fF @ Cu=4 fF)
-```
-
-Nominal effective weights ($H = 67$):
+每个差分侧使用整数单位电容：
 
 ```text
-2144, 1072, 536, 536, 268, 134, 67,
-  64,   32,  16,   8,   4,   4,  2, 1 terminal
+high:   32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
+bridge: 2 Cu
+low:    32, 16, 8, 4, 2, 2, 1 Cu   = 65 Cu
+total:                                  138 Cu/side
 ```
 
-- All 14 high/low capacitors sample the input — no VCM-masked caps.
-- 15 comparator decisions: 14 physical trial/compare/commit + 1 terminal.
-- High-segment 8-Cu duplicate provides wide-range redundancy.
-- Decoder: **plain P/N calibrated weighted sum with Q2 rounding.**
-  No LUT, DP, exception tables, or stateful monotonic clamps.
+- P/N 两侧各有 14 个物理 bottom-plate groups；
+- 所有 high/low 电容在正常采样时参与输入采样；
+- 只有 `VTOP_P/VTOP_N` 在采样时钳到 VCM；
+- bridge node 保持内部浮动，不增加 bridge-node sampling switch；
+- 14 个物理 trial/commit 加 1 个 comparator-only terminal decision；
+- 活动 decoder 是普通 P/N 加权和，无 LUT、CAM、异常表或单调 clamp。
 
-<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC topology"></p>
+名义权重为：
 
-### Calibration
-
-Foreground force-0/force-1 half-difference protocol (Shen 2018 JSSC).
-
-The complete low segment (131 Q0) serves as the seed ruler and is **not
-self-calibrated** — the main comparator's ~3 mV offset cannot reliably cover
-the lowest bits' backend margin.
-
-```
-Calibration order:  H1 → H2 → H4 → H8-R → H8-A → H16 → H32
-Pairs per target:   128                    (v3.0, down from 512)
-Total sub-convs:    7 × 4 × 128 = 3584    (v3.0, down from 14336)
-Dither:             OFF (noise ≧ 1 LSB makes it redundant)
+```text
+High Q0: 2144, 1072, 536, 536, 268, 134, 67
+Low  Q0:   64,   32,  16,   8,   4,   4,  2
+Terminal:    1
 ```
 
-| Parameter | Original | Current | Rationale |
-|-----------|--------|--------|-----------|
-| `AVG_PAIRS` | 512 | **128** | Oracle gap saturated by 128; 4× faster |
-| `SHEN_DITHER_LSB` | ON (hardcoded) | **OFF** (config) | Redundant when noise ≧ 1 LSB + N ≧ 32 |
-| Divider | — | **right-shift 7** | 128=2⁷, no hardware divider needed |
+## 失配定义
 
-<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="Calibration weights"></p>
+正式矩阵采用 **PER-UNIT**，不是 flat PER-CAP：
 
-### v3.0.0 Results
+```text
+C_group = Cu × Σ(1 + εk),  εk ~ Normal(0, σunit)
+```
 
-100-seed Monte Carlo, TSMC 180nm conservative (`σ = 1%` unit-cap mismatch),
-128 pairs, 1 mV RMS calibration noise, rectangular-window coherent FFT.
+每个 unit cell 独立抽样后再组成物理 group，因此 N-Cu group 的相对标准差
+自然为 `σunit/√N`。P/N 两侧独立，bridge 的两个 units 也独立。
 
-| Metric | Pre-Cal | Post-Cal Q2 | Physical Oracle |
-|--------|--------:|------------:|----------------:|
-| SNDR P50 | 63.73 dB | **74.50 dB** | 74.64 dB |
-| ENOB P50 | 10.29 bit | **12.08 bit** | 12.11 bit |
-| SFDR P50 | 70.57 dB | 94.29 dB | 96.91 dB |
+0.5% 和 1.0% 都是单位电容 sigma。它们是行为级研究点，不是某个 foundry
+MOMCAP 的已签核失配。
 
-- 100/100 seeds calibrated, 0/100 negative gain
-- Oracle gap P50: **0.14 dB**
-- DNL peak P95: 0.75 LSB; INL peak P95: 0.80 LSB
-- 100/100 zero missing codes, max jump = 1
+## 校准与 0.3 mV 扰动
 
-| σ (MC_SIGMA) | Pre-SNDR | Post-SNDR | Oracle Gap | Verdict |
-|:------------:|--------:|--------:|----------:|:--------:|
-| 1% | 63.7 dB | 74.5 dB | 0.14 dB | Pass |
-| 2% | 50.1 dB | 73.3 dB | 1.34 dB | Pass |
-| 5% | 42.2 dB | 72.6 dB | 2.05 dB | Pass |
-| 10% | 36.1 dB | 70.2 dB | 4.47 dB | Marginal |
-| 20% | 30.2 dB | 50.6 dB | 24.0 dB | Fail |
+七个高段目标按 H1 → H2 → H4 → H8-R → H8-A → H16 → H32 递归校准：
 
-More: [v3.0 release notes](docs/RELEASE_RESULTS_V3.md),
-[analysis suite](src/python_cal/analysis/).
+```text
+W_P = mean(S_P0 - S_P1) / 2
+W_N = mean(S_N1 - S_N0) / 2
+```
 
-<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT comparison"></p>
+低段和 terminal 构成 131-Q0 基准尺；后续目标会读取此前写入的 P/N Q8
+权重。每个目标完成后立即截断到 Q8，与综合 RTL 的算术右移和寄存器完全
+一致。默认 128 pairs，总计 3584 次 lower-SAR sub-conversions。
 
-### FFT Protocol
+0.3 mV 的准确含义是：
 
-| Parameter | Value |
-|-----------|------:|
-| FFT points | 4096 |
-| Coherent bin | 1019 |
-| Phase | 0.123 rad |
-| Input amplitude | -0.5 dBFS |
-| VFS | per-seed dynamic measurement |
-| Window | **Rectangular** |
-| Clipping | explicit per-run check |
+```text
+calibration comparator input noise:
+n ~ Normal(0, (0.3 mV RMS)^2)
+```
 
-Coherent sampling: signal on bin 1019 (gcd(1019,4096)=1).  No leakage —
-rectangular window is correct (ENBW=1 bin).
+它只进入 P0/P1/N0/N1 校准比较。正常转换、FFT 和 SNDR 仍使用零噪声。
+固定 dither 关闭，也没有额外 dither DAC。完全零扰动时重复 128 次可能
+得到相同离散 lower-SAR 结果；小幅输入等效扰动让平均获得亚码宽信息。
 
-### Quick Start
+## 验证矩阵
+
+| Case | 目的 | Seeds |
+|---|---|---:|
+| ideal, 0 mV | 理想链路自检 | 1 |
+| 0.5% mismatch, 0 mV | 隔离纯失配和量化锁定 | 100 |
+| 0.5% mismatch, 0.3 mV calibration-only | nominal acceptance | 100 |
+| 1.0% mismatch, 0 mV | 压力点的纯失配对照 | 100 |
+| 1.0% mismatch, 0.3 mV calibration-only | margin stress | 100 |
+
+三路动态性能使用同一组物理 decisions：
+
+1. nominal Q2 decoder；
+2. calibrated Q2 decoder；
+3. physical-weight oracle Q2 decoder。
+
+FFT 固定为 4096 点、coherent bin 1019、phase 0.123 rad、−0.5 dBFS、
+rectangular window，并按每个 seed 实测 VFS。静态结果由精确可达决策树
+计算 missing codes、code-density DNL/INL 和局部 backstep。
+
+## 已实现与未实现
+
+| 层级 | 当前状态 |
+|---|---|
+| Python behavioral | 完整物理 CDAC、采样、转换、校准、Q2 解码、FFT、静态审计 |
+| Calibration RTL | 可综合；P/N Q8 递归量尺；两组 XSIM 自检通过 |
+| FPGA synthesis proxy | 449 LUT、595 FF、0 DSP、0 BRAM；100 MHz setup WNS +0.298 ns；hold WHS −0.147 ns、4 个失败端点 |
+| Verilog-A CDAC/comparator | 方程与接口已审查，尚未在本机 Spectre 编译 |
+| Full ADC RTL | 尚缺 normal SAR sequencer、Q2 normalization/decoder 和 ADC top |
+| Transistor/layout signoff | 尚缺目标 PDK、PVT、reference、switch、kickback、PEX 和硅片数据 |
+
+FPGA 数字资源只对应 calibration/lower-SAR RTL，不代表完整 ADC，也不能
+外推 ASIC 面积、功耗或时序。当前 raw parallel top 同时需要 342 个 bonded
+IOB，而目标器件只有 125 个，因此也不是可直接实现的 FPGA package top；
+应先加 serialized/packed prototype wrapper，再做 place-and-route、hold 修复
+和 post-route timing。
+
+## 过度设计处理
+
+已移除或明确不实现：
+
+- 512-pair 默认校准；
+- calibration sub-DAC 与 auxiliary comparator；
+- decision LUT/CAM、异常映射和单调 clamp；
+- 额外 dither DAC；
+- 重复 comparator Verilog-A；
+- 未使用的 RTL accumulator/CDAC 模型；
+- bridge-node sampling clamp；
+- 无依据的 foundry/面积/良率结论。
+
+Q2、15th terminal、P/N 分侧权重和 Q8 写回均有直接性能或物理依据，因此
+保留。128 pairs 是本轮验证共同点，不宣称是所有 PDK 的全局最小值。
+
+## 复现
 
 ```powershell
-# Install
-python -m pip install -e ".[dev]"
+# 测试
+$env:PYTHONPATH = (Resolve-Path src).Path
+python -m pytest
 
-# Run tests
-$env:PYTHONPATH = "src"
-python -m pytest src/python_cal/tests -q
+# 完整五组矩阵
+.\scripts\run_mismatch_matrix.ps1 -Seeds 100 -AveragePairs 128
 
-# One-click calibration debug ★
-python src/python_cal/debug_entry.py
-python src/python_cal/debug_entry.py --pairs 64 --mc 0.02
-python src/python_cal/debug_entry.py --noise 0.5 --pairs 32
+# 汇总并冻结
+python -m python_cal.validation.summarize_mismatch_matrix
+python scripts\freeze_mismatch_evidence.py
+python -m python_cal.validation.summarize_mismatch_matrix `
+  --root evidence\mismatch_matrix
 
-# Full pipeline (100 seeds)
-python src/python_cal/run_final_calibration_pipeline.py
-
-# Experiment suite
-python src/python_cal/analysis/generate_fft_comparison.py
-python src/python_cal/analysis/generate_multisigma_fft.py
+# 图表、指标和 PDF
+python scripts\generate_report_figures.py `
+  --matrix-root evidence\mismatch_matrix
+python scripts\generate_report_metrics.py
+.\scripts\reproduce.ps1 -BuildPdf
 ```
 
-### Hardware Complexity
-
-| Block | Gates / Tr. | Area |
-|-------|:----------:|-----:|
-| CDAC capacitor array (30 caps) | passive | ~600 μm² |
-| Bottom-plate switches (28×4:1 MUX) | ~560 Tr | ~600 μm² |
-| StrongArm comparator | ~24 Tr | ~200 μm² |
-| SAR FSM | ~400 gates | ~1200 μm² |
-| Calibration controller | ~1800 gates | ~4000 μm² |
-| Weighted-sum decoder | ~2000 gates | ~4500 μm² |
-| **Total** | **~4200 gates + ~600 Tr** | **~0.011 mm²** |
-
-Full analysis: [DELIVERY.md](src/python_cal/DELIVERY.md)
-
-### Why Not the Old 95-Cu CDAC?
+## 目录
 
 ```text
-Old:  1,2,4,6,10,16,24 Cu (low) | 1 Cu (bridge) | 1,2,4,8,16 Cu (high)
-New:  integer 138 Cu
+src/python_cal/       Python 行为模型与测试
+rtl/                  calibration/lower-SAR synthesizable RTL
+va/                   CDAC 与 comparator Verilog-A
+evidence/             冻结 CSV、JSON、manifest 和矩阵摘要
+docs/                 建模说明、验证状态与最终 PDF
+scripts/              矩阵、冻结、绘图、综合和复现入口
 ```
 
-Same 0.5% mismatch, 1000-seed codebook audit:
-- Old: missing codes P50=22, worst=84; max jump worst=9
-- New: **1000/1000 zero missing codes, max jump always 1**
+活动/冻结/历史/临时产物的边界见
+[`docs/VERSION_MANAGEMENT.md`](docs/VERSION_MANAGEMENT.md)。
 
-<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC comparison"></p>
+## English summary
 
-### Directory
-
-```text
-src/python_cal/
-  config.py              single-source configuration
-  debug_entry.py         one-click calibration debug ★
-  DELIVERY.md            handover document
-  topology/              integer CDAC and explicit switch states
-  physical/              charge-conservation solver
-  comparator/            dynamic comparator model
-  async_control/         asynchronous SAR handshake
-  calibration/           Shen 2018 force-0/force-1 calibration
-  decode/                plain weighted-sum decoder
-  validation/            FFT and reachable-codebook audits
-  analysis/              experiment scripts + figures
-  tests/                 regression suite
-docs/
-  MODELING_GUIDE.md, VALIDATION_STATUS.md, RELEASE_RESULTS_V3.md, ...
-```
-
-### Citation
-
-```bibtex
-@misc{sar12_cal_behavioral_2026,
-  author       = {{SAR ADC Calibration Project Contributors}},
-  title        = {12-bit Calibrated Asynchronous SAR ADC -- Behavioral Model},
-  year         = {2026},
-  version      = {3.1.0},
-  url          = {https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc},
-  note         = {Python behavioral model, evidence level L2}
-}
-```
-
-Calibration protocol: Shen et al., "A 16-bit 16-MS/s SAR ADC With
-On-Chip Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
-pp. 1147&ndash;1154, Apr. 2018.
-
-### AI Assistance Notice
-
-This project was developed with AI-assisted coding tools, including
-CODEX and Trae (DeepSeek).  All AI-generated code has been
-reviewed and validated by human contributors.
-
-### License
-
-[MIT](LICENSE)
-
----
-
-<a id="chinese"></a>
-
-## 中文
-
-全差分、异步 split-CDAC SAR ADC 行为级模型。包含电荷守恒求解、
-P/N 分侧独立电容失配、前景权重校准。本项目**唯一有效的 Python 行为级版本**。
-
-> 证据等级: **Python behavioral L2.** 非晶体管级 PVT、非版图后仿、非硅片测量。
-
-<p align="center"><img src="docs/assets/figures/fig01_model_architecture.png" width="900" alt="模型架构"></p>
-
-### 锁定 v3.x CDAC 拓扑
-
-每侧仅使用整数单位电容。v3.0.0 架构。
-
-```text
-  高段:   32, 16, 8, 8, 4, 2, 1 Cu   = 71 Cu
-  桥接:                             2 Cu
-  低段:   32, 16, 8, 4, 2, 2, 1 Cu  = 65 Cu
-  单侧总计:                          138 Cu  (552 fF @ Cu=4 fF)
-```
-
-标称有效权重 ($H = 67$):
-
-```text
-2144, 1072, 536, 536, 268, 134, 67,
-  64,   32,  16,   8,   4,   4,  2, 1 终端位
-```
-
-- 全部 14 个高/低段电容参与采样输入——无屏蔽电容。
-- 15 次比较器判决: 14 物理 trial/compare/commit + 1 终端位。
-- 高段 8-Cu 冗余提供大范围容错。
-- 解码器: **纯 P/N 校准权重加权和 + Q2 舍入。**
-  无 LUT、无 DP、无异常表、无状态钳位。
-
-<p align="center"><img src="docs/assets/figures/fig02_cdac_topology.png" width="800" alt="CDAC 拓扑"></p>
-
-### 校准
-
-前景 force-0/force-1 半差法 (Shen 2018 JSSC)。
-
-完整低段 (131 Q0) 作为匹配基准尺，**不自校准**——主比较器 ~3 mV offset
-无法可靠覆盖最低几位的后端 margin。
-
-```
-校准顺序:  H1 → H2 → H4 → H8-R → H8-A → H16 → H32
-每目标对数: 128                     (v3.0, 从 512 降低)
-总子转换:   7 × 4 × 128 = 3584     (v3.0, 从 14336 降低)
-Dither:    关闭 (噪声 ≧ 1 LSB 即冗余)
-```
-
-| 参数 | v3.0.0 | 当前 | 理由 |
-|------|--------|--------|------|
-| `AVG_PAIRS` | 512 | **128** | Oracle gap 在 128 对后饱和; 快 4 倍 |
-| `SHEN_DITHER_LSB` | 开 (硬编码) | **关** (config) | 噪声 ≧ 1 LSB + N ≧ 32 时冗余 |
-| 除法器 | — | **右移 7 位** | 128=2⁷, 无需硬件除法器 |
-
-<p align="center"><img src="docs/assets/figures/fig03_weights_and_redundancy.png" width="800" alt="校准权重"></p>
-
-### v3.0.0 结果
-
-100-seed Monte Carlo, TSMC 180nm 保守估计 (`σ = 1%` 单位电容失配),
-128 对, 1 mV RMS 校准噪声, 矩形窗相干 FFT。
-
-| 指标 | 校准前 | 校准后 Q2 | Physical Oracle |
-|------|--------:|----------:|----------------:|
-| SNDR P50 | 63.73 dB | **74.50 dB** | 74.64 dB |
-| ENOB P50 | 10.29 bit | **12.08 bit** | 12.11 bit |
-| SFDR P50 | 70.57 dB | 94.29 dB | 96.91 dB |
-
-- 100/100 有效校准, 0/100 负收益
-- Oracle gap P50: **0.14 dB**
-- DNL peak P95: 0.75 LSB; INL peak P95: 0.80 LSB
-- 100/100 零缺码, 最大跳码 = 1
-
-| σ (MC_SIGMA) | 校准前 | 校准后 | Oracle Gap | 判定 |
-|:------------:|--------:|--------:|----------:|:----:|
-| 1% | 63.7 dB | 74.5 dB | 0.14 dB | 通过 |
-| 2% | 50.1 dB | 73.3 dB | 1.34 dB | 通过 |
-| 5% | 42.2 dB | 72.6 dB | 2.05 dB | 通过 |
-| 10% | 36.1 dB | 70.2 dB | 4.47 dB | 临界 |
-| 20% | 30.2 dB | 50.6 dB | 24.0 dB | 失败 |
-
-更多: [v3.0 发布说明](docs/RELEASE_RESULTS_V3.md),
-[实验套件](src/python_cal/analysis/).
-
-<p align="center"><img src="src/python_cal/analysis/fft_comparison.png" width="900" alt="FFT 对比"></p>
-
-### FFT 协议
-
-| 参数 | 值 |
-|------|------:|
-| FFT 点数 | 4096 |
-| 相干 bin | 1019 |
-| 相位 | 0.123 rad |
-| 输入幅度 | -0.5 dBFS |
-| VFS | 每 seed 动态测量 |
-| 窗函数 | **矩形窗 (无窗)** |
-| clipping | 每次运行显式检查 |
-
-相干采样: 信号精确落在 bin 1019 (gcd(1019,4096)=1)。无泄漏——矩形窗是正确的 (ENBW=1 bin)。
-
-### 快速开始
-
-```powershell
-# 安装
-python -m pip install -e ".[dev]"
-
-# 运行测试
-$env:PYTHONPATH = "src"
-python -m pytest src/python_cal/tests -q
-
-# 一键校准调试 ★
-python src/python_cal/debug_entry.py
-python src/python_cal/debug_entry.py --pairs 64 --mc 0.02
-python src/python_cal/debug_entry.py --noise 0.5 --pairs 32
-
-# 完整管线 (100 seeds)
-python src/python_cal/run_final_calibration_pipeline.py
-
-# 实验套件
-python src/python_cal/analysis/generate_fft_comparison.py
-python src/python_cal/analysis/generate_multisigma_fft.py
-```
-
-### 硬件复杂度
-
-| 模块 | 门数/晶体管 | 面积 |
-|------|:----------:|-----:|
-| CDAC 电容阵列 (30个) | 被动器件 | ~600 μm² |
-| 底板开关 (28×4:1 MUX) | ~560 Tr | ~600 μm² |
-| StrongArm 比较器 | ~24 Tr | ~200 μm² |
-| SAR FSM | ~400 门 | ~1200 μm² |
-| 校准控制器 | ~1800 门 | ~4000 μm² |
-| 加权和解码器 | ~2000 门 | ~4500 μm² |
-| **总计** | **~4200 门 + ~600 Tr** | **~0.011 mm²** |
-
-完整分析: [DELIVERY.md](src/python_cal/DELIVERY.md)
-
-### 为何不用旧 95-Cu CDAC ?
-
-```text
-旧:  1,2,4,6,10,16,24 Cu (低段) | 1 Cu (桥接) | 1,2,4,8,16 Cu (高段)
-新:  整数 138 Cu
-```
-
-同 0.5% 失配, 1000-seed 码本审计:
-- 旧: 缺码 P50=22, 最坏=84; 最大跳码最坏=9
-- 新: **1000/1000 零缺码, 最大跳码始终=1**
-
-<p align="center"><img src="docs/assets/figures/fig09_cdac_candidate_comparison.png" width="700" alt="CDAC 对比"></p>
-
-### 目录结构
-
-```text
-src/python_cal/
-  config.py              统一配置入口
-  debug_entry.py         一键校准调试 ★
-  DELIVERY.md            递交文档
-  topology/              整数 CDAC 拓扑与开关状态
-  physical/              电荷守恒求解器
-  comparator/            动态比较器模型
-  async_control/         异步 SAR 握手
-  calibration/           Shen 2018 force-0/force-1 校准
-  decode/                纯加权和解码器
-  validation/            FFT 与可达码本审计
-  analysis/              实验脚本与图表
-  tests/                 回归测试套件
-docs/
-  MODELING_GUIDE.md, VALIDATION_STATUS.md, RELEASE_RESULTS_V3.md, ...
-```
-
-### 引用
-
-```bibtex
-@misc{sar12_cal_behavioral_2026,
-  author       = {{SAR ADC Calibration Project Contributors}},
-  title        = {12-bit Calibrated Asynchronous SAR ADC -- Behavioral Model},
-  year         = {2026},
-  version      = {3.1.0},
-  url          = {https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc},
-  note         = {Python behavioral model, evidence level L2}
-}
-```
-
-校准协议基于: Shen et al., "A 16-bit 16-MS/s SAR ADC With On-Chip
-Calibration in 55-nm CMOS," *IEEE JSSC*, vol. 53, no. 4,
-pp. 1147&ndash;1154, Apr. 2018.
-
-### AI 辅助声明
-
-本项目使用 AI 辅助编码工具开发，包括 CODEX 与 Trae (DeepSeek)。
-所有 AI 生成代码已经人工审查与验证。
-
-### 开源许可
-
-[MIT](LICENSE)
+This repository evaluates capacitor mismatch in a 12-bit differential
+split-CDAC SAR ADC. Formal Monte Carlo uses independent PER-UNIT mismatch.
+The 0.3 mV RMS term is input-referred comparator noise during foreground
+calibration only; normal conversions remain noiseless. Python and
+synthesizable calibration RTL commit recursive weights on the same Q8
+lattice. Results are behavioral evidence, not transistor-, PDK-, layout- or
+silicon-level signoff.

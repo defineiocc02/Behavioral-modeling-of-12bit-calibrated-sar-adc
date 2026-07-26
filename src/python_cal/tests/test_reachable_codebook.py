@@ -32,6 +32,11 @@ def test_ideal_reachable_codebook_is_monotonic_and_complete():
     assert result["n_reachable_leaves"] > 4096
     assert result["n_unique_integer_codes"] == 4096
     assert result["n_float_backsteps"] == 0
+    assert result["n_integer_backsteps"] == 0
+    assert result["max_float_rollback_lsb"] == 0.0
+    assert result["max_integer_rollback_lsb"] == 0
+    assert result["float_nonmonotonic_input_fraction"] == 0.0
+    assert result["integer_nonmonotonic_input_fraction"] == 0.0
     assert result["n_missing_codes"] == 0
 
 

@@ -1,0 +1,465 @@
+{
+  "method": "same production pipeline and seeds; mismatch is the primary variable; calibration noise is secondary",
+  "provenance": {
+    "pipeline_sha256": "58c178a37e8e9151056eb0139da3d9b7c8d094da998e3befcb072bf0ea3c3477",
+    "config_sha256": "290b223dc324a8734a8416c2d6cdbcefe567fcd79e82778bf2a267a900dc9c19",
+    "calibrator_sha256": "a8972d87e499e5f55315b53d69bfaff39fb9e5f77182dc42082d98427a552545",
+    "decoder_sha256": "e8a98d9873e5927b2ccc6e6ba58d0898a6db170ed33c8da8f89f7d8078a08f8c",
+    "acceptance_sha256": "ef1107ae6cf56ced25253c8132b55f8518102a9eae98946f74e9ac00a4040431",
+    "manifest_generator_sha256": "757791987650caadb29581a2491c403f28f4c93583b09e099c40880b50961a2f",
+    "summarizer_sha256": "3528bfc2bec76f9b43fb6282344b13a620f35811ec8ad02bfab72f520d91f986"
+  },
+  "cases": {
+    "ideal_zero_noise": {
+      "case_dir": "ideal_zero_noise",
+      "summary_file": "final_summary_5fac58bb.json",
+      "csv_file": "final_pipeline_5fac58bb.csv",
+      "summary_sha256": "1d19a1801dc393ea2b587b183cc51990198b25ba70f80a402cf0106e936c4e72",
+      "csv_sha256": "d32665d54d1417ab69ba706d91eec5fcb7ee3fdad9c2519dea357186e12a706a",
+      "run_id": "5fac58bb",
+      "mc_sigma": 0.0,
+      "cal_noise_sigma_v": 0.0,
+      "avg_pairs": 128,
+      "mismatch_mode": "per_unit",
+      "mismatch_scope": "all",
+      "cal_weight_fractional_bits": 8,
+      "output_fractional_bits": 2,
+      "n_total": 1,
+      "n_valid": 1,
+      "yield": {
+        "dynamic_pass": 1,
+        "code_density_pass": 1,
+        "combined_pass": 1,
+        "denominator": 1
+      },
+      "nominal_sndr_db": {
+        "p50": 74.643,
+        "min": 74.643
+      },
+      "calibrated_sndr_db": {
+        "p50": 74.643,
+        "min": 74.643
+      },
+      "physical_oracle_sndr_db": {
+        "p50": 74.643,
+        "min": 74.643
+      },
+      "calibrated_enob_bits": {
+        "p50": 12.107,
+        "min": 12.107
+      },
+      "calibration_gain_db": {
+        "p50": 0.0,
+        "min": 0.0
+      },
+      "oracle_gap_db": {
+        "p50": 0.0,
+        "p95": 0.0
+      },
+      "missing_codes_total": 0,
+      "dnl_peak_lsb": {
+        "defined_seeds": 1,
+        "p95": 0.6761514841363152,
+        "max": 0.6761514841363152
+      },
+      "inl_peak_lsb": {
+        "defined_seeds": 1,
+        "p95": 0.7533058038269727,
+        "max": 0.7533058038269727
+      },
+      "missing_code_seed_count": 0,
+      "negative_gain_seed_count": 0,
+      "integer_backsteps_total": 0,
+      "transfer_integrity": {
+        "integer_monotonic_seed_count": 1,
+        "integer_backstep_seed_count": 0,
+        "integer_backsteps_per_seed": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "float_backsteps_per_seed": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "max_integer_rollback_lsb": 0.0,
+        "max_float_rollback_lsb": 0.0,
+        "integer_nonmonotonic_input_fraction": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "float_nonmonotonic_input_fraction": {
+          "p50": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      },
+      "acceptance_verdict": "PASS"
+    },
+    "mismatch_0p5_zero_noise": {
+      "case_dir": "mismatch_0p5_zero_noise",
+      "summary_file": "final_summary_235ed7c8.json",
+      "csv_file": "final_pipeline_235ed7c8.csv",
+      "summary_sha256": "095d284c3afad39461bc6772e09f007f4457662f6c93cf7f4e90b0976997984a",
+      "csv_sha256": "b05406feaa03b06e92dc7298231ecb1e12f14857ddd11a5510264c7ef14e8e08",
+      "run_id": "235ed7c8",
+      "mc_sigma": 0.005,
+      "cal_noise_sigma_v": 0.0,
+      "avg_pairs": 128,
+      "mismatch_mode": "per_unit",
+      "mismatch_scope": "all",
+      "cal_weight_fractional_bits": 8,
+      "output_fractional_bits": 2,
+      "n_total": 100,
+      "n_valid": 100,
+      "yield": {
+        "dynamic_pass": 95,
+        "code_density_pass": 40,
+        "combined_pass": 40,
+        "denominator": 100
+      },
+      "nominal_sndr_db": {
+        "p50": 67.506,
+        "min": 60.166
+      },
+      "calibrated_sndr_db": {
+        "p50": 73.2495,
+        "min": 69.857
+      },
+      "physical_oracle_sndr_db": {
+        "p50": 74.67099999999999,
+        "min": 74.435
+      },
+      "calibrated_enob_bits": {
+        "p50": 11.8755,
+        "min": 11.312
+      },
+      "calibration_gain_db": {
+        "p50": 5.846,
+        "min": -1.87
+      },
+      "oracle_gap_db": {
+        "p50": 1.4089999999999998,
+        "p95": 3.4398499999999985
+      },
+      "missing_codes_total": 1,
+      "dnl_peak_lsb": {
+        "defined_seeds": 99,
+        "p95": 1.232593216061993,
+        "max": 1.5884900001797586
+      },
+      "inl_peak_lsb": {
+        "defined_seeds": 99,
+        "p95": 1.3353460199364038,
+        "max": 1.4884578444884544
+      },
+      "missing_code_seed_count": 1,
+      "negative_gain_seed_count": 2,
+      "integer_backsteps_total": 26301,
+      "transfer_integrity": {
+        "integer_monotonic_seed_count": 11,
+        "integer_backstep_seed_count": 89,
+        "integer_backsteps_per_seed": {
+          "p50": 158.0,
+          "p95": 743.55,
+          "max": 886.0
+        },
+        "float_backsteps_per_seed": {
+          "p50": 196.0,
+          "p95": 878.1,
+          "max": 1171.0
+        },
+        "max_integer_rollback_lsb": 1.0,
+        "max_float_rollback_lsb": 0.8435472242249489,
+        "integer_nonmonotonic_input_fraction": {
+          "p50": 0.00031994298311225283,
+          "p95": 0.001128544539196464,
+          "max": 0.0018733635698695381
+        },
+        "float_nonmonotonic_input_fraction": {
+          "p50": 0.0004595040644674307,
+          "p95": 0.0016240824352645037,
+          "max": 0.002710283988625598
+        }
+      },
+      "acceptance_verdict": "FAIL"
+    },
+    "mismatch_0p5_calnoise_0p3mV": {
+      "case_dir": "mismatch_0p5_calnoise_0p3mV",
+      "summary_file": "final_summary_235ed7c8.json",
+      "csv_file": "final_pipeline_235ed7c8.csv",
+      "summary_sha256": "f51b4bcf7a5107bb9f8d3e4d0725dff1581ffade9a3f36c3d5d457dc2fe10f6a",
+      "csv_sha256": "24f8ba9ae5a4aa1688dfc584c6a341ede0edd3327105c9cde14d1a603d2caa54",
+      "run_id": "235ed7c8",
+      "mc_sigma": 0.005,
+      "cal_noise_sigma_v": 0.0003,
+      "avg_pairs": 128,
+      "mismatch_mode": "per_unit",
+      "mismatch_scope": "all",
+      "cal_weight_fractional_bits": 8,
+      "output_fractional_bits": 2,
+      "n_total": 100,
+      "n_valid": 100,
+      "yield": {
+        "dynamic_pass": 100,
+        "code_density_pass": 100,
+        "combined_pass": 100,
+        "denominator": 100
+      },
+      "nominal_sndr_db": {
+        "p50": 67.506,
+        "min": 60.166
+      },
+      "calibrated_sndr_db": {
+        "p50": 74.521,
+        "min": 74.05
+      },
+      "physical_oracle_sndr_db": {
+        "p50": 74.67099999999999,
+        "min": 74.435
+      },
+      "calibrated_enob_bits": {
+        "p50": 12.087,
+        "min": 12.008
+      },
+      "calibration_gain_db": {
+        "p50": 6.946999999999999,
+        "min": 0.809
+      },
+      "oracle_gap_db": {
+        "p50": 0.1345,
+        "p95": 0.35714999999999997
+      },
+      "missing_codes_total": 0,
+      "dnl_peak_lsb": {
+        "defined_seeds": 100,
+        "p95": 0.8397006465207921,
+        "max": 0.8640894307201941
+      },
+      "inl_peak_lsb": {
+        "defined_seeds": 100,
+        "p95": 0.9117409629419138,
+        "max": 0.9841749150603144
+      },
+      "missing_code_seed_count": 0,
+      "negative_gain_seed_count": 0,
+      "integer_backsteps_total": 26716,
+      "transfer_integrity": {
+        "integer_monotonic_seed_count": 1,
+        "integer_backstep_seed_count": 99,
+        "integer_backsteps_per_seed": {
+          "p50": 157.5,
+          "p95": 747.25,
+          "max": 991.0
+        },
+        "float_backsteps_per_seed": {
+          "p50": 225.5,
+          "p95": 927.3,
+          "max": 1232.0
+        },
+        "max_integer_rollback_lsb": 1.0,
+        "max_float_rollback_lsb": 0.8504273640287465,
+        "integer_nonmonotonic_input_fraction": {
+          "p50": 0.0004529566450897054,
+          "p95": 0.0011516159878812375,
+          "max": 0.0016202709421401715
+        },
+        "float_nonmonotonic_input_fraction": {
+          "p50": 0.001469932983644309,
+          "p95": 0.0033428084900879646,
+          "max": 0.0048854819640846954
+        }
+      },
+      "acceptance_verdict": "PASS"
+    },
+    "mismatch_1p0_zero_noise": {
+      "case_dir": "mismatch_1p0_zero_noise",
+      "summary_file": "final_summary_235ed7c8.json",
+      "csv_file": "final_pipeline_235ed7c8.csv",
+      "summary_sha256": "ce09fd8942a3b6ce8dfbf2a3d62fd85958b2c8f2a721c2fd07db98a1acc64e58",
+      "csv_sha256": "6df648ac77c3433a809403df7b3854279be6b4b7622c5e9f341813909102fb03",
+      "run_id": "235ed7c8",
+      "mc_sigma": 0.01,
+      "cal_noise_sigma_v": 0.0,
+      "avg_pairs": 128,
+      "mismatch_mode": "per_unit",
+      "mismatch_scope": "all",
+      "cal_weight_fractional_bits": 8,
+      "output_fractional_bits": 2,
+      "n_total": 100,
+      "n_valid": 100,
+      "yield": {
+        "dynamic_pass": 96,
+        "code_density_pass": 27,
+        "combined_pass": 27,
+        "denominator": 100
+      },
+      "nominal_sndr_db": {
+        "p50": 62.1545,
+        "min": 54.226
+      },
+      "calibrated_sndr_db": {
+        "p50": 72.825,
+        "min": 68.455
+      },
+      "physical_oracle_sndr_db": {
+        "p50": 74.6565,
+        "min": 74.376
+      },
+      "calibrated_enob_bits": {
+        "p50": 11.805,
+        "min": 11.079
+      },
+      "calibration_gain_db": {
+        "p50": 10.5625,
+        "min": 2.318
+      },
+      "oracle_gap_db": {
+        "p50": 1.903,
+        "p95": 3.54085
+      },
+      "missing_codes_total": 1,
+      "dnl_peak_lsb": {
+        "defined_seeds": 99,
+        "p95": 1.2564644549180417,
+        "max": 1.4923357324326854
+      },
+      "inl_peak_lsb": {
+        "defined_seeds": 99,
+        "p95": 1.402571089578354,
+        "max": 1.6012643059863672
+      },
+      "missing_code_seed_count": 1,
+      "negative_gain_seed_count": 0,
+      "integer_backsteps_total": 26267,
+      "transfer_integrity": {
+        "integer_monotonic_seed_count": 8,
+        "integer_backstep_seed_count": 92,
+        "integer_backsteps_per_seed": {
+          "p50": 160.5,
+          "p95": 737.4499999999999,
+          "max": 999.0
+        },
+        "float_backsteps_per_seed": {
+          "p50": 201.5,
+          "p95": 878.4499999999999,
+          "max": 1211.0
+        },
+        "max_integer_rollback_lsb": 1.0,
+        "max_float_rollback_lsb": 0.8511743920184927,
+        "integer_nonmonotonic_input_fraction": {
+          "p50": 0.0005831888103703789,
+          "p95": 0.0020691893902896746,
+          "max": 0.0028662626141874844
+        },
+        "float_nonmonotonic_input_fraction": {
+          "p50": 0.0007937505656670704,
+          "p95": 0.0025996287453614736,
+          "max": 0.0034612577177175613
+        }
+      },
+      "acceptance_verdict": "FAIL"
+    },
+    "mismatch_1p0_calnoise_0p3mV": {
+      "case_dir": "mismatch_1p0_calnoise_0p3mV",
+      "summary_file": "final_summary_235ed7c8.json",
+      "csv_file": "final_pipeline_235ed7c8.csv",
+      "summary_sha256": "68118fe29fb49a36637315e70d51def542f02d9be406ae906d731fad3b9c69b4",
+      "csv_sha256": "a0cabcb6ebc7d87ec9cc1952db87fa30fa40e3f9a3f936e0605e275ff783ab4e",
+      "run_id": "235ed7c8",
+      "mc_sigma": 0.01,
+      "cal_noise_sigma_v": 0.0003,
+      "avg_pairs": 128,
+      "mismatch_mode": "per_unit",
+      "mismatch_scope": "all",
+      "cal_weight_fractional_bits": 8,
+      "output_fractional_bits": 2,
+      "n_total": 100,
+      "n_valid": 100,
+      "yield": {
+        "dynamic_pass": 100,
+        "code_density_pass": 98,
+        "combined_pass": 98,
+        "denominator": 100
+      },
+      "nominal_sndr_db": {
+        "p50": 62.1545,
+        "min": 54.226
+      },
+      "calibrated_sndr_db": {
+        "p50": 74.4235,
+        "min": 73.641
+      },
+      "physical_oracle_sndr_db": {
+        "p50": 74.6565,
+        "min": 74.376
+      },
+      "calibrated_enob_bits": {
+        "p50": 12.07,
+        "min": 11.94
+      },
+      "calibration_gain_db": {
+        "p50": 12.1175,
+        "min": 3.263
+      },
+      "oracle_gap_db": {
+        "p50": 0.2255,
+        "p95": 0.6794
+      },
+      "missing_codes_total": 0,
+      "dnl_peak_lsb": {
+        "defined_seeds": 100,
+        "p95": 0.8669547920675504,
+        "max": 0.9972138259221217
+      },
+      "inl_peak_lsb": {
+        "defined_seeds": 100,
+        "p95": 0.9766982068098041,
+        "max": 1.0291790747099028
+      },
+      "missing_code_seed_count": 0,
+      "negative_gain_seed_count": 0,
+      "integer_backsteps_total": 26810,
+      "transfer_integrity": {
+        "integer_monotonic_seed_count": 1,
+        "integer_backstep_seed_count": 99,
+        "integer_backsteps_per_seed": {
+          "p50": 166.0,
+          "p95": 744.55,
+          "max": 981.0
+        },
+        "float_backsteps_per_seed": {
+          "p50": 235.5,
+          "p95": 896.0999999999999,
+          "max": 1221.0
+        },
+        "max_integer_rollback_lsb": 1.0,
+        "max_float_rollback_lsb": 0.8475409411948931,
+        "integer_nonmonotonic_input_fraction": {
+          "p50": 0.0007380180824778423,
+          "p95": 0.002319123877072207,
+          "max": 0.0029891984494418897
+        },
+        "float_nonmonotonic_input_fraction": {
+          "p50": 0.0015098313730571356,
+          "p95": 0.004057068146779353,
+          "max": 0.0051391835642207034
+        }
+      },
+      "acceptance_verdict": "FAIL"
+    }
+  },
+  "missing_cases": [],
+  "calibration_noise_effect_at_0p5pct": {
+    "calibrated_sndr_p50_delta_db": 1.2715000000000032,
+    "calibrated_sndr_min_delta_db": 4.192999999999998,
+    "oracle_gap_p95_delta_db": -3.0826999999999987
+  },
+  "calibration_noise_effect_at_1pct": {
+    "calibrated_sndr_p50_delta_db": 1.5985000000000014,
+    "calibrated_sndr_min_delta_db": 5.186000000000007,
+    "oracle_gap_p95_delta_db": -2.8614499999999996
+  }
+}

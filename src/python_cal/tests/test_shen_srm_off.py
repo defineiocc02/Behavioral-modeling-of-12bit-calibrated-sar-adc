@@ -100,3 +100,45 @@ def test_half_difference_and_fixed_dither_cancel_offset():
     assert all(t["valid"] for t in targets)
     assert wp == nominal
     assert wn == nominal
+
+
+def test_every_requested_calibration_pair_is_executed(monkeypatch):
+    """The average must consume all P0/P1/N0/N1 lower-SAR comparisons."""
+    original_request = DynamicComparator.request
+    request_count = 0
+
+    def counted_request(self, *args, **kwargs):
+        nonlocal request_count
+        request_count += 1
+        return original_request(self, *args, **kwargs)
+
+    monkeypatch.setattr(DynamicComparator, "request", counted_request)
+    pairs = 3
+    targets, _, _ = _controller(
+        DifferentialCDAC.ideal(),
+        pairs=pairs,
+    ).run(rng=np.random.default_rng(23))
+
+    comparisons_per_four_phases = 4 * sum(
+        len(cfg.SHEN_LOWER_STAGES[target["stage"]])
+        for target in cfg.SHEN_CAL_TARGETS
+    )
+    assert all(target["pairs"] == pairs for target in targets)
+    assert request_count == pairs * comparisons_per_four_phases
+
+
+def test_every_committed_weight_is_on_the_rtl_q8_lattice():
+    """Recursive Python calibration must not retain sub-Q8 ideal precision."""
+    controller = ShenCalibrationController(
+        cdac=DifferentialCDAC.ideal(),
+        comparator=DynamicComparator(noise_sigma_v=0.0, offset_v=0.0),
+        timing=TimingParams(),
+        avg_pairs=4,
+        cal_noise_sigma=0.0003,
+    )
+    targets, _, _ = controller.run(rng=np.random.default_rng(29))
+    scale = 1 << cfg.CAL_WEIGHT_FRAC_BITS
+    for target in targets:
+        for field in ("W_P", "W_N"):
+            scaled = target[field] * scale
+            assert abs(scaled - round(scaled)) < 1e-9
