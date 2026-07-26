@@ -69,9 +69,19 @@ jobs:
 
       - name: Verify report artifacts and English figure internals
         run: |
-          git diff --exit-code -- docs/figures/mismatch_report docs/generated_metrics.tex
+          # Vector deliverables and metrics are byte-canonical across platforms.
+          # PNG anti-aliasing bytes are OS-dependent, so validate their decoded
+          # structure while the exact SVG/PDF gates protect figure semantics.
+          git diff --exit-code -- \
+            ':(glob)docs/figures/mismatch_report/*.svg' \
+            ':(glob)docs/figures/mismatch_report/*.pdf' \
+            docs/generated_metrics.tex
           python - <<'PY'
+          from io import BytesIO
           from pathlib import Path
+          import subprocess
+
+          from PIL import Image
 
           roots = [Path("scripts/generate_report_figures.py")]
           roots.extend(Path("docs/figures/mismatch_report").glob("*.svg"))
@@ -87,6 +97,22 @@ jobs:
           outputs = list(Path("docs/figures/mismatch_report").glob("*.*"))
           if len(outputs) != 21:
               raise SystemExit(f"expected 21 current figure files, found {len(outputs)}")
+
+          pngs = sorted(Path("docs/figures/mismatch_report").glob("*.png"))
+          if len(pngs) != 7:
+              raise SystemExit(f"expected 7 PNG previews, found {len(pngs)}")
+          for path in pngs:
+              committed = subprocess.check_output(
+                  ["git", "show", f"HEAD:{path.as_posix()}"]
+              )
+              with Image.open(BytesIO(committed)) as baseline, Image.open(path) as rendered:
+                  baseline.load()
+                  rendered.load()
+                  if rendered.size != baseline.size or rendered.mode != baseline.mode:
+                      raise SystemExit(
+                          f"PNG structure changed for {path}: "
+                          f"{baseline.size}/{baseline.mode} -> {rendered.size}/{rendered.mode}"
+                      )
           PY
 
       - name: Upload rendered figures

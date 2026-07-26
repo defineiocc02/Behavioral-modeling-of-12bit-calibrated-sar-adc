@@ -32,6 +32,8 @@ python scripts/generate_report_figures.py `
 混排。生成器固定使用仓库内绘图 helper、DejaVu Sans 和
 `requirements/report-render-py313.txt`，避免调用用户级 Figura 或发生
 Windows/Linux 字体回退。PDF 是 LaTeX 嵌入源，SVG 用于审阅，PNG 用于视觉 QA。
+CI 对 PDF、SVG 和生成指标执行逐字节复现门禁；PNG 因操作系统栅格抗锯齿
+实现不同，只检查可解码性、数量、尺寸和色彩模式，不把预览字节误当作数据证据。
 
 `docs/archive/v3.0/figures/fig01` 至 `fig09` 是 v3.0 建模和历史架构
 审查图，连同对应生成脚本一起版本化归档，不作为 v3.1 最终 PDF 的

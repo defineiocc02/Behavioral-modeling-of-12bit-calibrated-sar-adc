@@ -45,7 +45,10 @@ Figure generation always uses the repository-owned
 not import a user-level Figura checkout or depend on host-only Arial/YaHei
 fonts. Python 3.13 rendering dependencies are pinned in
 `requirements/report-render-py313.txt`; CI records the resolved versions and
-font path before enforcing a clean regeneration diff.
+font path. CI enforces byte-identical regeneration for SVG/PDF and generated
+metrics. PNG is a cross-platform preview: CI verifies its count, decodability,
+dimensions and color mode, while visual QA and the exact vector gate protect
+its content.
 
 ## Dirty-worktree discipline
 
