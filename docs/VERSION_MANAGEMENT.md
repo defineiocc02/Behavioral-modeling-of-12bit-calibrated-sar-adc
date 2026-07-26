@@ -2,7 +2,7 @@
 
 ## Active release
 
-The only active release line in this worktree is `v3.1.0` on branch
+The only active release line in this worktree is `v3.1.1` on branch
 `codex/python-cal-validation`.
 
 Version-bearing files must agree:
@@ -23,6 +23,7 @@ docs/final_report.tex
 | Source | `src/python_cal/`, `rtl/`, `va/`, `scripts/` | tracked |
 | Report toolchain | `requirements/report-render-py313.txt` | tracked and pinned |
 | Frozen v3.1 evidence | `evidence/mismatch_matrix/` | tracked |
+| Frozen VM standalone evidence | `evidence/vm_sandbox/` | tracked, sanitized, hashed |
 | Active v3.1 figures | `docs/figures/mismatch_report/` | tracked |
 | Final report | `docs/final_report.tex`, `docs/final_report.pdf` | tracked |
 | Historical v3.0 figures | `docs/archive/v3.0/` | tracked archive; never used by v3.1 |

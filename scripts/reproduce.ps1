@@ -79,6 +79,10 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "report metric generation failed"
         }
+        python scripts\generate_vm_evidence_manifest.py
+        if ($LASTEXITCODE -ne 0) {
+            throw "VM evidence manifest generation failed"
+        }
 
         $figureDir = Join-Path $repoRoot "docs\figures\mismatch_report"
         $figureOutputs = Get-ChildItem -LiteralPath $figureDir -File

@@ -1,0 +1,48 @@
+===RUN_STATUS===
+/home/meow/jxy/trae_sandbox/current_git_74e7366/reports/run_status.txt|size=72|mtime=2026-07-26 04:42:21.551468753 -0400
+VA_CMP=PASS
+VA_CDAC=PASS
+RTL_CAL=PASS
+RTL_SAR=PASS
+RTL_TOP_COMPILE=PASS
+===SIZE_REPORT===
+/home/meow/jxy/trae_sandbox/current_git_74e7366/reports/sandbox_size_after_run.txt|size=6|mtime=2026-07-26 04:42:21.554468531 -0400
+15M	.
+===SIZES===
+15M	/home/meow/jxy/trae_sandbox/current_git_74e7366
+15M	/home/meow/jxy/trae_sandbox/current_git_74e7366/runs
+580K	/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/va_cmp
+1.4M	/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/va_cdac
+4.1M	/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/rtl_cal
+4.1M	/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/rtl_sar
+4.2M	/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/rtl_top_compile
+12K	/home/meow/jxy/trae_sandbox/current_git_74e7366/reports
+152K	/tmp/vm_output/20260726_sandbox_refresh
+===LOG_DIAGNOSTICS===
+---/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/va_cmp/spectre.log
+size=6342|mtime=2026-07-26 04:42:18.133721782 -0400
+spectre completes with 0 errors, 0 warnings, and 2 notices.
+---/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/va_cdac/spectre.log
+size=8264|mtime=2026-07-26 04:42:20.392554552 -0400
+    WARNING (VACOMP-1116): "/home/meow/jxy/trae_sandbox/current_git_74e7366/tb/../source/va/cdac_behavioral.va", line 153: Transition filter contains a continuous signal in the expression. Since a transition filter can only be applied to piecewise constant signals, redefine the expression to ensure that the transition filter applies only to a piecewise constant signal.
+    WARNING (VACOMP-1116): "/home/meow/jxy/trae_sandbox/current_git_74e7366/tb/../source/va/cdac_behavioral.va", line 154: Transition filter contains a continuous signal in the expression. Since a transition filter can only be applied to piecewise constant signals, redefine the expression to ensure that the transition filter applies only to a piecewise constant signal.
+    WARNING (VACOMP-1116): "/home/meow/jxy/trae_sandbox/current_git_74e7366/tb/../source/va/cdac_behavioral.va", line 155: Transition filter contains a continuous signal in the expression. Since a transition filter can only be applied to piecewise constant signals, redefine the expression to ensure that the transition filter applies only to a piecewise constant signal.
+    WARNING (VACOMP-1116): "/home/meow/jxy/trae_sandbox/current_git_74e7366/tb/../source/va/cdac_behavioral.va", line 156: Transition filter contains a continuous signal in the expression. Since a transition filter can only be applied to piecewise constant signals, redefine the expression to ensure that the transition filter applies only to a piecewise constant signal.
+spectre completes with 0 errors, 4 warnings, and 2 notices.
+---/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/rtl_cal/xrun.log
+size=859|mtime=2026-07-26 04:42:21.479474083 -0400
+PASS: 7/7 targets, P0/P1/N0/N1, Q8 width and averaging
+TOOL:	xrun(64)	23.09-s003: Exiting on Jul 26, 2026 at 04:42:21 EDT  (total: 00:00:01)
+---/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/rtl_sar/xrun.log
+size=913|mtime=2026-07-26 04:42:21.533470086 -0400
+PASS: lower-SAR uses recursive side-specific Q8 register weights
+TOOL:	xrun(64)	23.09-s003: Exiting on Jul 26, 2026 at 04:42:21 EDT  (total: 00:00:00)
+---/home/meow/jxy/trae_sandbox/current_git_74e7366/runs/rtl_top_compile/xrun.log
+size=662|mtime=2026-07-26 04:42:21.551468753 -0400
+TOOL:	xrun(64)	23.09-s003: Exiting on Jul 26, 2026 at 04:42:21 EDT  (total: 00:00:00)
+===SANDBOX_SOURCE_WRITES_AFTER_MARKER===
+===PROTECTED_MAIN_WRITES_AFTER_MARKER===
+protected_newer_file_count=0
+===PROTECTED_ROOT_STAT===
+/home/meow/jxy/12bit_50M_SAR|mtime=2026-07-20 08:27:09.021094440 -0400|ctime=2026-07-20 08:27:09.021094440 -0400
+/home/meow/jxy/cds.lib|mtime=2026-05-11 09:03:46.367868588 -0400|ctime=2026-05-11 09:03:46.367868588 -0400

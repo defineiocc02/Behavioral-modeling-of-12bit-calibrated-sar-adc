@@ -1,6 +1,6 @@
 # SAR ADC 工程组织与权威边界
 
-本文定义 v3.1.0 工程的目录职责、跨语言接口、证据流和当前缺口。它回答的不是
+本文定义 v3.1.1 工程的目录职责、跨语言接口、证据流和当前缺口。它回答的不是
 “仓库里有哪些文件”，而是每一层为什么存在、上游输入是什么、向下游交付什么，
 以及哪一份实现对哪类结论具有权威性。
 
@@ -251,7 +251,9 @@ metastability tail 或功耗。
 4. 对同一 stimulus 保存 decisions、top/bridge waveforms 和 decoded output；
 5. 与 Python trace 做逐 stage 交叉检查。
 
-本轮没有可用 Spectre/OpenVAF 编译器，因此以上仍是待闭环接口，不是已完成结果。
+当前两份 Verilog-A 已在隔离 VM 沙箱通过 Spectre standalone smoke；其中 CDAC
+保留4条 `VACOMP-1116` 连续信号 `transition()` 警告。以上仍缺 full-ADC AMS、
+逐 stage trace、PVT/MC 和 transistor replacement，因此不能外推为系统闭环。
 
 ## 5. 脚本、证据与文档
 

@@ -1,0 +1,14 @@
+xrun(64): 23.09-s003: (c) Copyright 1995-2023 Cadence Design Systems, Inc.
+TOOL:	xrun(64)	23.09-s003: Started on Jul 26, 2026 at 04:42:21 EDT
+/opt/cadence/XCELIUM2309/tools.lnx86/inca/bin/64bit/xrun
+	-64bit
+	-sv
+	-elaborate
+	-top cal_top
+	-xmlibdirname xcelium.d
+	-l xrun.log
+	/home/meow/jxy/trae_sandbox/current_git_74e7366/source/rtl/cal_weight_reg.sv
+	/home/meow/jxy/trae_sandbox/current_git_74e7366/source/rtl/cal_fsm.sv
+	/home/meow/jxy/trae_sandbox/current_git_74e7366/source/rtl/sar_subconverter.sv
+	/home/meow/jxy/trae_sandbox/current_git_74e7366/source/rtl/cal_top.sv
+TOOL:	xrun(64)	23.09-s003: Exiting on Jul 26, 2026 at 04:42:21 EDT  (total: 00:00:00)

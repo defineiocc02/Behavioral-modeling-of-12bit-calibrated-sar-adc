@@ -1,0 +1,18 @@
+simulator lang=spectre
+global 0
+
+ahdl_include "../source/va/strongarm_cmp.va"
+
+VCLK (clk 0) vsource type=pulse val0=0 val1=1.8 delay=1n rise=10p fall=10p width=2n period=5n
+VINP (vinp 0) vsource dc=0.905
+VINN (vinn 0) vsource dc=0.895
+ROUT (out 0) resistor r=1T
+RREADY (ready 0) resistor r=1T
+
+IDUT (vinp vinn out ready clk) strongarm_cmp \
+    T0_S=100p TAU_S=20p V_LOGIC=1.8 OFFSET_V=0 NOISE_SIGMA_V=0 \
+    V_MIN=1u MAX_WAIT_S=2n SEED=1 TR_S=10p
+
+tran tran stop=12n maxstep=5p
+save clk out ready vinp vinn
+

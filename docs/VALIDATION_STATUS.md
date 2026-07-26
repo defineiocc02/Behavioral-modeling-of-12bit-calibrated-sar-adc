@@ -1,8 +1,8 @@
-# v3.1 验证状态
+# v3.1.1 验证状态
 
 更新时间：2026-07-26
 
-活动版本：`v3.1.0`
+活动版本：`v3.1.1`
 
 活动分支：`codex/python-cal-validation`
 
@@ -108,6 +108,24 @@ count 很大是因为多个很窄的 decision interval 可以落入同一个输�
 Python 回归、XSIM 自检和 Vivado 综合结果在最终 PDF 中作为独立层级列出。
 当前 RTL 覆盖校准控制和 lower-SAR 子转换器，不得外推为完整 ADC RTL
 signoff。
+
+## VM standalone VA/RTL 复核
+
+隔离沙箱 `/home/meow/jxy/trae_sandbox/current_git_74e7366` 已完成五项复核：
+
+| 对象 | 状态 | 直接证据 |
+|---|---|---|
+| StrongARM comparator VA | PASS | Spectre 0 errors、0 warnings、2 notices |
+| split-CDAC VA | PASS | Spectre 0 errors、4 warnings、2 notices |
+| Calibration RTL | PASS | Xcelium 7/7 targets，运行至4065 ns |
+| Lower-SAR RTL | PASS | side-specific recursive Q8 检查，运行至705 ns |
+| `cal_top` | PASS | Xcelium compile/elaborate 返回0 |
+
+CDAC 的4条 warning 均为 `VACOMP-1116`，来自 `cdac_behavioral.va`
+第153--156行将 `transition()` 用于连续表达式。它不否定本次 standalone
+smoke，但在 full-ADC AMS 前必须评估模型语义。冻结证据位于
+`evidence/vm_sandbox/current_git_74e7366/`；运行期间受保护主工程
+`/home/meow/jxy/12bit_50M_SAR` 的新增写入计数为0。
 
 100 MHz synthesis proxy 的 setup WNS 为 `+0.298 ns`，但 hold WHS 为
 `-0.147 ns`，共有 4/2101 failing endpoints；342/125 bonded IOB 也说明

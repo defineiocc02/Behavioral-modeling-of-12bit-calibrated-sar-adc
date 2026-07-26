@@ -10,6 +10,10 @@
 *.fls
 *.synctex.gz
 
+# Sanitized, frozen VM evidence logs are intentionally versioned.
+!evidence/vm_sandbox/**/logs/
+!evidence/vm_sandbox/**/logs/*.log
+
 # Python cache
 __pycache__/
 *.pyc

@@ -130,5 +130,6 @@ testbench/PDK 按上述 unit-cell 求和生成这些倍率。若直接给每个 
 
 当前 `va/cdac_behavioral.va` 已实现独立 P/N bottom-plate 端口和 SAMPLE
 下降沿电荷捕获；`va/strongarm_cmp.va` 已统一时钟阈值、逻辑摆幅和 ready
-延迟。由于本机没有 Spectre 可执行文件，这些文件仍是结构审查完成、
-待真实 Spectre 编译与波形交叉验证的移植模型，不是晶体管级签核。
+延迟。当前文件已在隔离 VM 沙箱通过 Spectre standalone smoke；CDAC 保留4条
+`VACOMP-1116` 连续信号 `transition()` 警告。这些文件仍只是模块级运行完成、
+待 full-ADC AMS 与逐 stage 波形交叉验证的移植模型，不是晶体管级签核。

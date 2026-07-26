@@ -1,0 +1,26 @@
+simulator lang=spectre
+global 0
+
+ahdl_include "../source/va/cdac_behavioral.va"
+
+VINP (vinp 0) vsource dc=1.0
+VINN (vinn 0) vsource dc=0.8
+VSAMPLE (sample 0) vsource type=pulse val0=1.8 val1=0 delay=2n rise=10p fall=10p width=5n period=10n
+VPBOT (pbot 0) vsource dc=0
+VNBOT (nbot 0) vsource dc=1.8
+
+RTP (vtop_p 0) resistor r=1T
+RTN (vtop_n 0) resistor r=1T
+RBP (vbridge_p 0) resistor r=1T
+RBN (vbridge_n 0) resistor r=1T
+
+IDUT ( \
+    vtop_p vtop_n vbridge_p vbridge_n vinp vinn sample \
+    pbot pbot pbot pbot pbot pbot pbot \
+    pbot pbot pbot pbot pbot pbot pbot \
+    nbot nbot nbot nbot nbot nbot nbot \
+    nbot nbot nbot nbot nbot nbot nbot \
+) cdac_behavioral CU=4f VCM_V=0.9 SAMPLE_THRESHOLD_V=0.45 TR_S=1p
+
+tran tran stop=8n maxstep=2p
+save sample vtop_p vtop_n vbridge_p vbridge_n vinp vinn

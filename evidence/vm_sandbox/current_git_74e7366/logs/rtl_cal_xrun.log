@@ -1,0 +1,18 @@
+xrun(64): 23.09-s003: (c) Copyright 1995-2023 Cadence Design Systems, Inc.
+TOOL:	xrun(64)	23.09-s003: Started on Jul 26, 2026 at 04:42:20 EDT
+/opt/cadence/XCELIUM2309/tools.lnx86/inca/bin/64bit/xrun
+	-64bit
+	-sv
+	-top tb_cal_rtl
+	-xmlibdirname xcelium.d
+	-l xrun.log
+	/home/meow/jxy/trae_sandbox/current_git_74e7366/source/rtl/cal_fsm.sv
+	/home/meow/jxy/trae_sandbox/current_git_74e7366/source/rtl/tb_cal_rtl.sv
+Loading snapshot worklib.tb_cal_rtl:sv .................... Done
+xcelium> source /opt/cadence/XCELIUM2309/tools/xcelium/files/xmsimrc
+xcelium> run
+PASS: 7/7 targets, P0/P1/N0/N1, Q8 width and averaging
+Simulation complete via $finish(1) at time 4065 NS + 0
+/home/meow/jxy/trae_sandbox/current_git_74e7366/source/rtl/tb_cal_rtl.sv:143     $finish;
+xcelium> exit
+TOOL:	xrun(64)	23.09-s003: Exiting on Jul 26, 2026 at 04:42:21 EDT  (total: 00:00:01)

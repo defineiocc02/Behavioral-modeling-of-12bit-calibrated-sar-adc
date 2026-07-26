@@ -6,7 +6,9 @@ on:
       - "src/python_cal/**"
       - "docs/figures/**"
       - "evidence/mismatch_matrix/**"
+      - "evidence/vm_sandbox/**"
       - "scripts/generate_report_*.py"
+      - "scripts/generate_vm_evidence_manifest.py"
       - "scripts/report_figure_support.py"
       - "requirements/report-render-py313.txt"
       - "pyproject.toml"
@@ -16,7 +18,9 @@ on:
       - "src/python_cal/**"
       - "docs/figures/**"
       - "evidence/mismatch_matrix/**"
+      - "evidence/vm_sandbox/**"
       - "scripts/generate_report_*.py"
+      - "scripts/generate_vm_evidence_manifest.py"
       - "scripts/report_figure_support.py"
       - "requirements/report-render-py313.txt"
       - "pyproject.toml"
@@ -66,6 +70,7 @@ jobs:
         run: |
           python scripts/generate_report_figures.py --matrix-root evidence/mismatch_matrix
           python scripts/generate_report_metrics.py
+          python scripts/generate_vm_evidence_manifest.py
 
       - name: Verify report artifacts and English figure internals
         run: |
@@ -75,7 +80,8 @@ jobs:
           git diff --exit-code -- \
             ':(glob)docs/figures/mismatch_report/*.svg' \
             ':(glob)docs/figures/mismatch_report/*.pdf' \
-            docs/generated_metrics.tex
+            docs/generated_metrics.tex \
+            evidence/vm_sandbox/current_git_74e7366/manifest.json
           python - <<'PY'
           from io import BytesIO
           from pathlib import Path

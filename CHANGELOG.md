@@ -2,6 +2,23 @@
 
 All notable changes to the public Python behavioral model are recorded here.
 
+## 3.1.1 — 2026-07-26
+
+### VM evidence and workspace governance
+
+- Froze the compact standalone Spectre/Xcelium evidence package, including
+  source hashes, task-owned testbenches, runner, status, protected-path audit,
+  and deterministic manifest generation.
+- Verified both Verilog-A modules in an isolated VM sandbox: the comparator
+  completed with zero warnings, while the CDAC completed with four retained
+  `VACOMP-1116` continuous-signal `transition()` warnings.
+- Re-ran the calibration and lower-SAR RTL self-checks with Xcelium and
+  compile/elaborated `cal_top`; all five standalone sandbox gates passed.
+- Added a VM remote-operations and space-governance standard and reorganized
+  local/VM generated artifacts without touching the active Cadence project.
+- Updated the academic report and claim boundary from "VA source review only"
+  to "standalone smoke passed; full-ADC AMS remains open."
+
 ## 3.1.0 — 2026-07-26
 
 ### Mismatch-focused verification

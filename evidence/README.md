@@ -36,3 +36,9 @@ testbenches under `rtl/` and the tracked Vivado reports
 `scripts/synth_hold.rpt`, and `scripts/synth_check_timing.rpt`.
 Local XSIM work directories remain gitignored because they contain tool
 scratch data and machine-specific absolute paths.
+
+`vm_sandbox/current_git_74e7366/` freezes the compact standalone Spectre and
+Xcelium evidence package. It includes source hashes, task-owned testbenches,
+the reproducible runner, status/evidence reports, and sanitized RTL logs. It
+does not include raw PSF data, Xcelium caches, full Spectre logs, host IDs, or
+license-server identifiers.

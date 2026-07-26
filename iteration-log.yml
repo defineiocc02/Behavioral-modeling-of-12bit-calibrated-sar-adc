@@ -102,17 +102,105 @@ blocks:
             measured: "27065 integer backsteps across 100 seeds"
             status: diagnostic-fail
         outcome: release-pass-with-formal-monotonicity-limitation
+      - iteration: 4
+        timestamp: 2026-07-26T08:00:00+08:00
+        designer_changes:
+          - param: mismatch_model
+            from: ambiguous_group_level
+            to: independent_per_unit_then_group_sum
+            reason: preserve physical sigma reduction with capacitor multiplicity
+          - param: calibration_pairs
+            from: 512
+            to: 128
+            reason: remove unneeded averaging while retaining nominal yield
+          - param: recursive_weight_commit
+            from: floating_until_final_decode
+            to: immediate_RTL_equivalent_Q8
+            reason: keep Python and synthesizable RTL arithmetic identical
+          - param: project_version
+            from: 3.0.0
+            to: 3.1.0
+            reason: mismatch-focused formal release
+        optimizer_used: false
+        verification_level: L2-behavioral
+        verification_redo: true
+        results:
+          - spec: ideal_baseline
+            target: no model regression
+            measured: "74.643 dB SNDR; 12.107 bit ENOB; zero missing/backstep"
+            status: pass
+          - spec: nominal_0p5pct_per_unit
+            target: 100/100 dynamic/static/combined
+            measured: "100/100 with 0.3 mV calibration-only decorrelation"
+            status: pass
+          - spec: stress_1pct_per_unit
+            target: margin characterization
+            measured: "dynamic 100/100; static 98/100; zero missing codes"
+            status: diagnostic-tail
+        outcome: mismatch-focused-behavioral-release-pass
 
-    total_iterations: 3
-    total_verification_redos: 3
+    total_iterations: 4
+    total_verification_redos: 4
     optimizer_invocations: 0
     converged: true
     final_level: L2-behavioral-release-signoff
 
+  vm-standalone-integration:
+    iterations:
+      - iteration: 1
+        timestamp: 2026-07-26T16:42:21+08:00
+        designer_changes:
+          - param: verification_workspace
+            from: historical_mixed_sandbox
+            to: current_git_74e7366_isolated_package
+            reason: separate sources, testbenches, runs, reports and archives
+          - param: va_evidence
+            from: source_review_only
+            to: Spectre_23p1_standalone_smoke
+            reason: close the first executable Verilog-A evidence layer
+          - param: rtl_cross_tool
+            from: local_XSIM_only
+            to: XSIM_plus_Xcelium_23p09
+            reason: reduce dependence on one local simulator cache
+          - param: project_version
+            from: 3.1.0
+            to: 3.1.1
+            reason: freeze VM evidence and operational governance
+        optimizer_used: false
+        verification_level: L1-standalone
+        verification_redo: true
+        results:
+          - spec: strongarm_va_smoke
+            target: Spectre completes
+            measured: "0 errors; 0 warnings; 2 notices"
+            status: pass
+          - spec: cdac_va_smoke
+            target: Spectre completes
+            measured: "0 errors; 4 VACOMP-1116 warnings; 2 notices"
+            status: pass-with-warning
+          - spec: calibration_rtl_self_check
+            target: all declared contracts pass
+            measured: "7/7 targets; simulation to 4065 ns"
+            status: pass
+          - spec: lower_sar_rtl_self_check
+            target: recursive side-specific Q8 weights
+            measured: "pass; simulation to 705 ns"
+            status: pass
+          - spec: protected_main_project_writes
+            target: "0"
+            measured: "0 files newer than run marker"
+            status: pass
+        outcome: standalone-pass-full-ams-open
+    total_iterations: 1
+    total_verification_redos: 1
+    optimizer_invocations: 0
+    converged: true
+    final_level: L1-standalone
+
 summary:
-  total_blocks: 1
-  total_iterations: 3
-  total_verification_redos: 3
+  total_blocks: 2
+  total_iterations: 5
+  total_verification_redos: 5
   optimizer_invocations: 0
   escalations_to_user: 0
   lessons_learned:
@@ -122,3 +210,5 @@ summary:
     - Behavioral completion and full specification sign-off must be reported separately.
     - Redundancy must be checked per target against local backend range, not only as total extra capacitance.
     - Code-density static metrics and formal local monotonicity are distinct acceptance claims.
+    - Standalone Verilog-A compilation closes syntax and smoke behavior, not full-ADC AMS.
+    - A clean Git status does not imply that ignored EDA outputs are organized.

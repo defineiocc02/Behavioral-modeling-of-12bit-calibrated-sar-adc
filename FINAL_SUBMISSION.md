@@ -1,4 +1,4 @@
-# v3.1 最终交付说明
+# v3.1.1 最终交付说明
 
 ## 交付结论
 
@@ -14,8 +14,8 @@
 - 0.3 mV RMS 是校准比较器输入等效扰动，不是正常转换噪声；
 - 局部 backstep 是诊断，不单独否决当前应用；
 - Python 与 calibration/lower-SAR RTL 已统一到逐目标 Q8；
-- Verilog-A 的 split-CDAC 电荷方程、P/N 端口和浮动 bridge 逻辑已审查；
-- 仍缺完整 ADC RTL、Spectre/AMS、目标 PDK、PVT、PEX 和硅片验证，
+- Verilog-A 的 split-CDAC 与 comparator 已通过隔离 VM Spectre standalone smoke；
+- 仍缺完整 ADC RTL、full-ADC AMS、目标 PDK、PVT、PEX 和硅片验证，
   因此不能声称“已经可以直接流片”。
 
 ## 权威交付物
@@ -25,6 +25,7 @@
 | 最终报告 | `docs/final_report.pdf` | 完整结论、方程、图表、风险和流片缺口 |
 | 报告源文件 | `docs/final_report.tex` | XeLaTeX 可重建源 |
 | 冻结矩阵 | `evidence/mismatch_matrix/` | CSV、JSON、run manifest、SHA-256 |
+| VM standalone 证据 | `evidence/vm_sandbox/current_git_74e7366/` | Spectre/Xcelium 状态、TB、runner、日志摘要和 SHA-256 |
 | 当前规格 | `spec.yml` | 验收口径与场景定义 |
 | 建模指南 | `docs/MODELING_GUIDE.md` | CDAC、采样、校准、解码和验证协议 |
 | 硬件/VA说明 | `docs/HARDWARE_AND_VERILOGA_PORT.md` | RTL资源、接口与移植边界 |
@@ -91,7 +92,10 @@ raw parallel `cal_top` 也无法在该 FPGA package 上布局布线。结论仅�
 - 只有 VTOP 在采样时钳到 VCM，VBRIDGE 保持内部浮动；
 - `strongarm_cmp.va`：统一极性、1.8 V 输出、offset/noise、输入相关 delay
   和 ready；
-- 本机没有可用 Spectre/OpenVAF 编译器，因此仅完成结构审查。
+- `strongarm_cmp.va` 已通过 Spectre standalone smoke：0 errors、0 warnings；
+- `cdac_behavioral.va` 已通过 Spectre standalone smoke：0 errors、4条
+  `VACOMP-1116`；警告来自连续信号 `transition()`，full-ADC AMS 前仍需处理或论证；
+- standalone PASS 不替代 Python/RTL/VA 同 seed trace、PVT、transistor 或 post-layout。
 
 ## 消除的过度设计
 
@@ -140,6 +144,7 @@ python -m python_cal.validation.summarize_mismatch_matrix `
 python scripts\generate_report_figures.py `
   --matrix-root evidence\mismatch_matrix
 python scripts\generate_report_metrics.py
+python scripts\generate_vm_evidence_manifest.py
 .\scripts\reproduce.ps1 -BuildPdf
 ```
 

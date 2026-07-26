@@ -1,0 +1,3 @@
+# Preserve the byte-oriented VM evidence package across Windows/Linux checkouts.
+evidence/vm_sandbox/** text eol=lf
+evidence/vm_sandbox/**/tb/tb_strongarm_cmp.scs whitespace=-blank-at-eof

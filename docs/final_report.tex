@@ -168,7 +168,7 @@
   {\large\rmfamily
     基于全差分 138-Cu split-CDAC 与 100-seed 正式验证矩阵\par}
   \vfill
-  {\large\rmfamily 工程验证报告 · v3.1.0\par}
+  {\large\rmfamily 工程验证报告 · v3.1.1\par}
   \vspace{5mm}
   {\large\rmfamily 2026 年 7 月 26 日\par}
   \vspace*{26mm}
@@ -189,8 +189,9 @@ SNDR 和 \IdealCalEnob{} bit ENOB，且无缺码、无局部 backstep。0.5\%
 PER-UNIT nominal 场景在0.3 mV calibration-only 扰动下获得 dynamic、static
 与 combined 100/100；1.0\% stress 场景保持 dynamic 100/100、static 98/100，
 两个轻微 INL 尾点被如实保留。报告进一步给出 Python、SystemVerilog 与
-Verilog-A 的职责边界、XSIM 自检、Vivado 综合及时序结果，并明确区分行为级
-证据、数字实现 proxy 与尚未完成的 PDK/晶体管/版图后 signoff。研究结果支持
+Verilog-A 的职责边界、XSIM/Xcelium 自检、VM Spectre standalone smoke、
+Vivado 综合及时序结果，并明确区分行为级证据、数字实现 proxy 与尚未完成的
+PDK/晶体管/版图后 signoff。研究结果支持
 当前架构继续进入 AMS 与 transistor 实现，但不构成直接流片承诺。
 
 \vspace{6mm}
@@ -246,8 +247,11 @@ Q8 定点；RTL；Verilog-A；Monte Carlo
     综合时序 & 有条件 &
       setup WNS +0.298 ns；hold WHS -0.147 ns、4个端点；
       overall timing summary 明确为 not met。\\
+    VA standalone & 局部闭环 &
+      comparator/CDAC Spectre smoke 通过；CDAC 保留4条
+      \code{VACOMP-1116}；不是 full-ADC AMS。\\
     流片 & 尚未签核 &
-      缺 normal SAR/Q2 top、Spectre AMS、PDK MOMCAP/开关/比较器、
+      缺 normal SAR/Q2 top、full-ADC AMS、PDK MOMCAP/开关/比较器、
       reference/PVT/post-layout/ASIC STA。\\
     \bottomrule
   \end{tabularx}
@@ -417,10 +421,15 @@ P0/P1/N0/N1，已经校准的高段递归加入后续 lower ruler。每个 targe
 Verilog-A 不在模块内部抽 mismatch RNG，testbench 应把 Python 同一 seed
 生成的 realized group multipliers 外部传入。这样才能做到逐 stage trace 对照。
 
+已在受控 VM sandbox 中使用 Spectre 23.1 完成两个 standalone smoke：
+\code{strongarm\_cmp.va} 为0 error/0 warning，\code{cdac\_behavioral.va}
+为0 error/4 warning。这证明 AHDL 可编译且有限激励下能运行，但还不是
+Python/RTL/VA 闭环 trace cross-check。
+
 计划中的 AMS testbench 负责把 RTL 2-bit switch encoding 映射到模拟 rails，
 把 comparator result/ready 接回数字控制，并保存 top/bridge waveform。
-本轮缺少可用 Spectre/OpenVAF，因此该接口是\keyterm{设计完成、工具未闭环}，
-不能写成已仿真。
+因此当前状态是\keyterm{standalone 工具闭环、full-ADC AMS 未闭环}，
+不能把单模块 smoke 写成混合信号系统签核。
 
 \subsection{脚本、冻结证据、文档和 CI}
 
@@ -429,13 +438,16 @@ Verilog-A 不在模块内部抽 mismatch RNG，testbench 应把 Python 同一 se
   \item \pathcode{scripts/freeze_mismatch_evidence.py} 只复制完整结果；
   \item \pathcode{scripts/generate_report_metrics.py} 从冻结证据生成本文宏；
   \item \pathcode{scripts/generate_report_figures.py} 只读冻结 CSV/JSON。
+  \item \pathcode{scripts/generate_vm_evidence_manifest.py} 固定 VM 日志、TB、
+    runner 和 source manifest 的 hash。
 \end{itemize}
 GitHub Actions 在 Ubuntu/Python 3.13.12 上执行 pytest、重画 current figures 和
 metrics，并上传 artifact；它不跑 Vivado、Spectre 或 XeLaTeX PDF QA。
 
 \begin{notebox}
   这套组织的核心是“权威不能越级”：Python 证明行为级逻辑，RTL 证明可综合
-  子系统，Verilog-A 证明移植方程骨架，冻结证据证明报告数据来源。任何
+  子系统，Verilog-A standalone 证明移植方程可编译运行，冻结证据证明
+  报告数据来源。任何
   transistor/layout/silicon claim 都必须新增对应层证据。
 \end{notebox}
 
@@ -501,9 +513,9 @@ comparator noise 始终为0。0.3 mV RMS 只在 P0/P1/N0/N1 lower-SAR
     RTL calibration subset &
       两组 XSIM、自检、Vivado synthesis/timing reports &
       校准 FSM、递归 lower-SAR 和 Q8 register 可综合。\\
-    Verilog-A source &
-      结构、端口、方程和参数审查 &
-      有 AMS 移植骨架；不证明编译或波形签核。\\
+    Verilog-A standalone &
+      Spectre 23.1 comparator/CDAC smoke；source manifest &
+      证明 AHDL 编译与有限激励运行；不证明 full-ADC AMS/PVT。\\
     Transistor / layout &
       本轮无新证据 &
       不支持 PVT、功耗、参考建立、面积、良率和直接流片结论。\\
@@ -1068,6 +1080,9 @@ reconstruction 的局部错序”，不是整个 transfer 失稳。
 
 这两组 TB 不证明 analog settling、comparator metastability 或完整 ADC conversion；
 它们证明 RTL arithmetic 和 control contract。
+相同 RTL 还在 VM Xcelium 23.09 中独立复核：校准 TB 运行至4065 ns，
+lower-SAR TB 运行至705 ns，\code{cal\_top} compile/elaborate 返回0。
+因此当前不是只依赖一份本机 XSIM cache。
 
 \subsection{综合资源}
 
@@ -1189,6 +1204,34 @@ delay 使用
 并限制最大等待。它适合验证 polarity、ready 和控制时序，不支持真实
 kickback、input capacitance、PVT offset/noise、功耗或 metastability tail。
 
+\subsection{Standalone Spectre 复核}
+
+\begin{table}[htbp]
+  \centering
+  \caption{VM standalone VA/RTL 受控复核}
+  \begin{tabularx}{\textwidth}{@{}p{39mm}C{22mm}Y@{}}
+    \toprule
+    \tablehead 对象 & 结果 & 证据和边界\\
+    \midrule
+    \code{strongarm\_cmp.va} & \statuspass &
+      Spectre 0 error、0 warning、2 notices；12 ns standalone transient。\\
+    \code{cdac\_behavioral.va} & \statuspass &
+      Spectre 0 error、4 warnings、2 notices；8 ns standalone transient。\\
+    Calibration RTL & \statuspass &
+      Xcelium 7/7 targets，P0/P1/N0/N1、Q8 width/averaging。\\
+    Lower-SAR RTL & \statuspass &
+      Xcelium 确认 recursive side-specific Q8 register weights。\\
+    \code{cal\_top} & \statuspass &
+      Xcelium compile/elaborate 返回0。\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+CDAC 的4条 warning 全部是 \code{VACOMP-1116}，对应源码153--156行把
+\code{transition()} 用于连续表达式。这不是本次 smoke 的失败，但它提示
+目标信号并非严格 piecewise-constant。在 AMS trace 前应评估是否改成离散目标
+更新或适合连续信号的平滑形式；不为了消除 warning 而改写电荷守恒逻辑。
+
 \subsection{AMS 闭环计划}
 
 \begin{enumerate}
@@ -1201,12 +1244,16 @@ kickback、input capacitance、PVT offset/noise、功耗或 metastability tail�
 \end{enumerate}
 
 \begin{notebox}
-  本机没有 Spectre/OpenVAF 可用编译器，所以本轮只完成源码结构与方程审查。
-  这项限制不是“测试以后再说”的脚注，而是流片证据链中明确未闭合的一层。
+  standalone Spectre 编译与 smoke 已闭合；未闭合的是 Python/RTL/VA 同 seed
+  逐 stage trace、full-ADC AMS、PVT/MC 和 transistor replacement。这一边界不能
+  因两个 standalone PASS 而被抬高。
 \end{notebox}
 
 % ---------------------------------------------------------------------------
+\let\reportclearpage\clearpage
+\let\clearpage\relax
 \section[过度设计审计]{整体过度设计审计}
+\let\clearpage\reportclearpage
 
 \begin{table}[htbp]
   \centering
@@ -1259,7 +1306,7 @@ Q8、128 pairs 和20-bit不是宣称的全局数学最小值，而是本轮已�
   \item Q8 定点契约已在 Python 和 RTL 闭环；
   \item 当前 calibration RTL 可综合，setup proxy 满足100 MHz，但 hold 和
     FPGA IOB wrapper 尚未解决；
-  \item VA 方程与接口合理，可进入 AMS 联调。
+  \item VA 方程与接口已通过 standalone Spectre smoke，可进入 AMS 联调。
 \end{itemize}
 
 \subsection{仍需权威证据}
@@ -1287,8 +1334,8 @@ Q8、128 pairs 和20-bit不是宣称的全局数学最小值，而是本轮已�
       calibration subset &
       normal SAR/Q2 top、CDC/DFT、ASIC synthesis/STA。\\
     Mixed signal &
-      VA source review &
-      Spectre/AMS compile、trace cross-check、PVT/MC、post-layout。\\
+      VA standalone smoke PASS &
+      full-ADC AMS、trace cross-check、PVT/MC、post-layout。\\
     Silicon &
       尚无 &
       coherent FFT、code-density、calibration time/yield、application monotonicity。\\
@@ -1322,7 +1369,8 @@ README 的“环境安装”步骤，以该约束文件安装锁定的开发及�
   4.\quad python scripts\textbackslash freeze\_mismatch\_evidence.py\\[1mm]
   5.\quad python scripts\textbackslash generate\_report\_figures.py\\[1mm]
   6.\quad python scripts\textbackslash generate\_report\_metrics.py\\[1mm]
-  7.\quad xelatex -interaction=nonstopmode -halt-on-error final\_report.tex
+  7.\quad python scripts\textbackslash generate\_vm\_evidence\_manifest.py\\[1mm]
+  8.\quad xelatex -interaction=nonstopmode -halt-on-error final\_report.tex
     \quad（连续三次）
 \end{notebox}
 
@@ -1337,6 +1385,8 @@ utilization、setup、hold、timing summary 和 check-timing reports。
   \item v3.0 图、结果和旧 generator 全部归档到 \code{docs/archive/v3.0/}；
   \item current report 不引用 archive；
   \item working validation results 可重跑，但最终 PDF 只读 \code{evidence/}；
+  \item VM standalone 状态、TB、runner 和精简日志冻结在
+    \pathcode{evidence/vm_sandbox/current_git_74e7366/}；
   \item 图内使用英文，中文只在正文和 caption，减少字体与连接格式风险；
   \item 每张图先单独放大视觉检查，再在 PDF 中逐页检查。
 \end{itemize}
@@ -1379,7 +1429,8 @@ Config SHA-256：
   \item RTL calibration subset 通过 XSIM 并可综合；setup proxy met，
     但 hold -0.147 ns、4端点和 IOB 273.6\%说明 FPGA wrapper/implementation
     仍需完成；
-  \item Verilog-A 已具备合理方程和端口，但尚未 Spectre 编译；
+  \item Verilog-A standalone Spectre smoke 已通过；CDAC 保留4条连续信号
+    \code{transition()} 语义警告，full-ADC AMS 仍未完成；
   \item 当前方案逻辑上值得继续推进，距离 tapeout signoff 仍需 full RTL、
     AMS、PDK、transistor、reference、PVT、post-layout 与 ASIC STA。
 \end{enumerate}
@@ -1436,6 +1487,9 @@ Config SHA-256：
   \pathcode{evidence/mismatch_matrix/} &
     formal frozen statistics &
     不包含 transistor/silicon results。\\
+  \pathcode{evidence/vm_sandbox/} &
+    Spectre/Xcelium standalone status、TB、runner 和 hashes &
+    不替代 full-ADC AMS、PVT 或 transistor signoff。\\
   \pathcode{ENGINEERING_ARCHITECTURE.md} &
     repository ownership contract &
     不替代实际 tests/reports。\\

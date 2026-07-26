@@ -1,6 +1,6 @@
 # 归档与发布策略
 
-当前工作树只维护一条活动发布线：`v3.1.0`。详细的版本字段、证据冻结和
+当前工作树只维护一条活动发布线：`v3.1.1`。详细的版本字段、证据冻结和
 脏工作树处理规则见 [`VERSION_MANAGEMENT.md`](VERSION_MANAGEMENT.md)。
 
 ## 活动内容
@@ -9,6 +9,7 @@
 - `rtl/`：当前 Q8 校准控制与低位 SAR 子转换器；
 - `va/`：当前 CDAC 与比较器 Verilog-A 映射；
 - `evidence/mismatch_matrix/`：从正式运行中冻结的 v3.1 原始证据；
+- `evidence/vm_sandbox/`：经过脱敏和 hash 固定的 standalone Spectre/Xcelium 证据；
 - `docs/figures/mismatch_report/`：只由上述冻结证据重绘的 v3.1 图；
 - `docs/final_report.tex` 与 `docs/final_report.pdf`：当前报告源文件和交付件。
 

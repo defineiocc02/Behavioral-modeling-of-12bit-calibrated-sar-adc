@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "behavioral-12bit-sar-adc"
-version = "3.1.0"
+version = "3.1.1"
 description = "12-bit asynchronous SAR ADC behavioral model with a 138-Cu integer split CDAC and foreground calibration"
 readme = "README.md"
 requires-python = ">=3.10"

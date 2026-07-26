@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "captured_date": "2026-07-26",
+  "sandbox_source_commit": "74e7366",
+  "remote_root": "/home/meow/jxy/trae_sandbox/current_git_74e7366",
+  "protected_main_root": "/home/meow/jxy/12bit_50M_SAR",
+  "protected_main_files_newer_than_run_marker": 0,
+  "statuses": {
+    "VA_CMP": "PASS",
+    "VA_CDAC": "PASS",
+    "RTL_CAL": "PASS",
+    "RTL_SAR": "PASS",
+    "RTL_TOP_COMPILE": "PASS"
+  },
+  "files": [
+    {
+      "path": "logs/rtl_cal_xrun.log",
+      "bytes": 859,
+      "sha256": "c12af0fa86d21e561a05100a88b131729e3adbf304ff60e0dbc9a965dde212be"
+    },
+    {
+      "path": "logs/rtl_sar_xrun.log",
+      "bytes": 913,
+      "sha256": "f6ad9be953993acc8a7ec04b95434b5d75eb5bf3ecab2d5550b67bdc604bb7e4"
+    },
+    {
+      "path": "logs/rtl_top_compile_xrun.log",
+      "bytes": 662,
+      "sha256": "36d68c27db5e51a4dbd0fc1606fc856441e73a36b75bbabc680f955ea5bdaf98"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1906,
+      "sha256": "407c0e351b8c262aeb696ac99e83739d3be8079cce13693e44c9c2873d2fc1fc"
+    },
+    {
+      "path": "reports/postpatch_evidence.txt",
+      "bytes": 3929,
+      "sha256": "1b0642f793678acbcf3189398c828fa285e1bf2b9b9825a30e6823219d547c53"
+    },
+    {
+      "path": "reports/run_status.txt",
+      "bytes": 72,
+      "sha256": "ac514e2568c1d8095f014b2c06bdb8a4e62ac13a034d79e9ecabc444820d8bc0"
+    },
+    {
+      "path": "reports/sandbox_size_after_run.txt",
+      "bytes": 6,
+      "sha256": "224ba8e4a4197c395d8e0571afe6eec20d69d0c5553e71d9b65af4c402fb487c"
+    },
+    {
+      "path": "reports/source_manifest.sha256",
+      "bytes": 1183,
+      "sha256": "5cb02da48c14a32f3fa657a4b0fa9f8148c654ecb84fadfae24cec2d18c4afb1"
+    },
+    {
+      "path": "runner/run_all.sh",
+      "bytes": 2588,
+      "sha256": "aa24c0ed0bbb553c8d907b5260e5bb30d59f9102a6802314f181036f00474ac3"
+    },
+    {
+      "path": "tb/tb_cdac_behavioral.scs",
+      "bytes": 804,
+      "sha256": "5d9cf3eeff9ccf19e04b15e75e734110088b8ff125305297c1a38361b977cc76"
+    },
+    {
+      "path": "tb/tb_strongarm_cmp.scs",
+      "bytes": 510,
+      "sha256": "e58970100c15bde9035a25809d40fc9ac91f77530b40835a9324ddca8e2de946"
+    }
+  ]
+}

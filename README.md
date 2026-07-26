@@ -3,7 +3,7 @@
 > 12 位全差分 split-CDAC SAR ADC：从物理单位电容失配、前景权重校准，
 > 到 Python 行为模型、可综合校准 RTL 与 Verilog-A 接口的可复现工程。
 
-[![Version](https://img.shields.io/badge/version-3.1.0-17365D)](VERSION)
+[![Version](https://img.shields.io/badge/version-3.1.1-17365D)](VERSION)
 [![CI](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml/badge.svg?branch=codex%2Fpython-cal-validation)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-0072B2)](https://www.python.org/)
 [![Mismatch](https://img.shields.io/badge/mismatch-PER--UNIT-009E73)](docs/VALIDATION_STATUS.md)
@@ -40,7 +40,8 @@
 [工程架构](docs/ENGINEERING_ARCHITECTURE.md) ·
 [建模说明](docs/MODELING_GUIDE.md) ·
 [版本管理](docs/VERSION_MANAGEMENT.md) ·
-[冻结证据](evidence/mismatch_matrix/)
+[失配冻结证据](evidence/mismatch_matrix/) ·
+[VM standalone 证据](evidence/vm_sandbox/current_git_74e7366/)
 
 ## 失配到底造成了什么
 
@@ -182,7 +183,7 @@ src/python_cal/
 
 rtl/                 可综合 calibration/lower-SAR 子集与 XSIM testbench
 va/                  split-CDAC 与 StrongArm comparator 行为接口
-evidence/            冻结 CSV/JSON/manifest/SHA-256
+evidence/            失配矩阵与 VM standalone 冻结证据、manifest/SHA-256
 scripts/             矩阵、冻结、绘图、综合、时序与复现入口
 docs/                工程说明、活动图、LaTeX 源和最终 PDF
 ```
@@ -196,7 +197,7 @@ docs/                工程说明、活动图、LaTeX 源和最终 PDF
 | Python behavioral | 物理 CDAC、采样、转换、校准、三路 Q2 解码、FFT、静态审计 | 不是 transistor/PVT/silicon 结果 |
 | Calibration RTL | `cal_top`、FSM、recursive lower-SAR、7×P/N×20-bit Q8 register；两组 XSIM PASS | 不包含完整 normal SAR、Q2 decoder、CDC/DFT、ASIC STA |
 | Vivado proxy | 449 LUT、595 FF、0 DSP/BRAM；100 MHz setup WNS `+0.298 ns` | hold WHS `-0.147 ns`、4 个失败端点；342/125 IOB，raw top 不是可布局封装顶层 |
-| Verilog-A | `cdac_behavioral.va` 与 `strongarm_cmp.va` 的方程、端口和结构审查 | 尚无本机 Spectre/OpenVAF 编译、目标 PDK 或 AMS co-simulation |
+| Verilog-A | `cdac_behavioral.va` 与 `strongarm_cmp.va` 已在隔离 VM 沙箱通过 Spectre standalone smoke | 尚无 full-ADC AMS、目标 PDK、PVT 或 transistor replacement；CDAC 保留4条 `VACOMP-1116` |
 | Tapeout signoff | 架构和接口已具备继续实现的工程意义 | 尚缺 transistor、reference/switch、PVT、kickback、PEX、功耗和硅片数据 |
 
 ## 快速开始
@@ -225,6 +226,9 @@ python -m pytest
 输出为 [`docs/final_report.pdf`](docs/final_report.pdf)。报告图只读取冻结的
 [`evidence/mismatch_matrix/`](evidence/mismatch_matrix/)；PDF/SVG/指标在 CI 中
 执行确定性复现门禁，PNG 作为跨平台视觉预览检查尺寸、模式和可解码性。
+VM Spectre/Xcelium 的小型证据包位于
+[`evidence/vm_sandbox/current_git_74e7366/`](evidence/vm_sandbox/current_git_74e7366/)，
+复现入口会重新生成其确定性 manifest，但不会从 CI 连接私人 VM。
 
 ### 3. 需要时重跑完整五组矩阵
 
@@ -251,6 +255,7 @@ python scripts\generate_report_metrics.py
 | [硬件与 Verilog-A 移植说明](docs/HARDWARE_AND_VERILOGA_PORT.md) | RTL、AMS 接口与后续集成路径 |
 | [本机与 VM 工作区地图](docs/VM_WORKSPACE_MAP.md) | Git/OA/仿真目录、VA版本差异、最后运行状态与安全整理边界 |
 | [VM远程操作与空间规范](docs/VM_REMOTE_OPERATIONS_STANDARD.md) | 保护路径、沙箱、临时输出、配额、归档、清理、运行与交接标准 |
+| [VM standalone 冻结证据](evidence/vm_sandbox/current_git_74e7366/) | Spectre/Xcelium 状态、TB、runner、日志摘要、source hash 和保护路径审计 |
 | [图稿目录](docs/FIGURE_CATALOG.md) | 当前图、历史图与生成规则 |
 | [版本管理](docs/VERSION_MANAGEMENT.md) | 活动、冻结、历史和临时产物边界 |
 | [最终交付索引](FINAL_SUBMISSION.md) | 发布入口、复现命令和已知限制 |
