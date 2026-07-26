@@ -112,15 +112,20 @@ VM 的 `CDAC_VA` 在模块内部按 unit capacitor 生成失配；本机
 
 ### 4.3 `trae_sandbox`
 
-沙盒约 678 MB，存在大量近似版本和 AHDL 编译缓存：
+2026-07-26 已完成受控整理：139个历史 `.va/.scs/.sv/脚本/日志` 按原路径归档到
+`trae_sandbox/_archive/legacy_sources_netlists_20260726.tar.gz`，归档 SHA-256 为
+`6de472cec03ace5456d332738a6d7652f1037c27beabf8cd6384143addf068e4`。
+随后只删除清单中的20个旧沙箱顶层项，共706,362,969 bytes；未触碰 OA 库或主
+`simulation`。当前结构为：
 
-- `codex_audit_20260722_v6_signed`：约 278 MB；
-- `codex_audit_20260722_v6_fixed`：约 182 MB；
-- `sim_campaign_v7`：约 155 MB；
-- 其余 `codex_agent_*`、`codex_main_*`、`psf_*` 和 `*.ahdlSimDB` 为多轮探索。
+- `_archive/`：历史源码/网表归档、manifest 和清理日志；
+- `current_git_74e7366/`：当前 Git VA/RTL standalone 验证沙箱；
+- 当前源、testbench、run 和报告互相隔离，不再使用 `codex_agent_*` 临时目录。
 
-这里不能继续充当“当前版本”目录。保留它作为历史实验区；后续如需清理，应先冻结
-最终 `.va/.scs/.log`、生成 manifest，再只删除明确的 `psf/raw/ahdlSimDB` 路径。
+该 current 沙箱的复核结果为：StrongARM VA PASS；split-CDAC VA PASS（保留4条
+`VACOMP-1116` 连续信号 `transition()` 语义警告）；calibration RTL self-check PASS；
+lower-SAR RTL self-check PASS；`cal_top` compile/elaborate PASS。最终占用15 MB。
+这些结果只证明 standalone VA/RTL 契约，不代表 OA/AMS、PVT、噪声或流片通过。
 
 ## 5. 之前工作实际停在哪里
 
@@ -183,5 +188,6 @@ noisescale=10 noiseon=[ I14 I1]
    code 对齐；通过后再加入同一 PER-UNIT seed。
 5. 失配是主验证轴；噪声仅作为校准稳健性附加轴，默认不使用 `.340` 的 10 倍压力
    条件代表产品规格。
-6. 清理前先冻结关键 `.scs/.va/.log` 和结果表；潜在可回收空间约 24 GB，但必须
-   逐路径获得确认后执行。
+6. 主 `/home/meow/jxy/simulation` 被明确列为保护路径；即使其中存在约24 GB历史
+   数据，也必须获得针对该目录的单独授权后才能制定清理计划。
+7. 所有后续操作遵循 [VM远程操作规范](VM_REMOTE_OPERATIONS_STANDARD.md)。
