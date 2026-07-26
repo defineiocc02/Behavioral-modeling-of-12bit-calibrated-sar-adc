@@ -18,25 +18,27 @@
 \usepackage{etoolbox}
 \usepackage[most]{tcolorbox}
 
-\setmainfont{Palatino Linotype}
+\setmainfont{Times New Roman}
 \setsansfont{Source Sans 3}
 \setmonofont{Consolas}
 \setCJKmainfont{Noto Serif SC}[
   BoldFont={Noto Serif SC},
-  BoldFeatures={FakeBold=2}
+  UprightFeatures={RawFeature={+axis={wght=400}}},
+  BoldFeatures={RawFeature={+axis={wght=700}}}
 ]
 \setCJKsansfont{Noto Sans SC}[
   BoldFont={Noto Sans SC},
-  BoldFeatures={FakeBold=2}
+  UprightFeatures={RawFeature={+axis={wght=400}}},
+  BoldFeatures={RawFeature={+axis={wght=700}}}
 ]
 
-\definecolor{DeepNavy}{HTML}{19344F}
-\definecolor{Navy}{HTML}{264E6A}
-\definecolor{Teal}{HTML}{3A706F}
-\definecolor{Orange}{HTML}{A9643B}
-\definecolor{Green}{HTML}{376B57}
-\definecolor{Purple}{HTML}{695B79}
-\definecolor{Red}{HTML}{984B48}
+\definecolor{DeepNavy}{HTML}{183B5B}
+\definecolor{Navy}{HTML}{2F5D82}
+\definecolor{Teal}{HTML}{287C78}
+\definecolor{Orange}{HTML}{B9652E}
+\definecolor{Green}{HTML}{347657}
+\definecolor{Purple}{HTML}{705B86}
+\definecolor{Red}{HTML}{9B4D48}
 \definecolor{Ink}{HTML}{202B35}
 \definecolor{Muted}{HTML}{68737D}
 \definecolor{Line}{HTML}{C8D0D6}
@@ -113,17 +115,17 @@
 \newtcolorbox{verdictbox}[2][]{
   enhanced,
   breakable,
-  colback=#2!8!white,
-  colframe=#2!8!white,
-  coltitle=Ink,
-  fonttitle=\bfseries\sffamily,
-  boxrule=0pt,
+  colback=#2!4!white,
+  colframe=#2!30!white,
+  coltitle=#2!82!black,
+  fonttitle=\bfseries\sffamily\small,
+  boxrule=0.35pt,
   sharp corners,
-  borderline west={1.5pt}{0pt}{#2},
+  borderline west={2.0pt}{0pt}{#2},
   left=3.4mm,
   right=2.8mm,
-  top=2.5mm,
-  bottom=2.5mm,
+  top=2.7mm,
+  bottom=2.7mm,
   before skip=7pt,
   after skip=8pt,
   #1
@@ -131,11 +133,11 @@
 \newtcolorbox{notebox}[1][]{
   enhanced,
   breakable,
-  colback=PaleBlue!82!white,
-  colframe=PaleBlue!82!white,
-  boxrule=0pt,
+  colback=PaleBlue!45!white,
+  colframe=Line,
+  boxrule=0.35pt,
   sharp corners,
-  borderline west={1.0pt}{0pt}{Navy},
+  borderline west={1.4pt}{0pt}{Navy},
   left=3.4mm,
   right=2.8mm,
   top=2.3mm,
