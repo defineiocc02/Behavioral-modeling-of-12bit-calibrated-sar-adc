@@ -18,7 +18,13 @@ def sha256(path: Path) -> str:
 
 def build_manifest(root: Path) -> dict[str, object]:
     files = []
-    for path in sorted(root.rglob("*")):
+    # pathlib ordering follows host filesystem semantics; case-fold the
+    # repository-relative POSIX path so Windows and Linux emit identical JSON.
+    paths = sorted(
+        root.rglob("*"),
+        key=lambda path: path.relative_to(root).as_posix().casefold(),
+    )
+    for path in paths:
         if not path.is_file() or path.name == "manifest.json":
             continue
         files.append(
