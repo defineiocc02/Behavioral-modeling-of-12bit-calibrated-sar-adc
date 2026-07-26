@@ -11,7 +11,6 @@ import argparse
 import csv
 import json
 import os
-import sys
 from pathlib import Path
 
 # Freeze vector metadata so repeated report builds do not dirty the worktree.
@@ -29,20 +28,7 @@ from matplotlib.patches import (
 )
 
 
-FIGURA_SCRIPTS = Path(
-    os.environ.get(
-        "FIGURA_SCRIPTS",
-        Path.home() / ".agents" / "skills" / "figura" / "scripts",
-    )
-)
-if FIGURA_SCRIPTS.exists():
-    sys.path.insert(0, str(FIGURA_SCRIPTS))
-    import colors  # type: ignore  # noqa: E402
-    import export  # type: ignore  # noqa: E402
-    import pubstyle  # type: ignore  # noqa: E402
-else:
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from report_figure_support import colors, export, pubstyle  # noqa: E402
+from report_figure_support import colors, export, pubstyle  # noqa: E402
 
 
 CASE_ORDER = (
@@ -79,16 +65,13 @@ PALE_GRAY = "#F3F5F6"
 
 
 def _apply_report_style(extra: dict | None = None) -> None:
-    """Apply Figura defaults plus an English-first report font stack."""
+    """Apply the repository-owned, cross-platform report style."""
 
     params = {
         "font.family": "sans-serif",
-        "font.sans-serif": [
-            "Arial",
-            "Noto Sans SC",
-            "Microsoft YaHei",
-            "DejaVu Sans",
-        ],
+        # DejaVu Sans ships with the pinned Matplotlib wheel on every runner.
+        # A single font removes Windows Arial versus Linux fallback drift.
+        "font.sans-serif": ["DejaVu Sans"],
         "axes.unicode_minus": False,
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
@@ -540,8 +523,24 @@ def figure_validation_flow(outdir: Path) -> None:
         )
 
     box(0.2, 1.7, 1.55, 0.85, "Input\nsample", palette[0])
-    box(2.15, 1.7, 2.10, 0.85, "Physical split-CDAC\nPER-UNIT mismatch", palette[1])
-    box(4.70, 1.7, 1.75, 0.85, "15 comparator\ndecisions", palette[2])
+    box(
+        2.15,
+        1.7,
+        2.10,
+        0.85,
+        "Physical split-CDAC\nPER-UNIT mismatch",
+        palette[1],
+        fontsize=7.2,
+    )
+    box(
+        4.70,
+        1.7,
+        1.75,
+        0.85,
+        "15 comparator\ndecisions",
+        palette[2],
+        fontsize=7.4,
+    )
     box(6.90, 2.65, 2.00, 0.75, "Nominal Q2\ndecoder", palette[1], dashed=True)
     box(6.90, 1.60, 2.00, 0.75, "Calibrated Q2\ndecoder", palette[0])
     box(6.90, 0.55, 2.00, 0.75, "Physical-weight\noracle", palette[2], dashed=True)
@@ -675,8 +674,8 @@ def figure_project_architecture(outdir: Path) -> None:
     ax.axis("off")
 
     columns = (
-        (0.02, 0.315, "Python behavioral golden path", NAVY),
-        (0.345, 0.315, "SystemVerilog calibration subset", TEAL),
+        (0.02, 0.315, "Python behavioral model", NAVY),
+        (0.345, 0.315, "SystemVerilog calibration", TEAL),
         (0.67, 0.31, "Verilog-A AMS bridge", ORANGE),
     )
     for x, w, title, color in columns:
@@ -712,7 +711,7 @@ def figure_project_architecture(outdir: Path) -> None:
             ha="center",
             va="center",
             color="white",
-            fontsize=8.5,
+            fontsize=7.0,
             fontweight="bold",
             zorder=2,
         )
@@ -987,13 +986,15 @@ def figure_project_architecture(outdir: Path) -> None:
         fontsize=8.2,
         color=NAVY,
         fontweight="bold",
+        bbox={"facecolor": "white", "edgecolor": "none", "pad": 1.5},
+        zorder=5,
     )
     chain = (
-        (0.025, 0.082, 0.15, "spec.yml / config\nversioned parameters"),
+        (0.025, 0.082, 0.15, "spec.yml + config\nversioned inputs"),
         (0.205, 0.082, 0.15, "formal matrix run\nCSV + JSON"),
-        (0.385, 0.082, 0.15, "evidence/\nfrozen files + SHA-256"),
-        (0.565, 0.082, 0.17, "figures + LaTeX macros\nread frozen evidence"),
-        (0.765, 0.082, 0.205, "XeLaTeX ×3\nPDF + page-by-page visual QA"),
+        (0.385, 0.082, 0.15, "frozen evidence\nCSV/JSON + SHA-256"),
+        (0.565, 0.082, 0.17, "figures + LaTeX\nread frozen evidence"),
+        (0.765, 0.082, 0.205, "XeLaTeX ×3\nPDF visual QA"),
     )
     for x, y, w, label in chain:
         _diagram_box(
@@ -1021,6 +1022,7 @@ def figure_project_architecture(outdir: Path) -> None:
         color=NAVY,
         dashed=True,
         connectionstyle="arc3,rad=0.08",
+        zorder=1,
     )
 
     ax.plot(
@@ -1152,10 +1154,10 @@ def figure_rtl_architecture(outdir: Path) -> None:
         0.345,
         0.140,
         0.190,
-        "AMS boundary\nCDAC + comparator\ncmp_out\nswitch buses",
+        "AMS boundary\nCDAC +\ncomparator\ncmp_out\nswitch buses",
         face=PALE_ORANGE,
         edge=ORANGE,
-        fontsize=6.7,
+        fontsize=6.1,
     )
     _diagram_box(
         ax,
@@ -1431,8 +1433,8 @@ def figure_cdac_topology(outdir: Path) -> None:
             y_bottom,
             "low bank 65Cu",
             color,
-            label_dx=-0.038 if title == "N side" else 0.038,
-            label_ha="right" if title == "N side" else "left",
+            label_dx=-0.038,
+            label_ha="right",
         )
 
         # Bottom-plate bus and selector.

@@ -144,6 +144,11 @@ Q2、15th terminal、P/N 分侧权重和 Q8 写回均有直接性能或物理依
 ## 复现
 
 ```powershell
+# 固定报告图稿工具链（Python 3.13）
+python -m pip install `
+  -c requirements\report-render-py313.txt `
+  -e ".[dev,docs]"
+
 # 测试
 $env:PYTHONPATH = (Resolve-Path src).Path
 python -m pytest

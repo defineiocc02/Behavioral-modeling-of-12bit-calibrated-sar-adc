@@ -1,8 +1,8 @@
-"""Portable fallback for the local Figura plotting helpers.
+"""Repository-owned plotting primitives for deterministic report figures.
 
-The report is generated with the installed Figura skill when available.  This
-small compatibility layer keeps the GitHub checkout reproducible on machines
-that only install the repository's ``docs`` dependencies.
+The visual design follows the Figura workflow, but artifact generation never
+imports user-level skill files.  Keeping this small layer in the repository
+removes a hidden local-versus-CI dependency while retaining the reviewed style.
 """
 
 from __future__ import annotations
@@ -30,12 +30,7 @@ class _PubStyle:
             "ps.fonttype": 42,
             "svg.fonttype": "none",
             "font.family": "sans-serif",
-            "font.sans-serif": [
-                "Helvetica",
-                "Arial",
-                "Liberation Sans",
-                "DejaVu Sans",
-            ],
+            "font.sans-serif": ["DejaVu Sans"],
             "font.size": 9,
             "axes.titlesize": 10,
             "axes.labelsize": 9,

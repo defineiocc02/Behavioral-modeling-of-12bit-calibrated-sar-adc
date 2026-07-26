@@ -29,7 +29,9 @@ python scripts/generate_report_figures.py `
 
 图内模块名、端口、箭头、坐标轴、图例和注释统一使用英文；中文只出现在
 报告正文与图注。当前生成器及 SVG 必须通过汉字零命中扫描，避免图内中英文
-混排和字体回退。PDF 是 LaTeX 嵌入源，SVG 用于审阅，PNG 用于视觉 QA。
+混排。生成器固定使用仓库内绘图 helper、DejaVu Sans 和
+`requirements/report-render-py313.txt`，避免调用用户级 Figura 或发生
+Windows/Linux 字体回退。PDF 是 LaTeX 嵌入源，SVG 用于审阅，PNG 用于视觉 QA。
 
 `docs/archive/v3.0/figures/fig01` 至 `fig09` 是 v3.0 建模和历史架构
 审查图，连同对应生成脚本一起版本化归档，不作为 v3.1 最终 PDF 的

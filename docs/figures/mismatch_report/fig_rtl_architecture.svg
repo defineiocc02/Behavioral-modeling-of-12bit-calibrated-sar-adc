@@ -160,8 +160,8 @@ z
 " clip-path="url(#p7f616a0c3a)" style="fill: #52606b; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #52606b; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #167d85" transform="translate(121.92125 39.866659)">cal_top — synthesizable calibration subset</text>
-    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #167d85" transform="translate(153.2125 48.247721)">(full ADC top not included)</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'DejaVu Sans', sans-serif; fill: #167d85" transform="translate(107.82125 39.805034)">cal_top — synthesizable calibration subset</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'DejaVu Sans', sans-serif; fill: #167d85" transform="translate(143.528125 48.681846)">(full ADC top not included)</text>
    </g>
    <g id="patch_14">
     <path d="M 131.30055 98.310312
@@ -255,22 +255,22 @@ z
 " clip-path="url(#p7f616a0c3a)" style="fill: #eaf2f7; stroke-dasharray: 4,2; stroke-dashoffset: 0; stroke: #17365d; stroke-linejoin: miter"/>
    </g>
    <g id="text_2">
-    <text style="font-size: 6.6px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(90.568687 113.046041)">target_idx / phase</text>
-    <text style="font-size: 6.6px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(101.946469 120.104122)">start_subconv</text>
+    <text style="font-size: 6.6px; font-family: 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(83.399438 112.771007)">target_idx / phase</text>
+    <text style="font-size: 6.6px; font-family: 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(96.794344 120.345126)">start_subconv</text>
    </g>
    <g id="text_3">
-    <text style="font-size: 6.6px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(209.78325 113.005822)">done /</text>
-    <text style="font-size: 6.6px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(209.78325 119.98656)">signed_sum</text>
+    <text style="font-size: 6.6px; font-family: 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(209.78325 112.862788)">done /</text>
+    <text style="font-size: 6.6px; font-family: 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(209.78325 120.253344)">signed_sum</text>
    </g>
    <g id="text_4">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(293.17825 115.85148)">we / addr /</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(301.36125 122.71428)">wp / wn</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(288.79225 115.81108)">we / addr /</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(298.24625 122.97768)">wp / wn</text>
    </g>
    <g id="text_5">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #52606b" x="82.35" y="146.913078" transform="rotate(-0 82.35 146.913078)">cmp_out</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #52606b" x="82.35" y="146.683484" transform="rotate(-0 82.35 146.683484)">cmp_out</text>
    </g>
    <g id="text_6">
-    <text style="font-size: 6.1px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #52606b" x="82.35" y="174.069438" transform="rotate(-0 82.35 174.069438)">switch buses</text>
+    <text style="font-size: 6.1px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #52606b" x="82.35" y="174.338219" transform="rotate(-0 82.35 174.338219)">switch buses</text>
    </g>
    <g id="patch_21">
     <path d="M 86.80005 273.292812
@@ -299,55 +299,56 @@ z
 " clip-path="url(#p7f616a0c3a)" style="fill: #ffffff; stroke: #3d8c6a; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #d97735" x="203.715" y="226.94532" transform="rotate(-0 203.715 226.94532)">Not in current top: normal SAR, Q2 decoder, CDC/DFT, ASIC STA.</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #d97735" x="203.715" y="226.88632" transform="rotate(-0 203.715 226.88632)">Not in current top: normal SAR, Q2 decoder, CDC/DFT, ASIC STA.</text>
    </g>
    <g id="text_8">
-    <text style="font-size: 6.9px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(191.829211 72.0545)">cal_fsm</text>
-    <text style="font-size: 6.9px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(157.699547 79.476313)">P0 → P1 → N0 → N1 per pair</text>
-    <text style="font-size: 6.9px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(129.89632 86.98099)">accumulate / divide by 2N / validate / Q8 commit</text>
+    <text style="font-size: 6.9px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(190.648125 71.709037)">cal_fsm</text>
+    <text style="font-size: 6.9px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(155.755148 79.732292)">P0 → P1 → N0 → N1 per pair</text>
+    <text style="font-size: 6.9px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(118.89675 87.563641)">accumulate / divide by 2N / validate / Q8 commit</text>
    </g>
    <g id="text_9">
-    <text style="font-size: 6.9px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(140.652633 148.767191)">sar_subconverter</text>
-    <text style="font-size: 6.9px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(98.479078 156.164012)">5-state lower-SAR; H1 → H32 recursive ruler</text>
-    <text style="font-size: 6.9px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(131.074031 163.663428)">cmp_out → trial/commit</text>
-    <text style="font-size: 6.9px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(134.512711 171.168105)">signed_sum[23:0] Q8</text>
+    <text style="font-size: 6.9px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(137.405859 148.093406)">sar_subconverter</text>
+    <text style="font-size: 6.9px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(91.26157 156.116661)">5-state lower-SAR; H1 → H32 recursive ruler</text>
+    <text style="font-size: 6.9px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(126.394969 163.94801)">cmp_out → trial/commit</text>
+    <text style="font-size: 6.9px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(130.344141 171.971265)">signed_sum[23:0] Q8</text>
    </g>
    <g id="text_10">
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(261.756281 149.007951)">cal_weight_reg</text>
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(258.545937 156.377259)">7 entries per side</text>
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(270.640906 163.666881)">20-bit Q8</text>
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(253.444344 170.956502)">nominal reset values</text>
+    <text style="font-size: 6.8px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(259.292344 148.429356)">cal_weight_reg</text>
+    <text style="font-size: 6.8px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(254.820281 156.336332)">7 entries per side</text>
+    <text style="font-size: 6.8px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(268.715656 164.054183)">20-bit Q8</text>
+    <text style="font-size: 6.8px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(249.121562 171.772034)">nominal reset values</text>
    </g>
    <g id="text_11">
-    <text style="font-size: 7.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(28.424813 76.380874)">Host</text>
-    <text style="font-size: 7.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(10.422563 84.206351)">clk / rst_n / start</text>
+    <text style="font-size: 7.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(27.63 76.233004)">Host</text>
+    <text style="font-size: 7.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(6.528375 84.404846)">clk / rst_n / start</text>
    </g>
    <g id="text_12">
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(13.668594 149.134503)">AMS boundary</text>
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(5.57468 156.49506)">CDAC + comparator</text>
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(22.978977 163.677481)">cmp_out</text>
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(16.650094 170.859902)">switch buses</text>
+    <text style="font-size: 6.1px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(13.670406 145.975977)">AMS boundary</text>
+    <text style="font-size: 6.1px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(23.713961 152.899344)">CDAC +</text>
+    <text style="font-size: 6.1px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(18.068602 159.822711)">comparator</text>
+    <text style="font-size: 6.1px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(22.722711 166.746077)">cmp_out</text>
+    <text style="font-size: 6.1px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(16.197617 173.8391)">switch buses</text>
    </g>
    <g id="text_13">
-    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(361.681297 72.685847)">Status</text>
-    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(357.397625 80.189869)">cal_done</text>
-    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(356.816297 87.797972)">cal_failed</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(360.450828 72.224328)">Status</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(356.076375 80.169175)">cal_done</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(355.114422 88.308709)">cal_failed</text>
    </g>
    <g id="text_14">
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(351.607625 149.328146)">Weight output</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(347.936141 156.468985)">weights_p/n[6:0]</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(350.286297 163.513177)">20-bit Q8 each</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(343.785281 170.481197)">normal Q2 decoder</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(348.528758 148.861486)">Weight output</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(344.343367 156.238844)">weights_p/n[6:0]</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(347.524812 163.796983)">20-bit Q8 each</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(340.285945 171.174341)">normal Q2 decoder</text>
    </g>
    <g id="text_15">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(121.9725 255.73511)">XSIM PASS</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(106.9175 262.69109)">7 targets • four phases</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(109.1105 269.72695)">recursive Q8 weights</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(122.064 255.61617)">XSIM PASS</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(101.847 262.88003)">7 targets • four phases</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(105.2075 270.14389)">recursive Q8 weights</text>
    </g>
    <g id="text_16">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(235.774 255.87021)">Vivado synthesis proxy</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(243.1915 262.80603)">449 LUT • 595 FF</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(240.8775 269.66685)">100 MHz constraint</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(231.574 255.61617)">Vivado synthesis proxy</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(240.671 262.88003)">449 LUT • 595 FF</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(237.339 270.14389)">100 MHz constraint</text>
    </g>
   </g>
  </g>

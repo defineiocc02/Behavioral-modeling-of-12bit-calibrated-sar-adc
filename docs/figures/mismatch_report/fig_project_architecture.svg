@@ -92,16 +92,26 @@ L 272.4885 19.0422
 z
 " clip-path="url(#pb69e04441d)" style="fill: #d97735; stroke: #d97735; stroke-width: 0.8; stroke-linejoin: miter"/>
    </g>
+   <g id="patch_8">
+    <path d="M 73.04535 235.54926
+Q 88.866568 270.214668 113.993536 297.432671
+" clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
+    <path d="M 112.87417 293.566534
+L 113.993536 297.432671
+L 110.229006 296.008482
+z
+" clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
+   </g>
    <g id="text_1">
-    <text style="font-weight: 700; font-size: 8.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #ffffff" x="73.247625" y="31.04701" transform="rotate(-0 73.247625 31.04701)">Python behavioral golden path</text>
+    <text style="font-weight: 700; font-size: 7px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #ffffff" x="73.247625" y="30.803651" transform="rotate(-0 73.247625 30.803651)">Python behavioral model</text>
    </g>
    <g id="text_2">
-    <text style="font-weight: 700; font-size: 8.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #ffffff" x="204.726375" y="31.098807" transform="rotate(-0 204.726375 31.098807)">SystemVerilog calibration subset</text>
+    <text style="font-weight: 700; font-size: 7px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #ffffff" x="204.726375" y="30.803651" transform="rotate(-0 204.726375 30.803651)">SystemVerilog calibration</text>
    </g>
    <g id="text_3">
-    <text style="font-weight: 700; font-size: 8.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #ffffff" x="335.19375" y="31.098807" transform="rotate(-0 335.19375 31.098807)">Verilog-A AMS bridge</text>
+    <text style="font-weight: 700; font-size: 7px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #ffffff" x="335.19375" y="30.803651" transform="rotate(-0 335.19375 30.803651)">Verilog-A AMS bridge</text>
    </g>
-   <g id="patch_8">
+   <g id="patch_9">
     <path d="M 73.04535 73.60902
 Q 73.04535 81.177966 73.04535 87.68478
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -111,7 +121,7 @@ L 71.24535 84.08478
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_9">
+   <g id="patch_10">
     <path d="M 73.04535 114.09408
 Q 73.04535 121.663026 73.04535 128.16984
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -121,7 +131,7 @@ L 71.24535 124.56984
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_10">
+   <g id="patch_11">
     <path d="M 73.04535 154.57914
 Q 73.04535 162.148086 73.04535 168.6549
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -131,7 +141,7 @@ L 71.24535 165.0549
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_11">
+   <g id="patch_12">
     <path d="M 73.04535 195.0642
 Q 73.04535 202.633146 73.04535 209.13996
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -141,7 +151,7 @@ L 71.24535 205.53996
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_12">
+   <g id="patch_13">
     <path d="M 203.715 70.08858
 Q 203.715 78.361614 203.715 85.572516
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
@@ -151,7 +161,7 @@ L 201.915 81.972516
 z
 " clip-path="url(#pb69e04441d)" style="fill: #167d85; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_13">
+   <g id="patch_14">
     <path d="M 198.8604 112.33386
 Q 198.8604 122.367114 198.8604 131.338236
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
@@ -161,7 +171,7 @@ L 197.0604 127.738236
 z
 " clip-path="url(#pb69e04441d)" style="fill: #167d85; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_14">
+   <g id="patch_15">
     <path d="M 208.5696 132.400368
 Q 208.5696 122.367114 208.5696 113.395992
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -178,7 +188,7 @@ L 151.9326 190.839672
 L 167.3055 190.839672
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #167d85; stroke-width: 0.95; stroke-linecap: square"/>
    </g>
-   <g id="patch_15">
+   <g id="patch_16">
     <path d="M 162.4509 190.839672
 Q 164.8782 190.839672 166.243368 190.839672
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
@@ -188,7 +198,7 @@ L 162.643368 192.639672
 z
 " clip-path="url(#pb69e04441d)" style="fill: #167d85; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_16">
+   <g id="patch_17">
     <path d="M 240.1245 190.839672
 Q 236.665731 166.634019 248.874729 146.683988
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
@@ -198,7 +208,7 @@ L 248.530883 150.694196
 z
 " clip-path="url(#pb69e04441d)" style="fill: #167d85; stroke: #167d85; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_17">
+   <g id="patch_18">
     <path d="M 203.715 203.8653
 Q 203.715 211.78629 203.715 218.645148
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #52606b; stroke-width: 0.95; stroke-linecap: round"/>
@@ -208,7 +218,7 @@ L 201.915 215.045148
 z
 " clip-path="url(#pb69e04441d)" style="fill: #52606b; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #52606b; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_18">
+   <g id="patch_19">
     <path d="M 335.19375 83.472252
 Q 335.19375 93.499506 335.19375 103.52676
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #d97735; stroke-width: 0.95; stroke-linecap: round"/>
@@ -223,7 +233,7 @@ L 333.39375 99.92676
 z
 " clip-path="url(#pb69e04441d)" style="fill: #d97735; stroke: #d97735; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_19">
+   <g id="patch_20">
     <path d="M 335.19375 133.4565
 Q 335.19375 145.425996 335.19375 156.33336
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #d97735; stroke-width: 0.95; stroke-linecap: round"/>
@@ -233,7 +243,7 @@ L 333.39375 152.73336
 z
 " clip-path="url(#pb69e04441d)" style="fill: #d97735; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #d97735; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_20">
+   <g id="patch_21">
     <path d="M 335.19375 186.2631
 Q 335.19375 196.472376 335.19375 205.61952
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #52606b; stroke-width: 0.95; stroke-linecap: round"/>
@@ -250,7 +260,7 @@ L 133.3233 99.660276
 L 158.4054 99.660276
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #79558c; stroke-width: 0.95"/>
    </g>
-   <g id="patch_21">
+   <g id="patch_22">
     <path d="M 153.5508 99.660276
 Q 155.9781 99.660276 157.343268 99.660276
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #79558c; stroke-width: 0.95; stroke-linecap: round"/>
@@ -269,7 +279,7 @@ L 278.1522 67.976316
 L 286.64775 67.976316
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #79558c; stroke-width: 0.95"/>
    </g>
-   <g id="patch_22">
+   <g id="patch_23">
     <path d="M 281.79315 67.976316
 Q 284.22045 67.976316 285.585618 67.976316
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #79558c; stroke-width: 0.95; stroke-linecap: round"/>
@@ -279,7 +289,7 @@ L 281.985618 69.776316
 z
 " clip-path="url(#pb69e04441d)" style="fill: #79558c; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #79558c; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_23">
+   <g id="patch_24">
     <path d="M 72.23625 311.414742
 Q 78.3045 311.414742 83.310618 311.414742
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -289,7 +299,7 @@ L 79.710618 313.214742
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_24">
+   <g id="patch_25">
     <path d="M 145.05525 311.414742
 Q 151.1235 311.414742 156.129618 311.414742
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -299,7 +309,7 @@ L 152.529618 313.214742
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_25">
+   <g id="patch_26">
     <path d="M 217.87425 311.414742
 Q 223.9425 311.414742 228.948618 311.414742
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -309,7 +319,7 @@ L 225.348618 313.214742
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
-   <g id="patch_26">
+   <g id="patch_27">
     <path d="M 298.78425 311.414742
 Q 304.8525 311.414742 309.858618 311.414742
 " clip-path="url(#pb69e04441d)" style="fill: none; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
@@ -318,16 +328,6 @@ L 309.858618 311.414742
 L 306.258618 313.214742
 z
 " clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
-   </g>
-   <g id="patch_27">
-    <path d="M 73.04535 235.54926
-Q 88.866568 270.214668 113.993536 297.432671
-" clip-path="url(#pb69e04441d)" style="fill: none; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
-    <path d="M 112.87417 293.566534
-L 113.993536 297.432671
-L 110.229006 296.008482
-z
-" clip-path="url(#pb69e04441d)" style="fill: #17365d; stroke-dasharray: 3.8,1.9; stroke-dashoffset: 0; stroke: #17365d; stroke-width: 0.95; stroke-linecap: round"/>
    </g>
    <g id="line2d_4">
     <path d="M 11.9583 345.739032
@@ -470,13 +470,13 @@ z
 " clip-path="url(#pb69e04441d)" style="fill: #f3f5f6; stroke: #52606b; stroke-linejoin: miter"/>
    </g>
    <g id="text_4">
-    <text style="font-size: 5.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52606b" x="213.82875" y="123.612928" transform="rotate(-0 213.82875 123.612928)">start / done / sum</text>
+    <text style="font-size: 5.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52606b" x="213.82875" y="123.708748" transform="rotate(-0 213.82875 123.708748)">start / done / sum</text>
    </g>
    <g id="text_5">
-    <text style="font-size: 5.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52606b" x="149.5053" y="171.842956" transform="rotate(-0 149.5053 171.842956)">write</text>
+    <text style="font-size: 5.5px; font-family: 'DejaVu Sans', sans-serif; text-anchor: end; fill: #52606b" x="149.5053" y="171.938776" transform="rotate(-0 149.5053 171.938776)">write</text>
    </g>
    <g id="text_6">
-    <text style="font-size: 5.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(255.976487 189.009243) rotate(-74)">recursive read</text>
+    <text style="font-size: 5.4px; font-family: 'DejaVu Sans', sans-serif; fill: #52606b" transform="translate(256.205207 191.21126) rotate(-74)">recursive read</text>
    </g>
    <g id="patch_38">
     <path d="M 289.07505 84.522384
@@ -531,13 +531,10 @@ z
 " clip-path="url(#pb69e04441d)" style="fill: #f3f5f6; stroke-dasharray: 4,2; stroke-dashoffset: 0; stroke: #52606b; stroke-linejoin: miter"/>
    </g>
    <g id="text_7">
-    <text style="font-size: 5.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #79558c" transform="translate(139.282847 158.231453) rotate(-90)">Q8 contract</text>
+    <text style="font-size: 5.5px; font-family: 'DejaVu Sans', sans-serif; fill: #79558c" transform="translate(139.525191 160.227781) rotate(-90)">Q8 contract</text>
    </g>
    <g id="text_8">
-    <text style="font-size: 5.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #79558c" x="205.73775" y="7.964249" transform="rotate(-0 205.73775 7.964249)">same charge-conservation equations</text>
-   </g>
-   <g id="text_9">
-    <text style="font-weight: 700; font-size: 8.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #17365d" x="9.531" y="283.43673" transform="rotate(-0 9.531 283.43673)">Reproducible delivery chain (the only data path into the report)</text>
+    <text style="font-size: 5.8px; font-family: 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #79558c" x="205.73775" y="7.978749" transform="rotate(-0 205.73775 7.978749)">same charge-conservation equations</text>
    </g>
    <g id="patch_42">
     <path d="M 13.98105 326.728656
@@ -604,98 +601,109 @@ Q 308.49345 326.728656 313.34805 326.728656
 z
 " clip-path="url(#pb69e04441d)" style="fill: #ffffff; stroke: #17365d; stroke-linejoin: miter"/>
    </g>
+   <g id="text_9">
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52606b" x="24.9039" y="347.449844" transform="rotate(-0 24.9039 347.449844)">solid: implemented runtime data/control</text>
+   </g>
    <g id="text_10">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52606b" x="24.9039" y="347.37961" transform="rotate(-0 24.9039 347.37961)">solid: implemented runtime data/control</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52606b" x="172.1601" y="347.449844" transform="rotate(-0 172.1601 347.449844)">dashed: cross-check or pending tool/PDK closure</text>
    </g>
    <g id="text_11">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #52606b" x="172.1601" y="347.343282" transform="rotate(-0 172.1601 347.343282)">dashed: cross-check or pending tool/PDK closure</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(44.117811 59.040351)">config + topology</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(27.816522 66.417709)">StageSpec / caps / switches</text>
    </g>
    <g id="text_12">
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(48.382928 59.046891)">config + topology</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(32.401561 66.187731)">StageSpec / caps / switches</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(59.721366 95.836732)">physical</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(38.603475 103.21409)">2-node charge solver</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(45.21367 110.591448)">differential CDAC</text>
    </g>
    <g id="text_13">
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(61.304217 96.044884)">physical</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(42.515662 103.112619)">2-node charge solver</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(47.996483 110.156811)">differential CDAC</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(26.989803 136.231401)">comparator + async_control</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(42.139881 143.78954)">comparator events</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(51.193162 151.166898)">trial / commit</text>
    </g>
    <g id="text_14">
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(32.85453 136.579801)">comparator + async_control</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(46.131795 143.623993)">comparator events</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(54.628514 150.592014)">trial / commit</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(39.153944 176.806852)">calibration + decode</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(52.707459 184.18421)">P0/P1/N0/N1</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(22.44285 191.561568)">Q8 weights / Q2 reconstruction</text>
    </g>
    <g id="text_15">
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(43.866952 177.01406)">calibration + decode</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(54.077537 183.98208)">P0/P1/N0/N1</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(28.430467 191.051703)">Q8 weights / Q2 reconstruction</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(39.360623 217.291912)">validation + pipeline</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(40.590038 224.66927)">FFT / reachable tree</text>
+    <text style="font-size: 6.5px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(46.286678 232.046628)">100-seed matrix</text>
    </g>
    <g id="text_16">
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(44.407772 217.588007)">validation + pipeline</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(43.662811 224.556028)">FFT / reachable tree</text>
-    <text style="font-size: 6.5px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(49.744881 231.524048)">100-seed matrix</text>
+    <text style="font-size: 7.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(191.032088 56.97592)">cal_top</text>
+    <text style="font-size: 7.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(149.429588 65.348012)">parameters, ports, integration</text>
    </g>
    <g id="text_17">
-    <text style="font-size: 7.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(192.309525 57.13513)">cal_top</text>
-    <text style="font-size: 7.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(156.8979 64.853552)">parameters, ports, integration</text>
+    <text style="font-size: 6.3px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(191.98665 93.984689)">cal_fsm</text>
+    <text style="font-size: 6.3px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(150.939689 101.31027)">phase sequencing / accumulation</text>
+    <text style="font-size: 6.3px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(164.079619 108.460632)">range check / Q8 commit</text>
    </g>
    <g id="text_18">
-    <text style="font-size: 6.3px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(193.065033 94.22777)">cal_fsm</text>
-    <text style="font-size: 6.3px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(157.164384 101.075063)">phase sequencing / accumulation</text>
-    <text style="font-size: 6.3px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(168.906502 108.000988)">range check / Q8 commit</text>
+    <text style="font-size: 6.8px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(174.450963 139.313935)">sar_subconverter</text>
+    <text style="font-size: 6.8px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(169.965619 147.220911)">recursive lower-SAR</text>
+    <text style="font-size: 6.8px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(178.399213 154.938763)">Q8 signed sum</text>
    </g>
    <g id="text_19">
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(177.650681 139.625269)">sar_subconverter</text>
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(172.933181 146.91489)">recursive lower-SAR</text>
-    <text style="font-size: 6.8px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(181.051744 154.310804)">Q8 signed sum</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(177.637266 188.877489)">cal_weight_reg</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(173.337187 197.017024)">7×P/N×20-bit Q8</text>
    </g>
    <g id="text_20">
-    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(180.173672 189.032277)">cal_weight_reg</text>
-    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(177.450234 196.61833)">7×P/N×20-bit Q8</text>
+    <text style="font-size: 6.7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(174.739822 230.673798)">verification proxy</text>
+    <text style="font-size: 6.7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(177.803502 238.278151)">XSIM self-check</text>
+    <text style="font-size: 6.7px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(160.099798 245.882505)">Vivado synthesis + timing</text>
    </g>
    <g id="text_21">
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(178.7839 230.941316)">verification proxy</text>
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(179.717189 238.202253)">XSIM self-check</text>
-    <text style="font-size: 6.7px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(166.085306 245.384674)">Vivado synthesis + timing</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(304.31425 62.389456)">cdac_behavioral.va</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(298.79525 69.831316)">P/N two-node matrices</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(287.26025 77.095176)">external mismatch multipliers</text>
    </g>
    <g id="text_22">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(307.62225 62.769996)">cdac_behavioral.va</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(302.82825 69.630816)">P/N two-node matrices</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(293.93975 76.491636)">external mismatch multipliers</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(305.29375 113.346836)">strongarm_cmp.va</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(288.62675 120.788696)">offset / optional noise / delay</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(314.52325 128.052556)">ready output</text>
    </g>
    <g id="text_23">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(308.69725 113.618796)">strongarm_cmp.va</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(294.69325 120.649776)">offset / optional noise / delay</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(317.40475 127.585596)">ready output</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(295.86375 166.331436)">Spectre / AMS testbench</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(285.06125 173.595296)">switches + clock + comparator</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(306.83525 180.859156)">RTL co-simulation</text>
    </g>
    <g id="text_24">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(299.97625 166.661976)">Spectre / AMS testbench</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(292.15625 173.522796)">switches + clock + comparator</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(309.58525 180.383616)">RTL co-simulation</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(308.12575 215.617596)">current evidence</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(290.89175 222.881456)">structural / equation review</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(285.46125 230.145316)">no local compile or PDK signoff</text>
    </g>
    <g id="text_25">
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(311.53775 215.776476)">current evidence</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(296.95575 222.732456)">structural / equation review</text>
-    <text style="font-size: 6.4px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(290.78625 229.688436)">no local compile or PDK signoff</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(13.944625 309.607122)">spec.yml + config</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(16.091375 316.643987)">versioned inputs</text>
    </g>
    <g id="text_26">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(18.809688 309.695782)">spec.yml / config</text>
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(11.916063 316.414858)">versioned parameters</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(87.446109 309.607122)">formal matrix run</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(96.250594 316.643987)">CSV + JSON</text>
    </g>
    <g id="text_27">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(91.461094 309.694329)">formal matrix run</text>
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(96.538797 316.340749)">CSV + JSON</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(162.800328 309.607122)">frozen evidence</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(154.639578 316.643987)">CSV/JSON + SHA-256</text>
    </g>
    <g id="text_28">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(174.263547 309.694329)">evidence/</text>
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(156.432734 316.340749)">frozen files + SHA-256</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(240.192797 309.607122)">figures + LaTeX</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(231.699766 316.643987)">read frozen evidence</text>
    </g>
    <g id="text_29">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(231.749172 309.695782)">figures + LaTeX macros</text>
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(235.447859 316.414858)">read frozen evidence</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(333.915969 309.607122)">XeLaTeX ×3</text>
+    <text style="font-size: 6.2px; font-family: 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(330.780125 316.643987)">PDF visual QA</text>
    </g>
    <g id="text_30">
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(335.411719 309.609544)">XeLaTeX ×3</text>
-    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', sans-serif; fill: #24303a" transform="translate(309.397875 316.352877)">PDF + page-by-page visual QA</text>
+    <g id="patch_47">
+     <path d="M 8.055 286.791042
+L 307.021875 286.791042
+L 307.021875 275.838917
+L 8.055 275.838917
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-weight: 700; font-size: 8.2px; font-family: 'DejaVu Sans', sans-serif; text-anchor: start; fill: #17365d" x="9.531" y="283.545636" transform="rotate(-0 9.531 283.545636)">Reproducible delivery chain (the only data path into the report)</text>
    </g>
   </g>
  </g>

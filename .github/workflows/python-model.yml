@@ -8,6 +8,7 @@ on:
       - "evidence/mismatch_matrix/**"
       - "scripts/generate_report_*.py"
       - "scripts/report_figure_support.py"
+      - "requirements/report-render-py313.txt"
       - "pyproject.toml"
       - ".github/workflows/python-model.yml"
   pull_request:
@@ -17,6 +18,7 @@ on:
       - "evidence/mismatch_matrix/**"
       - "scripts/generate_report_*.py"
       - "scripts/report_figure_support.py"
+      - "requirements/report-render-py313.txt"
       - "pyproject.toml"
       - ".github/workflows/python-model.yml"
 
@@ -30,11 +32,32 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13.12"
           cache: "pip"
+          cache-dependency-path: |
+            pyproject.toml
+            requirements/report-render-py313.txt
 
       - name: Install model and documentation dependencies
-        run: python -m pip install -e ".[dev,docs]"
+        run: >-
+          python -m pip install
+          -c requirements/report-render-py313.txt
+          -e ".[dev,docs]"
+
+      - name: Record rendering toolchain
+        run: |
+          python --version
+          python - <<'PY'
+          import matplotlib
+          import numpy
+          from PIL import Image
+          from matplotlib import font_manager
+
+          print(f"matplotlib={matplotlib.__version__}")
+          print(f"numpy={numpy.__version__}")
+          print(f"pillow={Image.__version__}")
+          print("font=" + font_manager.findfont("DejaVu Sans", fallback_to_default=False))
+          PY
 
       - name: Run regression tests
         run: python -m pytest

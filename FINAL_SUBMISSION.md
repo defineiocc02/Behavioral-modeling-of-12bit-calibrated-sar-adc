@@ -124,6 +124,10 @@ raw parallel `cal_top` 也无法在该 FPGA package 上布局布线。结论仅�
 ## 复现
 
 ```powershell
+python -m pip install `
+  -c requirements\report-render-py313.txt `
+  -e ".[dev,docs]"
+
 $env:PYTHONPATH = (Resolve-Path src).Path
 python -m pytest
 

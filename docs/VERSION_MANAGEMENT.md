@@ -21,6 +21,7 @@ docs/final_report.tex
 | Class | Location | Git policy |
 |---|---|---|
 | Source | `src/python_cal/`, `rtl/`, `va/`, `scripts/` | tracked |
+| Report toolchain | `requirements/report-render-py313.txt` | tracked and pinned |
 | Frozen v3.1 evidence | `evidence/mismatch_matrix/` | tracked |
 | Active v3.1 figures | `docs/figures/mismatch_report/` | tracked |
 | Final report | `docs/final_report.tex`, `docs/final_report.pdf` | tracked |
@@ -38,6 +39,13 @@ configuration, calibrator, decoder and acceptance hashes.
 
 Figures and LaTeX metrics read only the frozen evidence tree. They must never
 read the ignored working result directory when building a release.
+
+Figure generation always uses the repository-owned
+`scripts/report_figure_support.py` and Matplotlib's bundled DejaVu Sans. It must
+not import a user-level Figura checkout or depend on host-only Arial/YaHei
+fonts. Python 3.13 rendering dependencies are pinned in
+`requirements/report-render-py313.txt`; CI records the resolved versions and
+font path before enforcing a clean regeneration diff.
 
 ## Dirty-worktree discipline
 

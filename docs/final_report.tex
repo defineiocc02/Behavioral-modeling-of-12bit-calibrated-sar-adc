@@ -1328,6 +1328,11 @@ Q8、128 pairs 和20-bit不是宣称的全局数学最小值，而是本轮已�
 
 \subsection{最短复现路径}
 
+图稿使用 Python 3.13、仓库内 \code{report\_figure\_support.py}、DejaVu Sans
+和 \pathcode{requirements/report-render-py313.txt} 固定工具链；生成过程不读取
+用户目录中的 Figura helper，也不依赖 Windows-only 字体。首次运行前应按
+README 的“环境安装”步骤，以该约束文件安装锁定的开发及文档依赖。
+
 \begin{notebox}
   \ttfamily\small
   1.\quad python -m pytest\\[1mm]

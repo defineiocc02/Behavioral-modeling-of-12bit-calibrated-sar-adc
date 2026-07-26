@@ -267,7 +267,12 @@ metastability tail 或功耗。
 - `scripts/generate_report_figures.py`
   - 只读取冻结 CSV/JSON；
   - 输出 PDF/SVG/PNG；
-  - 图内使用英文，报告正文使用中文。
+  - 图内使用英文，报告正文使用中文；
+  - 固定调用仓库内 `scripts/report_figure_support.py`，不读取用户目录中的
+    Figura/绘图脚本；
+  - 统一使用 Matplotlib 自带 DejaVu Sans，并由
+    `requirements/report-render-py313.txt` 锁定图稿工具链，消除本机与 CI 的
+    版本和字体分叉。
 - `scripts/synth_cal.tcl` 与 `scripts/timing.xdc`
   - 对 `cal_top` 做 Vivado 2018.3 synthesis proxy；
   - 输出 utilization、setup/hold summary 和 timing completeness check；
@@ -308,5 +313,7 @@ metastability tail 或功耗。
 4. 当前报告只引用 `docs/figures/mismatch_report/`；
 5. 旧版本图和结果只进入 `docs/archive/<version>/`；
 6. 图表必须单独视觉检查，PDF 嵌入后还需逐页检查；
-7. 任何 PDK、transistor、layout 或 silicon 结论必须引用对应层的新证据，不能从行为级
+7. 图稿生成必须使用 `requirements/report-render-py313.txt`，不得调用用户目录下的
+   未版本化绘图 helper；
+8. 任何 PDK、transistor、layout 或 silicon 结论必须引用对应层的新证据，不能从行为级
    100-seed result 外推。
