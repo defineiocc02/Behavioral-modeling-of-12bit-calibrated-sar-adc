@@ -249,6 +249,7 @@ python scripts\generate_report_metrics.py
 | [工程架构](docs/ENGINEERING_ARCHITECTURE.md) | Python/RTL/VA 职责、接口、数据流和实现边界 |
 | [建模指南](docs/MODELING_GUIDE.md) | CDAC、采样、decision、Q8/Q2 和验证协议 |
 | [硬件与 Verilog-A 移植说明](docs/HARDWARE_AND_VERILOGA_PORT.md) | RTL、AMS 接口与后续集成路径 |
+| [本机与 VM 工作区地图](docs/VM_WORKSPACE_MAP.md) | Git/OA/仿真目录、VA版本差异、最后运行状态与安全整理边界 |
 | [图稿目录](docs/FIGURE_CATALOG.md) | 当前图、历史图与生成规则 |
 | [版本管理](docs/VERSION_MANAGEMENT.md) | 活动、冻结、历史和临时产物边界 |
 | [最终交付索引](FINAL_SUBMISSION.md) | 发布入口、复现命令和已知限制 |
