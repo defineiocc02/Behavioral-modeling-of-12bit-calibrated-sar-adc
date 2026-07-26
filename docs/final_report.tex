@@ -1,11 +1,12 @@
 \documentclass[UTF8,11pt,a4paper]{ctexart}
 
-\usepackage[a4paper,top=22mm,bottom=22mm,left=25mm,right=25mm]{geometry}
+\usepackage[a4paper,top=24mm,bottom=24mm,left=27mm,right=27mm,headsep=8mm]{geometry}
 \usepackage{fontspec}
 \usepackage{amsmath,amssymb}
 \usepackage[table]{xcolor}
 \usepackage{booktabs,tabularx,array,longtable,multirow}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage{enumitem}
 \usepackage{caption}
 \usepackage{fancyhdr}
@@ -13,32 +14,37 @@
 \usepackage{hyperref}
 \usepackage{microtype}
 \usepackage{ragged2e}
-\usepackage{parskip}
 \usepackage{needspace}
-\usepackage{tikz}
+\usepackage{etoolbox}
 \usepackage[most]{tcolorbox}
 
-\setmainfont{Arial}
-\setsansfont{Arial}
-\setmonofont{Courier New}
-\setCJKmainfont{Noto Serif SC}[BoldFont={SimHei}]
-\setCJKsansfont{Microsoft YaHei}
+\setmainfont{Palatino Linotype}
+\setsansfont{Source Sans 3}
+\setmonofont{Consolas}
+\setCJKmainfont{Noto Serif SC}[
+  BoldFont={Noto Serif SC},
+  BoldFeatures={FakeBold=2}
+]
+\setCJKsansfont{Noto Sans SC}[
+  BoldFont={Noto Sans SC},
+  BoldFeatures={FakeBold=2}
+]
 
-\definecolor{DeepNavy}{HTML}{15324B}
-\definecolor{Navy}{HTML}{17365D}
-\definecolor{Teal}{HTML}{167D85}
-\definecolor{Orange}{HTML}{D97735}
-\definecolor{Green}{HTML}{3D8C6A}
-\definecolor{Purple}{HTML}{79558C}
-\definecolor{Red}{HTML}{B84A45}
-\definecolor{Ink}{HTML}{27333D}
-\definecolor{Muted}{HTML}{65727D}
-\definecolor{Line}{HTML}{CDD5DA}
-\definecolor{PaleBlue}{HTML}{EAF2F7}
-\definecolor{PaleTeal}{HTML}{E8F3F2}
-\definecolor{PaleOrange}{HTML}{FAEFE6}
-\definecolor{PaleGray}{HTML}{F3F5F6}
-\definecolor{WarmWhite}{HTML}{FCFBF8}
+\definecolor{DeepNavy}{HTML}{19344F}
+\definecolor{Navy}{HTML}{264E6A}
+\definecolor{Teal}{HTML}{3A706F}
+\definecolor{Orange}{HTML}{A9643B}
+\definecolor{Green}{HTML}{376B57}
+\definecolor{Purple}{HTML}{695B79}
+\definecolor{Red}{HTML}{984B48}
+\definecolor{Ink}{HTML}{202B35}
+\definecolor{Muted}{HTML}{68737D}
+\definecolor{Line}{HTML}{C8D0D6}
+\definecolor{PaleBlue}{HTML}{F0F4F7}
+\definecolor{PaleTeal}{HTML}{F0F5F4}
+\definecolor{PaleOrange}{HTML}{F7F2EE}
+\definecolor{PaleGray}{HTML}{F4F5F6}
+\definecolor{WarmWhite}{HTML}{FBFAF7}
 
 \hypersetup{
   colorlinks=true,
@@ -46,44 +52,51 @@
   urlcolor=Teal,
   citecolor=Teal,
   pdfauthor={SAR ADC Project},
-  pdftitle={12-bit SAR ADC capacitor mismatch and foreground calibration validation},
+  pdftitle={12-bit SAR ADC 电容失配影响与前景校准验证},
   pdfsubject={Behavioral model, RTL, Verilog-A, mismatch calibration, synthesis and timing}
 }
 
 \pagestyle{fancy}
 \fancyhf{}
 \setlength{\headheight}{22pt}
-\lhead{\small\color{DeepNavy}12-bit SAR ADC · mismatch and calibration}
-\rhead{\small\color{Muted}v3.1.0}
-\cfoot{\small\color{Muted}\thepage}
-\renewcommand{\headrulewidth}{0.35pt}
+\lhead{\footnotesize\rmfamily\color{Ink}12-bit SAR ADC 电容失配与前景校准验证}
+\rhead{\footnotesize\rmfamily\color{Ink}\nouppercase{\leftmark}}
+\cfoot{\footnotesize\rmfamily\color{Ink}\thepage}
+\renewcommand{\headrulewidth}{0.30pt}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{Line}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\sectionmark}[1]{\markboth{第\chinese{section}章\quad #1}{}}
+\pretocmd{\section}{\clearpage}{}{}
 
-\titleformat{\section}
-  {\Needspace{7\baselineskip}\Large\bfseries\sffamily\color{DeepNavy}}
-  {\colorbox{DeepNavy}{\color{white}\strut\thesection}}
-  {0.70em}{}
+\titleformat{\section}[display]
+  {\Needspace{8\baselineskip}\centering\Large\bfseries\rmfamily\color{Ink}}
+  {第\chinese{section}章}
+  {0.45em}{}
 \titleformat{\subsection}
-  {\Needspace{4\baselineskip}\large\bfseries\sffamily\color{Teal}}
+  {\Needspace{4\baselineskip}\large\bfseries\rmfamily\color{Ink}}
   {\thesubsection}{0.55em}{}
 \titleformat{\subsubsection}
-  {\normalsize\bfseries\sffamily\color{Ink}}
+  {\normalsize\bfseries\rmfamily\color{Ink}}
   {\thesubsubsection}{0.50em}{}
-\titlespacing*{\section}{0pt}{1.45em}{0.70em}
-\titlespacing*{\subsection}{0pt}{1.05em}{0.42em}
+\titlespacing*{\section}{0pt}{0.7em}{1.25em}
+\titlespacing*{\subsection}{0pt}{1.20em}{0.48em}
 \titlespacing*{\subsubsection}{0pt}{0.75em}{0.25em}
 
 \captionsetup{
   font=small,
   labelfont={bf,color=DeepNavy},
   textfont={color=Ink},
-  justification=centering,
-  skip=6pt
+  justification=justified,
+  singlelinecheck=true,
+  margin=8mm,
+  skip=7pt
 }
-\setlist[itemize]{leftmargin=1.55em,itemsep=0.30em,topsep=0.35em}
-\setlist[enumerate]{leftmargin=1.80em,itemsep=0.32em,topsep=0.35em}
-\renewcommand{\arraystretch}{1.22}
-\setlength{\tabcolsep}{5pt}
+\setlist[itemize]{leftmargin=1.55em,itemsep=0.22em,topsep=0.32em}
+\setlist[enumerate]{leftmargin=1.80em,itemsep=0.24em,topsep=0.32em}
+\renewcommand{\arraystretch}{1.28}
+\setlength{\tabcolsep}{4.8pt}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.16em plus 0.05em minus 0.03em}
+\linespread{1.07}
 \raggedbottom
 
 \newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
@@ -100,48 +113,38 @@
 \newtcolorbox{verdictbox}[2][]{
   enhanced,
   breakable,
-  colback=#2!7!white,
-  colframe=#2,
-  boxrule=0.8pt,
-  arc=1.5mm,
-  left=3.0mm,
-  right=3.0mm,
-  top=2.2mm,
-  bottom=2.2mm,
-  before skip=5pt,
-  after skip=7pt,
+  colback=#2!8!white,
+  colframe=#2!8!white,
+  coltitle=Ink,
+  fonttitle=\bfseries\sffamily,
+  boxrule=0pt,
+  sharp corners,
+  borderline west={1.5pt}{0pt}{#2},
+  left=3.4mm,
+  right=2.8mm,
+  top=2.5mm,
+  bottom=2.5mm,
+  before skip=7pt,
+  after skip=8pt,
   #1
 }
 \newtcolorbox{notebox}[1][]{
   enhanced,
   breakable,
-  colback=PaleGray,
-  colframe=Line,
-  boxrule=0.6pt,
-  arc=1.2mm,
-  left=3mm,
-  right=3mm,
-  top=2mm,
-  bottom=2mm,
-  before skip=4pt,
-  after skip=6pt,
-  #1
-}
-\newtcolorbox{metriccard}[2][]{
-  enhanced,
-  colback=white,
-  colframe=#2,
-  boxrule=0.8pt,
-  arc=1.8mm,
-  left=2.8mm,
+  colback=PaleBlue!82!white,
+  colframe=PaleBlue!82!white,
+  boxrule=0pt,
+  sharp corners,
+  borderline west={1.0pt}{0pt}{Navy},
+  left=3.4mm,
   right=2.8mm,
   top=2.3mm,
   bottom=2.3mm,
-  height=34mm,
-  valign=center,
+  before skip=6pt,
+  after skip=7pt,
   #1
 }
-\newcommand{\tablehead}{\rowcolor{PaleBlue}\bfseries\color{DeepNavy}}
+\newcommand{\tablehead}{\rowcolor{PaleBlue}\bfseries\sffamily\color{DeepNavy}}
 \newcommand{\hashvalue}[1]{\begingroup\ttfamily\scriptsize\nolinkurl{#1}\endgroup}
 
 \input{generated_metrics.tex}
@@ -153,94 +156,57 @@
 % ---------------------------------------------------------------------------
 \begin{titlepage}
   \thispagestyle{empty}
-  \begin{tikzpicture}[remember picture,overlay]
-    \fill[DeepNavy]
-      (current page.north west)
-      rectangle ([xshift=13mm]current page.south west);
-    \fill[Teal]
-      ([xshift=13mm]current page.north west)
-      rectangle ([xshift=16mm]current page.south west);
-    \fill[PaleBlue]
-      ([yshift=-14mm,xshift=16mm]current page.north west)
-      rectangle ([yshift=-15.5mm]current page.north east);
-  \end{tikzpicture}
-
-  \hspace*{8mm}
-  \begin{minipage}{0.92\textwidth}
-    \vspace*{9mm}
-    {\sffamily\color{Teal}\Large ENGINEERING VALIDATION REPORT\par}
-    \vspace{4mm}
-    {\sffamily\bfseries\color{DeepNavy}\fontsize{27}{32}\selectfont
-      12-bit SAR ADC\\[2mm]
-      电容失配影响与前景校准验证\par}
-    \vspace{3mm}
-    {\sffamily\color{Muted}\Large
-      Python 行为级黄金模型 · SystemVerilog 校准子系统\\
-      Verilog-A 移植骨架 · 综合与约束时序\par}
-
-    \vspace{8mm}
-    \begin{verdictbox}{Teal}
-      \textbf{主问题。}PER-UNIT 单位电容失配会把标称数字权重与真实 CDAC
-      权重拉开多远；前景 P0/P1/N0/N1 校准能否在不改变物理 decisions、
-      不增加 LUT/CAM/单调钳位的前提下，把整体 ADC 性能稳定回验收区间。
-      0.3 mV RMS 仅用于检查校准量化锁定，不是正常转换噪声研究。
-    \end{verdictbox}
-
-    \vspace{2mm}
-    \begin{tcbraster}[
-      raster columns=3,
-      raster equal height=rows,
-      raster column skip=3.5mm
-    ]
-      \begin{metriccard}{DeepNavy}
-        {\sffamily\small\color{Muted}IDEAL BASELINE\par}
-        \vspace{1mm}
-        {\sffamily\bfseries\fontsize{20}{22}\selectfont
-          \IdealCalSndr{} dB\par}
-        {\footnotesize ENOB \IdealCalEnob{} bit\\
-        0 missing · 0 rollback}
-      \end{metriccard}
-      \begin{metriccard}{Green}
-        {\sffamily\small\color{Muted}0.5\% NOMINAL\par}
-        \vspace{1mm}
-        {\sffamily\bfseries\fontsize{20}{22}\selectfont
-          100/100\par}
-        {\footnotesize dynamic / static / combined\\
-        \MZeroFiveNoiseCalSndr{} dB P50}
-      \end{metriccard}
-      \begin{metriccard}{Orange}
-        {\sffamily\small\color{Muted}1.0\% STRESS\par}
-        \vspace{1mm}
-        {\sffamily\bfseries\fontsize{20}{22}\selectfont
-          100 / 98\par}
-        {\footnotesize dynamic / static seeds\\
-        0 missing}
-      \end{metriccard}
-    \end{tcbraster}
-
-    \vfill
-    \begin{tabularx}{\linewidth}{@{}>{\bfseries\color{DeepNavy}}p{34mm}Y@{}}
-      文档版本 & v3.1.0\\
-      冻结日期 & 2026-07-26\\
-      代码分支 & \code{codex/python-cal-validation}\\
-      行为级证据 & 4096-point coherent FFT；100-seed Monte Carlo；精确可达树\\
-      数字证据 & Vivado 2018.3 XSIM + synthesis proxy；100 MHz XDC\\
-      模拟证据 & Verilog-A 源码结构与方程审查；本机未做 Spectre 编译\\
-    \end{tabularx}
-    \vspace{4mm}
-    {\small\color{Muted}
-      结论边界：本报告证明行为级架构与当前校准 RTL 的工程一致性，
-      不把结果外推为目标 PDK、晶体管级、版图后或硅片签核。
-    \par}
-    \vspace{4mm}
-  \end{minipage}
+  \centering
+  \vspace*{48mm}
+  {\bfseries\rmfamily\fontsize{27}{34}\selectfont
+    12-bit SAR ADC 电容失配影响与前景校准验证\par}
+  \vspace{8mm}
+  {\bfseries\rmfamily\fontsize{17}{24}\selectfont
+    从 PER-UNIT 物理失配、Q8 前景权重校准\par
+    到 RTL、Verilog-A 与可复现证据链\par}
+  \vspace{18mm}
+  {\large\rmfamily
+    基于全差分 138-Cu split-CDAC 与 100-seed 正式验证矩阵\par}
+  \vfill
+  {\large\rmfamily 工程验证报告 · v3.1.0\par}
+  \vspace{5mm}
+  {\large\rmfamily 2026 年 7 月 26 日\par}
+  \vspace*{26mm}
 \end{titlepage}
+
+% ---------------------------------------------------------------------------
+% Abstract and contents
+% ---------------------------------------------------------------------------
+\pagenumbering{Roman}
+\pagestyle{plain}
+\section*{摘要}
+
+本报告围绕“电容失配如何影响 SAR ADC，以及前景数字权重校准能否把整体性能
+稳住”这一主问题，对12位全差分 split-CDAC 的物理电荷模型、PER-UNIT 单位
+电容失配、采样连接、15次比较决策、P/N 分侧 Q8 前景校准、Q2 输出重构、
+静态可达码与动态 FFT 协议进行统一审计。理想链路达到 \IdealCalSndr{} dB
+SNDR 和 \IdealCalEnob{} bit ENOB，且无缺码、无局部 backstep。0.5\%
+PER-UNIT nominal 场景在0.3 mV calibration-only 扰动下获得 dynamic、static
+与 combined 100/100；1.0\% stress 场景保持 dynamic 100/100、static 98/100，
+两个轻微 INL 尾点被如实保留。报告进一步给出 Python、SystemVerilog 与
+Verilog-A 的职责边界、XSIM 自检、Vivado 综合及时序结果，并明确区分行为级
+证据、数字实现 proxy 与尚未完成的 PDK/晶体管/版图后 signoff。研究结果支持
+当前架构继续进入 AMS 与 transistor 实现，但不构成直接流片承诺。
+
+\vspace{6mm}
+\noindent\textbf{关键词：}SAR ADC；split-CDAC；PER-UNIT 电容失配；前景校准；
+Q8 定点；RTL；Verilog-A；Monte Carlo
+
+\clearpage
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+\pagestyle{fancy}
 
 % ---------------------------------------------------------------------------
 % Executive summary
 % ---------------------------------------------------------------------------
-\section*{决策摘要}
-\addcontentsline{toc}{section}{决策摘要}
+\section[报告范围与核心结论]{报告范围与核心结论}
 
 \begin{verdictbox}[title=\textbf{一句话结论}]{Green}
   理想链路没有问题；0.5\% PER-UNIT 标称失配会显著降低未校准 SNDR，
@@ -294,12 +260,8 @@
   LUT、重映射或阵列重构。现在不为了让压力点从98/100改写成100/100而增加硬件。
 \end{notebox}
 
-\clearpage
-\tableofcontents
-\clearpage
-
 % ---------------------------------------------------------------------------
-\section{工程组织架构：Python、RTL、Verilog-A 与交付链}
+\section[工程组织架构]{工程组织架构：Python、RTL、Verilog-A 与交付链}
 
 \subsection{为什么按证据层组织，而不是按文件类型堆叠}
 
@@ -462,11 +424,13 @@ Verilog-A 不在模块内部抽 mismatch RNG，testbench 应把 Python 同一 se
 
 \subsection{脚本、冻结证据、文档和 CI}
 
-\code{run\_mismatch\_matrix.ps1} 运行五个正式 case；
-\code{freeze\_mismatch\_evidence.py} 只复制完整结果；
-\code{generate\_report\_metrics.py} 生成本文宏；
-\code{generate\_report\_figures.py} 只读冻结 CSV/JSON。
-GitHub Actions 在 Ubuntu/Python 3.12 上执行 pytest、重画 current figures 和
+\begin{itemize}
+  \item \pathcode{scripts/run_mismatch_matrix.ps1} 运行五个正式 case；
+  \item \pathcode{scripts/freeze_mismatch_evidence.py} 只复制完整结果；
+  \item \pathcode{scripts/generate_report_metrics.py} 从冻结证据生成本文宏；
+  \item \pathcode{scripts/generate_report_figures.py} 只读冻结 CSV/JSON。
+\end{itemize}
+GitHub Actions 在 Ubuntu/Python 3.13.12 上执行 pytest、重画 current figures 和
 metrics，并上传 artifact；它不跑 Vivado、Spectre 或 XeLaTeX PDF QA。
 
 \begin{notebox}
@@ -476,7 +440,7 @@ metrics，并上传 artifact；它不跑 Vivado、Spectre 或 XeLaTeX PDF QA。
 \end{notebox}
 
 % ---------------------------------------------------------------------------
-\section{验收口径、主变量与证据边界}
+\section[验收口径与证据边界]{验收口径、主变量与证据边界}
 
 \subsection{主变量是失配，不是噪声}
 
@@ -524,7 +488,7 @@ comparator noise 始终为0。0.3 mV RMS 只在 P0/P1/N0/N1 lower-SAR
 
 \subsection{证据等级}
 
-\begin{table}[htbp]
+\begin{table}[H]
   \centering
   \caption{已经证明与尚未证明}
   \begin{tabularx}{\textwidth}{@{}p{36mm}p{44mm}Y@{}}
@@ -548,7 +512,7 @@ comparator noise 始终为0。0.3 mV RMS 只在 P0/P1/N0/N1 lower-SAR
 \end{table}
 
 % ---------------------------------------------------------------------------
-\section{split-CDAC 与采样路径的底层复核}
+\section[split-CDAC 与采样]{split-CDAC 与采样路径的底层复核}
 
 \subsection{阵列结构}
 
@@ -620,8 +584,24 @@ terminal decision，因此每个行为级 normal conversion 共15次比较。
 terminal 不增加物理电容，只提供残差舍入；理想 case 的0 missing、0 backstep
 和 \IdealCalSndr{} dB SNDR 证明该链路本身没有异常。
 
+\begin{table}[H]
+  \centering
+  \caption{正常转换的权威 stage 顺序；数值直接来自 \code{config.py}}
+  \begin{tabularx}{\textwidth}{@{}p{24mm}Y p{34mm}p{25mm}@{}}
+    \toprule
+    \tablehead 分组 & Stage 顺序 & 标称权重（Q0） & 物理切换\\
+    \midrule
+    High segment & H32C, H16C, H8C-A, H8C-R, H4C, H2C, H1C &
+      2144, 1072, 536, 536, 268, 134, 67 & 是\\
+    Low segment & L32C, L16C, L8C, L4C, L2C-A, L2C-R, L1C &
+      64, 32, 16, 8, 4, 4, 2 & 是\\
+    Terminal & TERM & 1 & 否；仅比较残差\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
 % ---------------------------------------------------------------------------
-\section{PER-UNIT 失配模型与传播}
+\section[PER-UNIT 失配]{PER-UNIT 失配模型与传播}
 
 \subsection{本轮正式采用的失配方式}
 
@@ -669,7 +649,7 @@ flat group sigma 抽样。
 \keyterm{数字重构权重与物理权重不一致}，不是阵列动态范围本身崩溃。
 
 % ---------------------------------------------------------------------------
-\section{前景校准、0.3 mV 扰动与 Q8 硬件契约}
+\section[前景校准与 Q8 契约]{前景校准、0.3 mV 扰动与 Q8 硬件契约}
 
 \subsection{P0/P1/N0/N1 观测量}
 
@@ -751,7 +731,7 @@ H32 nominal Q8 为 $2144\times256=548864$，16-bit Q8 不够；当前每项
 \end{notebox}
 
 % ---------------------------------------------------------------------------
-\section{验证协议：同 decisions、公平解码与精确静态审计}
+\section[验证协议]{验证协议：同 decisions、公平解码与精确静态审计}
 
 \subsection{三路解码共用同一物理 decisions}
 
@@ -800,7 +780,7 @@ strict ordering 则保留局部输入顺序。两者回答不同问题，不能�
 图和 LaTeX metrics 只读取冻结版本；这样可防止用户所担心的“图片与数据版本混乱”。
 
 % ---------------------------------------------------------------------------
-\section{正式失配矩阵结果}
+\section[正式失配矩阵]{正式失配矩阵结果}
 
 \subsection{理想先验：校准不能在无失配时虚构收益}
 
@@ -817,7 +797,7 @@ strict ordering 则保留局部输入顺序。两者回答不同问题，不能�
   \centering
   \caption{失配矩阵动态结果；mismatch cases 均为100 seeds}
   \small
-  \begin{tabularx}{\textwidth}{@{}p{34mm}R{16mm}R{28mm}R{28mm}C{21mm}Y@{}}
+  \begin{tabularx}{\textwidth}{@{}p{28mm}R{15mm}R{27mm}R{27mm}C{19mm}Y@{}}
     \toprule
     \tablehead 条件 & Pre P50 & Cal P50 / min & ENOB P50 / min &
       Dynamic & Oracle gap P50/P95\\
@@ -925,7 +905,7 @@ strict ordering 则保留局部输入顺序。两者回答不同问题，不能�
 \end{figure}
 
 % ---------------------------------------------------------------------------
-\section{专章：单调性、局部 backstep 与过度设计边界}
+\section[单调性与过度设计]{单调性、局部 backstep 与过度设计边界}
 
 \subsection{必须先区分三件事}
 
@@ -1051,7 +1031,7 @@ reconstruction 的局部错序”，不是整个 transfer 失稳。
 \end{verdictbox}
 
 % ---------------------------------------------------------------------------
-\section{RTL 工程：组织、仿真、综合与时序}
+\section[RTL 工程]{RTL 工程：组织、仿真、综合与时序}
 
 \subsection{数据流与接口}
 
@@ -1171,7 +1151,7 @@ register-to-register setup failure。
 \end{enumerate}
 
 % ---------------------------------------------------------------------------
-\section{Verilog-A 工程：模块、方程、参数与验证限制}
+\section[Verilog-A 工程]{Verilog-A 工程：模块、方程、参数与验证限制}
 
 \subsection{\code{cdac\_behavioral.va}}
 
@@ -1226,7 +1206,7 @@ kickback、input capacitance、PVT offset/noise、功耗或 metastability tail�
 \end{notebox}
 
 % ---------------------------------------------------------------------------
-\section{整体过度设计审计}
+\section[过度设计审计]{整体过度设计审计}
 
 \begin{table}[htbp]
   \centering
@@ -1267,7 +1247,7 @@ Q8、128 pairs 和20-bit不是宣称的全局数学最小值，而是本轮已�
 才继续削减，避免为了“看起来更精简”破坏余量。
 
 % ---------------------------------------------------------------------------
-\section{从当前证据到流片：逻辑可行，但签核未完成}
+\section[流片可行性边界]{从当前证据到流片：逻辑可行，但签核未完成}
 
 \subsection{当前有意义的结论}
 
@@ -1324,7 +1304,7 @@ Q8、128 pairs 和20-bit不是宣称的全局数学最小值，而是本轮已�
 \end{verdictbox}
 
 % ---------------------------------------------------------------------------
-\section{复现、版本管理与证据溯源}
+\section[复现与证据溯源]{复现、版本管理与证据溯源}
 
 \subsection{最短复现路径}
 
@@ -1382,7 +1362,7 @@ Config SHA-256：
 \end{notebox}
 
 % ---------------------------------------------------------------------------
-\section{最终结论}
+\section[最终结论]{最终结论}
 
 \begin{enumerate}
   \item 理想模型正确：\IdealCalSndr{} dB、0 missing、0 backstep；
@@ -1413,19 +1393,16 @@ Config SHA-256：
 \end{verdictbox}
 
 \appendix
-\section{文件到结论的映射}
+\section[文件到结论映射]{文件到结论的映射}
 
-\small
-\begin{longtable}{@{}p{47mm}p{48mm}p{47mm}@{}}
-  \caption{关键文件、输出与权威边界}\\
+\begin{table}[htbp]
+\centering
+\caption{关键文件、输出与权威边界}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}p{44mm}p{45mm}Y@{}}
   \toprule
   \tablehead 文件/目录 & 直接输出 & 不能替代的证据\\
   \midrule
-  \endfirsthead
-  \toprule
-  \tablehead 文件/目录 & 直接输出 & 不能替代的证据\\
-  \midrule
-  \endhead
   \code{config.py}, \code{topology/} &
     stage/cap/switch contract &
     不证明电路 settling 或 noise。\\
@@ -1463,7 +1440,7 @@ Config SHA-256：
     repository ownership contract &
     不替代实际 tests/reports。\\
   \bottomrule
-\end{longtable}
-\normalsize
+\end{tabularx}
+\end{table}
 
 \end{document}
