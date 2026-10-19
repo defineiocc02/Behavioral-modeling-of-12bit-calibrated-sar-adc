@@ -9,7 +9,7 @@
 > 到 Python 行为模型、可综合校准 RTL 与 Verilog-A 接口的可复现工程。
 
 [![Version](https://img.shields.io/badge/version-3.1.1-17365D)](VERSION)
-[![CI](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml/badge.svg?branch=codex%2Fpython-cal-validation)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml)
+[![CI](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml/badge.svg)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-0072B2)](https://www.python.org/)
 [![Mismatch](https://img.shields.io/badge/mismatch-PER--UNIT-009E73)](docs/VALIDATION_STATUS.md)
 [![License](https://img.shields.io/badge/license-MIT-6A5ACD)](LICENSE)

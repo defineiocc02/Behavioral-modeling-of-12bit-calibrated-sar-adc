@@ -1,5 +1,7 @@
 # 本机 Git 与 Cadence VM 工作区地图
 
+> 分支说明：分支已于 2026-10-19 重命名为 `main`，本文档中的分支名为当时快照。
+
 > 盘点日期：2026-07-26
 > 性质：当前工作区交接与版本边界说明。它不是仿真签核报告，也不替代
 > `docs/final_report.pdf`。
@@ -9,7 +11,7 @@
 ### 1.1 本机 Git 工程
 
 - **Git 根目录**：
-  `C:\Users\Administrator\Desktop\SAR_ADC_IDEAL_CAL_REPLACEMENT_V6_CLEAN`
+  `<path>`
 - **当前分支**：`codex/python-cal-validation`
 - **盘点时 HEAD**：`b4a71bd`（`Adopt STSong report typography`）
 - **远端**：`origin/codex/python-cal-validation`
@@ -17,14 +19,14 @@
 
 会话最初落在下面这个同名嵌套目录：
 
-`C:\Users\Administrator\Desktop\SAR_ADC_IDEAL_CAL_REPLACEMENT_V6_CLEAN\SAR_ADC_IDEAL_CAL_REPLACEMENT_V6_CLEAN`
+`<path>`
 
 该目录为空，也不是 Git 根。若从这里执行 `rg --files`，会得到“没有 VA、RTL、
 Python”的假象。后续所有本机命令必须显式以真正 Git 根为工作目录。
 
 ### 1.2 Cadence VM 工程
 
-- **SSH**：`meow@192.168.38.128:22`
+- **SSH**：`<user>@<vm-ip>:22`
 - **Cadence 工作区**：`/home/meow/jxy`
 - **OA 库**：`/home/meow/jxy/12bit_50M_SAR`
 - **生成仿真数据**：`/home/meow/jxy/simulation/12bit_50M_SAR`
@@ -133,7 +135,7 @@ lower-SAR RTL self-check PASS；`cal_top` compile/elaborate PASS。最终占用1
 
 Windows Obsidian 归档中仍存在完整报告和脚本：
 
-`D:\ReedZhao\Document\Obsidian\日常\10_项目区\2026_12bit10Msar\04_辅助工具\veriloga_models\codex_calibration_20260717`
+`<path>`
 
 该报告记录：实际源网表中心、Omran PER-UNIT 失配、8/8 校准 `DONE=1/ERR=0`，
 以及完整晶体管级 ADC FFT 的 7/8 样本超过 73 dB；`sample03` 为 72.6214 dB

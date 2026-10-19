@@ -4,7 +4,7 @@
 
 活动版本：`v3.1.1`
 
-活动分支：`codex/python-cal-validation`
+活动分支：`main`
 
 ## 结论先行
 

@@ -2,8 +2,7 @@
 
 ## Active release
 
-The only active release line in this worktree is `v3.1.1` on branch
-`codex/python-cal-validation`.
+The only active release line in this worktree is `v3.1.1` on branch `main`.
 
 Version-bearing files must agree:
 

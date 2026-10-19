@@ -20,6 +20,13 @@ __pycache__/
 *.pyo
 .pytest_cache/
 .venv/
+venv/
+env/
+*.egg-info/
+
+# Python packaging / build output
+build/
+dist/
 
 # Local documentation and CI artifacts
 .artifacts/

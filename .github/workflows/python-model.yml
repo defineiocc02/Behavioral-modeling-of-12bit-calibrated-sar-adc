@@ -1,6 +1,7 @@
 name: Python behavioral model
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "src/python_cal/**"
