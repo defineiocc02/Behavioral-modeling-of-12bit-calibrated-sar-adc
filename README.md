@@ -1,6 +1,6 @@
 # Behavioral-modeling-of-12bit-calibrated-sar-adc
 
-![状态](https://img.shields.io/badge/%E7%8A%B6%E6%80%81-%E9%AA%8C%E8%AF%81%E5%AE%8C%E6%88%90-2ea043?style=flat-square) ![类型](https://img.shields.io/badge/%E7%B1%BB%E5%9E%8B-%E8%A1%8C%E4%B8%BA%E7%BA%A7%E5%BB%BA%E6%A8%A1-6e7781?style=flat-square) ![技术栈](https://img.shields.io/badge/%E6%8A%80%E6%9C%AF%E6%A0%88-Python-6e7781?style=flat-square) ![许可](https://img.shields.io/badge/%E8%AE%B8%E5%8F%AF-MIT-2ea043?style=flat-square)
+![状态](https://img.shields.io/badge/%E7%8A%B6%E6%80%81-%E9%AA%8C%E8%AF%81%E5%AE%8C%E6%88%90-2ea043?style=flat-square) ![类型](https://img.shields.io/badge/%E7%B1%BB%E5%9E%8B-%E8%A1%8C%E4%B8%BA%E7%BA%A7%E5%BB%BA%E6%A8%A1-6e7781?style=flat-square) ![技术栈](https://img.shields.io/badge/%E6%8A%80%E6%9C%AF%E6%A0%88-Python-6e7781?style=flat-square) ![许可](https://img.shields.io/badge/%E8%AE%B8%E5%8F%AF-MIT-2ea043?style=flat-square) [![Version](https://img.shields.io/badge/version-3.1.1-17365D)](VERSION) [![CI](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml/badge.svg)](https://github.com/defineiocc02/Behavioral-modeling-of-12bit-calibrated-sar-adc/actions/workflows/python-model.yml)
 
 > 12 位全差分 split-CDAC SAR ADC 的行为级建模、前景数字权重校准与可综合校准 RTL。
 
